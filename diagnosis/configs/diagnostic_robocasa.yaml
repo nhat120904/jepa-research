@@ -1,0 +1,56 @@
+# Tertiary diagnostic: RoboCasa kitchen multi-stage
+dataset:
+  name: robocasa
+  root: data/robocasa
+  image_size: 256
+  action_dim: 7
+  external_root: external/jepa-wms
+  # Forwarded to RoboCasaDataset.
+  dataset_kwargs:
+    filter_tasks: ["PnPCounterToCab"]
+    camera_views: ["robot0_agentview_left"]
+
+models:
+  - jepa_wm_droid       # RoboCasa shares the Franka 7-dim action space.
+  - dino_wm_droid
+
+negative_strategies:
+  - random
+  - opposite
+  - hard_nn
+
+regimes:
+  - free_space
+  - pre_grasp
+  - gripper_actuation
+  - contact_manipulation
+
+cra:
+  K: 16
+  metrics: [top1, mrr]
+
+ecs:
+  fallback_threshold: 1.0
+
+hard_nn:
+  pool_size: 256
+  similarity_radius: 1.0
+  K: 16
+
+bootstrap:
+  n_resamples: 1000
+  ci: 0.95
+
+eval:
+  device: cuda
+  batch_size: 32
+  num_workers: 4
+  max_transitions: 20000
+  min_transitions_per_cell: 150
+
+latent_cache:
+  root: data/precomputed_latents
+  compression: gzip
+
+output:
+  csv: results/robocasa_diagnostic.csv

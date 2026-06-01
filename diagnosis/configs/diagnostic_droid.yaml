@@ -1,0 +1,60 @@
+# Secondary diagnostic: DROID real Franka
+dataset:
+  name: droid
+  root: data/droid_subset
+  image_size: 256
+  action_dim: 7
+  # DROID actions live on an L1-ball of radius 0.075.
+  action_l1_radius: 0.075
+  external_root: external/jepa-wms
+  # Forwarded to DROIDVideoDataset — match how DROID was downloaded on the server.
+  dataset_kwargs:
+    camera_views: ["wrist_mp4_path"]
+    frames_per_clip: 16
+    fps: 5
+
+models:
+  - jepa_wm_droid
+  - dino_wm_droid
+  - vjepa2_ac_droid
+
+negative_strategies:
+  - random
+  - opposite
+  - hard_nn
+
+regimes:
+  - free_space
+  - pre_grasp
+  - gripper_actuation
+  - contact_manipulation
+
+cra:
+  K: 16
+  metrics: [top1, mrr]
+
+ecs:
+  fallback_threshold: 1.0
+
+hard_nn:
+  pool_size: 512
+  similarity_radius: 1.0
+  K: 16
+
+bootstrap:
+  n_resamples: 1000
+  ci: 0.95
+
+eval:
+  device: cuda
+  batch_size: 32
+  num_workers: 4
+  max_transitions: 50000
+  min_transitions_per_cell: 200
+
+latent_cache:
+  root: data/precomputed_latents
+  compression: gzip
+
+output:
+  csv: results/droid_diagnostic.csv

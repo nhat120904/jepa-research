@@ -1,0 +1,71 @@
+# Primary diagnostic config: Metaworld 12-task subset
+dataset:
+  name: metaworld
+  root: data/metaworld            # HF parquet dir (MetaworldHFDataset data_path)
+  external_root: external/jepa-wms
+  image_size: 224
+  action_dim: 4
+  # 12-task diagnostic subset spanning the difficulty spectrum.
+  tasks:
+    easy:
+      - reach-v2
+      - push-v2
+      - pick-place-v2
+    medium:
+      - door-open-v2
+      - door-close-v2
+      - drawer-close-v2
+      - button-press-v2
+      - window-open-v2
+    hard:
+      - peg-insert-side-v2
+      - assembly-v2
+      - hammer-v2
+      - stick-pull-v2
+
+models:
+  - jepa_wm_metaworld
+  - dino_wm_metaworld
+
+negative_strategies:
+  - random
+  - opposite
+  - hard_nn
+
+regimes:
+  - free_space
+  - pre_grasp
+  - gripper_actuation
+  - contact_manipulation
+
+cra:
+  K: 16
+  metrics: [top1, mrr]
+
+ecs:
+  # Calibrated per-model as the median of ||z_{t+1} - z_t|| on the eval set.
+  # The runner computes this automatically; the value below is a fallback only.
+  fallback_threshold: 0.5
+
+hard_nn:
+  pool_size: 256
+  similarity_radius: 0.5
+  K: 16
+
+bootstrap:
+  n_resamples: 1000
+  ci: 0.95
+
+eval:
+  device: cuda
+  batch_size: 64
+  num_workers: 4
+  max_trajectories_per_task: 1000
+  min_transitions_per_cell: 100
+
+latent_cache:
+  root: data/precomputed_latents
+  compression: gzip
+
+output:
+  csv: results/metaworld_diagnostic.csv
