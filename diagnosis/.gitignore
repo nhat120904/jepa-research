@@ -4,12 +4,16 @@ __pycache__/
 .uv/
 uv.lock
 data/metaworld/
+data/Metaworld/
+data/hf_mw/
 data/droid_subset/
 data/robocasa/
 data/precomputed_latents/
 external/jepa-wms/
 external/vjepa2/
 models/checkpoints/
+logs/
+.env
 results/*.csv
 results/figures/*.pdf
 results/figures/*.png

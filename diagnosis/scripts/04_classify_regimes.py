@@ -1,7 +1,10 @@
 """Annotate every cached transition with a regime label.
 
-Reads ``data/precomputed_latents/{dataset}__{model}.h5``, applies the dataset's
-stratifier, and writes a per-trajectory ``regime`` array back into the file.
+Reads ``data/precomputed_latents/{dataset}__{model}.h5`` **read-only**, applies
+the dataset's stratifier, and writes per-trajectory ``regime`` arrays to an
+atomic JSON sidecar (``{dataset}__{model}.h5.regimes.json``). The large latent
+cache is never re-opened for writing, so a kill mid-stratification can never
+truncate/corrupt it; the sidecar is written via os.replace (atomic).
 
 * Metaworld: proxy regimes from the 39-dim ``state`` vector (ee/object/gripper).
   Not MuJoCo contact GT — see stratification/metaworld_regimes.py.
@@ -23,12 +26,13 @@ from tqdm import tqdm
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from data import LatentCache, latent_cache_path  # noqa: E402
+from data import LatentCache, latent_cache_path, write_regimes  # noqa: E402
 from data.latent_cache import REGIME_TO_ID  # noqa: E402
 from stratification import classify_metaworld_regime, classify_droid_regime  # noqa: E402
 
 
-def classify_metaworld(cache: LatentCache) -> None:
+def classify_metaworld(cache: LatentCache) -> dict:
+    out: dict = {}
     for tid in tqdm(cache.trajectory_ids(), desc="metaworld regimes"):
         traj = cache.read_trajectory(tid)
         T = len(traj["action"])
@@ -41,10 +45,11 @@ def classify_metaworld(cache: LatentCache) -> None:
         ids = np.zeros(T, dtype=np.int8)
         for t in range(T):
             ids[t] = REGIME_TO_ID[classify_metaworld_regime(state[t], state[t + 1])]
-        cache.write_regime(tid, ids)
+        out[tid] = ids
+    return out
 
 
-def _classify_with_latent_heuristic(cache: LatentCache, desc: str) -> None:
+def _classify_with_latent_heuristic(cache: LatentCache, desc: str) -> dict:
     """Shared DROID/RoboCasa heuristic: gripper delta + latent-change proxy."""
     # First pass: global median latent change.
     diffs = []
@@ -55,6 +60,7 @@ def _classify_with_latent_heuristic(cache: LatentCache, desc: str) -> None:
     baseline = float(torch.cat(diffs).median().item())
     print(f"  {desc} baseline median latent change: {baseline:.4f}")
 
+    out: dict = {}
     for tid in tqdm(cache.trajectory_ids(), desc=f"{desc} regimes"):
         traj = cache.read_trajectory(tid)
         T = len(traj["action"])
@@ -67,16 +73,17 @@ def _classify_with_latent_heuristic(cache: LatentCache, desc: str) -> None:
                 "global_median_latent_change": baseline,
             }
             ids[t] = REGIME_TO_ID[classify_droid_regime(info, traj["z"][t], traj["z"][t + 1])]
-        cache.write_regime(tid, ids)
+        out[tid] = ids
+    return out
 
 
-def classify_droid(cache: LatentCache) -> None:
-    _classify_with_latent_heuristic(cache, "droid")
+def classify_droid(cache: LatentCache) -> dict:
+    return _classify_with_latent_heuristic(cache, "droid")
 
 
-def classify_robocasa(cache: LatentCache) -> None:
+def classify_robocasa(cache: LatentCache) -> dict:
     # RoboCasa state is the 7-dim droid format (no object pos) → same heuristic.
-    _classify_with_latent_heuristic(cache, "robocasa")
+    return _classify_with_latent_heuristic(cache, "robocasa")
 
 
 CLASSIFIERS = {
@@ -98,8 +105,11 @@ def main(config_path: str) -> int:
             print(f"[skip] no cache at {path} — run 03_extract_latents.py first")
             continue
         print(f"\n=== Stratifying {model_name} on {dataset_name} ===")
-        with LatentCache(path, mode="a") as cache:
-            classifier(cache)
+        # Open the (expensive) latent cache read-only; never re-write it.
+        with LatentCache(path, mode="r") as cache:
+            regime_by_traj = classifier(cache)
+        sidecar = write_regimes(path, regime_by_traj)
+        print(f"  Wrote {sidecar} ({len(regime_by_traj)} trajectories)")
     return 0
 
 
