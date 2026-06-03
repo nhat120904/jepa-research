@@ -10,22 +10,26 @@ dataset:
   # `rm -f data/precomputed_latents/*.h5` to invalidate the cache.
   max_trajectories_per_task: 60
   # 12-task diagnostic subset spanning the difficulty spectrum.
+  # NOTE: the HF dataset's `task` column uses the `mw-<name>` convention (no `-v2`
+  # suffix) and the upstream MetaworldHFDataset filters by exact match, so names
+  # below must match that column. `mw-window-open` is absent from the released
+  # data (only `mw-window-close`), so the medium set uses window-close.
   tasks:
     easy:
-      - reach-v2
-      - push-v2
-      - pick-place-v2
+      - mw-reach
+      - mw-push
+      - mw-pick-place
     medium:
-      - door-open-v2
-      - door-close-v2
-      - drawer-close-v2
-      - button-press-v2
-      - window-open-v2
+      - mw-door-open
+      - mw-door-close
+      - mw-drawer-close
+      - mw-button-press
+      - mw-window-close
     hard:
-      - peg-insert-side-v2
-      - assembly-v2
-      - hammer-v2
-      - stick-pull-v2
+      - mw-peg-insert-side
+      - mw-assembly
+      - mw-hammer
+      - mw-stick-pull
 
 models:
   - jepa_wm_metaworld

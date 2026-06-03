@@ -60,8 +60,15 @@ VIRTUAL_ENV=$PWD/.venv uv pip install -e .          # diagnosis deps incl. torch
 # upstream runtime deps the encode/predict + MetaworldHFDataset path actually imports:
 VIRTUAL_ENV=$PWD/.venv uv pip install timm einops tensordict omegaconf datasets \
     imageio imageio-ffmpeg decord lpips opencv-python-headless scikit-image termcolor \
-    huggingface_hub hydra-core ruamel.yaml gym==0.23.1 pygame pymunk shapely pytest
+    huggingface_hub hydra-core ruamel.yaml gym==0.23.1 pygame pymunk shapely pytest \
+    torchcodec
 ```
+
+> **`torchcodec` is required** (added 2026-06-03). The Metaworld parquet stores frames in a
+> `video` column; current `datasets` (>=3.x) decodes it via `torchcodec`, not `decord`. Without
+> it the dataset load dies with `ImportError: To support decoding videos, please install
+> 'torchcodec'`. It needs system ffmpeg libs (`ffmpeg -version` should work — present on this
+> box). The installed `torchcodec==0.13.0` binds against ffmpeg 6.
 
 Create `diagnosis/.env` with `HF_TOKEN=<your gated token>`.
 
@@ -162,6 +169,15 @@ all 126 shards are needed even with the 60-trajectory/task cap.
 python external/jepa-wms/src/scripts/download_data.py --dataset metaworld --dataset-root data
 # -> data/Metaworld/...  then point dataset.root at the dir containing train-*.parquet
 ```
+
+> **Task-name convention (fixed 2026-06-03).** The released parquet's `task` column uses
+> `mw-<name>` (e.g. `mw-reach`, `mw-peg-insert-side`) — **not** the `<name>-v2` Metaworld env
+> ids. `MetaworldHFDataset` filters by **exact match**, so a `-v2` filter silently loads 0
+> rollouts (then crashes in `torch.stack([])`). `configs/diagnostic_metaworld.yaml` and
+> `HARD_TASKS` in `scripts/06_analyze_results.py` now use the `mw-` names. Also note
+> `mw-window-open` is **absent** from the release (only `mw-window-close`); the medium set
+> uses window-close. Full list of the 42 available tasks: inspect the `task` column of any
+> shard with `pyarrow`.
 
 **If `snapshot_download` / the dataset API fails** (e.g. the previous box had an HF mirror in
 `/etc/hosts` that 401'd the dataset API and 0-bytes'd LFS streaming), download per shard with
