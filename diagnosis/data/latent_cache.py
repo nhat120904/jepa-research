@@ -13,6 +13,8 @@ Schema (one file per (model, dataset) pair):
 
 from __future__ import annotations
 
+import json
+import os
 from pathlib import Path
 from typing import Iterator, Optional
 
@@ -34,6 +36,45 @@ def latent_cache_path(root: str | Path, model_name: str, dataset: str) -> Path:
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
     return root / f"{dataset}__{model_name}.h5"
+
+
+# --- Regime sidecar --------------------------------------------------------
+# Regimes are written to a JSON sidecar next to the latent cache instead of
+# re-opening the large .h5 in append mode. Appending to the big cache risks a
+# truncated/corrupt file if the process is killed mid-write; the sidecar is
+# written via os.replace (atomic) so a kill never corrupts an existing file,
+# and the expensive latent cache is opened read-only after 03_extract_latents.
+
+def regime_sidecar_path(cache_path: str | Path) -> Path:
+    """JSON sidecar holding per-trajectory regime id arrays for a latent cache."""
+    cache_path = Path(cache_path)
+    return cache_path.with_name(cache_path.name + ".regimes.json")
+
+
+def write_regimes(cache_path: str | Path, regime_by_traj: dict) -> Path:
+    """Atomically write {traj_id: regime_ids} to the sidecar (tmp + os.replace)."""
+    out_path = regime_sidecar_path(cache_path)
+    tmp_path = out_path.with_name(out_path.name + ".tmp")
+    payload = {
+        str(tid): np.asarray(ids, dtype=np.int8).tolist()
+        for tid, ids in regime_by_traj.items()
+    }
+    with open(tmp_path, "w") as f:
+        json.dump(payload, f)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp_path, out_path)
+    return out_path
+
+
+def read_regimes(cache_path: str | Path) -> Optional[dict]:
+    """Read the regime sidecar as {traj_id: np.int8 array}, or None if absent."""
+    path = regime_sidecar_path(cache_path)
+    if not path.exists():
+        return None
+    with open(path) as f:
+        raw = json.load(f)
+    return {tid: np.asarray(ids, dtype=np.int8) for tid, ids in raw.items()}
 
 
 class LatentCache:

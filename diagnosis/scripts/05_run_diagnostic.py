@@ -26,7 +26,7 @@ from tqdm import tqdm
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from data import LatentCache, latent_cache_path  # noqa: E402
+from data import LatentCache, latent_cache_path, read_regimes  # noqa: E402
 from data.latent_cache import REGIME_TO_ID  # noqa: E402
 from metrics import (  # noqa: E402
     cra_per_transition,
@@ -43,27 +43,52 @@ from models.adapters import build_adapter  # noqa: E402
 # Cache loading
 # ---------------------------------------------------------------------------
 
-def load_cache_into_tensors(cache: LatentCache) -> dict:
-    """Materialize the cache into in-memory transition tensors."""
+def load_cache_into_tensors(cache: LatentCache, regime_by_traj: Optional[dict] = None,
+                            step: int = 1) -> dict:
+    """Materialize the cache into in-memory transition tensors.
+
+    Transitions are built at the model's native granularity: ``z_t`` and
+    ``z_t1`` are ``step`` frames apart (``step = adapter.frames_per_step``, the
+    frameskip), and ``a_t`` is the stack of the ``step`` raw actions spanning
+    them (so ``a_t`` has dim ``step * action_dim`` = the predictor's
+    model_action_dim). For step==1 this reduces to consecutive-frame
+    transitions. The regime label is taken at the transition's start frame.
+
+    Regimes come from the atomic sidecar (``regime_by_traj``, written by
+    04_classify_regimes) keyed by traj_id, falling back to any ``regime`` array
+    embedded in the cache (legacy) and finally to -1 (unclassified).
+    """
     zs_t, zs_t1, acts, proprios, regimes, traj_tags, grippers = [], [], [], [], [], [], []
     has_proprio = True
+    step = max(1, int(step))
+    offsets = torch.arange(step)
     for tid in cache.trajectory_ids():
         traj = cache.read_trajectory(tid)
         z = torch.as_tensor(traj["z"])
         a = torch.as_tensor(traj["action"])
-        T = a.shape[0]
-        zs_t.append(z[:T])
-        zs_t1.append(z[1 : T + 1])
-        acts.append(a)
+        La = a.shape[0]
+        n = La // step                         # full frameskip steps
+        if n == 0:
+            continue
+        idx0 = torch.arange(n) * step          # start frame of each model step
+        gather = idx0.unsqueeze(1) + offsets    # (n, step) raw-action indices
+        zs_t.append(z[idx0])
+        zs_t1.append(z[idx0 + step])
+        acts.append(a[gather].reshape(n, -1))   # (n, step * action_dim) stacked
         if "proprio" in traj:
-            proprios.append(torch.as_tensor(traj["proprio"])[:T])
+            proprios.append(torch.as_tensor(traj["proprio"])[idx0])
         else:
             has_proprio = False
-        regimes.append(torch.as_tensor(traj["regime"], dtype=torch.int8) if "regime" in traj
-                       else torch.full((T,), -1, dtype=torch.int8))
-        traj_tags.extend([tid] * T)
+        reg = None
+        if regime_by_traj is not None and tid in regime_by_traj:
+            reg = regime_by_traj[tid]
+        elif "regime" in traj:
+            reg = traj["regime"]
+        regimes.append(torch.as_tensor(reg, dtype=torch.int8)[idx0] if reg is not None
+                       else torch.full((n,), -1, dtype=torch.int8))
+        traj_tags.extend([tid] * n)
         if "gripper" in traj:
-            grippers.append(torch.as_tensor(traj["gripper"])[:T])
+            grippers.append(torch.as_tensor(traj["gripper"])[idx0])
     return {
         "z_t": torch.cat(zs_t, dim=0),
         "z_t1": torch.cat(zs_t1, dim=0),
@@ -155,8 +180,14 @@ def main(config_path: str, ctd: bool = False) -> int:
         # Use the model's own planner distance (all baselines: L2) unless overridden.
         distance = cfg.get("distance", adapter.spec.planning_distance)
 
+        regime_by_traj = read_regimes(cache_path)
+        if regime_by_traj is None:
+            print(f"  [warn] no regime sidecar for {cache_path.name} — run "
+                  "04_classify_regimes.py first (all cells will be insufficient_data).")
         with LatentCache(cache_path, mode="r") as cache:
-            data = load_cache_into_tensors(cache)
+            data = load_cache_into_tensors(cache, regime_by_traj, step=adapter.frames_per_step)
+        print(f"  frames_per_step (frameskip)={adapter.frames_per_step}; "
+              f"{data['z_t'].shape[0]} transitions, action stack dim={data['a_t'].shape[-1]}")
 
         threshold = calibrate_effect_threshold(data["z_t"], data["z_t1"])
         print(f"  ECS threshold (median ||Δz||): {threshold:.4f}; proprio="

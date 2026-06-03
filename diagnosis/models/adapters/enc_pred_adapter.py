@@ -78,6 +78,11 @@ class EncPredWMAdapter(WorldModelAdapter):
         self.encpred = None       # EncPredWM
         self.wm = None            # VideoWM (encpred.model)
         self.preprocessor = None
+        # Frames advanced per model prediction step. The metaworld checkpoints
+        # were trained with frameskip>1, so one model step spans several env
+        # frames and conditions on a stack of that many raw actions
+        # (model_action_dim = action_dim * frames_per_step). Set in load().
+        self.frames_per_step = 1
         if not lazy:
             self.load()
 
@@ -93,6 +98,16 @@ class EncPredWMAdapter(WorldModelAdapter):
         self.spec.pred_type = getattr(self.wm, "pred_type", None)
         self.spec.latent_dim = None
         self._model_action_dim = getattr(model, "action_dim", self.spec.action_dim)
+        # model_action_dim = raw action_dim * frames_per_step (frameskip stack).
+        # e.g. metaworld: 20 = 4 * 5. Callers must supply transitions spaced
+        # frames_per_step apart with the matching stack of raw actions.
+        self.frames_per_step = max(1, int(self._model_action_dim) // int(self.spec.action_dim))
+        # hubconf builds the model on cuda:0 (or cpu); make sure it lands on the
+        # requested device. The preprocessor's normalization stats deliberately
+        # stay on CPU — the upstream model normalizes proprio/actions on CPU
+        # (``obs["proprio"].cpu()``) before moving to device, so our own
+        # normalization helpers mirror that (normalize on CPU, then .to(device)).
+        self.to(self.device)
         self.eval()
         return self
 
@@ -102,16 +117,6 @@ class EncPredWMAdapter(WorldModelAdapter):
                 f"{self.spec.hub_id} not loaded. Call .load() (needs the upstream "
                 "env: clone external/jepa-wms + uv sync, GPU recommended)."
             )
-
-    # ----- device tensors of normalization stats -------------------------------
-    def _stats_to_device(self):
-        # Preprocessor stats are CPU tensors; mirror them onto the model device.
-        p = self.preprocessor
-        for attr in ("action_mean", "action_std", "proprio_mean", "proprio_std",
-                     "state_mean", "state_std"):
-            v = getattr(p, attr, None)
-            if isinstance(v, torch.Tensor):
-                setattr(p, attr, v.to(self.device))
 
     # ----- encode --------------------------------------------------------------
     @torch.no_grad()
@@ -140,7 +145,10 @@ class EncPredWMAdapter(WorldModelAdapter):
     def encode_proprio_features(self, proprio: torch.Tensor) -> torch.Tensor:
         """Encode raw proprio (B, T, P) into the predictor's proprio features."""
         self._require_loaded()
-        p = self.preprocessor.normalize_proprios(proprio.to(self.device, dtype=torch.float32))
+        # Normalize on CPU (stats live on CPU), then move to device like the model.
+        p = self.preprocessor.normalize_proprios(
+            proprio.detach().to("cpu", dtype=torch.float32)
+        ).to(self.device, dtype=torch.float32)
         return self.wm.encode_proprio(p)
 
     # ----- predict -------------------------------------------------------------
@@ -154,8 +162,9 @@ class EncPredWMAdapter(WorldModelAdapter):
         """One-step prediction via ``EncPredWM.unroll`` (the planner's primitive).
 
         z_t: (B, V, H, W, D) single-frame visual latent.
-        a_t: (B, A) raw action; normalized here the same way the model trained.
-        Returns next-frame visual latent (B, V, H, W, D).
+        a_t: (B, A) raw action stack, where A = frames_per_step * action_dim
+             (e.g. metaworld: 20 = 5 * 4). normalized here the same way the model
+             trained. Returns the visual latent frames_per_step steps ahead.
         """
         self._require_loaded()
         from einops import rearrange
@@ -164,11 +173,13 @@ class EncPredWMAdapter(WorldModelAdapter):
         B = z_t.shape[0]
         z_t = z_t.to(self.device, dtype=torch.float32)
 
-        # Normalize + shape actions exactly like evals/unroll_decode/eval.py.
-        a = a_t.to(self.device, dtype=torch.float32).reshape(B, 1, -1)
-        a = self.normalize_action(a)                       # (B, 1, A_raw)
-        a = a.reshape(B, -1, self._model_action_dim)       # tubelet/frameskip stack
-        act_suffix = rearrange(a, "b t a -> t b a")        # (T=1, B, A)
+        # Normalize + shape actions exactly like evals/unroll_decode/eval.py:
+        # normalize each *raw* action (stats are action_dim-wide), then fold the
+        # frameskip stack into the predictor's model_action_dim.
+        a = a_t.to(self.device, dtype=torch.float32).reshape(B, -1, self.spec.action_dim)
+        a = self.normalize_action(a)                       # (B, n_raw, A_raw)
+        a = a.reshape(B, -1, self._model_action_dim)       # (B, T, model_action_dim)
+        act_suffix = rearrange(a, "b t a -> t b a")        # (T=1, B, model_action_dim)
 
         z_ctxt_visual = z_t.unsqueeze(1)                   # (B, tau=1, V, H, W, D)
         if self.spec.uses_proprio and proprio_t is not None:
@@ -199,9 +210,10 @@ class EncPredWMAdapter(WorldModelAdapter):
 
         B, H, _ = actions.shape
         z_t = z_t.to(self.device, dtype=torch.float32)
-        a = self.normalize_action(actions.to(self.device, dtype=torch.float32))
-        a = a.reshape(B, -1, self._model_action_dim)
-        act_suffix = rearrange(a, "b t a -> t b a")        # (H, B, A)
+        a = actions.to(self.device, dtype=torch.float32).reshape(B, -1, self.spec.action_dim)
+        a = self.normalize_action(a)                       # (B, n_raw, A_raw)
+        a = a.reshape(B, -1, self._model_action_dim)       # (B, H, model_action_dim)
+        act_suffix = rearrange(a, "b t a -> t b a")        # (H, B, model_action_dim)
 
         z_ctxt_visual = z_t.unsqueeze(1)
         if self.spec.uses_proprio and proprio_t is not None:
@@ -225,8 +237,10 @@ class EncPredWMAdapter(WorldModelAdapter):
         with ``check_action_normalization``.
         """
         self._require_loaded()
-        a = a.to(self.device, dtype=torch.float32)
-        return self.preprocessor.normalize_actions(a)
+        # Stats live on CPU (the model normalizes on CPU then moves to device);
+        # normalize here on CPU and return on the model device for unroll.
+        a = self.preprocessor.normalize_actions(a.detach().to("cpu", dtype=torch.float32))
+        return a.to(self.device, dtype=torch.float32)
 
     def distance_for_planning(self, z_pred: torch.Tensor, z_target: torch.Tensor) -> torch.Tensor:
         if self.spec.planning_distance == "cosine":
@@ -241,7 +255,7 @@ class EncPredWMAdapter(WorldModelAdapter):
         if self.encpred is not None:
             self.encpred = self.encpred.to(self.device)
             self.wm = getattr(self.encpred, "model", self.encpred)
-            self._stats_to_device()
+            # Preprocessor stats intentionally remain on CPU (see load()).
         return self
 
     def eval(self):

@@ -124,15 +124,20 @@ def check_action_normalization(
                                            dataset_kwargs=ds.get("dataset_kwargs"))
     traj = next(iter(it))
 
-    # Encode frames, build transitions.
+    # Encode frames, build transitions at the model's frameskip granularity:
+    # z_t and z_t1 are `step` frames apart and a_t stacks the `step` raw actions
+    # between them (a_t dim = step * action_dim = the predictor's model_action_dim).
     visual = traj.obs_visual
     T = traj.action.shape[0]
+    step = adapter.frames_per_step
     z = torch.cat([adapter.encode(visual[i:i + 1].unsqueeze(1))[:, 0].cpu() for i in range(T + 1)], 0)
-    n = min(n_transitions, T)
-    z_t = z[:n].to(device).float()
-    z_t1 = z[1:n + 1].to(device).float()
-    a_t = traj.action[:n].to(device).float()
-    proprio_t = traj.proprio[:n].to(device).float() if adapter.uses_proprio() else None
+    n = min(n_transitions, T // step)
+    idx0 = torch.arange(n) * step
+    gather = idx0.unsqueeze(1) + torch.arange(step)         # (n, step)
+    z_t = z[idx0].to(device).float()
+    z_t1 = z[idx0 + step].to(device).float()
+    a_t = traj.action[gather].reshape(n, -1).to(device).float()   # (n, step * action_dim)
+    proprio_t = traj.proprio[idx0].to(device).float() if adapter.uses_proprio() else None
 
     z_hat = adapter.predict(z_t, a_t, proprio_t=proprio_t)
     mse = float(((z_hat - z_t1) ** 2).mean().item())

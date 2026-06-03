@@ -1,10 +1,14 @@
 # Primary diagnostic config: Metaworld 12-task subset
 dataset:
   name: metaworld
-  root: data/metaworld            # HF parquet dir (MetaworldHFDataset data_path)
+  root: data/hf_mw/metaworld/data  # HF parquet dir (MetaworldHFDataset data_path = dir of train-*.parquet)
   external_root: external/jepa-wms
   image_size: 224
   action_dim: 4
+  # NOTE: 03_extract_latents.py reads this from `dataset:` (not `eval:`).
+  # 60 = quick diagnostic run; bump to 300 for the full thesis, then
+  # `rm -f data/precomputed_latents/*.h5` to invalidate the cache.
+  max_trajectories_per_task: 60
   # 12-task diagnostic subset spanning the difficulty spectrum.
   tasks:
     easy:
@@ -58,9 +62,8 @@ bootstrap:
 
 eval:
   device: cuda
-  batch_size: 64
+  batch_size: 16          # CRA samples K=16 negatives/transition; keep modest to avoid OOM
   num_workers: 4
-  max_trajectories_per_task: 1000
   min_transitions_per_cell: 100
 
 latent_cache:
