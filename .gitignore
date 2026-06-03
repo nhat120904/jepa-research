@@ -23,6 +23,9 @@ diagnosis/data/droid_subset/
 diagnosis/data/precomputed_latents/
 diagnosis/data/robocasa/
 diagnosis/models/checkpoints/
+# torch.hub / HF checkpoint cache (~7.5 GB, model weights)
+diagnosis/.hf_home/
+diagnosis/results/.pipeline_done
 
 # Run logs + secrets (NEVER commit the HF token)
 diagnosis/logs/

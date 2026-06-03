@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 
-HARD_TASKS = ["peg-insert-side-v2", "assembly-v2", "hammer-v2", "stick-pull-v2"]
+HARD_TASKS = ["mw-peg-insert-side", "mw-assembly", "mw-hammer", "mw-stick-pull"]
 CONTACT_REGIMES = ["gripper_actuation", "contact_manipulation"]
 
 
