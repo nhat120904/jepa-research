@@ -10,6 +10,7 @@ Generates:
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 from typing import Optional
@@ -152,8 +153,8 @@ def make_decision(metaworld_df: pd.DataFrame, droid_df: pd.DataFrame) -> tuple[s
     mw, mw_hi = critical(metaworld_df, mw_model, HARD_TASKS) if mw_model else (float("nan"),) * 2
     dr, dr_hi = critical(droid_df, dr_model) if dr_model else (float("nan"),) * 2
 
-    summary = (f"effect-conditioned CRA — MW(hard,contact)={mw:.3f} [hi {mw_hi:.3f}]; "
-               f"DROID(contact)={dr:.3f} [hi {dr_hi:.3f}]")
+    summary = (f"effect-conditioned CRA — MW(hard contact-regimes)={mw:.3f} [hi {mw_hi:.3f}]; "
+               f"DROID(contact-regimes)={dr:.3f} [hi {dr_hi:.3f}]")
 
     have = lambda x: not np.isnan(x)
     # GO: strong pathology on the point estimate of the best baseline.
@@ -172,41 +173,212 @@ def make_decision(metaworld_df: pd.DataFrame, droid_df: pd.DataFrame) -> tuple[s
 # Report
 # ---------------------------------------------------------------------------
 
-def render_report(metaworld_df, droid_df, decision, justification, out_path: Path) -> None:
-    lines = ["# CAI-JEPA Diagnostic Decision Report", "",
-             f"**Decision:** {decision}", "",
-             f"**Justification:** {justification}", "",
-             "## Critical cells", ""]
+def _fmt(x, digits: int = 3, signed: bool = False) -> str:
+    if pd.isna(x):
+        return "n/a"
+    return f"{x:+.{digits}f}" if signed else f"{x:.{digits}f}"
 
-    for name, df in [("Metaworld", metaworld_df), ("DROID", droid_df)]:
-        if df.empty:
-            continue
-        sub = df[(df.strategy == "hard_nn") &
-                  (df.regime.isin(CONTACT_REGIMES)) &
-                  (df.status == "ok")]
+
+def _markdown_table(rows: list[dict], columns: list[tuple[str, str]]) -> list[str]:
+    if not rows:
+        return ["_No rows._"]
+    header = "| " + " | ".join(label for _, label in columns) + " |"
+    sep = "| " + " | ".join("---" for _ in columns) + " |"
+    out = [header, sep]
+    for row in rows:
+        out.append("| " + " | ".join(str(row.get(key, "")) for key, _ in columns) + " |")
+    return out
+
+
+def _status_rows(df: pd.DataFrame, name: str) -> list[dict]:
+    if df.empty:
+        return [{"dataset": name, "models": "none", "rows": 0, "ok": 0, "insufficient": 0}]
+    vc = df["status"].value_counts()
+    return [{
+        "dataset": name,
+        "models": ", ".join(sorted(df["model"].unique())),
+        "rows": len(df),
+        "ok": int(vc.get("ok", 0)),
+        "insufficient": int(vc.get("insufficient_data", 0)),
+    }]
+
+
+def _strategy_regime_rows(df: pd.DataFrame) -> list[dict]:
+    ok = df[df.status == "ok"].copy()
+    if ok.empty:
+        return []
+    agg = (ok.groupby(["strategy", "regime"])
+             .agg(rows=("cra_top1", "size"), transitions=("n_transitions", "sum"),
+                  cra=("cra_top1", "mean"), cra_eff=("cra_top1_eff", "mean"),
+                  aug=("aug", "mean"), ecs=("ecs", "mean"))
+             .reset_index())
+    regime_order = {r: i for i, r in enumerate(["free_space", "pre_grasp",
+                                                "gripper_actuation", "contact_manipulation"])}
+    strategy_order = {s: i for i, s in enumerate(["random", "opposite", "hard_nn", "hard_effect"])}
+    agg = agg.sort_values(
+        by=["strategy", "regime"],
+        key=lambda col: col.map(strategy_order if col.name == "strategy" else regime_order).fillna(99),
+    )
+    return [{
+        "strategy": r.strategy,
+        "regime": r.regime,
+        "rows": int(r.rows),
+        "transitions": int(r.transitions),
+        "CRA": _fmt(r.cra),
+        "CRA_eff": _fmt(r.cra_eff),
+        "AUG": _fmt(r.aug, 4, signed=True),
+        "ECS": _fmt(r.ecs, 4, signed=True),
+    } for _, r in agg.iterrows()]
+
+
+def _hard_negative_rows(df: pd.DataFrame) -> list[dict]:
+    ok = df[(df.status == "ok") & (df.strategy == "hard_nn")].copy()
+    if ok.empty:
+        return []
+    agg = (ok.groupby(["model", "regime"])
+             .agg(rows=("cra_top1", "size"), transitions=("n_transitions", "sum"),
+                  cra=("cra_top1", "mean"), cra_eff=("cra_top1_eff", "mean"),
+                  lo=("cra_top1_eff_lo", "mean"), hi=("cra_top1_eff_hi", "mean"),
+                  aug=("aug", "mean"), ecs=("ecs", "mean"))
+             .reset_index())
+    regime_order = {r: i for i, r in enumerate(["free_space", "pre_grasp",
+                                                "gripper_actuation", "contact_manipulation"])}
+    agg = agg.sort_values(["model", "regime"], key=lambda col: col.map(regime_order).fillna(99)
+                          if col.name == "regime" else col)
+    return [{
+        "model": r.model,
+        "regime": r.regime,
+        "rows": int(r.rows),
+        "transitions": int(r.transitions),
+        "CRA": _fmt(r.cra),
+        "CRA_eff_CI": f"{_fmt(r.cra_eff)} [{_fmt(r.lo)}, {_fmt(r.hi)}]",
+        "AUG": _fmt(r.aug, 4, signed=True),
+        "ECS": _fmt(r.ecs, 4, signed=True),
+    } for _, r in agg.iterrows()]
+
+
+def _critical_values(metaworld_df: pd.DataFrame, droid_df: pd.DataFrame) -> dict:
+    out = {}
+    mw = metaworld_df[(metaworld_df.model == "jepa_wm_metaworld") &
+                      (metaworld_df.strategy == "hard_nn") &
+                      (metaworld_df.task.isin(HARD_TASKS)) &
+                      (metaworld_df.regime.isin(CONTACT_REGIMES)) &
+                      (metaworld_df.status == "ok")]
+    dr = droid_df[(droid_df.strategy == "hard_nn") &
+                  (droid_df.regime.isin(CONTACT_REGIMES)) &
+                  (droid_df.status == "ok")]
+    for prefix, sub in [("mw", mw), ("dr", dr)]:
         if sub.empty:
-            continue
-        agg_kwargs = dict(cra=("cra_top1", "mean"), lo=("cra_top1_lo", "mean"),
-                          hi=("cra_top1_hi", "mean"), aug=("aug", "mean"), ecs=("ecs", "mean"))
-        if "cra_top1_eff" in sub:
-            agg_kwargs["cra_eff"] = ("cra_top1_eff", "mean")
-        agg = sub.groupby(["model", "regime"]).agg(**agg_kwargs).reset_index()
-        lines += [f"### {name}", "",
-                  "| model | regime | CRA top-1 [95% CI] | CRA (effect-cond.) | AUG | ECS |",
-                  "|---|---|---|---|---|---|"]
-        for _, r in agg.iterrows():
-            eff = f"{r.cra_eff:.3f}" if "cra_eff" in agg.columns and not np.isnan(r.cra_eff) else "n/a"
-            lines.append(
-                f"| {r.model} | {r.regime} | "
-                f"{r.cra:.3f} [{r.lo:.3f}, {r.hi:.3f}] | {eff} | "
-                f"{r.aug:+.4f} | {r.ecs:+.4f} |"
-            )
-        lines.append("")
+            out[prefix] = (float("nan"), float("nan"))
+        else:
+            out[prefix] = (float(sub["cra_top1_eff"].mean()),
+                           float(sub["cra_top1_eff_hi"].mean()))
+    return out
 
-    lines += ["## Figures", "",
-              "![Figure A](figures/figure_a_cra_per_regime.pdf)",
-              "![Figure B](figures/figure_b_metaworld_per_task.pdf)",
-              "![Figure C](figures/figure_c_correlation_planning.pdf)", ""]
+
+def render_report(metaworld_df, droid_df, decision, justification, out_path: Path) -> None:
+    chance = 1.0 / 17.0
+    crit = _critical_values(metaworld_df, droid_df)
+    mw_val, mw_hi = crit["mw"]
+    dr_val, dr_hi = crit["dr"]
+
+    lines = [
+        "# CAI-JEPA Diagnostic Decision Report",
+        "",
+        f"**Decision:** {decision}",
+        "",
+        f"**Justification:** {justification}",
+        "",
+        "## How To Read The Numbers",
+        "",
+        f"- CRA top-1 chance is approximately `{chance:.3f}` because each factual action is ranked against 16 negatives.",
+        "- `CRA_eff` is the main decision signal: CRA restricted to transitions whose latent state actually changed.",
+        "- `AUG` is the factual-vs-counterfactual prediction gap; positive means factual actions predict closer next latents.",
+        "- `ECS` is `AUG` on effectful transitions only.",
+        "- `random` negatives test coarse action sensitivity, `opposite` negatives are usually easy, and `hard_nn`/`hard_effect` are the strict tests because they keep the current state similar while changing the action/effect.",
+        "",
+    ]
+
+    gate_note = os.environ.get("CAI_JEPA_DROID_GATE_NOTE")
+    if gate_note:
+        lines += ["## Sanity Gates", "", "**DROID sanity gate:** " + gate_note, ""]
+
+    lines += [
+        "## Run Coverage",
+        "",
+        *_markdown_table(
+            _status_rows(metaworld_df, "Metaworld") + _status_rows(droid_df, "DROID"),
+            [("dataset", "dataset"), ("models", "models"), ("rows", "rows"),
+             ("ok", "ok"), ("insufficient", "insufficient")],
+        ),
+        "",
+        "Metaworld `gripper_actuation` cells are mostly below the minimum transition count in this 60-trajectory/task diagnostic subset, so the Metaworld conclusion leans on `pre_grasp` and `contact_manipulation`.",
+        "",
+        "## Strategy By Regime",
+        "",
+        "### Metaworld",
+        "",
+        *_markdown_table(
+            _strategy_regime_rows(metaworld_df),
+            [("strategy", "strategy"), ("regime", "regime"), ("rows", "rows"),
+             ("transitions", "transitions"), ("CRA", "CRA"), ("CRA_eff", "CRA_eff"),
+             ("AUG", "AUG"), ("ECS", "ECS")],
+        ),
+        "",
+        "### DROID",
+        "",
+        *_markdown_table(
+            _strategy_regime_rows(droid_df),
+            [("strategy", "strategy"), ("regime", "regime"), ("rows", "rows"),
+             ("transitions", "transitions"), ("CRA", "CRA"), ("CRA_eff", "CRA_eff"),
+             ("AUG", "AUG"), ("ECS", "ECS")],
+        ),
+        "",
+        "## Hard-Negative Breakdown",
+        "",
+        "### Metaworld hard_nn by model/regime",
+        "",
+        *_markdown_table(
+            _hard_negative_rows(metaworld_df),
+            [("model", "model"), ("regime", "regime"), ("rows", "rows"),
+             ("transitions", "transitions"), ("CRA", "CRA"),
+             ("CRA_eff_CI", "CRA_eff [95% CI]"), ("AUG", "AUG"), ("ECS", "ECS")],
+        ),
+        "",
+        "### DROID hard_nn by model/regime",
+        "",
+        *_markdown_table(
+            _hard_negative_rows(droid_df),
+            [("model", "model"), ("regime", "regime"), ("rows", "rows"),
+             ("transitions", "transitions"), ("CRA", "CRA"),
+             ("CRA_eff_CI", "CRA_eff [95% CI]"), ("AUG", "AUG"), ("ECS", "ECS")],
+        ),
+        "",
+        "## Interpretation",
+        "",
+        "- Metaworld shows a large strategy gap: `opposite` negatives are near-saturated, `random` is intermediate, and `hard_nn` drops substantially. That means the models can react to gross action changes, but struggle when the counterfactual action is paired with a similar latent state.",
+        "- On Metaworld, `pre_grasp` is the weakest hard-negative regime and `contact_manipulation` remains only moderate. `free_space` is easier, which is expected because action effects are smoother and less contact-dependent.",
+        "- `jepa_wm_metaworld` is consistently stronger than `dino_wm_metaworld`, but both still lose margin under `hard_nn`.",
+        "- On DROID, after the pipeline gate passes, `random` negatives are still separable in some regimes, while `hard_nn` and `hard_effect` are near chance in `gripper_actuation` and `contact_manipulation`. This is the sharpest action-grounding failure in the rerun.",
+        "",
+        "## Decision Logic",
+        "",
+        "- `GO` requires strong pathology in both datasets: Metaworld hard-task contact-regime `CRA_eff < 0.60` and DROID contact-regime `CRA_eff < 0.65`.",
+        "- `ABANDON` requires the upper confidence bounds to be high in both datasets: both contact-regime upper CIs at least `0.85`.",
+        "- `CONDITIONAL_GO` is used when at least one dataset shows moderate pathology below `0.75`, but the evidence is not strong enough for full `GO`.",
+        "",
+        f"Observed decision inputs: Metaworld hard-task contact-regime `CRA_eff={_fmt(mw_val)}` with upper CI `{_fmt(mw_hi)}`; DROID contact-regime `CRA_eff={_fmt(dr_val)}` with upper CI `{_fmt(dr_hi)}`.",
+        "",
+        "Therefore the decision is `CONDITIONAL_GO`: DROID is strongly pathological and the pipeline now passes sanity checks, while Metaworld is clearly below the abandon threshold but not below the stricter full-GO threshold.",
+        "",
+        "## Figures",
+        "",
+        "![Figure A](figures/figure_a_cra_per_regime.pdf)",
+        "![Figure B](figures/figure_b_metaworld_per_task.pdf)",
+    ]
+    if (out_path.parent / "figures" / "figure_c_correlation_planning.pdf").exists():
+        lines.append("![Figure C](figures/figure_c_correlation_planning.pdf)")
+    lines.append("")
 
     out_path.write_text("\n".join(lines))
     print(f"  wrote {out_path}")

@@ -31,12 +31,15 @@ def random_negative(
     action_bounds: tuple[float, float] | torch.Tensor,
     K: int = 16,
     l1_radius: Optional[float] = None,
+    l1_dims: Optional[list[int]] = None,
 ) -> torch.Tensor:
     """Uniform sample over the action space.
 
     Returns: (B, K, A).
 
-    If `l1_radius` is given (DROID), the samples are projected onto the L1 ball.
+    If `l1_radius` is given, the samples are projected onto an L1 ball. DROID
+    uses separate planner bounds for pose and gripper, so callers can restrict
+    the projection to pose dimensions with `l1_dims`.
     """
     B, A = a_t.shape
     if isinstance(action_bounds, tuple):
@@ -48,9 +51,16 @@ def random_negative(
         hi = bounds[:, 1].view(1, 1, A)
         out = lo + (hi - lo) * torch.rand(B, K, A, device=a_t.device)
     if l1_radius is not None:
-        l1 = out.abs().sum(dim=-1, keepdim=True).clamp(min=1e-8)
+        if l1_dims is None:
+            view = out
+        else:
+            view = out[..., l1_dims]
+        l1 = view.abs().sum(dim=-1, keepdim=True).clamp(min=1e-8)
         scale = (l1_radius / l1).clamp(max=1.0)
-        out = out * scale
+        if l1_dims is None:
+            out = out * scale
+        else:
+            out[..., l1_dims] = out[..., l1_dims] * scale
     return out
 
 
@@ -219,8 +229,10 @@ def sample_negatives(
     K: int = 16,
     action_bounds=None,
     l1_radius: Optional[float] = None,
+    l1_dims: Optional[list[int]] = None,
     sigma: float = 0.1,
     gripper_dim: Optional[int] = None,
+    gripper_range: tuple[float, float] = (0.0, 1.0),
     z_t: Optional[torch.Tensor] = None,
     z_t1: Optional[torch.Tensor] = None,
     pool_z: Optional[torch.Tensor] = None,
@@ -231,9 +243,10 @@ def sample_negatives(
 ) -> torch.Tensor:
     if strategy == "random":
         assert action_bounds is not None, "random_negative needs action_bounds"
-        return random_negative(a_t, action_bounds, K=K, l1_radius=l1_radius)
+        return random_negative(a_t, action_bounds, K=K, l1_radius=l1_radius, l1_dims=l1_dims)
     if strategy == "opposite":
-        return opposite_negative(a_t, sigma=sigma, K=K, gripper_dim=gripper_dim)
+        return opposite_negative(a_t, sigma=sigma, K=K, gripper_dim=gripper_dim,
+                                 gripper_range=gripper_range)
     if strategy == "hard_nn":
         assert z_t is not None and pool_z is not None and pool_a is not None
         return hard_nn_negative(z_t, a_t, pool_z, pool_a, K=K,
