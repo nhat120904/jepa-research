@@ -135,8 +135,22 @@ def make_decision(metaworld_df: pd.DataFrame, droid_df: pd.DataFrame) -> tuple[s
               else f["cra_top1_hi"])
         return float(eff.mean()), float(hi.mean())
 
-    mw, mw_hi = critical(metaworld_df, "jepa_wm_metaworld", HARD_TASKS) if not metaworld_df.empty else (float("nan"),) * 2
-    dr, dr_hi = critical(droid_df, "jepa_wm_droid") if not droid_df.empty else (float("nan"),) * 2
+    def _pick_model(df: pd.DataFrame, preferred: list) -> Optional[str]:
+        """Pick the diagnostic's strongest available baseline for the decision.
+        Falls back to whatever model is in the CSV (e.g. the 8GB box runs
+        dino_wm_droid, not jepa_wm_droid)."""
+        if df.empty:
+            return None
+        present = set(df.model.unique())
+        for m in preferred:
+            if m in present:
+                return m
+        return sorted(present)[0] if present else None
+
+    mw_model = _pick_model(metaworld_df, ["jepa_wm_metaworld", "dino_wm_metaworld"])
+    dr_model = _pick_model(droid_df, ["jepa_wm_droid", "dino_wm_droid"])
+    mw, mw_hi = critical(metaworld_df, mw_model, HARD_TASKS) if mw_model else (float("nan"),) * 2
+    dr, dr_hi = critical(droid_df, dr_model) if dr_model else (float("nan"),) * 2
 
     summary = (f"effect-conditioned CRA — MW(hard,contact)={mw:.3f} [hi {mw_hi:.3f}]; "
                f"DROID(contact)={dr:.3f} [hi {dr_hi:.3f}]")
