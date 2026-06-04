@@ -336,6 +336,13 @@ def main(config_path: str, ctd: bool = False) -> int:
         cfg["models"] = [m for m in cfg["models"] if m == only_model]
         if not cfg["models"]:
             raise ValueError(f"CAI_JEPA_ONLY_MODEL={only_model!r} is not in config models")
+    only_strategy = os.environ.get("CAI_JEPA_ONLY_STRATEGY")
+    if only_strategy:
+        cfg["negative_strategies"] = [s for s in cfg["negative_strategies"] if s == only_strategy]
+        if not cfg["negative_strategies"]:
+            raise ValueError(
+                f"CAI_JEPA_ONLY_STRATEGY={only_strategy!r} is not in config negative_strategies"
+            )
     dataset_name = cfg["dataset"]["name"]
     action_dim = cfg["dataset"]["action_dim"]
     cache_root = cfg["latent_cache"]["root"]

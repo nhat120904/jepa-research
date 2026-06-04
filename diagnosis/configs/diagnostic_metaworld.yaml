@@ -39,6 +39,7 @@ negative_strategies:
   - random
   - opposite
   - hard_nn
+  - hard_effect
 
 regimes:
   - free_space
@@ -59,6 +60,9 @@ hard_nn:
   pool_size: 256
   similarity_radius: 0.5
   K: 16
+
+hard_effect:
+  action_penalty: 0.5
 
 bootstrap:
   n_resamples: 1000

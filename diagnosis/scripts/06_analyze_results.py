@@ -232,10 +232,10 @@ def _strategy_regime_rows(df: pd.DataFrame) -> list[dict]:
 
 
 def _hard_negative_rows(df: pd.DataFrame) -> list[dict]:
-    ok = df[(df.status == "ok") & (df.strategy == "hard_nn")].copy()
+    ok = df[(df.status == "ok") & (df.strategy.isin(["hard_nn", "hard_effect"]))].copy()
     if ok.empty:
         return []
-    agg = (ok.groupby(["model", "regime"])
+    agg = (ok.groupby(["model", "strategy", "regime"])
              .agg(rows=("cra_top1", "size"), transitions=("n_transitions", "sum"),
                   cra=("cra_top1", "mean"), cra_eff=("cra_top1_eff", "mean"),
                   lo=("cra_top1_eff_lo", "mean"), hi=("cra_top1_eff_hi", "mean"),
@@ -243,10 +243,18 @@ def _hard_negative_rows(df: pd.DataFrame) -> list[dict]:
              .reset_index())
     regime_order = {r: i for i, r in enumerate(["free_space", "pre_grasp",
                                                 "gripper_actuation", "contact_manipulation"])}
-    agg = agg.sort_values(["model", "regime"], key=lambda col: col.map(regime_order).fillna(99)
-                          if col.name == "regime" else col)
+    strategy_order = {"hard_nn": 0, "hard_effect": 1}
+    agg = agg.sort_values(
+        ["model", "strategy", "regime"],
+        key=lambda col: (
+            col.map(regime_order).fillna(99) if col.name == "regime"
+            else col.map(strategy_order).fillna(99) if col.name == "strategy"
+            else col
+        ),
+    )
     return [{
         "model": r.model,
+        "strategy": r.strategy,
         "regime": r.regime,
         "rows": int(r.rows),
         "transitions": int(r.transitions),
@@ -336,20 +344,20 @@ def render_report(metaworld_df, droid_df, decision, justification, out_path: Pat
         "",
         "## Hard-Negative Breakdown",
         "",
-        "### Metaworld hard_nn by model/regime",
+        "### Metaworld strict negatives by model/regime",
         "",
         *_markdown_table(
             _hard_negative_rows(metaworld_df),
-            [("model", "model"), ("regime", "regime"), ("rows", "rows"),
+            [("model", "model"), ("strategy", "strategy"), ("regime", "regime"), ("rows", "rows"),
              ("transitions", "transitions"), ("CRA", "CRA"),
              ("CRA_eff_CI", "CRA_eff [95% CI]"), ("AUG", "AUG"), ("ECS", "ECS")],
         ),
         "",
-        "### DROID hard_nn by model/regime",
+        "### DROID strict negatives by model/regime",
         "",
         *_markdown_table(
             _hard_negative_rows(droid_df),
-            [("model", "model"), ("regime", "regime"), ("rows", "rows"),
+            [("model", "model"), ("strategy", "strategy"), ("regime", "regime"), ("rows", "rows"),
              ("transitions", "transitions"), ("CRA", "CRA"),
              ("CRA_eff_CI", "CRA_eff [95% CI]"), ("AUG", "AUG"), ("ECS", "ECS")],
         ),
@@ -358,6 +366,7 @@ def render_report(metaworld_df, droid_df, decision, justification, out_path: Pat
         "",
         "- Metaworld shows a large strategy gap: `opposite` negatives are near-saturated, `random` is intermediate, and `hard_nn` drops substantially. That means the models can react to gross action changes, but struggle when the counterfactual action is paired with a similar latent state.",
         "- On Metaworld, `pre_grasp` is the weakest hard-negative regime and `contact_manipulation` remains only moderate. `free_space` is easier, which is expected because action effects are smoother and less contact-dependent.",
+        "- On Metaworld, `hard_effect` mirrors `hard_nn` in CRA/CRA_eff for this fixed candidate pool, so effect-aware candidate scoring does not rescue the ranking signal.",
         "- `jepa_wm_metaworld` is consistently stronger than `dino_wm_metaworld`, but both still lose margin under `hard_nn`.",
         "- On DROID, after the pipeline gate passes, `random` negatives are still separable in some regimes, while `hard_nn` and `hard_effect` are near chance in `gripper_actuation` and `contact_manipulation`. This is the sharpest action-grounding failure in the rerun.",
         "",
