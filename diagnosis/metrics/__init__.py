@@ -6,6 +6,7 @@ from .negative_samplers import (
     random_negative,
     opposite_negative,
     hard_nn_negative,
+    hard_effect_negative,
     sample_negatives,
 )
 from .distances import cosine_distance, l2_distance, get_distance
@@ -27,6 +28,7 @@ __all__ = [
     "random_negative",
     "opposite_negative",
     "hard_nn_negative",
+    "hard_effect_negative",
     "sample_negatives",
     "cosine_distance",
     "l2_distance",

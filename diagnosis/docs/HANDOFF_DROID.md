@@ -159,8 +159,20 @@ change), not MuJoCo contact GT — consistent with the existing "no object GT, h
   [wrist_mp4_path], frames_per_clip: 8, fps: 4}`.
 - `eval.device: cuda` (switch to `cpu` to run with no GPU — see §0), `batch_size: 8`,
   `min_transitions_per_cell: 100`.
-- `negative_strategies: [random, opposite, hard_nn]`, `cra.K: 16`, trajectory-clustered
-  bootstrap CIs (`n_resamples: 1000`).
+- `negative_strategies: [random, opposite, hard_nn, hard_effect]`, `cra.K: 16`,
+  trajectory-clustered bootstrap CIs (`n_resamples: 1000`).
+
+**`hard_effect` (new strategy).** `hard_nn` picks, from similar-state pool candidates, the
+action *most different* from `a_t` and ignores the candidate's outcome. `hard_effect` instead
+scores similar-state candidates by `||Δz_cand − Δz_factual|| − action_penalty·||a_cand − a_t||`
+(both std-normalized) and takes top-K — an action that, from a similar state, leads to a
+*genuinely different true future*, preferably while staying *close* to `a_t`. This is the
+"precise action matters" negative: harder (fine action resolution) and fairer (the negative's
+real outcome differs from `z_{t+1}`, so a grounded model can win the CRA; in smooth free-space
+no such negative exists, so it self-selects toward contact/precision). Needs the pool's
+next-latents (`pool_z1 = data["z_t1"][pool_indices]`, wired through `evaluate_cell`). Tune via
+`hard_effect.action_penalty` (default 0.5; 0 = pure max-effect-divergence). `hard_nn` is kept
+so the two definitions can be compared in the same CSV.
 
 ---
 

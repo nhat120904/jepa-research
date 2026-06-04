@@ -31,6 +31,7 @@ negative_strategies:
   - random
   - opposite
   - hard_nn
+  - hard_effect      # similar state + most-different TRUE effect (Δz), prefers near actions
 
 regimes:
   - free_space
@@ -49,6 +50,13 @@ hard_nn:
   pool_size: 512
   similarity_radius: 1.0
   K: 16
+
+# hard_effect: among similar-state pool candidates (reuses hard_nn.pool_size and
+# similarity_radius), score by ||Δz_cand - Δz_factual|| - action_penalty·||a_cand - a_factual||
+# (both terms std-normalized). Higher action_penalty = more weight on picking a
+# near-by action (a stricter "precise action matters" test); 0 = pure max-effect-divergence.
+hard_effect:
+  action_penalty: 0.5
 
 bootstrap:
   n_resamples: 1000
