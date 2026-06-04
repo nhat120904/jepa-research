@@ -1,7 +1,8 @@
 import torch
 
 from metrics.negative_samplers import (
-    random_negative, opposite_negative, hard_nn_negative, sample_negatives,
+    random_negative, opposite_negative, hard_nn_negative, hard_effect_negative,
+    sample_negatives,
 )
 
 B, A, K = 8, 4, 16
@@ -43,7 +44,44 @@ def test_hard_nn_returns_actions_from_pool():
             assert ((pool_a - neg[b, k]).abs().sum(-1) < 1e-5).any()
 
 
+def test_hard_effect_returns_actions_from_pool():
+    g = torch.Generator().manual_seed(0)
+    z = torch.randn(B, 12, generator=g)
+    z1 = z + torch.randn(B, 12, generator=g) * 0.1
+    a = torch.randn(B, A, generator=g)
+    pool_z = torch.randn(64, 12, generator=g)
+    pool_z1 = pool_z + torch.randn(64, 12, generator=g) * 0.1
+    pool_a = torch.randn(64, A, generator=g)
+    neg = hard_effect_negative(z, z1, a, pool_z, pool_z1, pool_a, K=K,
+                               similarity_radius=10.0, action_penalty=0.5)
+    assert neg.shape == (B, K, A)
+    for b in range(B):
+        for k in range(K):
+            assert ((pool_a - neg[b, k]).abs().sum(-1) < 1e-5).any()
+
+
+def test_hard_effect_prefers_largest_effect_divergence():
+    # One anchor; all pool latents are in-radius (same z), so selection is driven
+    # purely by effect divergence ||Δz_cand - Δz_anchor||. With action_penalty=0
+    # the top-1 must be the candidate whose Δz differs most from the anchor's.
+    z = torch.zeros(1, 4)
+    z1 = torch.zeros(1, 4)              # anchor effect Δz = 0
+    a = torch.zeros(1, 2)
+    pool_z = torch.zeros(5, 4)         # all identical state -> all within radius
+    # candidate effects of increasing magnitude; index 4 is the most divergent.
+    pool_z1 = torch.tensor([[0.1, 0, 0, 0], [0.2, 0, 0, 0], [0.3, 0, 0, 0],
+                            [0.4, 0, 0, 0], [5.0, 0, 0, 0]])
+    pool_a = torch.tensor([[0., 0], [1, 0], [2, 0], [3, 0], [4, 0]])
+    neg = hard_effect_negative(z, z1, a, pool_z, pool_z1, pool_a, K=1,
+                               similarity_radius=1.0, action_penalty=0.0)
+    assert torch.allclose(neg[0, 0], pool_a[4])
+
+
 def test_dispatch():
     a = torch.zeros(B, A)
     assert sample_negatives("random", a_t=a, K=K, action_bounds=(-1.0, 1.0)).shape == (B, K, A)
     assert sample_negatives("opposite", a_t=a, K=K, gripper_dim=3).shape == (B, K, A)
+    z = torch.randn(B, 12); z1 = z + 0.1; pool_z = torch.randn(64, 12)
+    pool_z1 = pool_z + 0.1; pool_a = torch.randn(64, A)
+    assert sample_negatives("hard_effect", a_t=a, K=K, z_t=z, z_t1=z1, pool_z=pool_z,
+                            pool_z1=pool_z1, pool_a=pool_a, similarity_radius=10.0).shape == (B, K, A)

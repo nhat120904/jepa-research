@@ -1,27 +1,37 @@
 # Secondary diagnostic: DROID real Franka
 dataset:
   name: droid
-  root: data/droid_subset
+  # DROIDVideoDataset reads `data_path` as the episode-paths CSV (not a dir).
+  # Built by scripts/build_droid_paths.py from data/droid_subset/<lab>/success/...
+  root: data/droid_subset/droid_paths.csv
   image_size: 256
   action_dim: 7
   # DROID actions live on an L1-ball of radius 0.075.
   action_l1_radius: 0.075
   external_root: external/jepa-wms
-  # Forwarded to DROIDVideoDataset — match how DROID was downloaded on the server.
+  # Forwarded to DROIDVideoDataset. fps=4 + frames_per_clip=8 MATCH the upstream
+  # DROID training config (droid_8fpcs_fps4_...): fps sets the pose-diff action
+  # magnitude, which must match training (DROID action-norm is identity, so a
+  # wrong fps would feed out-of-distribution action scales). 8 frames @ fps4 on
+  # 60fps video needs ~120 source frames; build_droid_paths.py filters to that.
   dataset_kwargs:
     camera_views: ["wrist_mp4_path"]
-    frames_per_clip: 16
-    fps: 5
+    frames_per_clip: 8
+    fps: 4
 
+# Only dino_wm_droid runs on this 8GB-VRAM machine:
+#   - vjepa2_ac_droid is V-JEPA-2 ViT-G/16 (~1B params) → does not fit 8GB.
+#   - jepa_wm_droid needs gated DINOv3 ViT-L weights (.pth, Meta request-form);
+#     the HF mirror only ships safetensors → format/gating blocker.
+# dino_wm_droid is the canonical DINO-WM baseline (DINOv2 ViT-S/14), peak ~1.5GB.
 models:
-  - jepa_wm_droid
   - dino_wm_droid
-  - vjepa2_ac_droid
 
 negative_strategies:
   - random
   - opposite
   - hard_nn
+  - hard_effect      # similar state + most-different TRUE effect (Δz), prefers near actions
 
 regimes:
   - free_space
@@ -41,16 +51,26 @@ hard_nn:
   similarity_radius: 1.0
   K: 16
 
+# hard_effect: among similar-state pool candidates (reuses hard_nn.pool_size and
+# similarity_radius), score by ||Δz_cand - Δz_factual|| - action_penalty·||a_cand - a_factual||
+# (both terms std-normalized). Higher action_penalty = more weight on picking a
+# near-by action (a stricter "precise action matters" test); 0 = pure max-effect-divergence.
+hard_effect:
+  action_penalty: 0.5
+
 bootstrap:
   n_resamples: 1000
   ci: 0.95
 
 eval:
+  # Latents are already cached (03 done), so only 05 needs the model forward.
+  # Use 'cuda' once the GPU is healthy; 'cpu' runs the whole diagnostic off the
+  # cached latents with no GPU (slower, but works while the GPU is down).
   device: cuda
-  batch_size: 32
+  batch_size: 8           # frame-by-frame encode; small to stay well under 8GB
   num_workers: 4
   max_transitions: 50000
-  min_transitions_per_cell: 200
+  min_transitions_per_cell: 100   # smaller DROID subset than the server run
 
 latent_cache:
   root: data/precomputed_latents

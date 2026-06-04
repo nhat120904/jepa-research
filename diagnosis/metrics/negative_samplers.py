@@ -1,11 +1,20 @@
 """Counterfactual action samplers used by CRA/CTD.
 
-Three strategies (matching paper Section 4.3):
+Strategies:
 
 - random:    a^- uniform within the model's action bounds
 - opposite:  a^- = -a + N(0, sigma^2) with gripper-dim flip
 - hard_nn:   a^- drawn from a candidate pool whose latent z is close to z_t
-             but whose action is maximally different from a
+             but whose action is maximally different from a  (paper Section 4.3)
+- hard_effect: a^- drawn from a candidate pool whose latent z is close to z_t
+             AND whose *true effect* (Δz) differs most from the factual Δz —
+             optionally preferring actions *close* to a (small Δaction). This
+             targets precision-sensitive regions where a small action change
+             yields a large outcome change, and is "fair" by construction (the
+             negative's true future genuinely differs from z_{t+1}, so a
+             well-grounded model can win the CRA comparison). In smooth regimes
+             (free-space) no such negative exists, so it self-selects toward
+             contact / fine-precision transitions.
 """
 
 from __future__ import annotations
@@ -129,6 +138,78 @@ def hard_nn_negative(
     return pool_a.to(a_t.device)[topk_idx]      # (B, K, A)
 
 
+# ---------- hard effect (small Δaction, large Δeffect) ----------------------
+
+def hard_effect_negative(
+    z_t: torch.Tensor,
+    z_t1: torch.Tensor,
+    a_t: torch.Tensor,
+    pool_z: torch.Tensor,
+    pool_z1: torch.Tensor,
+    pool_a: torch.Tensor,
+    K: int = 16,
+    similarity_radius: float = 0.5,
+    action_penalty: float = 0.5,
+) -> torch.Tensor:
+    """Pick negatives from the pool that, from a *similar state*, lead to a
+    *different true outcome* than the factual transition — optionally preferring
+    actions close to ``a_t``.
+
+    Scoring among candidates with ``||z_t - z_{t'}|| <= similarity_radius``:
+
+        score(t') = norm(|| Δz_{t'} - Δz_t ||)  -  action_penalty · norm(|| a_{t'} - a_t ||)
+
+    where ``Δz = z_{t+1} - z_t`` is the true effect and ``norm`` rescales each
+    term by its std over the in-radius candidates so ``action_penalty`` is on a
+    comparable scale to the effect term. Large effect-divergence makes the
+    negative *answerable* (a grounded model should rank it worse); the action
+    penalty makes it a *precision* test (the negative action is near a_t).
+
+    Args:
+        z_t, z_t1:   (B, ...) anchor current/next latents
+        a_t:         (B, A)
+        pool_z, pool_z1: (N, ...) candidate current/next latents
+        pool_a:      (N, A)
+
+    Returns: (B, K, A).
+    """
+    B = z_t.shape[0]
+    N = pool_z.shape[0]
+
+    z_flat = z_t.reshape(B, -1)
+    pool_flat = pool_z.reshape(N, -1)
+    z_dist = torch.cdist(z_flat, pool_flat, p=2)            # (B, N) state similarity
+
+    sim_mask = z_dist <= similarity_radius
+    # Guarantee >= K candidates per anchor: relax underfilled rows to K-nearest by z.
+    counts = sim_mask.sum(dim=-1)
+    too_few = counts < K
+    if too_few.any():
+        nearest_z = z_dist.topk(K, dim=-1, largest=False).indices
+        fill_mask = torch.zeros_like(sim_mask)
+        fill_mask.scatter_(1, nearest_z, True)
+        sim_mask = torch.where(too_few.unsqueeze(-1), fill_mask, sim_mask)
+
+    # True-effect vectors Δz, compared as (B, N) divergence between the anchor's
+    # Δz and each candidate's Δz (isolates the *change*, removing the residual
+    # state offset that survives the similarity gate).
+    d_anchor = (z_t1 - z_t).reshape(B, -1)
+    d_pool = (pool_z1 - pool_z).reshape(N, -1)
+    eff_div = torch.cdist(d_anchor, d_pool, p=2)            # (B, N) bigger = more different effect
+    a_dist = torch.cdist(a_t, pool_a.to(a_t.device), p=2)   # (B, N) bigger = more different action
+
+    def _rescale(x: torch.Tensor) -> torch.Tensor:
+        vals = x[sim_mask]
+        s = vals.std() if vals.numel() > 1 else x.new_tensor(1.0)
+        return x / (s + 1e-8)
+
+    scores = _rescale(eff_div) - action_penalty * _rescale(a_dist)
+    scores = scores.masked_fill(~sim_mask, -float("inf"))
+
+    topk_idx = scores.topk(K, dim=-1).indices              # (B, K)
+    return pool_a.to(a_t.device)[topk_idx]                 # (B, K, A)
+
+
 # ---------- dispatch --------------------------------------------------------
 
 def sample_negatives(
@@ -141,9 +222,12 @@ def sample_negatives(
     sigma: float = 0.1,
     gripper_dim: Optional[int] = None,
     z_t: Optional[torch.Tensor] = None,
+    z_t1: Optional[torch.Tensor] = None,
     pool_z: Optional[torch.Tensor] = None,
     pool_a: Optional[torch.Tensor] = None,
+    pool_z1: Optional[torch.Tensor] = None,
     similarity_radius: float = 0.5,
+    action_penalty: float = 0.5,
 ) -> torch.Tensor:
     if strategy == "random":
         assert action_bounds is not None, "random_negative needs action_bounds"
@@ -154,4 +238,11 @@ def sample_negatives(
         assert z_t is not None and pool_z is not None and pool_a is not None
         return hard_nn_negative(z_t, a_t, pool_z, pool_a, K=K,
                                 similarity_radius=similarity_radius)
+    if strategy == "hard_effect":
+        assert (z_t is not None and z_t1 is not None and pool_z is not None
+                and pool_z1 is not None and pool_a is not None), \
+            "hard_effect needs z_t, z_t1, pool_z, pool_z1, pool_a"
+        return hard_effect_negative(z_t, z_t1, a_t, pool_z, pool_z1, pool_a, K=K,
+                                    similarity_radius=similarity_radius,
+                                    action_penalty=action_penalty)
     raise ValueError(f"Unknown negative strategy: {strategy}")

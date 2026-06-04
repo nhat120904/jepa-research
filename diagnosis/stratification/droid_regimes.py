@@ -16,7 +16,15 @@ import torch
 
 
 GRIPPER_DELTA_THRESHOLD = 0.2
-CONTACT_LATENT_RATIO = 1.5      # latent change > 1.5 × baseline
+# "high latent change" multiplier over the dataset-median baseline. Encoder-
+# dependent: DINOv2 ViT-S/14 patch-token L2 over the full grid has a large
+# near-constant component, so per-step changes have a *narrow* dynamic range
+# (real DROID-wrist: median≈622, max≈842 → a 1.5× gate is unreachable and
+# collapses contact_manipulation to 0%). 1.0× (above-median) is the calibrated
+# "scene actively moving" threshold for this encoder; a higher-dynamic-range
+# encoder (e.g. DINOv3 ViT-L) would warrant a larger ratio. Contact on DROID-
+# wrist is thus a proxy: gripper closed (holding) AND above-median visual change.
+CONTACT_LATENT_RATIO = 1.0
 GRIPPER_CLOSED_THRESHOLD = 0.5
 GRIPPER_OPEN_THRESHOLD = 0.3
 

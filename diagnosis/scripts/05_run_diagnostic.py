@@ -116,12 +116,15 @@ def action_spec(dataset_name: str, action_dim: int, ds_cfg: dict):
 
 @torch.no_grad()
 def evaluate_cell(adapter, data, indices, *, strategy, K, bounds, l1_radius, gripper_dim,
-                  pool_indices, similarity_radius, distance, batch_size, device, effect_threshold):
+                  pool_indices, similarity_radius, distance, batch_size, device, effect_threshold,
+                  action_penalty=0.5):
     """Per-transition CRA correctness/MRR, AUG, and effect mask over a slice."""
     z_t_all, z_t1_all, a_t_all = data["z_t"][indices], data["z_t1"][indices], data["a_t"][indices]
     proprio_all = data["proprio_t"][indices] if data["proprio_t"] is not None else None
     pool_z = data["z_t"][pool_indices].to(device).float()
     pool_a = data["a_t"][pool_indices].to(device).float()
+    # Candidate next-latents — only hard_effect needs them (true-effect divergence).
+    pool_z1 = data["z_t1"][pool_indices].to(device).float()
 
     cra_c, cra_r, aug_p, eff_m = [], [], [], []
     N = z_t_all.shape[0]
@@ -134,8 +137,9 @@ def evaluate_cell(adapter, data, indices, *, strategy, K, bounds, l1_radius, gri
 
         a_neg = sample_negatives(
             strategy, a_t=a_t, K=K, action_bounds=bounds, l1_radius=l1_radius,
-            sigma=0.1, gripper_dim=gripper_dim, z_t=z_t, pool_z=pool_z, pool_a=pool_a,
-            similarity_radius=similarity_radius,
+            sigma=0.1, gripper_dim=gripper_dim, z_t=z_t, z_t1=z_t1,
+            pool_z=pool_z, pool_a=pool_a, pool_z1=pool_z1,
+            similarity_radius=similarity_radius, action_penalty=action_penalty,
         )
         correct, recip, _, _ = cra_per_transition(
             adapter, z_t, a_t, z_t1, a_neg, distance=distance, proprio_t=proprio_t
@@ -221,6 +225,7 @@ def main(config_path: str, ctd: bool = False) -> int:
                         l1_radius=l1_radius, gripper_dim=gripper_dim, pool_indices=pool_indices,
                         similarity_radius=cfg["hard_nn"]["similarity_radius"], distance=distance,
                         batch_size=batch_size, device=device, effect_threshold=threshold,
+                        action_penalty=cfg.get("hard_effect", {}).get("action_penalty", 0.5),
                     )
                     groups = traj_tags[indices]
                     eff_groups = groups[eff_m]
