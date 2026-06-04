@@ -10,7 +10,14 @@ This repository contains the CAI-JEPA research and a **fully implemented diagnos
 - `diagnostic_implementation_plan_v2.md` — the phased plan to validate the idea. **Section 12 records the v2.1 adjustments** made after reading the real upstream API.
 - `diagnosis/` — the implemented go/no-go diagnostic. Code is correct against the real `facebookresearch/jepa-wms` API and unit-tested offline (`pytest diagnosis/tests`, 23 tests). The GPU/data path runs on a server per `diagnosis/RUNBOOK.md`.
 
-The most important orientation doc is `diagnosis/docs/plans/2026-06-01-real-api-rewrite-design.md` — it records what the upstream API actually is and the key design decisions.
+**Execution status (2026-06-04):**
+- **Metaworld (primary): complete** — `diagnosis/results/metaworld_diagnostic.csv`, decision **CONDITIONAL_GO**. Gap is visible: `opposite` CRA ~0.97–0.99 but `hard_nn` ~0.46–0.57 in pre-grasp/contact regimes.
+- **DROID (secondary): set up & cached, metric step pending** — env built, 333-episode subset downloaded, latents encoded (`03`), regimes recalibrated (`04`). `05` was blocked by a GPU fall-off-the-bus fault (hardware/driver, not a code bug). Finish with `05`+`06` on a healthy GPU or `eval.device: cpu`.
+
+**Start here for orientation, in order:**
+1. `diagnosis/docs/METHODOLOGY.md` — concepts + code map + the dataset/task/regime/strategy matrix and how it proves the gap (read this first).
+2. `diagnosis/docs/plans/2026-06-01-real-api-rewrite-design.md` — what the upstream API actually is + key design decisions.
+3. `diagnosis/docs/HANDOFF.md` (Metaworld) and `diagnosis/docs/HANDOFF_DROID.md` (DROID) — operational "how to run / how to finish" handoffs.
 
 ## The Research Goal
 

@@ -825,3 +825,38 @@ following corrections were made. Full rationale: `diagnosis/docs/plans/2026-06-0
 offline (`pytest diagnosis/tests`, 23 green). The GPU/data path (real
 checkpoints, Metaworld/DROID downloads, full pipeline) runs on a server per
 `diagnosis/RUNBOOK.md`.
+
+## 13. Execution status & doc map (2026-06-04)
+
+**Where the study stands:**
+
+- **Metaworld (primary): DONE.** Full sweep on real `dino_wm_metaworld` +
+  `jepa_wm_metaworld` (12 tasks × 3 strategies × 4 regimes) →
+  `diagnosis/results/metaworld_diagnostic.csv`, decision **CONDITIONAL_GO**. The
+  gap is visible: `opposite` CRA ~0.97–0.99 (passes the qualitative-style test)
+  but `hard_nn` effect-conditioned CRA ~0.46–0.57 in pre-grasp/contact; chance ≈
+  0.059; `jepa_wm > dino_wm` consistently. Metaworld `gripper_actuation` is empty
+  (HF release has no gripper signal).
+- **DROID (secondary): SET UP & CACHED, metric step pending.** Built on the
+  user's 8GB-VRAM box: lean venv, a hand-built **333-episode** public subset
+  (IRIS+TRI, wrist cam, fps=4/fpc=8), latents encoded (`03`), regimes
+  recalibrated (`04`, all 4 cells populated incl. `gripper_actuation` 16% and
+  `contact_manipulation` 18% — the cells Metaworld can't fill). `05`/`06` are
+  **not yet run**: the GPU fell off the bus mid-`05` (hardware/driver Xid, not a
+  code defect). Finish on a healthy GPU or with `eval.device: cpu` — latents are
+  cached, so no re-encode/re-download.
+- **New since v2.1:** a 4th negative strategy **`hard_effect`** (similar-state +
+  most-different *true* effect, preferring near-by actions) — a "fair-hard"
+  precision negative that self-selects toward contact; in `metrics/negative_samplers.py`,
+  wired through `05`, enabled in the DROID config.
+- **Models on 8GB:** only `dino_wm_droid` runs; `vjepa2_ac_droid` (ViT-G ~1B)
+  doesn't fit and `jepa_wm_droid` needs gated DINOv3 `.pth` weights (HF ships only
+  safetensors). See `diagnosis/docs/HANDOFF_DROID.md` §1.
+
+**Doc map (read in this order):**
+
+1. `diagnosis/docs/METHODOLOGY.md` — concepts + code map + the
+   dataset/task/regime/strategy matrix and *how each proves the gap*.
+2. `diagnosis/docs/plans/2026-06-01-real-api-rewrite-design.md` — real upstream API.
+3. `diagnosis/docs/HANDOFF.md` (Metaworld) / `diagnosis/docs/HANDOFF_DROID.md`
+   (DROID) — operational run/finish handoffs.
