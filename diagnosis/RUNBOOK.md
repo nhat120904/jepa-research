@@ -57,13 +57,20 @@ python scripts/03_extract_latents.py --config configs/diagnostic_metaworld.yaml
 python scripts/04_classify_regimes.py --config configs/diagnostic_metaworld.yaml
 python scripts/05_run_diagnostic.py  --config configs/diagnostic_metaworld.yaml
 
-# DROID (secondary)
+# DROID (secondary) — both dino_wm_droid + vjepa2_ac_droid fit the A5000 (24 GB)
 python scripts/03_extract_latents.py --config configs/diagnostic_droid.yaml
 python scripts/04_classify_regimes.py --config configs/diagnostic_droid.yaml
 python scripts/05_run_diagnostic.py  --config configs/diagnostic_droid.yaml
 
 # Easy-case sanity (Terver gripper test) on DROID
-python scripts/terver_gripper_test.py --config configs/diagnostic_droid.yaml --model jepa_wm_droid
+python scripts/terver_gripper_test.py --config configs/diagnostic_droid.yaml --model dino_wm_droid
+
+# Planning Action-Score probe (DROID) — correlates CRA_eff with the paper's Action Error.
+# Prereq: 05 produced results/droid_diagnostic.csv. See HANDOFF_DROID.md §8.
+python scripts/08_planning_probe.py     --config configs/diagnostic_droid.yaml
+python scripts/09_correlate_planning.py --planning_csv   results/droid_planning.csv \
+                                        --pertrans       results/droid_planning_pertrans.npz \
+                                        --diagnostic_csv results/droid_diagnostic.csv
 ```
 
 ## 4. Sanity + decision

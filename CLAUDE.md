@@ -8,11 +8,12 @@ This repository contains the CAI-JEPA research and a **fully implemented diagnos
 
 - `cai_jepa_paper_proposal.md` — the research proposal for "Counterfactual Action-Identifiable JEPA World Models for Robot Planning" (CAI-JEPA). Defines the problem, the four diagnostic metrics, and the proposed training objectives.
 - `diagnostic_implementation_plan_v2.md` — the phased plan to validate the idea. **Section 12 records the v2.1 adjustments** made after reading the real upstream API.
-- `diagnosis/` — the implemented go/no-go diagnostic. Code is correct against the real `facebookresearch/jepa-wms` API and unit-tested offline (`pytest diagnosis/tests`, 23 tests). The GPU/data path runs on a server per `diagnosis/RUNBOOK.md`.
+- `diagnosis/` — the implemented go/no-go diagnostic. Code is correct against the real `facebookresearch/jepa-wms` API and unit-tested offline (`pytest diagnosis/tests`, 34 tests). The GPU/data path runs on a server — now an **A5000 (24 GB), no hardware limits** — per `diagnosis/RUNBOOK.md`.
 
-**Execution status (2026-06-04):**
+**Execution status (2026-06-05):**
 - **Metaworld (primary): complete** — `diagnosis/results/metaworld_diagnostic.csv`, decision **CONDITIONAL_GO**. Gap is visible: `opposite` CRA ~0.97–0.99 but `hard_nn` ~0.46–0.57 in pre-grasp/contact regimes.
-- **DROID (secondary): set up & cached, metric step pending** — env built, 333-episode subset downloaded, latents encoded (`03`), regimes recalibrated (`04`). `05` was blocked by a GPU fall-off-the-bus fault (hardware/driver, not a code bug). Finish with `05`+`06` on a healthy GPU or `eval.device: cpu`.
+- **DROID (secondary): set up & cached, metric step pending** — env built, 333-episode subset downloaded, latents encoded (`03`, dino_wm_droid), regimes recalibrated (`04`). The earlier 8 GB GPU fall-off-the-bus fault is **resolved by moving to the A5000**; `vjepa2_ac_droid` now fits too (run `03` for it first). Finish with `05`+`06`.
+- **Planning Action-Score probe (NEW): coded, runs on server** — `08_planning_probe.py` + `09_correlate_planning.py` close the "CRA_eff → planning-failure" link by correlating per-transition CRA_eff with the paper's DROID Action Error (faithful CEM in `planning/cem_planner.py`, metric in `metrics/action_score.py`). Design: `diagnosis/docs/plans/2026-06-05-planning-action-score-design.md`; ops: HANDOFF_DROID §8.
 
 **Start here for orientation, in order:**
 1. `diagnosis/docs/METHODOLOGY.md` — concepts + code map + the dataset/task/regime/strategy matrix and how it proves the gap (read this first).

@@ -70,6 +70,14 @@ checkpoints (torch.hub, frozen)          datasets (Metaworld HF / DROID gsutil)
         ▼
 [06] scripts/06_analyze_results.py  ──►  results/decision_report.md + figures/*.pdf
             CI-aware GO / CONDITIONAL_GO / PIVOT / ABANDON
+
+  ── planning probe (DROID; closes CRA_eff → planning-failure link) ──
+[08] scripts/08_planning_probe.py    ──►  results/droid_planning.csv + droid_planning_pertrans.npz
+        │   per transition: CRA_eff(hard_nn) + faithful CEM plan → paper's DROID Action Error
+        │   planning/cem_planner.py, metrics/action_score.py
+        ▼
+[09] scripts/09_correlate_planning.py ──► results/planning_correlation.md + figures/figure_c_*.pdf
+            per-transition Spearman/Pearson(Action Error, CRA_eff) — expect clearly negative
 ```
 
 Key module responsibilities:
@@ -90,9 +98,12 @@ Key module responsibilities:
   so `07_validate_synthetic.py` tests the exact production path with synthetic models.
 - **`stratification/`** — assigns each transition one of the 4 regimes (§5).
 - **`scripts/06`** — turns the CSV into figures + a CI-aware decision (§7).
+- **`planning/cem_planner.py` + `metrics/action_score.py`** — faithful port of the upstream
+  `CEMPlanner` and the DROID Action Error; driven by `scripts/08`, correlated by `scripts/09`.
 
-Offline correctness gates (no GPU, no data): `pytest tests/` (23 tests) and
-`scripts/07_validate_synthetic.py` (PerfectModel → CRA≈1.0; ActionIgnoringModel → CRA≈chance).
+Offline correctness gates (no GPU, no data): `pytest tests/` (34 tests, incl. CEM /
+action-score / grounded-vs-ignoring planning sign-check) and `scripts/07_validate_synthetic.py`
+(PerfectModel → CRA≈1.0; ActionIgnoringModel → CRA≈chance).
 
 ---
 
@@ -115,8 +126,9 @@ chosen to be complementary; Push-T / PointMaze are sanity-only and never thesis 
   signal** → that regime is empty on Metaworld. This is exactly the hole DROID fills.
 
 ### 4b. DROID (secondary) — real Franka, real gripper, real contact
-- **Models:** `dino_wm_droid` only on the 8GB box (see `HANDOFF_DROID.md` §1 for why
-  `jepa_wm_droid`/`vjepa2_ac_droid` are dropped).
+- **Models:** `dino_wm_droid` + `vjepa2_ac_droid` (both fit the A5000, 24 GB — the paper's
+  headline DROID comparison). `jepa_wm_droid` stays out for a non-hardware reason (gated DINOv3
+  weights); see `HANDOFF_DROID.md` §1.
 - **Data:** a **333-episode** public subset (2 labs, wrist camera), built by hand — DROID has no
   HF download and the raw bucket is 5.6 TB (`HANDOFF_DROID.md` §3). One 8-frame clip per episode
   at **fps=4** (matches training so the pose-diff action scale is in-distribution) → ~2331
@@ -250,16 +262,22 @@ If it doesn't, suspect a pipeline bug (action normalization, frameskip), not a m
 |---|---|
 | Metaworld diagnostic | ✅ **complete** — `results/metaworld_diagnostic.csv`, decision **CONDITIONAL_GO** |
 | Metaworld finding | `opposite` ~0.97–0.99 but `hard_nn` ~0.46–0.57 in pre-grasp/contact → gap is real; jepa_wm > dino_wm consistently |
-| DROID env + data + latents + regimes | ✅ **done & cached** (`HANDOFF_DROID.md`) |
-| DROID `05`/`06` | ⏳ **blocked** — GPU fell off the bus mid-`05`; finish on a healthy GPU or `device: cpu` |
+| DROID env + data + latents + regimes | ✅ **done & cached** for `dino_wm_droid` (`HANDOFF_DROID.md`) |
+| DROID `05`/`06` | ⏳ **ready to run** — now on the A5000 (24 GB); the old 8 GB GPU fault is resolved |
 | `hard_effect` strategy | ✅ implemented (`negative_samplers.py`), wired through `05`, in the DROID config |
+| Planning Action-Score probe (`08`/`09`) | ✅ **coded + offline-tested**; runs on server to correlate CRA_eff ↔ Action Error (§ HANDOFF_DROID §8) |
 
-**To finish DROID** (2 commands, latents already cached — no re-encode/re-download):
+**To finish DROID** (latents cached for dino_wm_droid; run `03` first for `vjepa2_ac_droid`):
 ```bash
 cd diagnosis && source .venv/bin/activate && export $(grep -v '^#' .env | xargs)
-python scripts/05_run_diagnostic.py  --config configs/diagnostic_droid.yaml   # device: cuda (or cpu)
+python scripts/03_extract_latents.py --config configs/diagnostic_droid.yaml   # adds vjepa2_ac_droid cache
+python scripts/05_run_diagnostic.py  --config configs/diagnostic_droid.yaml
 python scripts/06_analyze_results.py --metaworld_csv results/metaworld_diagnostic.csv \
                                      --droid_csv     results/droid_diagnostic.csv
+# Then close the planning loop (HANDOFF_DROID §8):
+python scripts/08_planning_probe.py     --config configs/diagnostic_droid.yaml
+python scripts/09_correlate_planning.py --planning_csv results/droid_planning.csv \
+   --pertrans results/droid_planning_pertrans.npz --diagnostic_csv results/droid_diagnostic.csv
 ```
 
 **What "proves the gap" looks like in the final report:** effect-conditioned CRA under `hard_nn`
@@ -273,8 +291,8 @@ python scripts/06_analyze_results.py --metaworld_csv results/metaworld_diagnosti
 
 - **`METHODOLOGY.md`** (this file) — concepts, code map, experimental design, decision logic.
 - **`HANDOFF.md`** — operational: run the Metaworld primary path on a fresh server.
-- **`HANDOFF_DROID.md`** — operational: the DROID secondary run on the 8GB box (env, data,
-  recalibration, the GPU fault + recovery).
+- **`HANDOFF_DROID.md`** — operational: the DROID secondary run (env, data, recalibration; now on
+  the A5000) + §8 the planning Action-Score probe.
 - **`plans/2026-06-01-real-api-rewrite-design.md`** — the real upstream API + key design decisions.
 - **`../../cai_jepa_paper_proposal.md`** — the research idea (the 4 contributions).
 - **`../../diagnostic_implementation_plan_v2.md`** — the phased plan; §12 records v2.1 adjustments.

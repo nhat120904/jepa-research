@@ -24,13 +24,17 @@ dataset:
     fps: 4
     seed: 0
 
-# Only dino_wm_droid runs on this 8GB-VRAM machine:
-#   - vjepa2_ac_droid is V-JEPA-2 ViT-G/16 (~1B params) → does not fit 8GB.
-#   - jepa_wm_droid needs gated DINOv3 ViT-L weights (.pth, Meta request-form);
-#     the HF mirror only ships safetensors → format/gating blocker.
-# dino_wm_droid is the canonical DINO-WM baseline (DINOv2 ViT-S/14), peak ~1.5GB.
+# On the A5000 (24 GB) both VRAM-bound baselines run; this matches the paper's
+# headline DROID comparison (DINO-WM vs V-JEPA-2-AC).
+#   - dino_wm_droid    : DINOv2 ViT-S/14 — canonical DINO-WM baseline.
+#   - vjepa2_ac_droid  : V-JEPA-2 ViT-G/16 (~1B) — fits 24 GB; run `03_extract_latents.py`
+#                        for it first (its latent cache must exist before `05`/`08`).
+#   - jepa_wm_droid    : still disabled — blocked by GATED DINOv3 ViT-L `.pth` weights
+#                        (Meta request-form, HF mirror only ships safetensors). This is a
+#                        licensing/format blocker, NOT hardware; see HANDOFF_DROID §1.
 models:
   - dino_wm_droid
+  - vjepa2_ac_droid
 
 negative_strategies:
   - random
@@ -67,15 +71,32 @@ bootstrap:
   n_resamples: 1000
   ci: 0.95
 
+# Planning Action-Score probe (scripts/08_planning_probe.py). Values mirror the
+# upstream DROID dino-wm L2_cem config exactly
+# (configs/evals/.../droid/dino-wm/droid_L2_cem_sourcedset_H3_nas3_maxnorm01_ctxt2_gH3_*.yaml):
+#   CEM iter 15, 300 samples, 10 elites, horizon/goal_H 3, var_scale 0.1, momentum 0,
+#   max_norms [0.1, 0.75] over dims [[0..5],[6]], objective L2 (MSE to goal, last frame).
+# max_planning_transitions bounds CEM cost (num_samples*iterations unrolls per transition).
+# On the A5000 you can raise it to cover every transition in a regime (each DROID regime has
+# only ~380–1010); 200 is already most/all of the smaller cells. Lower only for a quick smoke.
+planning:
+  goal_H: 3
+  iterations: 15
+  num_samples: 300
+  num_elites: 10
+  var_scale: 0.1
+  max_norms: [0.1, 0.75]
+  max_norm_dims: [[0, 1, 2, 3, 4, 5], [6]]
+  max_planning_transitions: 1100
+
 eval:
-  # Latents are already cached (03 done), so only 05 needs the model forward.
-  # Use 'cuda' once the GPU is healthy; 'cpu' runs the whole diagnostic off the
-  # cached latents with no GPU (slower, but works while the GPU is down).
+  # Latents are already cached (03 done) for dino_wm_droid; only 05/08 need the
+  # model forward. Run on the A5000 GPU (`cuda`); `cpu` still works off the cache if needed.
   device: cuda
-  batch_size: 2           # CRA hard negatives expand to B*K predictions; keep RAM responsive
+  batch_size: 16          # CRA hard negatives expand to B*K predictions; ample on 24 GB
   num_workers: 4
   max_transitions: 50000
-  min_transitions_per_cell: 100   # smaller DROID subset than the server run
+  min_transitions_per_cell: 100
 
 latent_cache:
   root: data/precomputed_latents
