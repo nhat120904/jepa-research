@@ -7,6 +7,10 @@ import subprocess
 
 
 HEAVY_MODEL_MIN_GPU_GIB = {
+    # JEPA-WM DROID combines a DINOv3 ViT-L encoder with a 12-layer 1024-d
+    # action-conditioned predictor and decoder heads. The supported handoff
+    # target is the 24 GB A5000; do not probe it on the 12 GB desktop GPU.
+    "jepa_wm_droid": 22.0,
     # V-JEPA-2 ViT-G loads a separate ~15 GB base encoder plus the DROID
     # action-conditioned checkpoint. The DROID handoff assumes a 24 GB A5000;
     # on 12 GB desktop GPUs this can stall the whole machine before Python can
@@ -52,7 +56,7 @@ def preflight_model_load(model_name: str, device: str = "cuda") -> None:
         return
     if not str(device).startswith("cuda"):
         raise RuntimeError(
-            f"{model_name} is a heavy ViT-G checkpoint. Refusing to load it on "
+            f"{model_name} is a heavy checkpoint. Refusing to load it on "
             f"device={device!r} without CAI_JEPA_ALLOW_HEAVY_MODEL=1."
         )
 

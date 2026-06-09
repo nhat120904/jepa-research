@@ -77,10 +77,34 @@ def main():
         lines.append(f"| {label} | {int(mask.sum())} | {_pearson(x, y):.3f} | {sp:.3f} | {p:.4f} |")
     lines.append("")
     lines.append("Expected sign: **negative** (higher Action Error ↔ lower CRA_eff).")
+    lines.append(
+        f"Observed CRA_eff positives: **{int(cra.sum())}/{len(cra)} "
+        f"({cra.mean():.1%})**; this severe class imbalance limits correlation power."
+    )
     lines.append("")
 
     # ---- per-regime view ----
     pl = pd.read_csv(args.planning_csv)
+    run_cols = [
+        "max_planning_transitions",
+        "cem_num_samples",
+        "cem_iterations",
+        "cem_num_elites",
+    ]
+    if all(col in pl.columns for col in run_cols) and not pl.empty:
+        run = pl.iloc[0]
+        lines.append("## Run configuration")
+        lines.append("")
+        lines.append(
+            f"- Maximum transitions per regime/horizon: "
+            f"{int(run['max_planning_transitions'])}"
+        )
+        lines.append(
+            f"- CEM: {int(run['cem_num_samples'])} samples, "
+            f"{int(run['cem_iterations'])} iterations, "
+            f"{int(run['cem_num_elites'])} elites"
+        )
+        lines.append("")
     lines.append("## Per-regime means")
     lines.append("")
     lines.append("| horizon | regime | n | Action Error | Action Score | CRA_eff (plan probe) |")
@@ -130,7 +154,10 @@ def main():
         Path(args.out_fig).parent.mkdir(parents=True, exist_ok=True)
         fig.tight_layout()
         fig.savefig(args.out_fig)
-        lines.append(f"![Figure C]({Path(args.out_fig).relative_to(Path(args.out_md).parent) if Path(args.out_fig).is_relative_to(Path(args.out_md).parent) else args.out_fig})")
+        fig_path = Path(args.out_fig)
+        md_parent = Path(args.out_md).parent
+        fig_ref = fig_path.relative_to(md_parent) if fig_path.is_relative_to(md_parent) else fig_path
+        lines.append(f"![Figure C]({fig_ref.as_posix()})")
     except Exception as e:  # figure is optional
         lines.append(f"_(figure skipped: {e})_")
 
