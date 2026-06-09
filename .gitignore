@@ -43,3 +43,5 @@ diagnosis/results/*.md
 diagnosis/results/figures/*.pdf
 diagnosis/results/figures/*.png
 !diagnosis/results/figures/.gitkeep
+
+world_model/
