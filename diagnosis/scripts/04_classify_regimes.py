@@ -15,6 +15,7 @@ truncate/corrupt it; the sidecar is written via os.replace (atomic).
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -86,10 +87,28 @@ def classify_robocasa(cache: LatentCache) -> dict:
     return _classify_with_latent_heuristic(cache, "robocasa")
 
 
+def classify_franka_custom(cache: LatentCache) -> dict:
+    # Franka custom uses the same 7-dim pose+gripper format as DROID.
+    return _classify_with_latent_heuristic(cache, "franka_custom")
+
+
+def classify_free_space_only(cache: LatentCache) -> dict:
+    """Sanity/navigation datasets do not use the manipulation regime ontology."""
+    out: dict = {}
+    for tid in tqdm(cache.trajectory_ids(), desc="free_space regimes"):
+        traj = cache.read_trajectory(tid)
+        out[tid] = np.full(len(traj["action"]), REGIME_TO_ID["free_space"], dtype=np.int8)
+    return out
+
+
 CLASSIFIERS = {
     "metaworld": classify_metaworld,
     "droid": classify_droid,
     "robocasa": classify_robocasa,
+    "franka_custom": classify_franka_custom,
+    "pusht": classify_free_space_only,
+    "point_maze": classify_free_space_only,
+    "wall": classify_free_space_only,
 }
 
 
@@ -97,9 +116,15 @@ def main(config_path: str) -> int:
     cfg = yaml.safe_load(open(config_path))
     dataset_name = cfg["dataset"]["name"]
     cache_root = cfg["latent_cache"]["root"]
+    only_model = os.environ.get("CAI_JEPA_ONLY_MODEL")
+    models = cfg["models"]
+    if only_model:
+        models = [m for m in models if m == only_model]
+        if not models:
+            raise ValueError(f"CAI_JEPA_ONLY_MODEL={only_model!r} is not in config models")
 
     classifier = CLASSIFIERS[dataset_name]
-    for model_name in cfg["models"]:
+    for model_name in models:
         path = latent_cache_path(cache_root, model_name, dataset_name)
         if not path.exists():
             print(f"[skip] no cache at {path} — run 03_extract_latents.py first")

@@ -173,10 +173,7 @@ RoboCasa tests action grounding on **multi-stage long-horizon manipulation**, wh
 
 ### 2.4. Sanity Checks (Not Main Diagnostic)
 
-Push-T and PointMaze are run only to verify that the diagnostic implementation gives expected results on saturated baselines:
-
-- Expected: all three models achieve CRA > 90% on Push-T and PointMaze under all negative strategies
-- If not: diagnostic implementation is wrong
+Push-T and PointMaze are run only to verify that the diagnostic implementation gives expected results on saturated baselines
 
 These should never be reported as evidence for the paper's thesis.
 

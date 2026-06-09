@@ -58,9 +58,11 @@ python scripts/04_classify_regimes.py --config configs/diagnostic_metaworld.yaml
 python scripts/05_run_diagnostic.py  --config configs/diagnostic_metaworld.yaml
 
 # DROID (secondary) — both dino_wm_droid + vjepa2_ac_droid fit the A5000 (24 GB)
-python scripts/03_extract_latents.py --config configs/diagnostic_droid.yaml
-python scripts/04_classify_regimes.py --config configs/diagnostic_droid.yaml
-python scripts/05_run_diagnostic.py  --config configs/diagnostic_droid.yaml
+# The ViT-G V-JEPA-2 path is guarded against accidental 12 GB desktop runs.
+# Set these only on the intended 24 GB GPU server.
+export JEPAWM_OSSCKPT=/path/to/pretrained_opensource_encoders
+export CAI_JEPA_ALLOW_HEAVY_MODEL=1
+python scripts/11_run_droid_completion.py --allow-known-blockers
 
 # Easy-case sanity (Terver gripper test) on DROID
 python scripts/terver_gripper_test.py --config configs/diagnostic_droid.yaml --model dino_wm_droid
@@ -71,6 +73,24 @@ python scripts/08_planning_probe.py     --config configs/diagnostic_droid.yaml
 python scripts/09_correlate_planning.py --planning_csv   results/droid_planning.csv \
                                         --pertrans       results/droid_planning_pertrans.npz \
                                         --diagnostic_csv results/droid_diagnostic.csv
+
+# Additional requested datasets (server/data required)
+python external/jepa-wms/src/scripts/download_data.py --dataset robocasa franka pusht pointmaze wall
+python scripts/03_extract_latents.py --config configs/diagnostic_robocasa.yaml
+python scripts/04_classify_regimes.py --config configs/diagnostic_robocasa.yaml
+python scripts/05_run_diagnostic.py  --config configs/diagnostic_robocasa.yaml
+python scripts/03_extract_latents.py --config configs/diagnostic_franka_custom.yaml
+python scripts/04_classify_regimes.py --config configs/diagnostic_franka_custom.yaml
+python scripts/05_run_diagnostic.py  --config configs/diagnostic_franka_custom.yaml
+python scripts/03_extract_latents.py --config configs/diagnostic_pusht.yaml
+python scripts/04_classify_regimes.py --config configs/diagnostic_pusht.yaml
+python scripts/05_run_diagnostic.py  --config configs/diagnostic_pusht.yaml
+python scripts/03_extract_latents.py --config configs/diagnostic_point_maze.yaml
+python scripts/04_classify_regimes.py --config configs/diagnostic_point_maze.yaml
+python scripts/05_run_diagnostic.py  --config configs/diagnostic_point_maze.yaml
+python scripts/03_extract_latents.py --config configs/diagnostic_wall.yaml
+python scripts/04_classify_regimes.py --config configs/diagnostic_wall.yaml
+python scripts/05_run_diagnostic.py  --config configs/diagnostic_wall.yaml
 ```
 
 ## 4. Sanity + decision
@@ -79,6 +99,8 @@ python scripts/09_correlate_planning.py --planning_csv   results/droid_planning.
 python scripts/sanity_check.py \
     --metaworld_csv results/metaworld_diagnostic.csv \
     --droid_csv     results/droid_diagnostic.csv
+python scripts/10_audit_coverage.py
+python scripts/10_audit_coverage.py --dataset droid --allow-known-blockers
 python scripts/06_analyze_results.py \
     --metaworld_csv results/metaworld_diagnostic.csv \
     --droid_csv     results/droid_diagnostic.csv

@@ -8,7 +8,8 @@ dataset:
   # Forwarded to RoboCasaDataset.
   dataset_kwargs:
     filter_tasks: ["PnPCounterToCab"]
-    camera_views: ["robot0_agentview_left"]
+    camera_views: ["robot0_leftview"]
+    custom_teleop_dset: true
 
 models:
   - jepa_wm_droid       # RoboCasa shares the Franka 7-dim action space.

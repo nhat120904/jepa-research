@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from models.adapters import build_adapter  # noqa: E402
+from scripts._resource_guard import preflight_model_load  # noqa: E402
 
 
 # (hub_id, action_dim, image_size)
@@ -34,6 +35,7 @@ def main() -> int:
     for hub_id, action_dim, image_size in SMOKE_TARGETS:
         print(f"\n[smoke] {hub_id} on {device}")
         try:
+            preflight_model_load(hub_id, device)
             adapter = build_adapter(hub_id, device=device).eval()
             # Raw [0,255] frame, (B, T=1, C, H, W) — adapter.encode does /255 + transform.
             visual = torch.randint(0, 256, (2, 1, 3, image_size, image_size), dtype=torch.float32)

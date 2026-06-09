@@ -9,6 +9,10 @@ from .loaders import (
     iterate_metaworld_trajectories,
     iterate_droid_trajectories,
     iterate_robocasa_trajectories,
+    iterate_franka_custom_trajectories,
+    iterate_pusht_trajectories,
+    iterate_point_maze_trajectories,
+    iterate_wall_trajectories,
     TransitionBatch,
 )
 
@@ -21,5 +25,9 @@ __all__ = [
     "iterate_metaworld_trajectories",
     "iterate_droid_trajectories",
     "iterate_robocasa_trajectories",
+    "iterate_franka_custom_trajectories",
+    "iterate_pusht_trajectories",
+    "iterate_point_maze_trajectories",
+    "iterate_wall_trajectories",
     "TransitionBatch",
 ]

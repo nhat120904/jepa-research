@@ -1,0 +1,67 @@
+# Real Franka custom diagnostic: MPK/HF real hardware tabletop clips
+dataset:
+  name: franka_custom
+  root: data/franka_custom
+  image_size: 256
+  action_dim: 7
+  action_l1_radius: 0.075
+  action_l1_dims: [0, 1, 2, 3, 4, 5]
+  pose_action_bound: 0.1
+  gripper_action_range: [-0.75, 0.75]
+  external_root: external/jepa-wms
+  max_transitions: 20000
+  dataset_kwargs:
+    mpk_dset: true
+    mpk_manifest_patterns: ["**/episode.h5"]
+    camera_views: ["exterior_image_1_left"]
+    frames_per_clip: 8
+    fps: 4
+    seed: 0
+
+models:
+  - dino_wm_droid
+  - vjepa2_ac_droid
+
+negative_strategies:
+  - random
+  - opposite
+  - hard_nn
+  - hard_effect
+
+regimes:
+  - free_space
+  - pre_grasp
+  - gripper_actuation
+  - contact_manipulation
+
+cra:
+  K: 16
+  metrics: [top1, mrr]
+
+ecs:
+  fallback_threshold: 1.0
+
+hard_nn:
+  pool_size: 512
+  similarity_radius: 1.0
+  K: 16
+
+hard_effect:
+  action_penalty: 0.5
+
+bootstrap:
+  n_resamples: 1000
+  ci: 0.95
+
+eval:
+  device: cuda
+  batch_size: 16
+  num_workers: 4
+  min_transitions_per_cell: 100
+
+latent_cache:
+  root: data/precomputed_latents
+  compression: gzip
+
+output:
+  csv: results/franka_custom_diagnostic.csv

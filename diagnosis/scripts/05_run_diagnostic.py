@@ -106,7 +106,7 @@ def action_spec(dataset_name: str, action_dim: int, ds_cfg: dict):
     """Return action sampler settings for the negative samplers."""
     if dataset_name == "metaworld":
         return (-1.0, 1.0), None, 3, (-1.0, 1.0), None
-    if dataset_name in ("droid", "robocasa"):
+    if dataset_name in ("droid", "robocasa", "franka_custom"):
         pose_bound = float(ds_cfg.get("pose_action_bound", 0.1))
         gripper_range = tuple(ds_cfg.get("gripper_action_range", [-0.75, 0.75]))
         bounds = torch.tensor([[-pose_bound, pose_bound]] * (action_dim - 1) + [list(gripper_range)])

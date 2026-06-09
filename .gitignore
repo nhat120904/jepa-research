@@ -21,7 +21,13 @@ diagnosis/data/Metaworld/
 diagnosis/data/hf_mw/
 diagnosis/data/droid_subset/
 diagnosis/data/precomputed_latents/
+diagnosis/data/opensource_ckpts/
 diagnosis/data/robocasa/
+diagnosis/data/pusht_noise/
+diagnosis/data/point_maze/
+diagnosis/data/wall_single/
+diagnosis/data/franka_custom/
+diagnosis/data/.cache/
 diagnosis/models/checkpoints/
 # torch.hub / HF checkpoint cache (~7.5 GB, model weights)
 diagnosis/.hf_home/

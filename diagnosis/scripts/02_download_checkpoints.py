@@ -6,6 +6,8 @@ import sys
 
 import torch
 
+from _resource_guard import preflight_model_load
+
 
 CHECKPOINTS = [
     # Primary diagnostic: Metaworld
@@ -26,6 +28,7 @@ def main() -> int:
     for repo, hub_id in CHECKPOINTS:
         print(f"[load] {hub_id}", flush=True)
         try:
+            preflight_model_load(hub_id, "cuda" if torch.cuda.is_available() else "cpu")
             model, preprocessor = torch.hub.load(repo, hub_id, trust_repo=True)
             print(f"  OK  model={type(model).__name__} "
                   f"preprocessor={type(preprocessor).__name__}")

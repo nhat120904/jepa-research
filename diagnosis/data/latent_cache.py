@@ -33,7 +33,8 @@ ID_TO_REGIME = {v: k for k, v in REGIME_TO_ID.items()}
 
 
 def latent_cache_path(root: str | Path, model_name: str, dataset: str) -> Path:
-    root = Path(root)
+    override = os.environ.get("CAI_JEPA_LATENT_CACHE_ROOT")
+    root = Path(override if override else root)
     root.mkdir(parents=True, exist_ok=True)
     return root / f"{dataset}__{model_name}.h5"
 

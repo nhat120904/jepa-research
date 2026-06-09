@@ -1,0 +1,52 @@
+# Sanity diagnostic: Push-T planar end-effector
+dataset:
+  name: pusht
+  root: data/pusht_noise
+  image_size: 224
+  action_dim: 2
+  external_root: external/jepa-wms
+  max_transitions: 20000
+  dataset_kwargs:
+    split: val
+    with_velocity: true
+
+models:
+  - jepa_wm_pusht
+  - dino_wm_pusht
+
+negative_strategies:
+  - random
+  - opposite
+  - hard_nn
+
+regimes:
+  - free_space
+
+cra:
+  K: 16
+  metrics: [top1, mrr]
+
+ecs:
+  fallback_threshold: 1.0
+
+hard_nn:
+  pool_size: 256
+  similarity_radius: 1.0
+  K: 16
+
+bootstrap:
+  n_resamples: 1000
+  ci: 0.95
+
+eval:
+  device: cuda
+  batch_size: 32
+  num_workers: 4
+  min_transitions_per_cell: 100
+
+latent_cache:
+  root: data/precomputed_latents
+  compression: gzip
+
+output:
+  csv: results/pusht_diagnostic.csv

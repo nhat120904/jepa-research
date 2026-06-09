@@ -52,3 +52,12 @@ def test_visual_already_255_not_double_scaled():
     tb = _build_transition(obs, torch.rand(3, 4), torch.rand(3, 39),
                            env="metaworld", traj_id="t/0", task="t")
     assert tb.obs_visual.max() <= 255.0 + 1e-3   # not rescaled again
+
+
+def test_build_transition_accepts_channel_last_visual():
+    obs = {"visual": torch.rand(3, 8, 8, 3), "proprio": torch.rand(3, 2)}
+    tb = _build_transition(obs, torch.rand(3, 2), torch.rand(3, 2),
+                           env="wall", traj_id="wall/0", task="wall")
+    assert tb.obs_visual.shape == (3, 3, 8, 8)
+    assert tb.obs_visual.max() > 1.5
+    assert tb.gripper is None

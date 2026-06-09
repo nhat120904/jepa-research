@@ -12,10 +12,6 @@
 - `ECS` is `AUG` on effectful transitions only.
 - `random` negatives test coarse action sensitivity, `opposite` negatives are usually easy, and `hard_nn`/`hard_effect` are the strict tests because they keep the current state similar while changing the action/effect.
 
-## Sanity Gates
-
-**DROID sanity gate:** PASSED: scripts\terver_gripper_test.py checks loader/cache/action plumbing; gripper delta max error 5.96e-08, cache-loader error 0, and model predictions are action/gripper-sensitive.
-
 ## Run Coverage
 
 | dataset | models | rows | ok | insufficient |

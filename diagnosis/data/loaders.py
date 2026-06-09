@@ -25,9 +25,19 @@ from typing import Iterator, Optional, Sequence
 
 import numpy as np
 import torch
+from einops import rearrange
 
 # Gripper index within the proprio vector, per env (see DATA_STATS).
-GRIPPER_IDX = {"metaworld": 3, "droid": 6, "robocasa": 6, "pusht": None}
+GRIPPER_IDX = {
+    "metaworld": 3,
+    "droid": 6,
+    "robocasa": 6,
+    "franka_custom": 6,
+    "pusht": None,
+    "point_maze": None,
+    "pointmaze": None,
+    "wall": None,
+}
 
 
 @dataclass
@@ -82,6 +92,8 @@ def _to_255(visual: torch.Tensor) -> torch.Tensor:
     """Adapter.encode expects [0,255]. Datasets with transform=None typically
     return [0,1] (they divide by 255). Detect and rescale defensively."""
     visual = torch.as_tensor(visual, dtype=torch.float32)
+    if visual.ndim == 4 and visual.shape[-1] in (1, 3) and visual.shape[1] not in (1, 3):
+        visual = rearrange(visual, "T H W C -> T C H W")
     if float(visual.max()) <= 1.5:
         visual = visual * 255.0
     return visual
@@ -90,7 +102,7 @@ def _to_255(visual: torch.Tensor) -> torch.Tensor:
 def _build_transition(obs, act, state, *, env: str, traj_id: str, task: str) -> TransitionBatch:
     visual = _to_255(obs["visual"])              # (T, C, H, W)
     proprio = torch.as_tensor(obs["proprio"], dtype=torch.float32)  # (T, P)
-    state = torch.as_tensor(state, dtype=torch.float32)             # (T, S)
+    state = proprio.clone() if state is None else torch.as_tensor(state, dtype=torch.float32)  # (T, S)
     act = torch.as_tensor(act, dtype=torch.float32)                 # (T or T-1, A)
 
     T = visual.shape[0]
@@ -175,6 +187,122 @@ def iterate_droid_trajectories(
         tb = _build_transition(
             obs, act, state, env="droid",
             traj_id=f"droid/{i:06d}", task="droid",
+        )
+        total += int(tb.action.shape[0])
+        yield tb
+
+
+def iterate_franka_custom_trajectories(
+    root: str | Path,
+    max_transitions: int = 50000,
+    external_root: str | Path = "external/jepa-wms",
+    dataset_kwargs: Optional[dict] = None,
+) -> Iterator[TransitionBatch]:
+    """Yield real Franka custom clips via upstream ``DROIDVideoDataset``.
+
+    The upstream loader treats MPK/HF ``franka_custom`` data as the same
+    7-dim pose+gripper format as DROID when ``mpk_dset=True``.
+    """
+    kwargs = {"mpk_dset": True, "mpk_manifest_patterns": ["**/*.mp4"]}
+    kwargs.update(dataset_kwargs or {})
+    for tb in iterate_droid_trajectories(
+        root=root,
+        max_transitions=max_transitions,
+        external_root=external_root,
+        dataset_kwargs=kwargs,
+    ):
+        yield TransitionBatch(
+            obs_visual=tb.obs_visual,
+            action=tb.action,
+            proprio=tb.proprio,
+            state=tb.state,
+            traj_id=tb.traj_id.replace("droid/", "franka_custom/"),
+            task="franka_custom",
+            gripper=tb.gripper,
+            extras=tb.extras,
+        )
+
+
+def iterate_pusht_trajectories(
+    root: str | Path,
+    max_transitions: int = 50000,
+    external_root: str | Path = "external/jepa-wms",
+    dataset_kwargs: Optional[dict] = None,
+) -> Iterator[TransitionBatch]:
+    """Yield Push-T trajectories from ``PushTDataset``."""
+    add_upstream_to_path(external_root)
+    from app.plan_common.datasets.pusht_dset import PushTDataset  # type: ignore
+
+    kwargs = dict(transform=None, normalize_action=False, with_velocity=True)
+    kwargs.update(dataset_kwargs or {})
+    split = kwargs.pop("split", None)
+    data_path = Path(root)
+    if split:
+        data_path = data_path / split
+    ds = PushTDataset(data_path=str(data_path), **kwargs)
+
+    total = 0
+    for i in range(len(ds)):
+        if total >= max_transitions:
+            return
+        obs, act, state = _unpack_item(ds[i])
+        tb = _build_transition(
+            obs, act, state, env="pusht",
+            traj_id=f"pusht/{i:06d}", task="pusht",
+        )
+        total += int(tb.action.shape[0])
+        yield tb
+
+
+def iterate_point_maze_trajectories(
+    root: str | Path,
+    max_transitions: int = 50000,
+    external_root: str | Path = "external/jepa-wms",
+    dataset_kwargs: Optional[dict] = None,
+) -> Iterator[TransitionBatch]:
+    """Yield PointMaze trajectories from ``PointMazeDataset``."""
+    add_upstream_to_path(external_root)
+    from app.plan_common.datasets.point_maze_dset import PointMazeDataset  # type: ignore
+
+    kwargs = dict(transform=None, normalize_action=False)
+    kwargs.update(dataset_kwargs or {})
+    ds = PointMazeDataset(data_path=str(root), **kwargs)
+
+    total = 0
+    for i in range(len(ds)):
+        if total >= max_transitions:
+            return
+        obs, act, state = _unpack_item(ds[i])
+        tb = _build_transition(
+            obs, act, state, env="point_maze",
+            traj_id=f"point_maze/{i:06d}", task="point_maze",
+        )
+        total += int(tb.action.shape[0])
+        yield tb
+
+
+def iterate_wall_trajectories(
+    root: str | Path,
+    max_transitions: int = 50000,
+    external_root: str | Path = "external/jepa-wms",
+    dataset_kwargs: Optional[dict] = None,
+) -> Iterator[TransitionBatch]:
+    """Yield Wall trajectories from ``WallDataset``."""
+    add_upstream_to_path(external_root)
+    from app.plan_common.datasets.wall_dset import WallDataset  # type: ignore
+
+    kwargs = dict(transform=None, normalize_action=False)
+    kwargs.update(dataset_kwargs or {})
+    ds = WallDataset(data_path=str(root), **kwargs)
+
+    total = 0
+    for i in range(len(ds)):
+        if total >= max_transitions:
+            return
+        obs, act, state = _unpack_item(ds[i])
+        tb = _build_transition(
+            obs, act, state, env="wall",
+            traj_id=f"wall/{i:06d}", task="wall",
         )
         total += int(tb.action.shape[0])
         yield tb

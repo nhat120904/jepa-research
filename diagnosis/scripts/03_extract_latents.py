@@ -12,6 +12,7 @@ cache, never re-encoding.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -27,32 +28,66 @@ from data import (  # noqa: E402
     iterate_metaworld_trajectories,
     iterate_droid_trajectories,
     iterate_robocasa_trajectories,
+    iterate_franka_custom_trajectories,
+    iterate_pusht_trajectories,
+    iterate_point_maze_trajectories,
+    iterate_wall_trajectories,
     latent_cache_path,
 )
 from models.adapters import build_adapter  # noqa: E402
+from _resource_guard import preflight_model_load  # noqa: E402
 
 
 def get_iterator(dataset_name: str, ds_cfg: dict):
     external_root = ds_cfg.get("external_root", "external/jepa-wms")
+    root = os.environ.get(f"CAI_JEPA_DATA_ROOT_{dataset_name.upper()}", ds_cfg["root"])
     if dataset_name == "metaworld":
         tasks = ds_cfg["tasks"]
         all_tasks = tasks["easy"] + tasks["medium"] + tasks["hard"]
         return iterate_metaworld_trajectories(
-            root=ds_cfg["root"],
+            root=root,
             tasks=all_tasks,
             max_trajectories_per_task=ds_cfg.get("max_trajectories_per_task", 1000),
             external_root=external_root,
         )
     if dataset_name == "droid":
         return iterate_droid_trajectories(
-            root=ds_cfg["root"],
+            root=root,
             max_transitions=ds_cfg.get("max_transitions", 50000),
             external_root=external_root,
             dataset_kwargs=ds_cfg.get("dataset_kwargs"),
         )
     if dataset_name == "robocasa":
         return iterate_robocasa_trajectories(
-            root=ds_cfg["root"],
+            root=root,
+            max_transitions=ds_cfg.get("max_transitions", 20000),
+            external_root=external_root,
+            dataset_kwargs=ds_cfg.get("dataset_kwargs"),
+        )
+    if dataset_name == "franka_custom":
+        return iterate_franka_custom_trajectories(
+            root=root,
+            max_transitions=ds_cfg.get("max_transitions", 20000),
+            external_root=external_root,
+            dataset_kwargs=ds_cfg.get("dataset_kwargs"),
+        )
+    if dataset_name == "pusht":
+        return iterate_pusht_trajectories(
+            root=root,
+            max_transitions=ds_cfg.get("max_transitions", 20000),
+            external_root=external_root,
+            dataset_kwargs=ds_cfg.get("dataset_kwargs"),
+        )
+    if dataset_name == "point_maze":
+        return iterate_point_maze_trajectories(
+            root=root,
+            max_transitions=ds_cfg.get("max_transitions", 20000),
+            external_root=external_root,
+            dataset_kwargs=ds_cfg.get("dataset_kwargs"),
+        )
+    if dataset_name == "wall":
+        return iterate_wall_trajectories(
+            root=root,
             max_transitions=ds_cfg.get("max_transitions", 20000),
             external_root=external_root,
             dataset_kwargs=ds_cfg.get("dataset_kwargs"),
@@ -81,14 +116,21 @@ def main(config_path: str) -> int:
     device = cfg["eval"].get("device", "cuda")
     batch_size = cfg["eval"].get("batch_size", 64)
     cache_root = cfg["latent_cache"]["root"]
+    only_model = os.environ.get("CAI_JEPA_ONLY_MODEL")
+    models = cfg["models"]
+    if only_model:
+        models = [m for m in models if m == only_model]
+        if not models:
+            raise ValueError(f"CAI_JEPA_ONLY_MODEL={only_model!r} is not in config models")
 
-    for model_name in cfg["models"]:
+    for model_name in models:
         print(f"\n=== Encoding {model_name} on {dataset_name} ===", flush=True)
         cache_path = latent_cache_path(cache_root, model_name, dataset_name)
         if cache_path.exists():
             print(f"  Cache exists at {cache_path} (delete to re-encode).")
             continue
 
+        preflight_model_load(model_name, device)
         adapter = build_adapter(model_name, device=device).eval()
         with LatentCache(cache_path, mode="w",
                           compression=cfg["latent_cache"].get("compression", "gzip")) as cache:
