@@ -1,6 +1,10 @@
 from .cra import compute_cra, cra_per_transition, CRAResult
 from .aug import compute_aug, aug_per_transition, AUGResult
 from .ecs import compute_ecs, calibrate_effect_threshold, effect_mask, ECSResult
+from .boundary_blindness import (
+    boundary_sensitivities_per_transition,
+    boundary_blindness,
+)
 from .ctd import compute_ctd, CTDResult
 from .negative_samplers import (
     random_negative,
@@ -23,6 +27,8 @@ __all__ = [
     "calibrate_effect_threshold",
     "effect_mask",
     "ECSResult",
+    "boundary_sensitivities_per_transition",
+    "boundary_blindness",
     "compute_ctd",
     "CTDResult",
     "random_negative",
