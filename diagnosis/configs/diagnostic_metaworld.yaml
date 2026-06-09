@@ -75,6 +75,29 @@ bootstrap:
   n_resamples: 1000
   ci: 0.95
 
+# Planning Action-Score probe (scripts/08_planning_probe.py).
+# Metaworld has NO upstream CEM config (only DROID/robocasa do), so these are
+# adapted to Metaworld's action structure rather than copied:
+#   - raw action is 4-dim (xyz + gripper), every dim bounded [-1, 1] (verified
+#     from the latent cache), stacked frames_per_step=5 -> model_action_dim=20.
+#   - CEM optimises in RAW action space (predict_rollout normalises afterwards),
+#     so the box-clip is [-1, 1] on all 20 model dims.
+#   - iters/samples/elites/var_scale/horizon mirror the frameskip-5 robocasa
+#     L2_cem template (the closest upstream analogue); num_samples is overridden
+#     on the CLI to 64 on the 12 GB box for memory safety.
+# Unlike DROID, Metaworld CRA_eff has real variance across regimes (hard_nn
+# ~0.49 pre_grasp -> 0.65 free_space), so the per-transition Action-Error vs
+# CRA_eff correlation is a well-posed test here (DROID was floored at chance).
+planning:
+  goal_H: 3
+  iterations: 15
+  num_samples: 300
+  num_elites: 10
+  var_scale: 0.1
+  max_norms: [1.0]
+  max_norm_dims: [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]]
+  max_planning_transitions: 40
+
 eval:
   device: cuda
   batch_size: 16          # CRA samples K=16 negatives/transition; keep modest to avoid OOM
