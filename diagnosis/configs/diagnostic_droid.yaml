@@ -67,6 +67,13 @@ hard_nn:
 hard_effect:
   action_penalty: 0.5
 
+# Boundary diagnostic (12_boundary_diagnostic.py). DROID has no object GT, so the
+# true outcome falls back to the ||Δz|| latent proxy — a transfer check, not the
+# boundary proof (see design 2026-06-09 §3.2). Neighbours come from the hard_nn pool.
+boundary:
+  max_neighbours: 16
+  quantile: 0.75
+
 bootstrap:
   n_resamples: 1000
   ci: 0.95

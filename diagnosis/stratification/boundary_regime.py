@@ -32,21 +32,26 @@ import torch
 
 
 def state_neighbours(
-    z: torch.Tensor,                      # (B, *frame)
+    z: torch.Tensor,                      # (B, *frame) query anchors
     similarity_radius: float,
     max_neighbours: int = 16,
     min_neighbours: int = 2,
+    pool_z: Optional[torch.Tensor] = None,   # (N, *frame) reference set
 ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Per-anchor similar-state neighbourhood by L2 latent distance.
 
-    For each anchor we take its ``max_neighbours`` nearest *other* transitions
-    (self is excluded), then mark which of those actually fall within
-    ``similarity_radius``. Returning a fixed ``(B, max_neighbours)`` index grid
-    plus a boolean validity mask keeps downstream gather/reduce vectorised; the
-    mask carries the variable real-neighbour count.
+    For each anchor we take its ``max_neighbours`` nearest reference transitions,
+    then mark which of those actually fall within ``similarity_radius``. Returning
+    a fixed ``(B, max_neighbours)`` index grid plus a boolean validity mask keeps
+    downstream gather/reduce vectorised; the mask carries the variable
+    real-neighbour count.
+
+    The reference set is ``z`` itself (self excluded) when ``pool_z`` is None — the
+    within-cell case — or the separate ``pool_z`` (the shared hard-negative pool)
+    when given; indices then point into ``pool_z``.
 
     Returns:
-        neighbour_idx:  (B, max_neighbours) long — nearest others (padded with
+        neighbour_idx:  (B, max_neighbours) long — nearest references (padded with
                         the nearest where fewer than ``max_neighbours`` exist).
         neighbour_mask: (B, max_neighbours) bool — True where the neighbour is
                         genuinely within ``similarity_radius``.
@@ -55,11 +60,14 @@ def state_neighbours(
     """
     B = z.shape[0]
     zf = z.reshape(B, -1).float()
-    d = torch.cdist(zf, zf, p=2)                       # (B, B)
-    d.fill_diagonal_(float("inf"))                     # never pick self
+    ref = zf if pool_z is None else pool_z.reshape(pool_z.shape[0], -1).float()
+    R = ref.shape[0]
+    d = torch.cdist(zf, ref, p=2)                      # (B, R)
+    if pool_z is None:
+        d.fill_diagonal_(float("inf"))                 # never pick self
 
-    m = min(max_neighbours, max(B - 1, 1))
-    order = torch.argsort(d, dim=1)[:, :m]             # (B, m) nearest others
+    m = min(max_neighbours, max(R - (1 if pool_z is None else 0), 1))
+    order = torch.argsort(d, dim=1)[:, :m]             # (B, m) nearest references
     if m < max_neighbours:                             # pad to a fixed width
         pad = order[:, -1:].expand(B, max_neighbours - m)
         order = torch.cat([order, pad], dim=1)
@@ -72,27 +80,27 @@ def state_neighbours(
 
 
 def boundary_score_per_transition(
-    a: torch.Tensor,                      # (B, A)
-    outcome: torch.Tensor | np.ndarray,   # (B,) true scalar outcome per transition
-    neighbour_idx: torch.Tensor,          # (B, M)
+    anchor_actions: torch.Tensor,         # (B, A)
+    neighbour_actions: torch.Tensor,      # (B, M, A) — gathered from the reference set
+    neighbour_outcomes: torch.Tensor | np.ndarray,   # (B, M) true scalar outcomes
     neighbour_mask: torch.Tensor,         # (B, M) bool
     eps: float = 1e-8,
 ) -> np.ndarray:
     """Continuous boundary score per anchor (see module docstring).
 
-    ``outcome`` is the dataset's true bifurcation signal: object displacement on
-    Metaworld, ``‖Δz‖`` proxy on DROID. Rows with fewer than two real neighbours
-    return ``nan`` (std/ratio undefined).
+    Takes the already-gathered neighbour arrays (so the same code serves the
+    within-cell and pool cases). ``neighbour_outcomes`` is the dataset's true
+    bifurcation signal: object displacement on Metaworld, ``‖Δz‖`` proxy on DROID.
+    Rows with fewer than two real neighbours return ``nan`` (std/ratio undefined).
 
     Returns: (B,) float ndarray, ``nan`` where undefined.
     """
-    a = a.float()
-    out = torch.as_tensor(np.asarray(outcome), dtype=torch.float32, device=a.device)
+    a = anchor_actions.float()
+    nb_a = neighbour_actions.to(a.device).float()      # (B, M, A)
+    nb_out = torch.as_tensor(np.asarray(neighbour_outcomes),
+                             dtype=torch.float32, device=a.device)  # (B, M)
     mask = neighbour_mask.to(a.device)
     M_real = mask.sum(dim=1)
-
-    nb_out = out[neighbour_idx]                        # (B, M)
-    nb_a = a[neighbour_idx]                            # (B, M, A)
     mf = mask.float()
     cnt = mf.sum(dim=1).clamp(min=1.0)
 

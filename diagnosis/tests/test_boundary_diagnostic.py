@@ -44,25 +44,26 @@ def test_state_neighbours_stay_within_cluster():
 
 
 def test_boundary_score_high_for_bifurcation_low_for_smooth():
-    # Hand-built neighbourhood: anchor 0's neighbours have near-identical actions
-    # but wildly different outcomes (a bifurcation); anchor 3's outcomes are flat.
-    a = torch.tensor([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.01, 0.0, 0.0], [0.0, 0.0, 0.0]])
-    outcome = torch.tensor([0.0, 1.0, 0.0, 0.0])     # anchors 0/1 differ in neighbour spread
-    # anchor 0 neighbours = {1, 2}: outcomes {1.0, 0.0} spread high, action spread tiny
-    # anchor 3 neighbours = {0, 2}: outcomes {0.0, 0.0} spread zero
-    idx = torch.tensor([[1, 2], [0, 2], [0, 1], [0, 2]])
-    mask = torch.ones(4, 2, dtype=torch.bool)
-    scores = boundary_score_per_transition(a, outcome, idx, mask)
-    assert scores[0] > scores[3]
-    assert scores[3] == 0.0           # flat outcomes → zero boundary score
+    # Two anchors with M=2 neighbours each (gathered form). Anchor 0: neighbour
+    # actions ~identical but outcomes far apart (a bifurcation). Anchor 1: outcomes
+    # flat (smooth).
+    anchor_a = torch.zeros(2, 3)
+    neigh_a = torch.tensor([[[0.0, 0.0, 0.0], [0.01, 0.0, 0.0]],
+                            [[0.0, 0.0, 0.0], [0.01, 0.0, 0.0]]])
+    neigh_out = torch.tensor([[0.0, 1.0],     # spread high → boundary
+                              [0.0, 0.0]])    # spread zero → smooth
+    mask = torch.ones(2, 2, dtype=torch.bool)
+    scores = boundary_score_per_transition(anchor_a, neigh_a, neigh_out, mask)
+    assert scores[0] > scores[1]
+    assert scores[1] == 0.0           # flat outcomes → zero boundary score
 
 
 def test_boundary_score_nan_without_neighbours():
-    a = torch.zeros(3, 2)
-    outcome = torch.zeros(3)
-    idx = torch.zeros(3, 2, dtype=torch.long)
+    anchor_a = torch.zeros(3, 2)
+    neigh_a = torch.zeros(3, 2, 2)
+    neigh_out = torch.zeros(3, 2)
     mask = torch.zeros(3, 2, dtype=torch.bool)        # no real neighbours
-    scores = boundary_score_per_transition(a, outcome, idx, mask)
+    scores = boundary_score_per_transition(anchor_a, neigh_a, neigh_out, mask)
     assert np.isnan(scores).all()
 
 
@@ -136,3 +137,119 @@ def test_boundary_blindness_constant_inputs_are_zero():
     # Degenerate population (no spread) must not divide-by-zero.
     bb = boundary_blindness(np.ones(10), np.ones(10))
     assert np.allclose(bb, 0.0)
+
+
+# ---------------------------------------------------------------------------
+# Runner core: true outcome, per-cell accumulation, finalisation
+# ---------------------------------------------------------------------------
+
+from scripts._boundary_diagnostic import (   # noqa: E402
+    compute_true_outcome,
+    accumulate_cell,
+    finalize_rows,
+    _load_runner_helpers,
+)
+from stratification.metaworld_regimes import OBJECT_SLICE  # noqa: E402
+
+
+def test_compute_true_outcome_metaworld_uses_object_displacement():
+    N, S = 6, 39
+    z_t = torch.zeros(N, 8)
+    z_t1 = torch.randn(N, 8)          # latent moves, but outcome must ignore it
+    state_t = torch.zeros(N, S)
+    state_t1 = torch.zeros(N, S)
+    state_t1[:, OBJECT_SLICE] = torch.tensor([[0.3, 0.4, 0.0]]).repeat(N, 1)  # ‖·‖ = 0.5
+    out = compute_true_outcome("metaworld", z_t, z_t1, state_t, state_t1)
+    assert np.allclose(out, 0.5, atol=1e-5)
+
+
+def test_compute_true_outcome_falls_back_to_latent_delta():
+    z_t = torch.zeros(5, 4)
+    z_t1 = torch.full((5, 4), 0.5)    # ‖Δz‖ = sqrt(4*0.25) = 1.0
+    out = compute_true_outcome("droid", z_t, z_t1)
+    assert np.allclose(out, 1.0, atol=1e-5)
+
+
+def _pool_with_two_clusters(D=8, A=3, seed=1):
+    g = torch.Generator().manual_seed(seed)
+    # Cluster A near 0 with high-variance outcomes (a bifurcation neighbourhood).
+    za = torch.randn(30, D, generator=g) * 0.05
+    outa = torch.tensor([0.0, 1.0]).repeat(15)
+    # Cluster B near 10 with flat outcomes (a smooth neighbourhood).
+    zb = torch.randn(30, D, generator=g) * 0.05 + 10.0
+    outb = torch.full((30,), 0.5)
+    pool_z = torch.cat([za, zb], dim=0)
+    pool_a = torch.randn(60, A, generator=g).clamp(-1, 1)
+    pool_outcome = torch.cat([outa, outb]).numpy()
+    return pool_z, pool_a, pool_outcome, D, A
+
+
+def test_accumulate_and_finalize_flags_boundary_regime():
+    pool_z, pool_a, pool_outcome, D, A = _pool_with_two_clusters()
+    m = ActionIgnoringModel(action_dim=A)
+    dev = torch.device("cpu")
+    g = torch.Generator().manual_seed(2)
+
+    def cell(z_centre, n, tag):
+        return {
+            "z_t": torch.randn(n, D, generator=g) * 0.05 + z_centre,
+            "a_t": torch.randn(n, A, generator=g).clamp(-1, 1),
+            "proprio_t": None,
+            "traj_tag": np.array([f"{tag}/{i % 3}" for i in range(n)]),
+        }
+
+    # Boundary-regime anchors sit near cluster A; free-space anchors near cluster B.
+    acc = {"s_true": [], "s_model": [], "boundary_score": [],
+           "traj_tag": [], "task": [], "regime": []}
+    for centre, regime, tag in [(0.0, "contact_manipulation", "c"), (10.0, "free_space", "f")]:
+        cdata = cell(centre, 18, tag)
+        out = accumulate_cell(m, cdata, pool_z, pool_a, pool_outcome, device=dev,
+                              similarity_radius=2.0, max_neighbours=8)
+        n = len(out["s_true"])
+        acc["s_true"].append(out["s_true"])
+        acc["s_model"].append(out["s_model"])
+        acc["boundary_score"].append(out["boundary_score"])
+        acc["traj_tag"].append(out["traj_tag"])
+        acc["task"].append(np.array(["all"] * n))
+        acc["regime"].append(np.array([regime] * n))
+
+    rows, thr = finalize_rows(
+        "metaworld", "synthetic_action_ignoring",
+        s_true=np.concatenate(acc["s_true"]), s_model=np.concatenate(acc["s_model"]),
+        boundary_score=np.concatenate(acc["boundary_score"]),
+        task=np.concatenate(acc["task"]), regime=np.concatenate(acc["regime"]),
+        traj_tag=np.concatenate(acc["traj_tag"]), n_resamples=200,
+    )
+    by_regime = {r["regime"]: r for r in rows}
+    # Action-ignoring model: predictions never move, so S_model ≈ 0 everywhere.
+    assert np.allclose(np.concatenate(acc["s_model"]), 0.0, atol=1e-6)
+    # The bifurcation neighbourhood (contact) is flagged boundary-blind; smooth isn't.
+    assert by_regime["contact_manipulation"]["bb"] > by_regime["free_space"]["bb"]
+
+
+def test_materialize_records_loads_state_for_outcome(tmp_path):
+    """Integration: a fake HDF5 cache → materialize(want_state) → object-Δ outcome."""
+    from data import LatentCache
+
+    T, D, A, S = 6, 4, 3, 39
+    g = torch.Generator().manual_seed(0)
+    z = torch.randn(T, D, generator=g)
+    action = torch.randn(T - 1, A, generator=g)
+    proprio = torch.randn(T, 7, generator=g)
+    state = torch.zeros(T, S)
+    state[:, OBJECT_SLICE] = torch.cumsum(torch.ones(T, 3) * 0.1, dim=0)  # object drifts
+
+    cache_path = tmp_path / "metaworld__synthetic.h5"
+    with LatentCache(cache_path, mode="w") as c:
+        c.write_trajectory("task0/0", z=z, action=action, proprio=proprio, state=state)
+
+    helpers = _load_runner_helpers()
+    with LatentCache(cache_path, mode="r") as c:
+        records = helpers.build_transition_records(c, None, step=1, per_task=True)
+        data = helpers.materialize_records(c, records, 1, want_proprio=True, want_state=True)
+
+    assert data["state_t"] is not None and data["state_t1"].shape[-1] == S
+    out = compute_true_outcome("metaworld", data["z_t"], data["z_t1"],
+                               data["state_t"], data["state_t1"])
+    # object moves a constant 0.1 in each of 3 dims per step → ‖Δobj‖ = sqrt(3)*0.1.
+    assert np.allclose(out, np.sqrt(3) * 0.1, atol=1e-5)

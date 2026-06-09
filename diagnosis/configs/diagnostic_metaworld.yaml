@@ -64,6 +64,13 @@ hard_nn:
 hard_effect:
   action_penalty: 0.5
 
+# Boundary diagnostic (12_boundary_diagnostic.py): selects bifurcation transitions
+# and measures Boundary Blindness per regime. Neighbours are drawn from the
+# hard_nn pool within hard_nn.similarity_radius.
+boundary:
+  max_neighbours: 16    # actions sampled from the similar-state neighbourhood
+  quantile: 0.75        # top-quartile boundary score → boundary-flagged subset
+
 bootstrap:
   n_resamples: 1000
   ci: 0.95

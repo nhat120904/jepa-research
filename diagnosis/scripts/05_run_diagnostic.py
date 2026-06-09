@@ -175,8 +175,13 @@ def calibrate_effect_threshold_streaming(cache: LatentCache, records: list[dict]
 
 
 def materialize_records(cache: LatentCache, records: list[dict], step: int,
-                        *, want_proprio: bool) -> dict:
-    """Load only the requested transition records into CPU tensors."""
+                        *, want_proprio: bool, want_state: bool = False) -> dict:
+    """Load only the requested transition records into CPU tensors.
+
+    ``want_state`` additionally loads the raw env ``state`` at the transition's
+    start and end frames (``state_t``/``state_t1``) — used by the boundary
+    diagnostic to compute the true object-displacement outcome on Metaworld.
+    """
     if not records:
         raise ValueError("materialize_records called with no records")
 
@@ -184,12 +189,15 @@ def materialize_records(cache: LatentCache, records: list[dict], step: int,
     z_shape = tuple(first["z"].shape[1:])
     action_dim = int(first["action"].shape[-1]) * step
     proprio_dim = int(first["proprio"].shape[-1]) if want_proprio and "proprio" in first else 0
+    state_dim = int(first["state"].shape[-1]) if want_state and "state" in first else 0
 
     N = len(records)
     z_t = torch.empty((N, *z_shape), dtype=torch.float32)
     z_t1 = torch.empty((N, *z_shape), dtype=torch.float32)
     a_t = torch.empty((N, action_dim), dtype=torch.float32)
     proprio_t = torch.empty((N, proprio_dim), dtype=torch.float32) if proprio_dim else None
+    state_t = torch.empty((N, state_dim), dtype=torch.float32) if state_dim else None
+    state_t1 = torch.empty((N, state_dim), dtype=torch.float32) if state_dim else None
     traj_tags = [None] * N
 
     by_tid: dict[str, list[tuple[int, dict]]] = {}
@@ -213,6 +221,10 @@ def materialize_records(cache: LatentCache, records: list[dict], step: int,
         if proprio_t is not None:
             proprio = np.asarray(grp["proprio"])
             proprio_t[rows_t] = torch.from_numpy(np.asarray(proprio[starts], dtype=np.float32))
+        if state_t is not None:
+            state = np.asarray(grp["state"])
+            state_t[rows_t] = torch.from_numpy(np.asarray(state[starts], dtype=np.float32))
+            state_t1[rows_t] = torch.from_numpy(np.asarray(state[starts + step], dtype=np.float32))
         for i, _ in items:
             traj_tags[i] = tid
 
@@ -221,6 +233,8 @@ def materialize_records(cache: LatentCache, records: list[dict], step: int,
         "z_t1": z_t1,
         "a_t": a_t,
         "proprio_t": proprio_t,
+        "state_t": state_t,
+        "state_t1": state_t1,
         "traj_tag": np.asarray(traj_tags),
     }
 
