@@ -1,20 +1,31 @@
 """Closed-loop Metaworld planning success rate — L2 cost vs the grounded cost.
 
-Protocol replicates the upstream JEPA-WMs paper's Metaworld evaluation
-(configs/evals/simu_env_planning/mw/*: goal frame from the scripted expert,
-CEM-L2 planner with horizon 6 / 300 samples / 15 iterations / var_scale 1.0,
-execute num_act_stepped=3 model-steps (15 raw actions) per replan,
-max_episode_steps 100, success = the simulator's flag), with the deviations
-stated in the output: 1-frame planning context (upstream: 2), alpha=0 (no
-proprio term in the cost), fewer episodes, and contact tasks the paper does not
-evaluate closed-loop (its Metaworld tables cover Reach / Reach-Wall only — both
-free-space, so MW-Reach here is the sanity anchor against the paper and the
-contact tasks are the new experiment the boundary fix targets).
+Protocol replicates the upstream JEPA-WMs paper's Metaworld evaluation, read
+off the shipped config (base_configs/mw/reach-wall_L2_cem_sourcexp_H6_nas3_
+ctxt2.yaml): goal frame = the scripted expert's final frame, CEM-L2 planner
+with horizon 6 / 300 samples / 15 iterations / var_scale 1.0, execute
+num_act_stepped=3 model-steps (15 raw actions) per replan, max_episode_steps
+100, one zero-action warmup step after reset (env wrapper's reset_warmup),
+horizon shrunk to the remaining model-steps near episode end, success = the
+simulator's flag. Upstream mw uses `alpha: 0` — no proprio term in the COST
+(the unroll context still carries proprio; dino_wm's predictor requires it:
+424 = 384 visual + 20 proprio + 20 action). α=0 is the default here
+(--alpha restores the term). Remaining deviations: fewer episodes, and contact tasks
+the paper does not evaluate closed-loop (its Metaworld tables cover Reach /
+Reach-Wall only — both free-space, so MW-Reach here is the sanity anchor
+against the paper and the contact tasks are the new experiment the boundary
+fix targets).
 
 Arms (paired: same env seeds, same CEM noise seeds):
-    l2    — upstream planning objective (latent MSE to goal)
+    l2    — upstream planning objective: latent MSE to goal (+ α·proprio-feature
+            MSE if --alpha > 0; upstream mw uses α=0)
     hdyn  — + the grounded object-dynamics term integrated along the rollout
-            (models/probes.grounded_dynamics_cost; needs --probe and --dyn-head)
+            (per-dim normalised, weighted --beta; needs --probe and --dyn-head)
+
+Implementation notes: one env per (task, seed) with the rand_vec frozen after the
+first reset, reused for the expert goal rollout and both arms (repeated MuJoCo
+renderer creation crashed the process natively on Windows); the proprio term
+needs the unroll's proprio predictions, which `_PlanAdapter` captures per rollout.
 
     python scripts/18_closed_loop_eval.py --config configs/diagnostic_metaworld.yaml \
         --model dino_wm_metaworld --probe checkpoints/object_probe_dino_wm_metaworld.pt \
@@ -40,7 +51,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from models.adapters import build_adapter  # noqa: E402
-from models.probes import load_probe, load_dynamics_head, grounded_dynamics_cost  # noqa: E402
+from models.probes import load_probe, load_dynamics_head  # noqa: E402
 from planning.cem_planner import cem_plan  # noqa: E402
 
 FRAMESKIP = 5          # metaworld frameskip the checkpoints were trained with
@@ -48,7 +59,11 @@ RAW_A = 4
 
 
 def make_env(task: str, seed: int, img_size: int = 224):
-    """Metaworld V3 goal-observable env with the upstream camera setup."""
+    """Metaworld V3 goal-observable env with the upstream camera setup.
+
+    After the first reset we freeze the rand_vec so every subsequent reset of
+    THIS instance reproduces the same initial state — the expert goal rollout
+    and both planning arms then share one env (and one MuJoCo renderer)."""
     from metaworld.env_dict import ALL_V3_ENVIRONMENTS_GOAL_OBSERVABLE
 
     env_id = task.split("-", 1)[-1] + "-v3-goal-observable"
@@ -58,7 +73,55 @@ def make_env(task: str, seed: int, img_size: int = 224):
     env.render_mode = "rgb_array"
     env.camera_name = "corner2"
     env.width = env.height = img_size
-    return env
+    obs0, _ = env.reset()
+    env._freeze_rand_vec = True                      # later resets: same init
+    return env, obs0
+
+
+class _PlanAdapter:
+    """Pass-through planning adapter that captures the unroll's PROPRIO
+    predictions so the cost can apply the upstream α·proprio-feature term
+    (`planning_objective.alpha: 0.1` in the mw configs). Only the methods
+    cem_plan touches are forwarded."""
+
+    def __init__(self, base):
+        self.base = base
+        self.spec = base.spec
+        self.device = base.device
+        self.last_proprio = None                     # (B, H+1, ...) features
+
+    def predict_rollout(self, z_t, actions, proprio_t=None):
+        from einops import rearrange
+        from tensordict.tensordict import TensorDict
+
+        b = self.base
+        B, H, _ = actions.shape
+        z_t = z_t.to(b.device, dtype=torch.float32)
+        a = actions.to(b.device, dtype=torch.float32).reshape(B, -1, b.spec.action_dim)
+        a = b.normalize_action(a).reshape(B, -1, b._model_action_dim)
+        act_suffix = rearrange(a, "b t a -> t b a")
+        z_ctxt_visual = z_t.unsqueeze(1)
+        if b.spec.uses_proprio and proprio_t is not None:
+            prop_feat = b.encode_proprio_features(proprio_t.reshape(B, 1, -1))
+            ctxt = TensorDict({"visual": z_ctxt_visual, "proprio": prop_feat}, batch_size=[])
+            pred = b.encpred.unroll(ctxt, act_suffix=act_suffix)
+            self.last_proprio = rearrange(pred["proprio"], "t b ... -> b t ...")
+            return rearrange(pred["visual"], "t b ... -> b t ...")
+        self.last_proprio = None
+        pred = b.encpred.unroll(z_ctxt_visual, act_suffix=act_suffix)
+        return rearrange(pred, "t b ... -> b t ...")
+
+    def predict(self, z_t, a_t, proprio_t=None):
+        return self.base.predict(z_t, a_t, proprio_t=proprio_t)
+
+    def normalize_action(self, a):
+        return self.base.normalize_action(a)
+
+    def action_dim(self):
+        return self.base.action_dim()
+
+    def uses_proprio(self):
+        return self.base.uses_proprio()
 
 
 def expert_policy(task: str):
@@ -82,28 +145,18 @@ def render(env) -> np.ndarray:
     return frame.copy()
 
 
-def rollout_expert(task: str, seed: int, goal_steps: int | None, max_steps: int = 200):
-    """Roll the scripted expert; return (goal_frame, goal_state, init_state,
-    success_step). goal_steps=None → goal at the expert's success frame."""
-    env = make_env(task, seed)
-    obs, _ = env.reset()
-    init_state = obs.copy()
+def rollout_expert(env, init_obs: np.ndarray, task: str, max_steps: int = 200):
+    """Roll the scripted expert on the SHARED env (already reset); return
+    (goal_frame, goal_state, success_step) at the expert's success frame."""
+    obs = init_obs
     pol = expert_policy(task)
     succ_step = None
-    goal_frame, goal_state = None, None
     for t in range(1, max_steps + 1):
         obs, _, _, _, info = env.step(pol.get_action(obs))
-        if succ_step is None and info.get("success", 0) > 0.5:
+        if info.get("success", 0) > 0.5:
             succ_step = t
-        if goal_steps is not None and t == goal_steps:
-            goal_frame, goal_state = render(env), obs.copy()
-        if goal_steps is None and succ_step is not None:
-            goal_frame, goal_state = render(env), obs.copy()
             break
-    if goal_frame is None:                            # expert never succeeded /
-        goal_frame, goal_state = render(env), obs.copy()  # or goal_steps > rollout
-    env.close()
-    return goal_frame, goal_state, init_state, succ_step
+    return render(env), obs.copy(), succ_step
 
 
 @torch.no_grad()
@@ -114,28 +167,68 @@ def encode_frame(adapter, frame: np.ndarray, proprio: np.ndarray, device):
     return z[0, 0]                                                              # (V,H,W,D)
 
 
-def run_episode(arm, task, seed, adapter, device, *, probe, dyn_head, s_z, s_g,
-                beta, cem_kw, horizon, num_act_stepped, max_episode_steps):
-    env = make_env(task, seed)
+def make_traj_cost(arm, plan_adapter, base, probe, dyn_head, z_t, z_goal,
+                   goal_prop_feat, *, alpha, beta, s_g):
+    """Upstream objective (visual MSE + α·proprio-feature MSE) plus, for the
+    hdyn arm, the grounded object term (per-dim normalised, weighted β)."""
+    g_goal = g_init = None
+    if arm == "hdyn":
+        with torch.no_grad():
+            g_goal = probe(z_goal.unsqueeze(0))
+            g_init = probe(z_t.unsqueeze(0))
+    s_g_dim = s_g / np.sqrt(probe.out_dim)
+
+    def cost(pred, actions, z_goal_):
+        B = pred.shape[0]
+        c = ((pred[:, -1].reshape(B, -1) - z_goal_.reshape(1, -1)) ** 2).mean(-1)
+        lp = plan_adapter.last_proprio
+        if goal_prop_feat is not None and lp is not None:
+            c = c + alpha * ((lp[:, -1].reshape(B, -1)
+                              - goal_prop_feat.reshape(1, -1)) ** 2).mean(-1)
+        if arm == "hdyn":
+            obj = g_init.expand(B, -1).clone()
+            H = pred.shape[1] - 1
+            for t in range(H):
+                a = actions[:, t].reshape(B, -1, base.action_dim())
+                a = base.normalize_action(a).reshape(B, -1)
+                obj = obj + dyn_head(pred[:, t], a)
+            c = c + beta * (((obj - g_goal) / s_g_dim) ** 2).mean(-1)
+        return c
+
+    return cost
+
+
+def run_episode(arm, task, seed, env, init_state, goal_frame, goal_state,
+                expert_succ, adapter, plan_adapter, device, *, probe, dyn_head,
+                s_g, alpha, beta, cem_kw, horizon, num_act_stepped,
+                max_episode_steps, proprio_ctxt):
     obs, _ = env.reset()
-    goal_frame, goal_state, init_state, expert_succ = rollout_expert(
-        task, seed, goal_steps=None)
-    if not np.allclose(obs, init_state, atol=1e-6):
-        print(f"  [warn] init-state mismatch (seed {seed}); proceeding")
+    if not np.allclose(obs, init_state, atol=1e-5):
+        print(f"  [warn] init-state mismatch after reset (seed {seed})")
+    # upstream reset_warmup: one zero-action step before the first observation
+    obs, _, _, _, _ = env.step(np.zeros(RAW_A))
 
     z_goal = encode_frame(adapter, goal_frame, goal_state[:4], device)
+    goal_prop_feat = None
+    if alpha > 0 and adapter.uses_proprio():
+        with torch.no_grad():
+            goal_prop_feat = adapter.encode_proprio_features(
+                torch.from_numpy(goal_state[:4].astype(np.float32))[None, None].to(device))
     success, steps = False, 0
     while steps < max_episode_steps:
         frame = render(env)
         z_t = encode_frame(adapter, frame, obs[:4], device)
-        prop = torch.from_numpy(obs[:4].astype(np.float32)).to(device)
-        tcf = None
-        if arm == "hdyn":
-            tcf = grounded_dynamics_cost(probe, dyn_head, adapter, z_t, z_goal,
-                                         s_z=s_z, s_g=s_g, beta=beta)
+        prop = None
+        if proprio_ctxt:
+            prop = torch.from_numpy(obs[:4].astype(np.float32)).to(device)
+        tcf = make_traj_cost(arm, plan_adapter, adapter, probe, dyn_head,
+                             z_t, z_goal, goal_prop_feat,
+                             alpha=alpha, beta=beta, s_g=s_g)
+        # upstream shrinks the plan to the remaining model-steps near the end
+        plan_h = min(horizon, max(1, -(-(max_episode_steps - steps) // FRAMESKIP)))
         plan = cem_plan(
-            adapter, z_t, z_goal, horizon=horizon, action_dim=RAW_A * FRAMESKIP,
-            num_act_stepped=num_act_stepped, proprio_t=prop,
+            plan_adapter, z_t, z_goal, horizon=plan_h, action_dim=RAW_A * FRAMESKIP,
+            num_act_stepped=min(num_act_stepped, plan_h), proprio_t=prop,
             generator=torch.Generator(device=device).manual_seed(seed * 1000 + steps),
             traj_cost_fn=tcf, **cem_kw)
         raw = plan.reshape(-1, RAW_A).cpu().numpy()
@@ -148,11 +241,11 @@ def run_episode(arm, task, seed, adapter, device, *, probe, dyn_head, s_z, s_g,
                 break
         if success:
             break
-    final_dist = float(np.linalg.norm(obs - goal_state))
-    env.close()
     return {"task": task, "arm": arm, "seed": seed, "success": int(success),
-            "steps": steps, "final_state_dist": final_dist,
-            "state_dist_success": int(final_dist < 0.3),
+            "steps": steps,
+            "final_state_dist": float(np.linalg.norm(obs - goal_state)),
+            "ee_dist": float(np.linalg.norm(obs[:3] - goal_state[:3])),
+            "state_dist_success": int(np.linalg.norm(obs - goal_state) < 0.3),
             "expert_success_step": expert_succ}
 
 
@@ -164,9 +257,14 @@ def main() -> int:
     ap.add_argument("--dyn-head", required=True)
     ap.add_argument("--tasks", nargs="+", default=["mw-reach", "mw-push", "mw-pick-place"])
     ap.add_argument("--episodes", type=int, default=16)
-    ap.add_argument("--beta", type=float, default=1.0)
-    ap.add_argument("--s-z", type=float, default=169.31)   # pool scales (scripts/15 log)
-    ap.add_argument("--s-g", type=float, default=0.1276)
+    ap.add_argument("--alpha", type=float, default=0.0,
+                    help="proprio-feature cost weight (upstream mw config: 0)")
+    ap.add_argument("--no-proprio-ctxt", dest="proprio_ctxt", action="store_false",
+                    help="drop proprio from the unroll context (NOTE: dino_wm's "
+                         "predictor needs it — 384 visual + 20 proprio + 20 action "
+                         "= 424; upstream always carries proprio in the obs td)")
+    ap.add_argument("--beta", type=float, default=0.1, help="grounded-term weight")
+    ap.add_argument("--s-g", type=float, default=0.1276)   # pool scale (scripts/15 log)
     ap.add_argument("--horizon", type=int, default=6)      # upstream mw config
     ap.add_argument("--num-act-stepped", type=int, default=3)
     ap.add_argument("--cem-num-samples", type=int, default=300)
@@ -181,6 +279,7 @@ def main() -> int:
     cfg = yaml.safe_load(open(args.config))
     device = torch.device(cfg["eval"]["device"] if torch.cuda.is_available() else "cpu")
     adapter = build_adapter(args.model, device=str(device)).eval()
+    plan_adapter = _PlanAdapter(adapter)
     probe, _ = load_probe(args.probe, device)
     dyn_head, dyn_meta = load_dynamics_head(args.dyn_head, device)
     cem_kw = dict(num_samples=args.cem_num_samples, iterations=args.cem_iterations,
@@ -189,24 +288,34 @@ def main() -> int:
     print(f"protocol: H={args.horizon} nas={args.num_act_stepped} "
           f"samples={args.cem_num_samples} var={args.var_scale} "
           f"max_steps={args.max_episode_steps} episodes={args.episodes} "
-          f"arms={args.arms} (deviations vs paper: ctxt=1, alpha=0)", flush=True)
+          f"arms={args.arms} alpha={args.alpha} proprio_ctxt={args.proprio_ctxt} "
+          f"(upstream mw parity: rgb-only ctxt, alpha=0, warmup step, "
+          f"horizon shrink)", flush=True)
     print(f"dyn head: cf_corr={dyn_meta.get('cf_corr'):.3f} beta={args.beta} "
-          f"s_z={args.s_z} s_g={args.s_g}", flush=True)
+          f"s_g={args.s_g}", flush=True)
 
     import pandas as pd
     rows = []
     for task in args.tasks:
         for ep in range(args.episodes):
             seed = 10_000 + ep
+            try:
+                env, init_state = make_env(task, seed)
+                goal_frame, goal_state, expert_succ = rollout_expert(env, init_state, task)
+            except Exception as e:  # noqa: BLE001
+                print(f"  [error] {task} ep{ep} env/expert: {e}", flush=True)
+                continue
             for arm in args.arms:
                 t0 = time.time()
                 try:
-                    r = run_episode(arm, task, seed, adapter, device,
-                                    probe=probe, dyn_head=dyn_head,
-                                    s_z=args.s_z, s_g=args.s_g, beta=args.beta,
+                    r = run_episode(arm, task, seed, env, init_state, goal_frame,
+                                    goal_state, expert_succ, adapter, plan_adapter,
+                                    device, probe=probe, dyn_head=dyn_head,
+                                    s_g=args.s_g, alpha=args.alpha, beta=args.beta,
                                     cem_kw=cem_kw, horizon=args.horizon,
                                     num_act_stepped=args.num_act_stepped,
-                                    max_episode_steps=args.max_episode_steps)
+                                    max_episode_steps=args.max_episode_steps,
+                                    proprio_ctxt=args.proprio_ctxt)
                 except Exception as e:  # noqa: BLE001 — keep the sweep alive
                     print(f"  [error] {task} ep{ep} {arm}: {e}", flush=True)
                     continue
@@ -214,8 +323,9 @@ def main() -> int:
                 rows.append(r)
                 print(f"  {task:16s} ep{ep:02d} {arm:5s} success={r['success']} "
                       f"steps={r['steps']:3d} dist={r['final_state_dist']:.3f} "
-                      f"({r['minutes']:.1f} min)", flush=True)
+                      f"ee={r['ee_dist']:.3f} ({r['minutes']:.1f} min)", flush=True)
                 pd.DataFrame(rows).to_csv(args.out, index=False)   # checkpoint as we go
+            env.close()
 
         d = pd.DataFrame(rows)
         for arm in args.arms:
