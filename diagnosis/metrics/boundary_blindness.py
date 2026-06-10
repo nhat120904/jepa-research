@@ -31,12 +31,19 @@ reference population so ``BB`` is comparable across regimes.
 
 from __future__ import annotations
 
+import os
 from typing import Optional, Tuple
 
 import numpy as np
 import torch
 
 from models.adapters import WorldModelAdapter
+
+# Hard cap on predictions per adapter.predict call. Without it a Metaworld cell
+# (B≈1000 anchors × M=16 neighbours) becomes one 16k-batch unroll; on Windows the
+# driver's sysmem fallback turns the resulting VRAM overflow into machine-wide
+# RAM thrash instead of a clean CUDA OOM.
+_MAX_PREDICT_ROWS = int(os.environ.get("CAI_JEPA_BB_PREDICT_ROWS", "256"))
 
 
 def _repeat_proprio(proprio_t: Optional[torch.Tensor], M: int) -> Optional[torch.Tensor]:
@@ -77,15 +84,28 @@ def boundary_sensitivities_per_transition(
     s_true = (((out - mean_o.unsqueeze(1)) ** 2 * mask).sum(dim=1) / cnt
               ).clamp(min=0.0).sqrt().cpu().numpy()
 
-    z_rep = z_t.unsqueeze(1).expand(B, M, *z_t.shape[1:]).reshape(B * M, *z_t.shape[1:])
-    a_flat = neighbour_actions.reshape(B * M, A).to(z_t.device).float()
-    preds = adapter.predict(z_rep, a_flat, proprio_t=_repeat_proprio(proprio_t, M))
-    preds = preds.reshape(B, M, -1)                    # (B, M, Dz)
+    anchors_per_chunk = max(1, _MAX_PREDICT_ROWS // M)
+    s_model_parts = []
+    for lo in range(0, B, anchors_per_chunk):
+        hi = min(lo + anchors_per_chunk, B)
+        b = hi - lo
+        z_rep = (z_t[lo:hi].unsqueeze(1)
+                 .expand(b, M, *z_t.shape[1:])
+                 .reshape(b * M, *z_t.shape[1:]))
+        a_flat = neighbour_actions[lo:hi].reshape(b * M, A).to(z_t.device).float()
+        prop = _repeat_proprio(proprio_t[lo:hi] if proprio_t is not None else None, M)
+        preds = adapter.predict(z_rep, a_flat, proprio_t=prop)
+        preds = preds.reshape(b, M, -1)                # (b, M, Dz)
 
-    mm = mask.unsqueeze(-1)
-    centroid = (preds * mm).sum(dim=1) / cnt.unsqueeze(-1)         # (B, Dz)
-    sq = ((preds - centroid.unsqueeze(1)) ** 2).sum(dim=-1)        # (B, M)
-    s_model = ((sq * mask).sum(dim=1) / cnt).clamp(min=0.0).sqrt().cpu().numpy()
+        mm = mask[lo:hi].unsqueeze(-1)
+        c = cnt[lo:hi]
+        centroid = (preds * mm).sum(dim=1) / c.unsqueeze(-1)       # (b, Dz)
+        sq = ((preds - centroid.unsqueeze(1)) ** 2).sum(dim=-1)    # (b, M)
+        s_model_parts.append(
+            ((sq * mask[lo:hi]).sum(dim=1) / c).clamp(min=0.0).sqrt().cpu().numpy()
+        )
+        del z_rep, a_flat, preds
+    s_model = np.concatenate(s_model_parts)
     return s_true, s_model
 
 

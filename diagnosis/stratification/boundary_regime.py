@@ -54,7 +54,9 @@ def state_neighbours(
         neighbour_idx:  (B, max_neighbours) long — nearest references (padded with
                         the nearest where fewer than ``max_neighbours`` exist).
         neighbour_mask: (B, max_neighbours) bool — True where the neighbour is
-                        genuinely within ``similarity_radius``.
+                        within ``similarity_radius``; anchors with fewer than
+                        ``max_neighbours`` in-radius candidates relax to their
+                        nearest references (the hard_nn fallback).
         valid:          (B,) bool — True where ≥ ``min_neighbours`` in-radius
                         neighbours exist (boundary score is defined).
     """
@@ -75,6 +77,18 @@ def state_neighbours(
 
     gathered_d = torch.gather(d, 1, neighbour_idx)
     neighbour_mask = torch.isfinite(gathered_d) & (gathered_d <= similarity_radius)
+
+    # Mirror hard_nn_negative's fallback exactly: anchors with fewer than
+    # max_neighbours in-radius candidates relax to their nearest references
+    # regardless of radius. Without this, a radius in raw latent units selects
+    # nothing on real caches (Metaworld frame latents sit hundreds of L2 units
+    # apart) and every downstream quantity degenerates to 0/nan — whereas the
+    # production hard_nn sampler, whose neighbourhood this reuses, always relaxes.
+    too_few = neighbour_mask.sum(dim=1) < max_neighbours
+    col = torch.arange(max_neighbours, device=neighbour_mask.device)
+    relaxed = (col < m).unsqueeze(0) & torch.isfinite(gathered_d)
+    neighbour_mask = torch.where(too_few.unsqueeze(1), relaxed, neighbour_mask)
+
     valid = neighbour_mask.sum(dim=1) >= min_neighbours
     return neighbour_idx, neighbour_mask, valid
 

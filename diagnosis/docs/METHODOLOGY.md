@@ -96,14 +96,25 @@ Key module responsibilities:
   source of truth).
 - **`metrics/`** — each metric exposes a *per-transition* function the runner calls directly,
   so `07_validate_synthetic.py` tests the exact production path with synthetic models.
-- **`stratification/`** — assigns each transition one of the 4 regimes (§5).
+- **`stratification/`** — assigns each transition one of the 4 regimes (§5); plus
+  `boundary_regime.py`, the cross-cutting **boundary-regime** selection (similar-state
+  neighbourhoods whose true outcome fans out under small action changes).
+- **`metrics/boundary_blindness.py`** — the **BB** metric (`relu(S_true_n − S_model_n)`), run
+  per regime by `scripts/12_boundary_diagnostic.py` → `results/{dataset}_boundary.csv`. This is
+  the headline number of the Boundary-Blind framing (gate PASSED 2026-06-10).
 - **`scripts/06`** — turns the CSV into figures + a CI-aware decision (§7).
 - **`planning/cem_planner.py` + `metrics/action_score.py`** — faithful port of the upstream
-  `CEMPlanner` and the DROID Action Error; driven by `scripts/08`, correlated by `scripts/09`.
+  `CEMPlanner` (now with an optional `cost_fn` hook) and the DROID Action Error; driven by
+  `scripts/08`, correlated by `scripts/09`.
+- **Fix legs** (post-gate): `models/heads/mixture_predictor.py` + `scripts/train_predictor_head.py`
+  + `scripts/13_eval_fix_boundary.py` — the head-level C1 fix (**measured null**, see
+  `docs/FIX_C1_EXPLAINER.md`); `models/probes/object_probe.py` + `scripts/14_train_object_probe.py`
+  + `scripts/15_eval_metric_boundary.py` + `scripts/16_planning_metric_compare.py` — the
+  **state-grounded latent metric** fix (current method-of-record).
 
-Offline correctness gates (no GPU, no data): `pytest tests/` (34 tests, incl. CEM /
-action-score / grounded-vs-ignoring planning sign-check) and `scripts/07_validate_synthetic.py`
-(PerfectModel → CRA≈1.0; ActionIgnoringModel → CRA≈chance).
+Offline correctness gates (no GPU, no data): `pytest tests/` (68 tests, incl. CEM /
+action-score / boundary-blindness / mixture-head / metric-probe mechanism suites) and
+`scripts/07_validate_synthetic.py` (PerfectModel → CRA≈1.0; ActionIgnoringModel → CRA≈chance).
 
 ---
 

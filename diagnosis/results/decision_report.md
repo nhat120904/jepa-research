@@ -2,7 +2,7 @@
 
 **Decision:** CONDITIONAL_GO
 
-**Justification:** Moderate pathology in at least one dataset: effect-conditioned CRA � MW(hard contact-regimes)=0.651 [hi 0.703]; DROID(contact-regimes)=0.047 [hi 0.072]
+**Justification:** Moderate pathology in at least one dataset: effect-conditioned CRA � MW(hard contact-regimes)=0.651 [hi 0.703]; DROID(contact-regimes)=0.045 [hi 0.069]
 
 ## How To Read The Numbers
 
@@ -44,22 +44,22 @@ Metaworld `gripper_actuation` cells are mostly below the minimum transition coun
 
 | strategy | regime | rows | transitions | CRA | CRA_eff | AUG | ECS |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| random | free_space | 1 | 998 | 0.167 | 0.500 | +0.0371 | +0.0294 |
-| random | pre_grasp | 1 | 518 | 0.371 | 0.371 | +0.0171 | +0.0171 |
-| random | gripper_actuation | 1 | 400 | 0.203 | 0.306 | +0.0289 | +0.0587 |
-| random | contact_manipulation | 1 | 415 | 0.436 | 0.435 | +0.0031 | +0.0026 |
-| opposite | free_space | 1 | 998 | 0.394 | 0.000 | +0.0371 | +0.0294 |
-| opposite | pre_grasp | 1 | 518 | 0.044 | 0.044 | +0.0171 | +0.0171 |
-| opposite | gripper_actuation | 1 | 400 | 0.100 | 0.048 | +0.0289 | +0.0587 |
-| opposite | contact_manipulation | 1 | 415 | 0.171 | 0.171 | +0.0031 | +0.0026 |
-| hard_nn | free_space | 1 | 998 | 0.082 | 0.000 | +0.0371 | +0.0294 |
-| hard_nn | pre_grasp | 1 | 518 | 0.072 | 0.072 | +0.0171 | +0.0171 |
-| hard_nn | gripper_actuation | 1 | 400 | 0.022 | 0.035 | +0.0289 | +0.0587 |
-| hard_nn | contact_manipulation | 1 | 415 | 0.059 | 0.059 | +0.0031 | +0.0026 |
-| hard_effect | free_space | 1 | 998 | 0.082 | 0.000 | +0.0371 | +0.0294 |
-| hard_effect | pre_grasp | 1 | 518 | 0.072 | 0.072 | +0.0171 | +0.0171 |
-| hard_effect | gripper_actuation | 1 | 400 | 0.022 | 0.035 | +0.0289 | +0.0587 |
-| hard_effect | contact_manipulation | 1 | 415 | 0.059 | 0.059 | +0.0031 | +0.0026 |
+| random | free_space | 1 | 998 | 0.153 | 0.750 | +0.0463 | +0.1184 |
+| random | pre_grasp | 1 | 518 | 0.367 | 0.367 | +0.0108 | +0.0108 |
+| random | gripper_actuation | 1 | 400 | 0.212 | 0.319 | +0.0508 | +0.0760 |
+| random | contact_manipulation | 1 | 415 | 0.443 | 0.442 | -0.0054 | -0.0055 |
+| opposite | free_space | 1 | 998 | 0.396 | 0.000 | +0.0459 | -0.0363 |
+| opposite | pre_grasp | 1 | 518 | 0.044 | 0.044 | +0.0123 | +0.0123 |
+| opposite | gripper_actuation | 1 | 400 | 0.085 | 0.048 | +0.0352 | +0.0679 |
+| opposite | contact_manipulation | 1 | 415 | 0.166 | 0.167 | +0.0006 | +0.0001 |
+| hard_nn | free_space | 1 | 998 | 0.084 | 0.000 | +0.0490 | +0.0960 |
+| hard_nn | pre_grasp | 1 | 518 | 0.070 | 0.070 | +0.0115 | +0.0115 |
+| hard_nn | gripper_actuation | 1 | 400 | 0.022 | 0.035 | +0.0467 | +0.0753 |
+| hard_nn | contact_manipulation | 1 | 415 | 0.055 | 0.056 | +0.0119 | +0.0115 |
+| hard_effect | free_space | 1 | 998 | 0.084 | 0.000 | +0.0509 | +0.1542 |
+| hard_effect | pre_grasp | 1 | 518 | 0.070 | 0.070 | +0.0138 | +0.0138 |
+| hard_effect | gripper_actuation | 1 | 400 | 0.022 | 0.035 | +0.0378 | +0.0629 |
+| hard_effect | contact_manipulation | 1 | 415 | 0.055 | 0.056 | +0.0195 | +0.0195 |
 
 ## Hard-Negative Breakdown
 
@@ -84,14 +84,14 @@ Metaworld `gripper_actuation` cells are mostly below the minimum transition coun
 
 | model | strategy | regime | rows | transitions | CRA | CRA_eff [95% CI] | AUG | ECS |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| dino_wm_droid | hard_nn | free_space | 1 | 998 | 0.082 | 0.000 [0.000, 0.000] | +0.0371 | +0.0294 |
-| dino_wm_droid | hard_nn | pre_grasp | 1 | 518 | 0.072 | 0.072 [0.051, 0.096] | +0.0171 | +0.0171 |
-| dino_wm_droid | hard_nn | gripper_actuation | 1 | 400 | 0.022 | 0.035 [0.015, 0.061] | +0.0289 | +0.0587 |
-| dino_wm_droid | hard_nn | contact_manipulation | 1 | 415 | 0.059 | 0.059 [0.039, 0.083] | +0.0031 | +0.0026 |
-| dino_wm_droid | hard_effect | free_space | 1 | 998 | 0.082 | 0.000 [0.000, 0.000] | +0.0371 | +0.0294 |
-| dino_wm_droid | hard_effect | pre_grasp | 1 | 518 | 0.072 | 0.072 [0.051, 0.096] | +0.0171 | +0.0171 |
-| dino_wm_droid | hard_effect | gripper_actuation | 1 | 400 | 0.022 | 0.035 [0.015, 0.061] | +0.0289 | +0.0587 |
-| dino_wm_droid | hard_effect | contact_manipulation | 1 | 415 | 0.059 | 0.059 [0.039, 0.083] | +0.0031 | +0.0026 |
+| dino_wm_droid | hard_nn | free_space | 1 | 998 | 0.084 | 0.000 [0.000, 0.000] | +0.0490 | +0.0960 |
+| dino_wm_droid | hard_nn | pre_grasp | 1 | 518 | 0.070 | 0.070 [0.050, 0.093] | +0.0115 | +0.0115 |
+| dino_wm_droid | hard_nn | gripper_actuation | 1 | 400 | 0.022 | 0.035 [0.015, 0.061] | +0.0467 | +0.0753 |
+| dino_wm_droid | hard_nn | contact_manipulation | 1 | 415 | 0.055 | 0.056 [0.037, 0.078] | +0.0119 | +0.0115 |
+| dino_wm_droid | hard_effect | free_space | 1 | 998 | 0.084 | 0.000 [0.000, 0.000] | +0.0509 | +0.1542 |
+| dino_wm_droid | hard_effect | pre_grasp | 1 | 518 | 0.070 | 0.070 [0.050, 0.093] | +0.0138 | +0.0138 |
+| dino_wm_droid | hard_effect | gripper_actuation | 1 | 400 | 0.022 | 0.035 [0.015, 0.061] | +0.0378 | +0.0629 |
+| dino_wm_droid | hard_effect | contact_manipulation | 1 | 415 | 0.055 | 0.056 [0.037, 0.078] | +0.0195 | +0.0195 |
 
 ## Interpretation
 
@@ -100,6 +100,73 @@ Metaworld `gripper_actuation` cells are mostly below the minimum transition coun
 - On Metaworld, `hard_effect` mirrors `hard_nn` in CRA/CRA_eff for this fixed candidate pool, so effect-aware candidate scoring does not rescue the ranking signal.
 - `jepa_wm_metaworld` is consistently stronger than `dino_wm_metaworld`, but both still lose margin under `hard_nn`.
 - On DROID, after the pipeline gate passes, `random` negatives are still separable in some regimes, while `hard_nn` and `hard_effect` are near chance in `gripper_actuation` and `contact_manipulation`. This is the sharpest action-grounding failure in the rerun.
+
+## Boundary Blindness (the gate for the Boundary-Blind reframing) — run 2026-06-10
+
+The reframed thesis (see `docs/PAPER_IDEA.md`) is that the failure that matters is not
+one-step action-ignoring (CRA) but **failure to resolve contact bifurcations**:
+`BB = relu(S_true_norm − S_model_norm)` per transition, where `S_true` is the spread of the
+*true* outcome over a similar-state neighbourhood of nearby actions and `S_model` the spread
+of the model's predictions over the same actions. `bb_boundary` restricts to the
+top-quartile `boundary_score` subset (the bifurcation-like transitions). Source:
+`results/metaworld_boundary.csv`, `results/droid_boundary.csv`
+(`scripts/12_boundary_diagnostic.py`, frozen checkpoints, nothing trained).
+
+**GATE VERDICT: PASS.** BB concentrates in the pre-grasp boundary, CI-aware, on both
+datasets and both Metaworld baselines.
+
+### Metaworld (object-displacement outcome; pooled over tasks, n_boundary-weighted, excl. `mw-door-close`)
+
+| regime | dino_wm `bb` | dino_wm `bb_boundary` | jepa_wm `bb` | jepa_wm `bb_boundary` |
+| --- | --- | --- | --- | --- |
+| free_space | 0.069 | 0.282 | 0.070 | 0.299 |
+| pre_grasp | 0.541 | **1.323** | 0.581 | **1.280** |
+| contact_manipulation | 0.212 | 0.481 | 0.194 | 0.441 |
+
+Per-task CI-aware pairing (`bb_boundary_lo(regime) > bb_boundary_hi(free_space)` within the
+same task): pre_grasp is confidently elevated in 4/6 pairable tasks (dino_wm) and 5/6
+(jepa_wm) with zero confident reversals; contact_manipulation is confidently elevated in 2/7
+(both models) — moderate, not the locus. `gripper_actuation` has no populated Metaworld cells
+(no gripper signal in this subset), as expected.
+
+### DROID (transfer check, ‖Δz‖ proxy outcome; single flat pool, `dino_wm_droid`)
+
+| regime | `bb` [95% CI] | `bb_boundary` [95% CI] | n_boundary |
+| --- | --- | --- | --- |
+| free_space | 0.422 [0.365, 0.476] | 0.721 [0.613, 0.834] | 415 |
+| pre_grasp | 0.887 [0.753, 1.034] | **1.975 [1.601, 2.350]** | 97 |
+| gripper_actuation | 0.395 [0.330, 0.463] | 1.093 [0.791, 1.393] | 30 |
+| contact_manipulation | 0.311 [0.243, 0.375] | 0.463 [0.266, 0.686] | 41 |
+
+`pre_grasp` is CI-confidently elevated over `free_space` (lo 1.601 > hi 0.834);
+`gripper_actuation` is point-elevated with marginally overlapping CIs; `contact_manipulation`
+is not elevated. Same locus as Metaworld: the bifurcation the models smear is the
+**grasp/approach boundary**, not post-contact manipulation.
+
+### Caveats (binding)
+
+- Metaworld boundary/outcome label is an **object-displacement proxy** (the HF dataset has no
+  MuJoCo contact ground truth); DROID outcome is the weaker ‖Δz‖ latent proxy and its regimes
+  are proprio/latent heuristics — DROID is a transfer check, not the proof.
+- `mw-door-close` shows BB ≈ 1.7–2.9 in *every* regime including `free_space` (articulated
+  door motion confounds the displacement proxy); pooled Metaworld numbers above exclude it.
+  Including it, free_space pooled `bb_boundary` rises to ≈1.4 and the regime ordering blurs —
+  the per-task paired comparison is the robust read.
+- Neighbourhoods relax to nearest-by-latent when the raw `similarity_radius` selects nothing
+  (the same fallback the production `hard_nn` sampler uses); on these caches the relax path is
+  what defines the neighbourhood.
+- `vjepa2_ac_droid` not run (needs ~24 GB VRAM; this rerun used a 12 GB RTX 5070) — server-only.
+
+### Relation to the CRA finding
+
+Consistent, and sharper: CRA_eff says the models stop *distinguishing* similar-state
+counterfactual actions in pre-grasp/contact (hard_nn ≈ 0.46–0.57 vs opposite ≈ 0.97–0.99 on
+Metaworld; chance-floor on DROID). BB adds *where it matters and why*: exactly at bifurcation
+transitions the models' predicted-outcome spread collapses relative to the world's
+(pre_grasp ≈ 4.5× free_space on Metaworld, ≈ 2.7× on DROID). No contradiction between the two
+signals was observed.
+
+![Figure BB](figures/figure_bb_per_regime.pdf)
 
 ## Planning Action-Score Probe (supplementary evidence)
 
@@ -136,7 +203,9 @@ high and grows with horizon (≈1.0–1.2 at H=1 → ≈1.6–2.3 at H=3).
 strengthened.** Metaworld now supplies the *causal* link (grounding quality →
 planning quality, expected direction, both horizons); DROID supplies the *severe*
 end of the same axis. The earlier weak argument (DROID per-transition correlation)
-is replaced by the Metaworld regime-level link plus the DROID level read.
+is replaced by the Metaworld regime-level link plus the DROID level read. The
+per-transition null is itself evidence for the boundary reframing — the planning
+leg is recast around BB (see the Boundary Blindness section above).
 
 ## Decision Logic
 
@@ -144,7 +213,7 @@ is replaced by the Metaworld regime-level link plus the DROID level read.
 - `ABANDON` requires the upper confidence bounds to be high in both datasets: both contact-regime upper CIs at least `0.85`.
 - `CONDITIONAL_GO` is used when at least one dataset shows moderate pathology below `0.75`, but the evidence is not strong enough for full `GO`.
 
-Observed decision inputs: Metaworld hard-task contact-regime `CRA_eff=0.651` with upper CI `0.703`; DROID contact-regime `CRA_eff=0.047` with upper CI `0.072`.
+Observed decision inputs: Metaworld hard-task contact-regime `CRA_eff=0.651` with upper CI `0.703`; DROID contact-regime `CRA_eff=0.045` with upper CI `0.069`.
 
 Therefore the decision is `CONDITIONAL_GO`: DROID is strongly pathological and the pipeline now passes sanity checks, while Metaworld is clearly below the abandon threshold but not below the stricter full-GO threshold.
 
@@ -152,3 +221,4 @@ Therefore the decision is `CONDITIONAL_GO`: DROID is strongly pathological and t
 
 ![Figure A](figures/figure_a_cra_per_regime.pdf)
 ![Figure B](figures/figure_b_metaworld_per_task.pdf)
+![Figure BB](figures/figure_bb_per_regime.pdf)

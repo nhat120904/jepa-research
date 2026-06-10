@@ -1,7 +1,7 @@
 # Handoff — Action-identifiability "fix" leg (contact-boundary reframing)
 
-**Updated:** 2026-06-09 (boundary diagnostic now **coded, tested, runnable**).
-**For:** the server agent (A5000, where the latent caches + DROID subset live).
+**Updated:** 2026-06-10 (**STEP 2 — the gate — has been RUN: PASS**).
+**For:** the server agent (A5000) / local 12 GB box.
 **Read first:** `docs/plans/2026-06-09-action-identifiability-fix-design.md` (full
 design + rationale) and `docs/DIAGNOSIS_PLAN.md` (the current plan-of-record).
 This file is the operational "what to run, in what order."
@@ -10,9 +10,26 @@ This file is the operational "what to run, in what order."
 
 ## 0. TL;DR — your immediate task
 
-The boundary diagnostic (the **gate** that proves the reframed gap before any fix
-is trained) is implemented and unit-tested offline. Two things on the server, in
-this order:
+**UPDATE 2 (2026-06-10, later the same day): C1 was built and run — head-level
+NULL, measured.** Four head variants (soft-NLL, WTA, +state-slice context,
+supervised mode assignment) all improve NLL over K=1, none move BB
+(`results/metaworld_boundary_fix.csv`). Probes pin two causes: the
+"moves/doesn't" conditional future-means differ by only 9.9 L2 vs a 106 residual
+(the latent metric compresses the boundary subspace ~10×), and expert data has no
+counterfactual action coverage at the boundary (π action-flip ≈ 0). **Next task:
+encoder/metric-level D** — supervised latent projection on the cached latents —
+then re-run `scripts/13_eval_fix_boundary.py`. Read `docs/FIX_C1_EXPLAINER.md` §6
+first. The §4 plan below is preserved for context; its head-level step 1 is done
+(code: `models/heads/mixture_predictor.py`, `scripts/train_predictor_head.py`).
+The boundary diagnostic was run on the local 12 GB box (Metaworld both baselines +
+DROID dino_wm transfer): `bb_boundary` is CI-confidently elevated at the
+**pre-grasp boundary** — Metaworld pooled 1.323/1.280 (dino/jepa) vs free_space
+0.282/0.299 (excl. mw-door-close proxy anomaly); DROID 1.975 [1.601, 2.350] vs
+0.721 [0.613, 0.834]. Full tables, run log, and two disclosed implementation fixes:
+`results/boundary_gate_report.md`; gate verdict recorded in `DIAGNOSIS_PLAN.md` §4.
+
+Still open on the server: STEP 1 below (5 min, direction D data question) and the
+`vjepa2_ac_droid` leg (`03` → `05` → `12`, needs 24 GB).
 
 ```bash
 cd <repo>/diagnosis && source .venv/bin/activate && export $(grep -v '^#' .env | xargs)
@@ -20,14 +37,7 @@ cd <repo>/diagnosis && source .venv/bin/activate && export $(grep -v '^#' .env |
 # STEP 1 (5 min, no GPU): resolve the one open data question for direction D.
 python scripts/inspect_droid_observation_keys.py \
     --paths-csv data/droid_subset/droid_paths.csv --n 5
-
-# STEP 2 (the GATE): run the boundary diagnostic on the frozen Metaworld baselines.
-# Caches (03) + regimes (04) already exist for Metaworld, so this runs immediately.
-python scripts/12_boundary_diagnostic.py --config configs/diagnostic_metaworld.yaml
 ```
-
-Then inspect `results/metaworld_boundary.csv` and apply the **gate** (§3). Do **not**
-start training any fix until the gate passes.
 
 ---
 
@@ -67,7 +77,7 @@ a boundary label). DROID is a transfer check; do not over-claim tactile/force gr
 
 ---
 
-## 3. STEP 2 — boundary diagnostic on frozen baselines (NO training) — **the gate**
+## 3. STEP 2 — boundary diagnostic on frozen baselines (NO training) — **the gate — DONE: PASS (2026-06-10)**
 
 Goal: prove the reframed gap is real and measurable before building any fix. Runs on
 the existing **Metaworld** caches with frozen checkpoints — same cost profile as
@@ -104,36 +114,49 @@ python scripts/12_boundary_diagnostic.py --config configs/diagnostic_droid.yaml
 - **Fail**: if `bb_boundary` is *not* elevated in the contact-rich regimes, the
   contact-boundary reframing is wrong — **stop and report** before building C1/D.
 
-Deliverable: the `bb` / `bb_boundary` per-regime table + a figure for the paper.
+**RESULT (2026-06-10): PASS.** Pooled `bb_boundary` (n_b-weighted, excl. mw-door-close):
+pre_grasp 1.323/1.280 (dino/jepa) vs free_space 0.282/0.299; contact 0.481/0.441;
+per-task CI-aware pairing 4/6 and 5/6 confidently elevated, no confident reversals.
+DROID transfer agrees (pre_grasp 1.975 [1.601, 2.350] vs free_space 0.721 [0.613, 0.834]).
+Metaworld `gripper_actuation` cells empty as expected. Two implementation fixes were
+needed and are disclosed (chunked predict for the 12 GB box; the hard_nn
+relax-to-nearest fallback ported into `state_neighbours` — the first run was degenerate
+without it). Sources: `results/{metaworld,droid}_boundary.csv`,
+`results/boundary_gate_report.md`, figure `results/figures/figure_bb_per_regime.pdf`.
+
+Deliverable: ~~the `bb` / `bb_boundary` per-regime table + a figure for the paper~~ — delivered.
 
 ---
 
-## 4. STEP 3+ — the fix (only after the §3 gate passes)
+## 4. STEP 3+ — the fix. STATUS UPDATE (2026-06-10, evening)
 
-Build order (design §4–§6). Metaworld first throughout; DROID transfer last.
-**None of this is coded yet** — these are the next code tasks.
+Build order as designed (design §4–§6), with measured outcomes:
 
-1. **C1 — `models/heads/mixture_predictor.py` + `train_predictor_head.py`.**
-   Mixture-density head (`K`≈2–4) over `z_{t+1}`, NLL loss, on cached Metaworld
-   latents (frozen encoder + base trunk; DINO-WM scale → cheap on A5000). Add the
-   **boundary-supervision head** `g_{t+1}` (grasp-success / object-moves from state).
-   Success = `BB` drops in boundary regimes (re-run `12_boundary_diagnostic.py` on the
-   retrained head) + planning improves vs baseline AND vs the original one-step
-   contrastive loss (now a *fix baseline*, not the hero).
-2. **C1 + D — latent augmentation.** `z̃_t = [z_t^vis ‖ φ(state-slice)]` on Metaworld
-   (ee–object geometry + gripper). Cache already stores `state`/`proprio` → re-wire,
-   **no visual re-encode**. Ablate D's marginal contribution.
-3. **Transfer to DROID.** C1 on DROID latents (force-free → unaffected by §2).
-   D-on-DROID limited to pose+gripper(+joints per STEP 1). Report as transfer.
-4. Ablations: head type (mixture / flow / diffusion), `K`, boundary head on/off,
-   sensitivity-supervision on/off, C1-only / D-only / C1+D.
+1. **C1 head-level — DONE, NULL (measured).** `models/heads/mixture_predictor.py` +
+   `scripts/train_predictor_head.py` + `scripts/13_eval_fix_boundary.py`. Four
+   variants (soft-NLL K3, WTA K3, C1+D-at-the-head WTA K3, supervised-assignment
+   K2): all beat K=1 on NLL, none move BB. Causes quantified (mode separation 9.9
+   vs residual 106; no counterfactual action coverage). `docs/FIX_C1_EXPLAINER.md` §6.
+2. **C1 + D at the head — DONE, NULL** (subsumed in 1; state-slice context did not
+   rescue the head because the failure is in the *metric*, not the context).
+3. **CURRENT METHOD-OF-RECORD: state-grounded latent metric** (encoder/metric-level
+   D): `models/probes/object_probe.py` (probe `g(z)→obj xyz`, φ-metric adapter,
+   boundary-aware CEM cost) + `scripts/14_train_object_probe.py` (V1–V3 gates) +
+   `scripts/15_eval_metric_boundary.py` (BB under φ) +
+   `scripts/16_planning_metric_compare.py` (paired Action-Error A/B). Success =
+   BB drops under φ in pre_grasp AND paired Action Error improves with the φ cost.
+4. **Transfer to DROID** — unchanged caveat: no state label → the exact probe form
+   is Metaworld-only; DROID transfer of the *principle* needs a proxy label (open).
+5. Remaining ablations: β sweep, probe capacity, mixture-head-on-top-of-φ (the C1
+   retry in the re-weighted space, where mode separation is no longer ~9% of noise).
 
 ---
 
 ## 5. Guardrails (carry over from CLAUDE.md)
 
-- Metric code is validated with synthetic models first (`tests/test_boundary_diagnostic.py`
-  follows the `07_validate_synthetic.py` pattern). Keep `pytest tests/` green (56 tests).
+- Metric code is validated with synthetic models first (`tests/test_boundary_diagnostic.py`,
+  `tests/test_mixture_predictor.py`, `tests/test_object_probe.py` follow the
+  `07_validate_synthetic.py` pattern). Keep `pytest tests/` green (68 tests).
 - L2 distance everywhere (planning configs are `L2_cem`).
 - Metaworld boundary label is a **proxy** (object displacement, no MuJoCo contact GT) —
   state this explicitly in any result.

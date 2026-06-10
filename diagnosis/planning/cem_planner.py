@@ -54,6 +54,8 @@ def cem_plan(
     num_act_stepped: Optional[int] = None,
     proprio_t: Optional[torch.Tensor] = None,
     generator: Optional[torch.Generator] = None,
+    cost_fn=None,
+    traj_cost_fn=None,
 ) -> torch.Tensor:
     """Plan an action sequence to reach ``z_goal`` from ``z_init`` via CEM.
 
@@ -64,6 +66,11 @@ def cem_plan(
         action_dim: per-step action dimension (the adapter's model_action_dim).
         max_norms / max_norm_dims: box-clip groups (``None`` disables clipping).
         num_act_stepped: how many leading actions to return (default: all ``horizon``).
+        cost_fn: optional ``(pred_last (B,*frame), z_goal (1,*frame)) -> (B,)``
+            planning cost. Default: the upstream L2 objective (``_goal_mse``).
+        traj_cost_fn: optional ``(pred (B,H+1,*frame), actions (B,H,A), z_goal)
+            -> (B,)`` — takes the whole rollout; overrides ``cost_fn`` when set
+            (needed for per-step grounded-dynamics costs).
 
     Returns: ``(num_act_stepped, action_dim)`` planned actions (raw, un-normalized).
     """
@@ -90,7 +97,10 @@ def cem_plan(
         actions = _clip_actions(actions, max_norms, max_norm_dims)
 
         pred = adapter.predict_rollout(z_batch, actions, proprio_t=proprio_t)  # (num_samples, H+1, *frame)
-        cost = _goal_mse(pred[:, -1], z_goal)                    # (num_samples,)
+        if traj_cost_fn is not None:
+            cost = traj_cost_fn(pred, actions, z_goal)           # (num_samples,)
+        else:
+            cost = (cost_fn or _goal_mse)(pred[:, -1], z_goal)   # (num_samples,)
 
         elite_idx = torch.topk(-cost, num_elites, dim=0).indices
         elites = actions[elite_idx]                              # (num_elites, H, A)

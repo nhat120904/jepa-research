@@ -25,6 +25,22 @@ gần như y hệt. Nếu vậy thì robot lập kế hoạch sẽ thất bại 
 **Kết quả hiện tại:** lỗi **có thật và đo được**. Quyết định: **CONDITIONAL_GO** (đủ tự tin để viết paper, nhưng
 phần dữ liệu DROID còn cần chạy hoàn chỉnh thêm).
 
+> ⚠️ **CẬP NHẬT QUAN TRỌNG (2026-06-09) — đọc Phần 3.5 trước khi tin phần "phương pháp sửa lỗi".**
+> Hướng nghiên cứu đã **xoay (pivot)** sang khung **"Boundary-Blind World Models"**. Phần *chẩn đoán* (CRA/AUG/ECS)
+> vẫn đứng vững, nhưng:
+> - Có một **metric mới quan trọng nhất**: **Boundary Blindness (BB)** — xem Phần 5.7.
+> - Phần "cách sửa lỗi" cũ (CAI-JEPA margin loss một bước, mô tả ở Phần 3 mục 3) đã bị **thay thế** bởi fix mới
+>   (mixture-density + boundary supervision) — xem Phần 3.5.
+> - **BB gate ĐÃ CHẠY và PASS (2026-06-10)** — BB tập trung đúng ở biên pre-grasp trên cả Metaworld lẫn DROID
+>   (transfer). Xem Phần 9.6 (số liệu thật) và `diagnosis/results/boundary_gate_report.md`.
+> - **Fix C1 mức head ĐÃ THỬ và NULL (cùng ngày, 4 biến thể)**; fix mức metric (φ-probe) cũng NULL — cả hai giữ làm
+>   ablation. Xem `diagnosis/docs/FIX_C1_EXPLAINER.md` §6–§7.
+> - ⭐ **FIX THÀNH CÔNG: "kênh động học vật có giám sát" `h(z,a)→Δvật`** (0.5M tham số, mọi thứ khác đóng băng,
+>   chỉ dùng cache): tracking phản-thực corr **+0.035 → +0.682**; BB tại biên pre-grasp **giảm 50%** (1.323 → 0.660);
+>   gap pre_grasp-vs-free_space sập từ 1.04 → 0.32. Nguồn: `diagnosis/results/metaworld_boundary_dynamics.csv`.
+>   Leg planning open-loop: không hại/chưa thấy lợi trên Action Error (đúng dự đoán — metric này thưởng bắt chước
+>   tay; cần success-rate closed-loop, là thí nghiệm tiếp theo trên server).
+
 ---
 
 ## Phần 1 — Kiến thức nền: World Model & JEPA là gì?
@@ -132,14 +148,72 @@ mức go/no-go)**, các đóng góp 3+4 là kế hoạch nếu go.
    negative**. (Phần 4 & 5 của tài liệu này.)
 2. **Correlation study** — chứng minh: grounding kém ⇒ planning kém (đo tương quan giữa metric và Action Error).
    (Phần 6.)
-3. **CAI-JEPA loss** (kế hoạch nếu go) — một **hàm mất mát mới** ép predictor phải phân biệt action: phạt mô hình
-   nếu dự đoán dưới hành động giả (counterfactual) lại gần tương lai thật hơn so với hành động thật. Có cơ chế
-   "effect-conditional gating" chỉ áp lực ở những transition thực sự có biến đổi.
+3. **CAI-JEPA loss** (đề xuất GỐC, **đã bị thay thế** — xem Phần 3.5) — một **hàm mất mát** ép predictor phải phân
+   biệt action: phạt mô hình nếu dự đoán dưới hành động giả lại gần tương lai thật hơn so với hành động thật. ⚠️
+   **Framing này không còn là idea-of-record.** Một critique (Phần 3.5) chỉ ra nó không sửa được đúng vùng cần sửa.
 4. **Probing** (tùy chọn) — gắn các bộ dò nhỏ vào từng tầng predictor để xem thông tin action "chảy" qua mạng
    thế nào, hỏng ở đâu.
 
 > Từ khóa nền: **counterfactual** = "phản thực" = một hành động **giả định khác** với hành động đã thực sự xảy ra.
 > Toàn bộ ý tưởng xoay quanh: cho cùng trạng thái, so sánh hành động thật vs các hành động phản thực.
+
+---
+
+## Phần 3.5 — ⭐ REFRAMING MỚI NHẤT (2026-06-09): "Boundary-Blind World Models"
+
+> Đây là **idea-of-record hiện tại** (`diagnosis/docs/PAPER_IDEA.md` + `DIAGNOSIS_PLAN.md` +
+> `plans/2026-06-09-action-identifiability-fix-design.md`). Phần *chẩn đoán* (CRA/AUG/ECS, đóng góp 1+2) vẫn đứng
+> vững và được **mở rộng** thêm metric BB. Phần *sửa lỗi* (đóng góp 3 ở trên) bị **viết lại hoàn toàn**.
+
+### 3.5.1. Critique giết các "fix dễ" (lý do phải reframe)
+
+Trực giác ngây thơ là: "ép `F(z,a)` và `F(z,a')` tách xa nhau" (bằng classifier-free action guidance, hoặc margin
+loss một bước như CAI-JEPA gốc). **Nhưng nó không sửa được đúng vùng quan trọng:**
+
+- Nếu mô hình **đã** collapse `F(z,a) ≈ F(z,a')` rồi, thì vector hướng dẫn ≈ 0 và đạo hàm `∂loss/∂a ≈ 0` — **không
+  có gì để khuếch đại**. Các fix này chỉ *khuếch đại* độ nhạy mô hình **sẵn có**, không *tạo ra* được độ nhạy mới.
+- Biên (boundary) sắc trong **không gian kết quả (outcome)**, nhưng `z_{t+1}` một bước ngay sau một nhiễu nhỏ lại
+  gần như **liên tục** — sự phân kỳ chỉ lộ ra **qua rollout nhiều bước** (sensitive dependence — phụ thuộc nhạy cảm).
+  Vì vậy mọi phương pháp **một bước về cấu trúc đều mù** với nó.
+
+### 3.5.2. Phát biểu lại bài toán (the reframed gap)
+
+> Các world model JEPA không chỉ "yếu trong việc khuếch đại tác động của action" — chúng **thất bại trong việc mô
+> hình hóa các vùng action có độ nhạy cao (high-sensitivity), nơi một nhiễu action nhỏ gần một biên tiếp xúc tạo ra
+> những tương lai khác nhau về chất** (kẹp căn giữa → vật được nâng; lệch 2–3° → không nâng được). Dự đoán latent
+> **đơn mode (unimodal) bằng point + L2 thì CHẮC CHẮN lấy trung bình (averages)** qua các phân nhánh kết quả
+> (bifurcation), và latent chỉ-từ-thị-giác có thể còn không **phân giải (resolve)** được trạng thái quyết định biên.
+
+Hai điểm hỏng tách biệt, mỗi cái cần fix riêng:
+| | Điểm hỏng | Fix | Cần lực (force)? |
+|---|---|---|---|
+| (a) | Latent **không phân giải** được trạng thái biên | **D** — latent có gắn state | force = không; pose+gripper = được |
+| (b) | Predictor **quá mượt** / lấy trung bình đơn-mode | **C1** — dự đoán phân phối (đa mode) + giám sát biên | không |
+
+### 3.5.3. Đóng góp mới (3 cái)
+
+- **C1 (CHẨN ĐOÁN) — CounterfactualBench + Boundary Blindness.** Trên checkpoint đóng băng. CRA/AUG/ECS đo "mô hình
+  có dùng action không"; **BB** (metric mới — Phần 5.7) đo "mô hình có **phân giải được biên sắc** không" — điều
+  CRA/ECS **không nhìn thấy**. Đã code: `metrics/boundary_blindness.py`, `stratification/boundary_regime.py`,
+  `scripts/12_boundary_diagnostic.py`.
+- **C2 — counterfactual sensitivity ⇄ planning.** Per-transition CRA_eff correlation **null/underpowered** (mất cân
+  bằng lớp: chỉ ~4% positive trên DROID) — và **chính cái null đó là bằng chứng cho reframe**: lỗi liên quan là
+  *bifurcation ở biên*, không phải "lờ action một bước". Planning leg được **đúc lại quanh BB**, không quanh CRA_eff.
+- **C3 (FIX) — dự đoán latent phân phối + giám sát biên.**
+  - **C1-fix (hero, không cần force):** thay point-head bằng **mixture-density head** trên `z_{t+1}` (K≈2–4, loss
+    NLL) để predictor biểu diễn được "nâng HOẶC không-nâng" thay vì trung bình L2 của chúng; thêm **boundary-
+    supervision head** (sự kiện grasp / vật-dịch-chuyển từ state Metaworld) ép dung lượng mạng vào biên.
+  - **D (phụ, chỉ Metaworld):** thêm vào latent lát-cắt-state liên quan biên `z̃ = [z^vis ‖ φ(hình học ee–vật, gripper)]`.
+  - Tích hợp planning: CEM chấm điểm candidate theo mode của mixture / NLL-of-goal → không còn tối ưu trên một bề mặt
+    chi phí đã-bị-lấy-trung-bình.
+
+### 3.5.4. Data reality (ràng buộc cứng, đã verify ở loader)
+
+DROID proprio = **7 chiều = cartesian_position(6) + gripper_position(1)**, **KHÔNG có force/torque, KHÔNG có joint**.
+→ Dạng fix mạnh nhất (grounding theo lực tiếp xúc) **bất khả thi trên DROID**. Hệ quả: **boundary proof chỉ làm trên
+Metaworld** (dataset duy nhất có object-state để *định nghĩa*, *giám sát*, *đo* biên so với ground truth). DROID chỉ
+là **transfer check**, dùng proxy ‖Δz‖, **không** được tuyên bố grounding xúc giác/lực. (Câu hỏi mở duy nhất: raw
+DROID có lộ joint_position/velocity không — `scripts/inspect_droid_observation_keys.py` trả lời, 5 phút, chưa chạy.)
 
 ---
 
@@ -191,6 +265,20 @@ Mỗi transition được gán **một** trong 4 nhãn. Giả thuyết tiên đo
 > xúc được **hiệu chuẩn theo encoder**: patch-L2 của DINOv2 ViT-S có dải hẹp (trung vị ≈622, max ≈842), nên ngưỡng
 > gốc `1.5×trung vị` cho ra **0% tiếp xúc**; đã hạ xuống `1.0×trung vị`. Đây là hiệu chuẩn có chủ đích, ghi rõ
 > trong tài liệu, không phải "chỉnh lén".
+
+### 4.2-bis. "Boundary regime" — lát cắt MỚI (2026-06-09), cắt ngang 4 regime trên
+
+Ngoài 4 regime trên, reframing mới thêm một cách chọn transition **cắt ngang (cross-cutting)**: **boundary regime**.
+Một transition `(z_t, a_t)` nằm trong boundary regime nếu trong **hàng xóm trạng-thái-tương-tự** của nó (pool similar-state,
+tái dùng máy móc `hard_nn`/`hard_effect`), một thay đổi action nhỏ làm **kết quả thật bung ra (fan out)** — tức là một
+**phân nhánh (bifurcation)**:
+
+```
+boundary_score = std(kết quả thật trong hàng xóm) / mean(‖Δaction‖)
+```
+
+`boundary_score` cao = action đổi tí xíu mà outcome lật hẳn = đúng vùng biên cần soi. Trên Metaworld, "kết quả thật"
+= **dịch chuyển vật** (object displacement, từ state 39 chiều) — không chỉ ‖Δz‖. Code: `stratification/boundary_regime.py`.
 
 ### 4.3. Bốn chiến lược "negative" (độ khó của hành động phản thực) — TRÁI TIM của chẩn đoán
 
@@ -274,6 +362,34 @@ nhiều transition gần như không biến đổi, action chẳng quan trọng,
 bao nhiêu ở chân trời H ∈ {1,3,5,10}. Bắt lỗi "mô hình phân biệt action ở bước 1 nhưng mất nhạy cảm khi rollout dài"
 (CTD không tăng theo H = lỗi). Đây là tùy chọn (`--ctd`), không nằm trong logic quyết định.
 
+### 5.7. BB — Boundary Blindness (Mù Biên) ⭐⭐⭐ METRIC MỚI & HEADLINE (2026-06-09)
+
+**Đây là con số quan trọng nhất của framing mới.** Nó đo điều mà CRA/ECS **không nhìn thấy được**: không phải "mô
+hình có dùng action không", mà "mô hình có **phân giải được biên sắc** không".
+
+**Trực giác:** ở một vùng biên (bifurcation), thế giới thật rất nhạy — action đổi tí xíu thì kết quả lật. Một mô
+hình tốt phải **cũng nhạy như vậy**. Mô hình "mù biên" thì dự đoán **gần như cùng một tương lai cho mọi action** dù
+thế giới thật đang phân nhánh.
+
+Với mỗi transition biên, trên cùng một **hàng xóm các action gần** `{a'}`:
+- `S_true` = độ trải (spread: var/range) của **kết quả THẬT** (dịch chuyển vật trên Metaworld; proxy ‖Δz‖ trên DROID).
+- `S_model` = độ trải của **dự đoán của mô hình** `F(z_t, a')` trên cùng các action đó.
+- Chuẩn hóa cả hai trên toàn mô hình, rồi:
+
+```
+BB = relu(S_true_norm − S_model_norm)
+```
+
+- `BB ≈ 0` → mô hình bám đúng độ nhạy cục bộ của thế giới (tốt).
+- `BB lớn` → thế giới phân nhánh ở đây **nhưng** mô hình dự đoán ~cùng một tương lai cho mọi action (**mù biên** — xấu).
+
+**Kết quả tiên đoán (luận điểm):** baseline có **BB cao tập trung ở pre-grasp / gripper-actuation / contact**, ngay cả
+ở những chỗ CRA tổng thể trông chấp nhận được. Báo cáo `bb` (tất cả) và `bb_boundary` (chỉ tập con boundary-score cao).
+
+Code: `metrics/boundary_blindness.py`, runner `scripts/12_boundary_diagnostic.py`. Đã có 11 test (gồm chứng minh
+tổng hợp: mô hình lờ-action thì mù biên; mô hình hoàn hảo thì không). **Cập nhật 2026-06-10: metric này ĐÃ CHẠY
+trên baseline đóng băng và gate ĐÃ PASS — số liệu thật ở Phần 9.6.**
+
 ### 5.6. Khoảng tin cậy (Confidence Interval)
 
 Mọi metric đều kèm CI 95% bằng **bootstrap phân cụm theo quỹ đạo** (`n_resamples=1000`): khi lấy mẫu lại, lấy lại
@@ -296,6 +412,13 @@ nếu lấy mẫu rời sẽ **thổi phồng** độ tin cậy giả tạo. Tro
 > CEM (Cross-Entropy Method): thuật toán tối ưu bằng lấy mẫu. Lấy K chuỗi action, chấm điểm (khoảng cách tới goal
 > qua predictor), giữ M chuỗi tốt nhất ("elite"), khớp lại phân phối quanh elite, lặp vài vòng. Action grounding kém
 > → mọi chuỗi điểm gần nhau → elite chỉ là nhiễu → planner chọn đại.
+
+> ⚠️ **Cập nhật framing planning (2026-06-09):** trên Metaworld, tương quan **mức regime** giữa Action Error và
+> CRA_eff là −1.0 (rõ, đúng dấu — xem Phần 9.4). Nhưng **per-transition** thì **null/underpowered**: trên DROID chỉ
+> ~4% positive (mất cân bằng lớp nặng), trên Metaworld thì Action Error đơn-chuyên-gia nhiễu cao. Theo idea-of-record
+> mới, **cái null per-transition này KHÔNG phải điểm yếu mà là bằng chứng cho reframe**: lỗi cốt lõi là *bifurcation
+> ở biên*, không phải "lờ action một bước". Vì vậy planning leg được **đúc lại quanh BB** (Phần 5.7) làm tín hiệu
+> liên-kết-planning đúng, thay cho CRA_eff. Figure mục tiêu mới: "Action Error vs BB".
 
 ---
 
@@ -418,6 +541,47 @@ Bằng chứng ở đây là **mức (level)**: CRA_eff gần chance **trong khi
 | Metaworld: link grounding→planning (Spearman regime = −1.0, cả 2 horizon) | ✅ có |
 | DROID: CRA_eff sát chance floor ở contact/gripper | ✅ có (nhưng mẫu mỏng) |
 | `jepa_wm` > `dino_wm` nhất quán | ✅ |
+| **BB (Boundary Blindness) per-regime** | ✅ **ĐÃ CHẠY (2026-06-10) — gate PASS**, BB tụ ở biên pre-grasp trên cả 2 dataset (xem 9.6) |
+| DROID `05` (dino_wm) chạy lại + gripper sanity gate | ✅ PASS — hard_nn vẫn ở chance floor trong regime tiếp xúc |
+| Fix C1 (mixture head) + fix metric (φ-probe) | ⚠️ **NULL có định lượng — giữ làm ablation** (4 biến thể head + 2 biến thể metric; BB không đổi/chỉ tái phân bố). Nguyên nhân đo: subspace biên bị nén ~10× dưới nhiễu trong L2; kênh phản-thực của predictor là nhiễu (V3 corr +0.035). `FIX_C1_EXPLAINER.md` §6–§7 |
+| ⭐ **Fix THÀNH CÔNG: kênh động học vật `h(z,a)→Δvật`** | ✅ corr phản-thực **+0.682** (gấp 20× predictor đóng băng); pre_grasp `bb_boundary` **1.323 → 0.660 (−50%)**; gap biên-vs-tự-do 1.04 → 0.32. Nguồn: `metaworld_boundary_dynamics.csv` |
+| Planning A/B (CEM cost L2 vs grounded) | ✔️ **xong — không hại, chưa thấy lợi** trên Action Error open-loop (mọi CI cặp đều chứa 0; pre_grasp chỉ n=6). Lý do đã phân tích: Action Error thưởng cho việc bắt chước cả quỹ đạo tay — cái L2 đã tối ưu; lợi ích của fix biên nằm ở closed-loop. **Bước tiếp theo: success rate closed-loop trên server.** (1 bug scale ở lần chạy đầu được công bố trong `_buggy_scale.csv`) |
+
+### 9.6. ⭐ Boundary Blindness gate — ĐÃ CHẠY (2026-06-10): **PASS**
+
+Gate đã được chạy trên máy local (RTX 5070 12 GB, checkpoint đóng băng, không train gì) cho cả hai baseline
+Metaworld + DROID transfer (`dino_wm_droid`). Nguồn số liệu: `diagnosis/results/metaworld_boundary.csv` (64 dòng),
+`diagnosis/results/droid_boundary.csv` (4 dòng); phân tích đầy đủ + run log:
+`diagnosis/results/boundary_gate_report.md`; figure: `diagnosis/results/figures/figure_bb_per_regime.pdf`.
+
+**Bảng BB per-regime (Metaworld, pooled theo trọng số n_boundary, LOẠI `mw-door-close` — xem caveat):**
+
+| regime | dino_wm `bb_boundary` | jepa_wm `bb_boundary` | dino_wm `bb` | jepa_wm `bb` |
+|---|---|---|---|---|
+| free_space | 0.282 | 0.299 | 0.069 | 0.070 |
+| **pre_grasp** | **1.323** | **1.280** | 0.541 | 0.581 |
+| contact_manipulation | 0.481 | 0.441 | 0.212 | 0.194 |
+
+So sánh CI-aware theo từng task (`bb_boundary_lo(regime) > bb_boundary_hi(free_space)` trong cùng task):
+pre_grasp cao có-ý-nghĩa ở **4/6 task (dino_wm)** và **5/6 task (jepa_wm)**, **không có đảo chiều có-ý-nghĩa nào**.
+`gripper_actuation` không có cell Metaworld nào đủ dữ liệu (đúng như dự đoán — subset này không có tín hiệu gripper).
+
+**DROID (transfer, outcome là proxy ‖Δz‖):** pre_grasp `bb_boundary` = **1.975 [1.601, 2.350]** so với free_space
+0.721 [0.613, 0.834] — cao có-ý-nghĩa CI; gripper_actuation 1.093 [0.791, 1.393] (cao theo điểm, CI chớm chồng lấn);
+contact_manipulation 0.463 — không cao.
+
+**KẾT LUẬN GATE: PASS** — BB tụ đúng ở **biên pre-grasp** (nơi bifurcation grasp/trượt xảy ra) trên cả hai dataset,
+đúng tiên đoán của framing "Boundary-Blind". `contact_manipulation` chỉ cao vừa phải — hợp lý: sau khi đã cầm
+vật, động học trơn trở lại, ít bifurcation. → **Bắt đầu fix C1.**
+
+**Caveat phải nhớ:**
+- `mw-door-close` bất thường: BB ≈ 1.7–2.9 ở *mọi* regime kể cả free_space (cửa là vật khớp quay — proxy dịch-chuyển-vật
+  bị nhiễu); bảng pooled ở trên đã loại task này, so sánh theo-task là cách đọc bền vững.
+- Nhãn biên Metaworld vẫn là **proxy dịch chuyển vật** (không có contact GT MuJoCo); DROID là **transfer-only**
+  (pose+gripper, không force/joint), regime là proxy.
+- `vjepa2_ac_droid` chưa chạy (cần ~24 GB VRAM — chỉ chạy được trên server A5000).
+- Hai fix code đã cần và được công bố trong report: chunk predict (tránh tràn VRAM/RAM trên máy 12 GB) và port
+  fallback relax-to-nearest của hard_nn vào `state_neighbours` (lần chạy đầu bị suy biến BB≡0 vì radius tuyệt đối).
 
 ---
 
@@ -441,22 +605,51 @@ trung đúng regime tiên đoán, và đã có link nhân quả grounding→plan
 - Tăng Metaworld planning probe lên ~300 traj/task để `pre_grasp` cell hết mỏng.
 - Chạy `terver_gripper_test.py` làm sanity gate cho regime proxy của DROID.
 
+### 10.1. ⭐ Nhưng đọc kỹ: kế hoạch THẬT theo idea-of-record mới (2026-06-09)
+
+Đánh giá ở trên đúng cho framing **chẩn đoán cũ** (CRA). Theo `DIAGNOSIS_PLAN.md` (plan-of-record), thứ tự ưu tiên
+hiện nay (cập nhật 2026-06-10, sau khi BB gate đã chạy):
+
+1. ~~**(GATE)** Chạy `12_boundary_diagnostic.py`~~ — **ĐÃ XONG: PASS** (Phần 9.6). Bảng BB + figure đã được fold
+   vào `decision_report.md` (`figure_bb_per_regime.pdf`).
+2. ~~Bắt đầu fix C1 (mixture-density head + boundary supervision)~~ — **ĐÃ LÀM (2026-06-10), kết quả NULL ở mức
+   head với nguyên nhân đo được** (xem bảng 9.5 và `FIX_C1_EXPLAINER.md`). **Việc tiếp theo quan trọng nhất bây
+   giờ:** fix ở mức **encoder/metric** (projection có giám sát bằng nhãn dịch-chuyển-vật để khuếch đại lại subspace
+   biên trong latent) và/hoặc dữ liệu counterfactual ở biên.
+3. DROID: `05` cho `dino_wm_droid` đã chạy lại xong (kèm gripper sanity gate PASS); còn lại STEP 1
+   (`inspect_droid_observation_keys.py`, 5 phút) và `vjepa2_ac_droid` (chỉ chạy được trên server 24 GB) —
+   **DROID giờ chỉ là transfer check**, không phải nơi chứng minh biên.
+4. Planning leg: đúc lại quanh BB (figure "Action Error vs BB"), không dựa CRA_eff per-transition (đã null).
+
+**Kết luận thẳng về "đủ viết paper chưa":**
+- **Framing CRA cũ:** đủ bằng chứng cho một paper chẩn đoán (CONDITIONAL_GO), nhưng đã bị nâng cấp.
+- **Framing "Boundary-Blind" mới (mạnh hơn, top-venue-shaped):** bằng chứng cốt lõi (BB gate) **đã có và PASS**
+  (Phần 9.6) — luận điểm chính của framing mới đã được chốt trên baseline đóng băng. Mảnh còn thiếu lớn nhất bây
+  giờ là **fix C1/D chưa bắt đầu** (cần cho contribution C3 + figure "BB before/after") và leg planning-vs-BB.
+
 ---
 
 ## Phần 11 — Bản đồ tài liệu & file (đọc tiếp ở đâu)
 
 | File | Nội dung |
 |---|---|
-| `cai_jepa_paper_proposal.md` | Ý tưởng nghiên cứu đầy đủ (4 đóng góp, related work, scope) |
+| **`diagnosis/docs/PAPER_IDEA.md`** | ⭐ **Idea-of-record HIỆN TẠI** — framing "Boundary-Blind" + metric BB (đọc cái này để hiểu hướng mới) |
+| **`diagnosis/docs/DIAGNOSIS_PLAN.md`** | ⭐ **Plan-of-record** — kế hoạch hợp nhất, BB gate, thứ tự ưu tiên thật |
+| **`diagnosis/docs/plans/2026-06-09-action-identifiability-fix-design.md`** | ⭐ Thiết kế fix mới (critique + C1/D + boundary diagnostic) |
+| **`diagnosis/docs/HANDOFF_BOUNDARY_FIX.md`** | Vận hành: chạy BB gate + STEP 1 DROID + build C1/D |
+| `cai_jepa_paper_proposal.md` | Ý tưởng GỐC (4 đóng góp); §6 fix đã bị thay thế bởi PAPER_IDEA.md |
 | `diagnosis/docs/METHODOLOGY.md` | Khái niệm + bản đồ code + ma trận dataset/task/regime/strategy (đọc đầu tiên khi vào code) |
 | `diagnosis/docs/plans/2026-06-01-real-api-rewrite-design.md` | API upstream thật + các quyết định thiết kế |
+| `diagnosis/docs/plans/2026-06-05-planning-action-score-design.md` | Thiết kế planning Action-Score probe |
 | `diagnosis/docs/HANDOFF.md` | Vận hành: chạy Metaworld (primary) trên server mới |
 | `diagnosis/docs/HANDOFF_DROID.md` | Vận hành: chạy DROID (secondary) + §8 planning probe |
 | `diagnosis/RUNBOOK.md` | Trình tự lệnh đầy đủ trên server |
-| `diagnosis/results/decision_report.md` | Báo cáo quyết định (kết quả tổng hợp) |
+| `diagnosis/results/decision_report.md` | Báo cáo quyết định (kết quả CRA tổng hợp) |
 | `diagnosis/results/planning_correlation.md` | Kết quả tương quan grounding↔planning |
 | `diagnosis/results/metaworld_diagnostic.csv` | Số thô Metaworld (mọi cell) |
 | `diagnosis/results/droid_diagnostic.csv` | Số thô DROID |
+| `diagnosis/results/metaworld_boundary.csv` / `droid_boundary.csv` | ✅ Bảng BB thật (2026-06-10) — nguồn số của Phần 9.6 |
+| `diagnosis/results/boundary_gate_report.md` | ✅ Report gate BB: run log, bảng, verdict PASS, caveat, khuyến nghị C1 |
 
 ### Bảng thuật ngữ nhanh
 - **World model** — mạng dự đoán trạng thái kế tiếp từ (trạng thái, hành động); dùng để robot "tưởng tượng" trước khi làm.
@@ -465,10 +658,16 @@ trung đúng regime tiên đoán, và đã có link nhân quả grounding→plan
 - **Action grounding / action-identifiability** — tính chất predictor phân biệt được các action khác nhau.
 - **Counterfactual** — hành động phản thực (giả định khác hành động đã xảy ra).
 - **Regime** — chế độ trạng thái (free_space / pre_grasp / gripper_actuation / contact_manipulation).
-- **CRA** — Counterfactual Ranking Accuracy: tỉ lệ xếp đúng action thật trên đầu (metric chính). Chance ≈ 0.059.
-- **CRA_eff** — CRA chỉ trên transition có biến đổi latent; **con số quyết định**.
+- **CRA** — Counterfactual Ranking Accuracy: tỉ lệ xếp đúng action thật trên đầu (metric chẩn đoán "dùng action"). Chance ≈ 0.059.
+- **CRA_eff** — CRA chỉ trên transition có biến đổi latent; con số quyết định của framing chẩn đoán cũ.
 - **AUG / ECS** — khoảng cách dùng action / phiên bản chỉ trên transition có tác động.
+- **BB — Boundary Blindness (Mù Biên)** — `relu(S_true − S_model)`: thế giới phân nhánh ở biên nhưng mô hình dự đoán
+  cùng tương lai → **metric headline của framing mới "Boundary-Blind"** (đã chạy 2026-06-10, gate PASS — Phần 9.6).
+- **Boundary regime** — lát cắt cắt-ngang chọn transition ở vùng bifurcation (`boundary_score` cao).
+- **Bifurcation / boundary** — phân nhánh kết quả: action đổi tí xíu → tương lai khác về chất (kẹp căn giữa → nâng vật).
+- **Mixture-density head** — đầu ra dự đoán **phân phối đa mode** trên `z_{t+1}` (fix C1) thay cho point + L2.
 - **CEM** — Cross-Entropy Method: thuật toán planning bằng lấy mẫu và chấm điểm.
 - **Action Error / Action Score** — sai số giữa hành động planner chọn và hành động chuyên gia (proxy planning trên DROID).
-- **CONDITIONAL_GO** — kết luận hiện tại: đủ tự tin theo đuổi paper, nhưng cần củng cố (chủ yếu DROID).
+- **CONDITIONAL_GO** — kết luận của framing CRA cũ: đủ tự tin theo đuổi paper, nhưng cần củng cố.
+- **Idea-of-record** — framing nghiên cứu hiện hành = "Boundary-Blind World Models" (2026-06-09), thay framing CAI-JEPA gốc.
 ```
