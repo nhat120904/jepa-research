@@ -63,11 +63,17 @@ the data, the capacity, or the metric.
 
 Our contributions:
 \begin{itemize}
-  \item \textbf{C1 (diagnostic).} \emph{Boundary Blindness}, a
-  frozen-checkpoint metric: the rectified gap between the world's local
-  action-sensitivity and the model's, evaluated on similar-state
-  neighbourhoods. BB concentrates at the pre-grasp boundary on Metaworld for
-  both DINO-WM and JEPA-WM (CI-aware, per task) and transfers to DROID
+  \item \textbf{C1 (diagnostic: CounterfactualBench + Boundary Blindness).}
+  A frozen-checkpoint diagnostic suite. Existing action-grounding metrics
+  (Counterfactual Ranking Accuracy CRA, Action Usage Gap AUG, Effect-Conditional
+  Sensitivity ECS) give the first signal: the models rank a factual action
+  against its \emph{opposite} near-perfectly everywhere (CRA $0.96$--$0.99$) but
+  collapse against \emph{nearest-neighbour} action distractors, worst at the
+  pre-grasp boundary (CRA $0.47$--$0.57$). \emph{Boundary Blindness} (BB), our
+  new metric, explains why and localizes it: the rectified gap between the
+  world's local action-sensitivity and the model's, on similar-state
+  neighbourhoods. BB concentrates at the pre-grasp boundary on both DINO-WM and
+  JEPA-WM (CI-aware, per task) and transfers to DROID
   (Sec.~\ref{sec:diagnostic}).
   \item \textbf{C2 (planning link).} At upstream-parity closed-loop protocol,
   planning succeeds exactly where BB is low (Reach: $94\%$/$100\%$, above the
@@ -94,9 +100,60 @@ Our contributions:
 \todo{related work; 0.75 page}
 
 % ======================================================================
-\section{Boundary Blindness}\label{sec:diagnostic}
+\section{Diagnosis: CounterfactualBench and Boundary Blindness}\label{sec:diagnostic}
 
-\subsection{Definition}
+We run a frozen-checkpoint diagnostic suite (nothing is trained). It has two
+layers: existing action-grounding metrics that establish \emph{that} the models
+fail to discriminate nearby actions in contact regimes, and our new Boundary
+Blindness metric that explains \emph{why} and pins the failure to the contact
+boundary.
+
+\subsection{CounterfactualBench: action-grounding metrics}\label{sec:cfbench}
+% metrics/cra.py, aug.py, ecs.py; scripts/05_run_diagnostic.py
+For a factual transition $(z_t, a_t, z_{t+1})$ we measure:
+\textbf{CRA} (Counterfactual Ranking Accuracy) --- the factual prediction
+$F(z_t,a_t)$ should be closer to $z_{t+1}$ than predictions for $K$ distractor
+actions $a^-$; we report top-1 accuracy under two distractor families,
+\emph{opposite} (the negated action, easy) and \emph{nearest-neighbour}
+(the closest other executed action, hard).
+\textbf{AUG} (Action Usage Gap) $=\mathbb{E}[\mathrm{MSE}(F(z_t,\pi(a_t)),z_{t+1})
+-\mathrm{MSE}(F(z_t,a_t),z_{t+1})]$ with $\pi$ a batch permutation; $\approx 0$
+if actions are ignored.
+\textbf{ECS} (Effect-Conditional Sensitivity) --- AUG (and CRA) restricted to
+transitions that actually move the latent ($\|z_{t+1}-z_t\|>\tau$), so a low
+score reflects genuine action-ignoring rather than a near-static step. The
+effect-conditioned CRA is the primary signal. CIs are trajectory-clustered
+bootstrap.
+
+\begin{table}[h]
+\centering\small
+\caption{Effect-conditioned CRA (top-1, $n_{\mathrm{eff}}$-weighted pool over
+tasks). Against \emph{opposite} distractors the models are near-perfect
+everywhere --- they \emph{can} use actions. Against \emph{nearest-neighbour}
+distractors CRA collapses, worst at the pre-grasp boundary: the models cannot
+tell apart \emph{nearby} actions exactly where it matters. This motivates
+Boundary Blindness.}
+\label{tab:cra}
+\begin{tabular}{llccc}
+\toprule
+model & distractor & free space & \textbf{pre-grasp} & contact \\
+\midrule
+\multirow{2}{*}{DINO-WM} & opposite          & 0.990 & 0.961 & 0.975 \\
+                         & nearest-neighbour & 0.566 & \textbf{0.467} & 0.481 \\
+\midrule
+\multirow{2}{*}{JEPA-WM} & opposite          & 0.993 & 0.972 & 0.984 \\
+                         & nearest-neighbour & 0.635 & \textbf{0.541} & 0.571 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent The opposite-vs-nearest-neighbour split is the key precursor: the
+models are not action-blind in general (opposite CRA $\approx$ 0.97--0.99); they
+fail specifically to resolve \emph{small} action differences, and most in the
+pre-grasp/contact regimes. CRA alone cannot say whether this is a real boundary
+failure or just small one-step latent deltas --- which is what BB resolves.
+
+\subsection{Boundary Blindness: definition}
 % metrics/boundary_blindness.py; stratification/boundary_regime.py
 For a transition $(z_t, a_t, z_{t+1})$ with a similar-state neighbourhood
 $\mathcal{N}(z_t)$ (states within a proprioceptive radius, relaxed to nearest
@@ -109,7 +166,9 @@ task; then
         S_{\mathrm{model}}^{\mathrm{norm}}\big).
 \end{equation}
 $\bb_{\mathrm{boundary}}$ restricts to transitions whose neighbourhood
-straddles an outcome bifurcation (object-displacement label).
+straddles an outcome bifurcation (object-displacement label). Unlike CRA, BB
+compares the model's action-sensitivity to the \emph{world's} ground-truth
+sensitivity, so a high BB cannot be explained away by small one-step deltas.
 \todo{formal details: neighbourhood radius, boundary labelling, trajectory-clustered bootstrap}
 
 \subsection{Setup}
@@ -200,10 +259,13 @@ rarely samples a contact-creating sequence for the grounded term to score
 
 \begin{figure}[h]
 \centering
-\todo{Figure 3: BB-per-regime (left axis) vs closed-loop success-per-task
-(right axis), plus the grounded-arm paired delta. Data:
-metaworld\_boundary\{,\_dynamics\}.csv + metaworld\_closed\_loop.csv}
-\caption{BB predicts closed-loop planning outcome.}
+\includegraphics[width=0.92\linewidth]{../diagnosis/results/figures/figure_bb_vs_planning.pdf}
+\caption{Boundary Blindness predicts closed-loop planning outcome. (a)~BB is a
+regime property: low in free space, high at the pre-grasp boundary, on both
+model families. (b)~Closed-loop success tracks the regime each task must
+traverse --- free-space reach succeeds ($94\%$/$100\%$, above the published
+baseline), the contact tasks fail ($0\%$). Inset: the grounded fix's paired
+final-distance gain on contact ($+0.089$, CI $[+0.022,+0.162]$).}
 \label{fig:bbvsplan}
 \end{figure}
 
@@ -259,11 +321,14 @@ full-latent $L_2$ buries the object's action-dependence.
 
 \begin{figure}[h]
 \centering
-\todo{Figure 2: the ladder as bars (frozen 1.32 $\to$ mixtures 1.32 $\to$
-$\varphi$-metric 1.17 $\to$ grounded 0.66) + V1/V2/V3 inset. Data:
-metaworld\_boundary\{,\_fix,\_metric,\_dynamics\}.csv}
-\caption{The fix ladder: capacity and metric are nulls; the grounded channel
-halves boundary BB.}
+\includegraphics[width=0.92\linewidth]{../diagnosis/results/figures/figure_fix_ladder.pdf}
+\caption{The fix ladder. (a)~Pooled pre-grasp BB at each rung: mixture heads
+($1.32$) and $\varphi$-metric re-weighting ($1.24$) leave BB essentially at the
+frozen-base level ($1.32$); only the grounded dynamics channel moves it
+($0.66$, $-50\%$). (b)~The probe chain: object state is decodable from the
+latent (V1) and propagated for factual actions (V2), but the counterfactual
+action$\to$object response is noise (V3, corr $0.035$) until the grounded
+channel restores it (corr $0.682$, inset).}
 \label{fig:ladder}
 \end{figure}
 

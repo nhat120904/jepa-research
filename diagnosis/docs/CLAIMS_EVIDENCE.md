@@ -13,7 +13,7 @@ Status legend: ✅ measured & in-repo · 🟡 measured, caveat carried · ⬜ de
 | 1.1 | Frozen JEPA WMs fail to resolve contact bifurcations: BB concentrates at the pre-grasp boundary | `results/metaworld_boundary.csv`: pooled bb_boundary pre_grasp **1.323 (dino) / 1.280 (jepa)** vs free_space 0.282/0.299 (~4.5×), contact 0.481/0.441; per-task CI-aware: elevated in 4/6 (dino), 5/6 (jepa), zero confident reversals | ✅ |
 | 1.2 | The locus replicates across two model families | same CSV, both `dino_wm_metaworld` and `jepa_wm_metaworld` columns | ✅ |
 | 1.3 | The phenomenon transfers to real-robot data | `results/droid_boundary.csv`: pre_grasp **1.975 [1.601, 2.350]** vs free_space 0.721 [0.613, 0.834] — CI-confident | 🟡 ‖Δz‖ proxy, transfer-only (no object GT on DROID) |
-| 1.4 | Effect-conditioned CRA collapses in contact regimes (the precursor metric) | `results/metaworld_diagnostic.csv`: opposite CRA ~0.97–0.99 but hard_nn ~0.46–0.57 in pre-grasp/contact; `droid_diagnostic.csv`: hard_nn at 16-way chance floor | ✅ |
+| 1.4 | CounterfactualBench precursor: models rank factual vs *opposite* actions near-perfectly everywhere (CRA 0.96–0.99) but collapse vs *nearest-neighbour* distractors, worst at pre-grasp (CRA 0.47–0.57) → motivates BB. **In paper Table 2 (Sec 3.1).** | `results/metaworld_diagnostic.csv` pooled CRA_top1_eff: DINO opp free/pre/contact 0.990/0.961/0.975 vs nn 0.566/**0.467**/0.481; JEPA opp 0.993/0.972/0.984 vs nn 0.635/**0.541**/0.571; `droid_diagnostic.csv` hard_nn at 16-way chance floor | ✅ |
 | 1.5 | Boundary label is an object-displacement proxy, not contact GT | stated in `boundary_gate_report.md`; mw-door-close excluded as proxy anomaly | 🟡 carried on figure |
 
 ## C2 — BB ⇄ planning failure (regime-level, closed-loop)
