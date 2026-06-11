@@ -305,13 +305,34 @@ per transition, H=3, 41 plannable transitions):
   optimises; the boundary fix changes *which future the model can distinguish*,
   a distinction that mostly matters closed-loop (does the grasp succeed?), and
   pre_grasp had n=6. The right planning endpoint is **closed-loop success rate**
-  with the grounded cost — requires environment rollouts (server / upstream eval
-  stack), recorded as the next experiment, not runnable from the offline cache.
+  with the grounded cost.
 
-The paper's planning claim is therefore stated conservatively: the grounded cost
-is a drop-in that does not degrade expert-mimicry planning while restoring the
-model-side boundary resolution (BB −50% at pre-grasp); closed-loop validation is
-explicitly future work.
+**§7b. Closed-loop run (2026-06-12) — done.** Full report:
+`results/closed_loop_report.md`; data `results/metaworld_closed_loop.csv`
+(96 paired arm-episodes, upstream-parity protocol, local 12 GB box). Headlines:
+
+- **Reach reproduces above the paper**: L2 15/16 (94%) vs paper DWM 44.8 ±8.9
+  (grounded 16/16) — the harness and protocol are right (three env-side
+  reproduction bugs had to be found first: default-camera 480px renderer,
+  the training data being flipud(corner2+tweak), goal = expert's FINAL frame).
+- **Push and pick-place are 0% for BOTH arms** — the closed-loop face of
+  Boundary Blindness: the arm reaches the goal pose (final ee 2–4 cm) while
+  the object never moves (state-dist ~0.5–0.6). The upstream paper's appendix
+  describes exactly this qualitatively ("hallucinates grasping the object");
+  its closed-loop Metaworld tables stop at Reach/Reach-Wall.
+- **The grounded cost is no-harm (reach 100%) and measurably better on
+  contact**: paired final state-dist improvement pooled over push+pick-place
+  +0.089 [bootstrap CI +0.022, +0.162] — but it flips no successes. CEM
+  rarely samples a contact-creating sequence for the grounded term to score,
+  so the residual bottleneck is exploration/imagination at the boundary
+  (planner-side), consistent with the ladder's localization.
+
+The paper's planning claim therefore upgrades from "conservative drop-in" to:
+the grounded cost restores model-side boundary resolution (BB −50%), keeps
+free-space planning intact closed-loop, and yields a CI-supported paired
+improvement on contact tasks; converting that into task success additionally
+requires contact-aware action proposal — measured future work, with the 0%/0%
+baseline table as its motivation.
 
 **The method, in one paragraph (for the paper):** *Frozen JEPA world models are
 boundary-blind: at grasp boundaries their predictions neither separate (BB gate)

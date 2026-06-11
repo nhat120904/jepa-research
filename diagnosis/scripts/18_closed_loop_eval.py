@@ -108,7 +108,27 @@ class _PlanAdapter:
         self.device = base.device
         self.last_proprio = None                     # (B, H+1, ...) features
 
+    # CEM batches of 300 unrolls peak at ~11.6 of 12.2 GB VRAM — any other GPU
+    # user (a notebook kernel, the desktop) then crashes the run natively.
+    # Chunking the unroll batch is mathematically identical and buys headroom.
+    _CHUNK = int(os.environ.get("CAI_JEPA_PLAN_CHUNK", "150"))
+
     def predict_rollout(self, z_t, actions, proprio_t=None):
+        B = actions.shape[0]
+        if B <= self._CHUNK:
+            return self._predict_rollout_chunk(z_t, actions, proprio_t)
+        outs, props = [], []
+        for s in range(0, B, self._CHUNK):
+            e = min(B, s + self._CHUNK)
+            outs.append(self._predict_rollout_chunk(
+                z_t[s:e], actions[s:e],
+                proprio_t[s:e] if proprio_t is not None else None))
+            props.append(self.last_proprio)
+        self.last_proprio = (torch.cat(props, dim=0)
+                             if props[0] is not None else None)
+        return torch.cat(outs, dim=0)
+
+    def _predict_rollout_chunk(self, z_t, actions, proprio_t=None):
         from einops import rearrange
         from tensordict.tensordict import TensorDict
 
@@ -167,17 +187,23 @@ def render(env) -> np.ndarray:
     return frame[::-1].copy()
 
 
-def rollout_expert(env, init_obs: np.ndarray, task: str, max_steps: int = 200):
+def rollout_expert(env, init_obs: np.ndarray, task: str, max_steps: int = 100):
     """Roll the scripted expert on the SHARED env (already reset); return
-    (goal_frame, goal_state, success_step) at the expert's success frame."""
+    (goal_frame, goal_state, first_success_step) at the expert's FINAL frame.
+
+    Upstream takes `expert_obses[-1]` — the expert runs the whole episode and
+    keeps refining after the success flag first fires (flag = entering the
+    5 cm radius; the final pose is ~1 cm from target). Breaking at first
+    success put our goal frame right at the radius edge, so a planner that
+    faithfully reached it could still sit outside the env's 5 cm success
+    check (measured: ee 2-4 cm with success=0, systematically)."""
     obs = init_obs
     pol = expert_policy(task)
     succ_step = None
     for t in range(1, max_steps + 1):
         obs, _, _, _, info = env.step(pol.get_action(obs))
-        if info.get("success", 0) > 0.5:
+        if succ_step is None and info.get("success", 0) > 0.5:
             succ_step = t
-            break
     return render(env), obs.copy(), succ_step
 
 
@@ -317,10 +343,32 @@ def main() -> int:
           f"s_g={args.s_g}", flush=True)
 
     import pandas as pd
+    # Resume: the sweep python dies natively now and then (MuJoCo/driver on
+    # Windows, no traceback). Rows already in --out are kept and their
+    # (task, seed, arm) cells skipped, so an outer retry loop can relaunch
+    # this script until the sweep is complete.
     rows = []
+    done_pairs = set()
+    if Path(args.out).exists():
+        prev = pd.read_csv(args.out)
+        # The rand_vec is random per env creation (only frozen within one
+        # env), so a half-done (task, seed) pair cannot be completed against
+        # the same init after a crash — drop partial pairs and redo them
+        # whole, keeping the comparison paired.
+        cells = {(t, int(s)): set(g.arm)
+                 for (t, s), g in prev.groupby(["task", "seed"])}
+        done_pairs = {k for k, arms in cells.items() if set(args.arms) <= arms}
+        keep = prev[[((r.task, int(r.seed)) in done_pairs) for r in prev.itertuples()]]
+        dropped = len(prev) - len(keep)
+        rows = keep.to_dict("records")
+        print(f"resume: {len(rows)} episodes kept from {args.out}"
+              + (f" ({dropped} partial-pair rows redone)" if dropped else ""),
+              flush=True)
     for task in args.tasks:
         for ep in range(args.episodes):
             seed = 10_000 + ep
+            if (task, seed) in done_pairs:
+                continue
             try:
                 env, init_state = make_env(task, seed)
                 goal_frame, goal_state, expert_succ = rollout_expert(env, init_state, task)
