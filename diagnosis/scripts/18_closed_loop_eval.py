@@ -58,7 +58,7 @@ FRAMESKIP = 5          # metaworld frameskip the checkpoints were trained with
 RAW_A = 4
 
 
-def make_env(task: str, seed: int, img_size: int = 224):
+def make_env(task: str, seed: int, img_size: int = 224, cam_tweak: bool = True):
     """Metaworld V3 goal-observable env with the upstream camera setup.
 
     After the first reset we freeze the rand_vec so every subsequent reset of
@@ -69,10 +69,28 @@ def make_env(task: str, seed: int, img_size: int = 224):
     env_id = task.split("-", 1)[-1] + "-v3-goal-observable"
     env = ALL_V3_ENVIRONMENTS_GOAL_OBSERVABLE[env_id](seed=seed)
     env.seeded_rand_vec = False
-    env.model.cam_pos[2] = [0.75, 0.075, 0.7]       # upstream corner2 tweak
+    if cam_tweak:
+        env.model.cam_pos[2] = [0.75, 0.075, 0.7]   # upstream wrapper's corner2 tweak
     env.render_mode = "rgb_array"
     env.camera_name = "corner2"
     env.width = env.height = img_size
+    # CRITICAL: the env constructed its offscreen renderer at the default
+    # 480x480 — assigning env.width afterwards does NOT resize it, and the
+    # encoder then sees 480px frames while the checkpoints were trained on
+    # native 224px renders (measured: 8.5x one-step pred error, 3.3x latent
+    # NN distance). Upstream's MetaWorldWrapper.init_renderer() re-creates
+    # the renderer at img_size; mirror it exactly.
+    from gymnasium.envs.mujoco.mujoco_rendering import MujocoRenderer
+    env.mujoco_renderer = MujocoRenderer(
+        env.model,
+        env.data,
+        env.mujoco_renderer.default_cam_config,
+        width=img_size,
+        height=img_size,
+        max_geom=env.mujoco_renderer.max_geom,
+        camera_id=None,
+        camera_name=env.camera_name,
+    )
     obs0, _ = env.reset()
     env._freeze_rand_vec = True                      # later resets: same init
     return env, obs0
@@ -138,11 +156,15 @@ def render(env) -> np.ndarray:
     frame = env.render()
     if frame is None or frame.sum() == 0:
         raise RuntimeError("Metaworld render returned an empty frame")
-    # NOTE: the upstream wrapper flips vertically, but that compensated *their*
-    # renderer stack; gymnasium 1.3 / mujoco 3.9 already returns right-side-up
-    # (verified visually, results/logs/render_raw.png) — flipping here fed the
-    # encoder an upside-down scene and zeroed the smoke success rate.
-    return frame.copy()
+    # The training data IS vertically flipped relative to today's corner2
+    # render: pixel-calibrating against dataset init frames gives MSE 71.6 for
+    # flipud(render) under the wrapper camera vs ~3600+ for every unflipped
+    # candidate (results/logs/camera_calib7). The upstream wrapper's [::-1]
+    # flip is part of the data-generation pipeline, so the planner must feed
+    # the encoder flipped frames too. (The earlier "right-side-up" check that
+    # removed this flip was made while the renderer silently used the default
+    # free camera — wrong camera, wrong conclusion.)
+    return frame[::-1].copy()
 
 
 def rollout_expert(env, init_obs: np.ndarray, task: str, max_steps: int = 200):
