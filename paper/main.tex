@@ -54,12 +54,71 @@ the data, the capacity, or the metric.
 
 % ======================================================================
 \section{Introduction}
-% Thesis paragraph (PAPER_IDEA §1). Beats:
-% 1. JEPA WMs plan well in free space; the field's own evals stop at reach.
-% 2. The failure at contact is structural: outcome bifurcations vs unimodal
-%    L2 prediction (provably averages across the fan).
-% 3. Contributions C1/C2/C3 + honest scope.
-\todo{expand intro; 1 page}
+
+Action-conditioned world models that predict in a learned latent space --- the
+JEPA family (DINO-WM~\citep{zhou2024dinowm}, V-JEPA-2-AC~\citep{assran2025vjepa2},
+and the design study of~\citet{jepawms2025}) --- have become an attractive
+substrate for robot planning: they reuse strong self-supervised visual encoders,
+predict cheaply in representation space, and plan zero-shot from a goal image
+with sampling-based model-predictive control. On free-space tasks they work well.
+But a striking pattern runs through the field's own evaluations: the
+\emph{positive} closed-loop numbers are reported for reaching and pose control,
+and the contact-rich tasks --- pushing, grasping, pick-and-place --- are either
+omitted, demoted to qualitative figures, or propped up with hand-engineered
+sub-goals. \citet{jepawms2025} stop their closed-loop Metaworld tables at Reach
+and Reach-Wall and note in the appendix that on object-manipulation tasks the
+model ``hallucinates grasping the object''. \citet{assran2025vjepa2} report
+pick-and-place only after supplying three hand-crafted sub-goal images that walk
+the planner through the grasp. The wall is real, and it is at contact.
+
+We argue this is not a generic accuracy deficit that more data or a bigger
+encoder would erase, but a \emph{structural} failure of the prediction objective.
+Contact induces \emph{outcome bifurcations}: from nearly the same state, a small
+change in action produces qualitatively different futures (the gripper centred
+over an object lifts it; two or three degrees off, it does not). A unimodal
+latent predictor trained with an $L_2$ (or cosine) reconstruction loss is, by
+construction, a conditional-mean estimator --- it averages across the outcome fan
+rather than representing its branches. Crucially, the averaging is invisible to
+the metrics one would naturally reach for. The one-step prediction $z_{t+1}$
+after a small action perturbation is near-continuous; the divergence is a
+property of the \emph{rollout} and of the \emph{outcome}, not of any single
+transition. A diagnostic that asks ``does the model use actions?'' will answer
+``yes'' even as the model is blind to exactly the action distinctions that decide
+a grasp.
+
+We make this precise. First we show that the action-grounding the field already
+measures is intact in the easy direction and broken in the hard one: frozen
+DINO-WM and JEPA-WM rank a factual action against its \emph{opposite}
+near-perfectly everywhere (counterfactual ranking accuracy $0.96$--$0.99$), yet
+collapse when the distractor is a \emph{nearby} action ($0.47$--$0.57$), and most
+so in the pre-grasp regime. To turn this from a symptom into a measurement we
+introduce \emph{Boundary Blindness} (BB): on a neighbourhood of similar states
+where the \emph{world's} true outcomes fan out, BB is the rectified gap between
+that ground-truth action-sensitivity and the model's. Because BB references the
+world, a high value cannot be explained away by small one-step deltas. On frozen
+checkpoints BB concentrates sharply at the pre-grasp boundary ($1.32$ vs.\ $0.28$
+in free space) on both model families and transfers to real-robot DROID data.
+
+We then close the loop in two senses. We connect BB to \emph{planning}: at a
+protocol matched to the upstream evaluation, planning succeeds exactly where BB
+is low --- our harness reproduces the published Metaworld Reach baseline, in fact
+above it ($94\%$ for the $L_2$ planner vs.\ a reported $44.8\pm8.9$) --- and
+collapses where BB is high, with the signature BB predicts: on push and
+pick-and-place both the baseline and an improved planner score $0/16$, the
+end-effector reaching the goal pose ($2$--$4$\,cm) while the object never moves.
+Finally we ask \emph{why} the model is boundary-blind, with a controlled fix
+ladder on frozen trunks. Adding capacity (mixture-density predictor heads) does
+not move BB; re-weighting the latent metric does not move it; a probe chain shows
+the object state is decodable from the latent and propagated for factual actions,
+but the \emph{counterfactual} action$\to$object channel is noise. A
+0.5M-parameter grounded dynamics channel $h(z,a)\!\to\!\Delta\text{object}$,
+trained on the same cached data with everything else frozen, repairs exactly that
+channel: counterfactual tracking rises from $0.03$ to $0.68$, boundary BB halves
+on both models, and the closed-loop planning cost surface improves measurably
+(paired final-distance gain $+0.089$, CI $[+0.022,+0.162]$) --- though not yet
+enough to flip task success, which additionally requires contact-aware action
+proposal. The diagnosis is the point: the bottleneck is the training
+\emph{target}, not the data, the capacity, or the metric.
 
 Our contributions:
 \begin{itemize}
@@ -90,14 +149,53 @@ Our contributions:
 
 % ======================================================================
 \section{Related work}\label{sec:related}
-% - JEPA world models: DINO-WM (Zhou 2024), V-JEPA-2-AC (Assran 2025),
-%   JEPA-WMs study (jepa-success). Their Metaworld closed-loop tables stop at
-%   Reach/Reach-Wall; appendix admits "hallucinates grasping the object".
-% - V-JEPA-2-AC needs 3 hand-crafted sub-goal images for pick-&-place
-%   (65-80%); grasp with goal-image 25-65%; Octo grasp 0-20% (their Table 2).
-% - Multimodality/bifurcations in dynamics models; distributional prediction.
-% - Diagnostics for world models (action sensitivity, counterfactuals).
-\todo{related work; 0.75 page}
+
+\paragraph{JEPA world models for planning.}
+DINO-WM~\citep{zhou2024dinowm} predicts forward in the frozen feature space of a
+self-supervised image encoder and plans with sampling-based MPC from a goal
+image; V-JEPA-2-AC~\citep{assran2025vjepa2} learns an action-conditioned world
+model on top of a video encoder and demonstrates zero-shot manipulation; and
+\citet{jepawms2025} systematically study the design choices (encoder, action
+conditioning, rollout loss, planner) that make such models plan well. We take
+these as our frozen baselines and treat their evaluations as evidence: across
+all three, the strong closed-loop results are pose/free-space tasks, and the
+contact tasks are where the story thins. \citet{jepawms2025} restrict their
+closed-loop Metaworld tables to Reach and Reach-Wall and report qualitatively
+that object-manipulation rollouts ``hallucinate grasping''.
+\citet{assran2025vjepa2} achieve pick-and-place only with three hand-specified
+sub-goal images (and grasp-from-goal-image success of $25$--$65\%$), while their
+behaviour-cloning baseline Octo~\citep{octo2024} grasps at $0$--$20\%$. Our work
+gives this shared wall a name, a metric, and a mechanism.
+
+\paragraph{Multimodal and distributional dynamics.}
+That a deterministic next-step predictor averages multimodal futures is a classic
+observation in video prediction and model-based RL; mixture-density and latent
+stochastic predictors are the standard response. A contribution of our fix ladder
+is the \emph{negative} result that this standard response does not apply here:
+adding a mixture-density head over the latent leaves Boundary Blindness unmoved
+(Sec.~\ref{sec:fix}), because the bifurcation occupies a tiny, under-weighted
+subspace of the $L_2$ geometry and the boundary's action-dependence is not
+recoverable from expert-only data at the head level. The fix is to ground a small
+dynamics channel in an explicit outcome variable, not to make the latent
+predictor distributional.
+
+\paragraph{Diagnosing action-grounding.}
+Prior diagnostics ask whether a world model uses its action input at all ---
+permuting or zeroing actions and measuring the change in prediction error.
+Our CounterfactualBench (CRA/AUG/ECS) includes such measures and confirms they
+are necessary but not sufficient: they are satisfied (the model clearly uses
+actions) precisely where planning still fails. Boundary Blindness is, to our
+knowledge, the first diagnostic to compare a model's local action-sensitivity
+against the \emph{world's} ground-truth sensitivity on a matched neighbourhood,
+which is what lets it isolate the contact boundary rather than conflate it with
+low-motion transitions.
+
+\paragraph{Metaworld and DROID.}
+We evaluate on Metaworld~\citep{yu2020metaworld}, whose simulator state lets us
+define and supervise an object-displacement outcome label, and use
+DROID~\citep{khazatsky2024droid} as a real-robot transfer check (proprioceptive
+$\|\Delta z\|$ proxy only --- no object ground truth). Planning follows the CEM
+protocol of~\citet{rubinstein1997cem} as configured by the upstream evaluation.
 
 % ======================================================================
 \section{Diagnosis: CounterfactualBench and Boundary Blindness}\label{sec:diagnostic}
@@ -172,10 +270,20 @@ sensitivity, so a high BB cannot be explained away by small one-step deltas.
 \todo{formal details: neighbourhood radius, boundary labelling, trajectory-clustered bootstrap}
 
 \subsection{Setup}
-% Frozen torch.hub checkpoints; encode->cache->metrics; regimes free_space /
-% pre_grasp / gripper_actuation / contact_manipulation (proxy from 39-dim
-% state); honesty: object-displacement proxy, mw-door-close excluded.
-\todo{setup paragraph + honesty caveats (CLAIMS 1.5)}
+We operate entirely on pretrained, frozen checkpoints (DINO-WM and JEPA-WM for
+Metaworld; DINO-WM for DROID), loaded through the official hub interface and
+driven through the model's own \texttt{encode}/\texttt{unroll} primitives ---
+nothing is trained for the diagnostic. Every frame is encoded once and cached;
+all metrics run on the cache. We stratify transitions into four regimes ---
+\emph{free space}, \emph{pre-grasp}, \emph{gripper actuation}, and \emph{contact
+manipulation} --- using a proxy computed from the $39$-dimensional Metaworld
+state (end-effector and object positions, with object displacement as the
+contact proxy, since the released dataset carries no MuJoCo contact ground
+truth); DROID uses proprioception and latent-change heuristics. Confidence
+intervals are trajectory-clustered bootstrap throughout. Two honesty caveats
+carry on every BB number: the boundary outcome label is an object-displacement
+\emph{proxy}, and we exclude the articulated-object task mw-door-close, where the
+proxy is anomalous (we report it hatched as a sensitivity check).
 
 \subsection{Result: BB concentrates at the pre-grasp boundary}
 \begin{table}[h]
@@ -210,13 +318,22 @@ transfer). \todo{final styling}}
 \label{sec:planning}
 
 \subsection{Protocol}
-% Upstream-parity: CEM-L2, H=6, 300 samples, 15 iters, nas=3, alpha=0, goal =
-% expert final frame, success = simulator flag; 16 paired episodes/task,
-% paired arms share env/rand_vec/CEM seeds. Reproduction integrity: renderer
-% (default-cam 480px bug), flipud training data (pixel-calibrated MSE 71.6 vs
-% >=3000), goal-frame convention; render fidelity: pred-err 1.4x dataset,
-% latent NN ratio 0.97; physics replay 1.5mm. (CLAIMS R.1-R.3)
-\todo{protocol + reproduction-integrity paragraph; cite closed\_loop\_report.md numbers}
+We match the upstream Metaworld evaluation, read off its shipped configuration:
+the goal is the scripted expert's final frame, planning is CEM in latent space
+with horizon $6$, $300$ samples, $15$ iterations, executing $3$ model-steps per
+replan, for at most $100$ environment steps, and success is the simulator's flag.
+The planning cost is latent $L_2$ to the goal ($\alpha=0$; proprioception remains
+in the predictor context, which the architecture requires). We run $16$ paired
+episodes per task: within a pair the two arms ($L_2$ baseline and the grounded
+cost of Sec.~\ref{sec:fix}) share the environment, its frozen initialisation, and
+the CEM noise seeds, so the comparison is exactly paired. Reaching a faithful
+protocol required fixing three environment-side reproduction bugs --- a renderer
+that silently used the default camera at $480$\,px, a missing vertical flip in
+the training pipeline, and a goal-frame convention --- detailed with their
+verification in Appendix~\ref{app:repro}; after the fixes the rendered
+observations are indistinguishable from training data to the model (one-step
+prediction error $1.4\times$ the dataset level, latent nearest-neighbour ratio
+$0.97$), while the physics is identical ($1.5$\,mm replay error).
 
 \subsection{Results}
 \begin{table}[h]
@@ -343,26 +460,120 @@ the artifact set.
 
 % ======================================================================
 \section{Discussion, scope, and limitations}\label{sec:discussion}
-% - Metaworld is the boundary *proof* (only dataset with object GT); the
-%   boundary label is an object-displacement proxy.
-% - DROID is a transfer check; no force/tactile grounding claimed.
-% - V-JEPA-2-AC: \todo{DECISION D.1 — run BB gate on server OR scope claim to
-%   DINO-WM/JEPA-WM + cite V-JEPA-2's sub-goal dependence as corroboration}
-% - Success-criterion caveat (any-step vs final-state); n=16 vs their 96x3.
-% - Future work (one sentence): contact-aware action proposal (planner-side).
-\todo{discussion; 0.75 page}
+
+\paragraph{What the closed-loop result does and does not claim.}
+The $0/16$ on push and pick-and-place is a property of the frozen baseline that
+our diagnosis predicts, not a headline success number we are advertising. Its
+evidential value rests on the reach result: at the same protocol, on the same
+checkpoint, the $L_2$ planner reaches $94\%$ --- above the published
+$44.8\pm8.9$ --- so the harness is healthy and the contact failure is the
+model's. We verified the rendered observations land on the training manifold
+(one-step prediction error $1.4\times$ the dataset level, latent
+nearest-neighbour ratio $0.97$) and that the physics is identical to data
+generation (action replay end-effector error $1.5$\,mm); the entire gap was
+visual-domain reproduction, which we fixed (Appendix~A). Two caveats temper the
+reach comparison: we judge success at any step (the Metaworld convention) where
+the upstream evaluation judges the final state, and we evaluate one released
+checkpoint over $16$ episodes where they average three training seeds over $96$.
+We therefore read the reach number as ``reproduces, in the same regime'' rather
+than a seed-matched replication; a strict end-of-episode re-score is
+straightforward future bookkeeping.
+
+\paragraph{Necessary but not sufficient.}
+The grounded fix is a genuine but partial result. It repairs the model-side
+quantity --- counterfactual tracking and Boundary Blindness --- and that repair
+reaches the planner as a CI-supported improvement in final object distance on
+contact tasks ($+0.089$ $[+0.022,+0.162]$), with no harm in free space. It flips
+no successes, because the cross-entropy planner rarely \emph{samples} a
+contact-creating action sequence for the grounded term to score. Boundary
+Blindness is thus necessary but not sufficient for contact planning: a
+boundary-aware \emph{action proposal} --- automating the hand-crafted sub-goals
+that~\citet{assran2025vjepa2} supply manually, e.g.\ by seeding the planner with
+contact-directed primitives derived from the probed object position --- is the
+natural next step, and is deliberately a planner-side contribution we leave to
+future work rather than fold into this model-centric paper.
+
+\paragraph{Scope of the grounding recipe.}
+Metaworld is the boundary \emph{proof}: it is the dataset whose simulator state
+lets us define, supervise, and measure the boundary against ground truth. The
+boundary label is an object-displacement proxy (the released dataset carries no
+MuJoCo contact ground truth); we exclude the articulated-object task
+mw-door-close where the proxy misbehaves. DROID is a transfer check only --- its
+proprioception is $7$-dim pose-plus-gripper with no force, torque, or joint
+channel, so BB there uses the weaker $\|\Delta z\|$ proxy and the grounded
+\emph{recipe} does not transfer at the $2.1$k-transition scale we have (the label
+is not learnable; the principle is untouched). We make no tactile or force
+grounding claim on real robots.
+
+\paragraph{Model coverage.}
+We measure two model families directly, DINO-WM and JEPA-WM, with matching effect
+sizes on every leg. We do not run the diagnostic on V-JEPA-2-AC, whose
+checkpoint exceeds our local memory budget; we instead cite its published
+reliance on hand-crafted sub-goals for pick-and-place as external corroboration
+that the contact wall is family-wide rather than specific to our two models.
+Extending the BB gate to V-JEPA-2-AC is a one-run addition given the hardware.
 
 \section{Conclusion}
-\todo{half page: the one-paragraph method statement from FIX\_C1\_EXPLAINER §7}
+Action-conditioned JEPA world models do not fail at contact for want of capacity,
+a better metric, or more counterfactual data --- they fail because the
+prediction target, a full-latent $L_2$ to the next frame, averages over the
+outcome bifurcations that contact creates. We named this failure Boundary
+Blindness and measured it on frozen checkpoints, where it concentrates at the
+pre-grasp boundary on two model families and transfers to real-robot data; we
+tied it to planning, reproducing free-space success above the published baseline
+while contact tasks fail with the predicted signature of an arm that arrives at a
+motionless object; and we localized the cause with a fix ladder whose only
+working rung is a $0.5$M-parameter grounded dynamics channel
+$h(z,a)\!\to\!\Delta\text{object}$ that, with the encoder, predictor, and data
+all frozen, restores counterfactual tracking ($0.03\to0.68$), halves boundary
+Boundary Blindness, and moves the closed-loop planning cost in the right
+direction. The remaining gap to task success is a planning problem, not a
+representation one --- a clean separation that the diagnostic makes visible.
 
 \bibliographystyle{plainnat}
 \bibliography{refs}
 
 \appendix
-\section{Reproduction integrity}
-% The three env-side bugs + verification numbers (CLAIMS R.1-R.3) — this
-% subsection doubles as the "sim-eval fidelity" appendix reviewers like.
-\todo{port from diagnosis/results/closed\_loop\_report.md §pitfalls}
+\section{Reproduction integrity}\label{app:repro}
+Closed-loop sim evaluation is fragile, and getting the baseline wrong would
+invalidate the entire C2 argument. We document the three environment-side bugs we
+found and the checks that confirm the fixes, all of which are model-agnostic
+(they concern how the simulator is rendered, not the world model).
+
+\paragraph{(1) Wrong camera at the wrong resolution.} Metaworld constructs its
+offscreen renderer in the environment constructor, so assigning the camera name
+and image size afterwards is silently ignored: every initial closed-loop run
+rendered the default free camera at $480$\,px instead of the \texttt{corner2}
+view at $224$\,px the checkpoints were trained on. We mirror the upstream
+wrapper and re-create the renderer explicitly. Symptom before the fix: one-step
+prediction error $8.5\times$ the dataset level and rendered latents $3.3\times$
+off the training manifold.
+
+\paragraph{(2) Missing vertical flip.} The released training frames are
+vertically flipped relative to today's \texttt{corner2} render. We established
+this by pixel-calibrating against dataset initial frames over a grid of
+historically plausible camera configurations: the flipped wrapper-camera render
+scores mean-squared error $71.6$ against the dataset, versus $\geq 3000$ for
+every unflipped candidate. The flip is part of the data-generation pipeline, so
+the planner must feed the encoder flipped frames; an earlier removal of this flip
+had been judged on default-camera frames (the wrong camera, hence the wrong
+conclusion).
+
+\paragraph{(3) Goal-frame convention.} The success flag fires when the
+end-effector enters a $5$\,cm radius, but the scripted expert keeps refining to
+$\sim$1\,cm. Taking the goal frame at first-success rather than at the expert's
+final frame parked the planner just outside the success radius --- producing the
+systematic ``arrives but scores zero'' pattern (final ee $2$--$4$\,cm,
+success$=0$) that initially looked like a model failure.
+
+\paragraph{Verification.} After all three fixes, rendered transitions have
+one-step prediction error $1.4\times$ the dataset level and latent
+nearest-neighbour ratio $0.97$ (i.e.\ on the manifold), and replaying a dataset
+trajectory's raw actions in the live environment reproduces its proprioceptive
+trajectory to a median end-effector error of $1.5$\,mm --- confirming that only
+the visuals had drifted, never the physics. The reach baseline then recovers from
+$1/16$ to $15/16$. The probe scripts that produce these numbers are released with
+the code.
 
 \section{Full per-task BB tables and ablations}
 \todo{per-task CSV dumps; mixture-K, boundary-head on/off, state-slice ablations}
