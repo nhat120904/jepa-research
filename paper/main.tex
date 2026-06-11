@@ -1,0 +1,305 @@
+% Boundary-Blind World Models — draft skeleton (idea-of-record:
+% diagnosis/docs/PAPER_IDEA.md; every claim maps to an artifact in
+% diagnosis/docs/CLAIMS_EVIDENCE.md — do not add claims without a row there).
+%
+% Build: pdflatex main && bibtex main && pdflatex main && pdflatex main
+\documentclass[10pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage[round]{natbib}
+
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+\newcommand{\bb}{\mathrm{BB}}
+
+\title{Boundary-Blind World Models: Why JEPA Predictors Smear Contact
+Bifurcations, and What It Takes to Fix Them}
+
+\author{%
+  Anonymous\thanks{Draft v0.1, 2026-06-12. Numbers are final (see
+  \texttt{diagnosis/results/}); prose is skeleton.}}
+\date{}
+
+\begin{document}
+\maketitle
+
+% ======================================================================
+\begin{abstract}
+Action-conditioned JEPA world models (DINO-WM, JEPA-WM, V-JEPA-2-AC) plan well
+in free space and fail at contact. We show this is not a generic accuracy gap
+but a structural failure we call \emph{Boundary Blindness} (BB): near contact
+boundaries --- where small action changes produce qualitatively different
+futures --- unimodal latent predictors trained with full-latent $L_2$ collapse
+the outcome fan to its mean. We (1)~define a frozen-checkpoint diagnostic that
+measures BB against ground-truth outcome spread and show it concentrates at the
+pre-grasp boundary on two model families ($\bb$ $1.32/1.28$ at the boundary vs.\
+$0.28/0.30$ in free space) and transfers to real-robot DROID data;
+(2)~tie BB to planning: at upstream-parity protocol our harness
+\emph{reproduces} the published Metaworld Reach baseline ($94\%$ vs.\ reported
+$44.8\pm8.9$) yet both the $L_2$ and grounded planners score $0/16$ on push and
+pick-and-place --- the arm reaches the goal pose (2--4\,cm) while the object
+never moves, the closed-loop signature of BB; (3)~localize the failure by
+ablation: mixture predictor heads and metric re-weighting are quantified nulls,
+while a 0.5M-parameter grounded dynamics channel $h(z,a)\!\to\!\Delta\text{obj}$
+trained on the same cached data restores counterfactual tracking (corr
+$0.03\!\to\!0.68$) and halves boundary BB on both models, improving the
+closed-loop cost surface (paired distance $+0.089$, CI $[+0.022,+0.162]$)
+without yet flipping task success. The bottleneck is the training target, not
+the data, the capacity, or the metric.
+\end{abstract}
+
+% ======================================================================
+\section{Introduction}
+% Thesis paragraph (PAPER_IDEA §1). Beats:
+% 1. JEPA WMs plan well in free space; the field's own evals stop at reach.
+% 2. The failure at contact is structural: outcome bifurcations vs unimodal
+%    L2 prediction (provably averages across the fan).
+% 3. Contributions C1/C2/C3 + honest scope.
+\todo{expand intro; 1 page}
+
+Our contributions:
+\begin{itemize}
+  \item \textbf{C1 (diagnostic).} \emph{Boundary Blindness}, a
+  frozen-checkpoint metric: the rectified gap between the world's local
+  action-sensitivity and the model's, evaluated on similar-state
+  neighbourhoods. BB concentrates at the pre-grasp boundary on Metaworld for
+  both DINO-WM and JEPA-WM (CI-aware, per task) and transfers to DROID
+  (Sec.~\ref{sec:diagnostic}).
+  \item \textbf{C2 (planning link).} At upstream-parity closed-loop protocol,
+  planning succeeds exactly where BB is low (Reach: $94\%$/$100\%$, above the
+  published $44.8\pm8.9$) and collapses where BB is high (Push, Pick-and-place:
+  $0\%$ both arms) with the signature BB predicts: the end-effector arrives,
+  the object never moves (Sec.~\ref{sec:planning}).
+  \item \textbf{C3 (mechanism + fix).} A controlled fix ladder on frozen
+  trunks: mixture heads --- null; metric re-weighting --- null; a probe chain
+  showing the object state is \emph{present} in the latent and propagated for
+  factual actions but dead for counterfactual ones; and a 0.5M-parameter
+  grounded dynamics channel that repairs exactly that channel on both model
+  families (Sec.~\ref{sec:fix}).
+\end{itemize}
+
+% ======================================================================
+\section{Related work}\label{sec:related}
+% - JEPA world models: DINO-WM (Zhou 2024), V-JEPA-2-AC (Assran 2025),
+%   JEPA-WMs study (jepa-success). Their Metaworld closed-loop tables stop at
+%   Reach/Reach-Wall; appendix admits "hallucinates grasping the object".
+% - V-JEPA-2-AC needs 3 hand-crafted sub-goal images for pick-&-place
+%   (65-80%); grasp with goal-image 25-65%; Octo grasp 0-20% (their Table 2).
+% - Multimodality/bifurcations in dynamics models; distributional prediction.
+% - Diagnostics for world models (action sensitivity, counterfactuals).
+\todo{related work; 0.75 page}
+
+% ======================================================================
+\section{Boundary Blindness}\label{sec:diagnostic}
+
+\subsection{Definition}
+% metrics/boundary_blindness.py; stratification/boundary_regime.py
+For a transition $(z_t, a_t, z_{t+1})$ with a similar-state neighbourhood
+$\mathcal{N}(z_t)$ (states within a proprioceptive radius, relaxed to nearest
+neighbours), let $S_{\mathrm{true}}$ be the dispersion of \emph{true} outcomes
+across $\mathcal{N}$ and $S_{\mathrm{model}}$ the dispersion of the frozen
+predictor's outputs for the same (state, action) set. Both are normalized per
+task; then
+\begin{equation}
+  \bb = \mathrm{relu}\big(S_{\mathrm{true}}^{\mathrm{norm}} -
+        S_{\mathrm{model}}^{\mathrm{norm}}\big).
+\end{equation}
+$\bb_{\mathrm{boundary}}$ restricts to transitions whose neighbourhood
+straddles an outcome bifurcation (object-displacement label).
+\todo{formal details: neighbourhood radius, boundary labelling, trajectory-clustered bootstrap}
+
+\subsection{Setup}
+% Frozen torch.hub checkpoints; encode->cache->metrics; regimes free_space /
+% pre_grasp / gripper_actuation / contact_manipulation (proxy from 39-dim
+% state); honesty: object-displacement proxy, mw-door-close excluded.
+\todo{setup paragraph + honesty caveats (CLAIMS 1.5)}
+
+\subsection{Result: BB concentrates at the pre-grasp boundary}
+\begin{table}[h]
+\centering\small
+\caption{Pooled $\bb_{\mathrm{boundary}}$ ($n_b$-weighted, mw-door-close
+excluded) on frozen checkpoints. Per-task CI-aware pairing: pre-grasp elevated
+in 4/6 (DINO-WM) and 5/6 (JEPA-WM) tasks, zero confident reversals. DROID:
+$\|\Delta z\|$ proxy, transfer check only.}
+\label{tab:bb}
+\begin{tabular}{lccc}
+\toprule
+ & free space & contact & \textbf{pre-grasp boundary} \\
+\midrule
+DINO-WM (Metaworld) & 0.282 & 0.481 & \textbf{1.323} \\
+JEPA-WM (Metaworld) & 0.299 & 0.441 & \textbf{1.280} \\
+DINO-WM (DROID, $\|\Delta z\|$) & 0.721 {\scriptsize[0.613, 0.834]} & --- &
+\textbf{1.975} {\scriptsize[1.601, 2.350]} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.85\linewidth]{../diagnosis/results/figures/figure_bb_per_regime.pdf}
+\caption{BB per regime, frozen baselines (Metaworld both families + DROID
+transfer). \todo{final styling}}
+\label{fig:bb}
+\end{figure}
+
+% ======================================================================
+\section{Boundary Blindness predicts closed-loop planning failure}
+\label{sec:planning}
+
+\subsection{Protocol}
+% Upstream-parity: CEM-L2, H=6, 300 samples, 15 iters, nas=3, alpha=0, goal =
+% expert final frame, success = simulator flag; 16 paired episodes/task,
+% paired arms share env/rand_vec/CEM seeds. Reproduction integrity: renderer
+% (default-cam 480px bug), flipud training data (pixel-calibrated MSE 71.6 vs
+% >=3000), goal-frame convention; render fidelity: pred-err 1.4x dataset,
+% latent NN ratio 0.97; physics replay 1.5mm. (CLAIMS R.1-R.3)
+\todo{protocol + reproduction-integrity paragraph; cite closed\_loop\_report.md numbers}
+
+\subsection{Results}
+\begin{table}[h]
+\centering\small
+\caption{Closed-loop Metaworld, 16 paired episodes per task. Paper baseline:
+DINO-WM CEM-$L_2$ MW-Reach $44.8\pm8.9$ (their Table~1; 3 training seeds).
+Caveat: we judge success at any step (TD-MPC2 convention); upstream judges the
+final state. \todo{optional strict re-score, D.2}}
+\label{tab:closedloop}
+\begin{tabular}{llccc}
+\toprule
+task & arm & success & final state-dist & final ee-dist \\
+\midrule
+\multirow{2}{*}{mw-reach}      & $L_2$    & \textbf{15/16 (94\%)} & 0.332 & 0.022 \\
+                               & grounded & \textbf{16/16 (100\%)} & 0.412 & 0.031 \\
+\midrule
+\multirow{2}{*}{mw-push}       & $L_2$    & 0/16 & 0.624 & 0.038 \\
+                               & grounded & 0/16 & \textbf{0.527} & 0.028 \\
+\midrule
+\multirow{2}{*}{mw-pick-place} & $L_2$    & 0/16 & 0.578 & 0.035 \\
+                               & grounded & 0/16 & \textbf{0.496} & 0.021 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Key readings (CLAIMS 2.1--2.7):
+(i)~the harness reproduces the published baseline where BB is low;
+(ii)~where BB is high both planners fail with the predicted signature ---
+final ee 2--4\,cm, object unmoved at state-dist $\sim$0.5--0.6 --- matching the
+upstream paper's qualitative report that the model ``hallucinates grasping the
+object'' and the field-wide pattern (V-JEPA-2-AC requires three hand-crafted
+sub-goal images for pick-and-place; Octo grasp 0--20\%);
+(iii)~the model-side fix improves the cost surface: paired
+$\Delta$(final state-dist), pooled contact ($n{=}32$ pairs):
+$\mathbf{+0.089}$ [bootstrap $+0.022, +0.162$]; push $+0.097$
+$[-0.014,+0.221]$, pick-place $+0.081$ $[+0.007,+0.160]$; no-harm on reach;
+(iv)~no successes flip: BB repair is necessary but not sufficient --- CEM
+rarely samples a contact-creating sequence for the grounded term to score
+(contact-aware action proposal is planner-side future work).
+
+\begin{figure}[h]
+\centering
+\todo{Figure 3: BB-per-regime (left axis) vs closed-loop success-per-task
+(right axis), plus the grounded-arm paired delta. Data:
+metaworld\_boundary\{,\_dynamics\}.csv + metaworld\_closed\_loop.csv}
+\caption{BB predicts closed-loop planning outcome.}
+\label{fig:bbvsplan}
+\end{figure}
+
+% ======================================================================
+\section{Localizing the failure: a fix ladder on frozen trunks}\label{sec:fix}
+
+\subsection{What does not work (quantified nulls)}
+% (CLAIMS 3.1-3.4)
+\textbf{Mixture predictor heads} (soft-NLL / WTA / hard-EM / supervised mode
+assignment; $K\in\{2,3\}$; optional state-slice context): every variant beats
+its $K{=}1$ control on NLL; none moves $\bb_{\mathrm{boundary}}$. Two measured
+causes: (a)~the bifurcation spans only $9.9$ $L_2$ units against a $106$ median
+residual --- the latent geometry under-weights the boundary subspace by an
+order of magnitude; (b)~the boundary's \emph{action}-dependence is unlearnable
+from expert-only data at the head level ($\pi$ action-flip rate $\approx 0$).
+\textbf{Metric re-weighting} (probe-subspace $\varphi$-metric): redistributes
+BB without reducing it --- one cannot expose a signal the predictor does not
+produce.
+
+\subsection{Where the information lives (probe chain)}
+% (CLAIMS 3.5)
+V1: object state is decodable from the frozen latent (err $0.064$ vs.\ sd
+$0.094$). V2: it propagates through the predictor for \emph{factual} actions
+($0.059$). V3: the \emph{counterfactual} action$\to$object response is noise
+(spread corr $+0.035$). The broken piece is precisely the counterfactual
+action$\to$object channel.
+
+\subsection{What works: a grounded dynamics channel}
+% (CLAIMS 3.6-3.8)
+$h(z_t, a)\!\to\!\Delta\mathrm{obj}$: 0.5M parameters, everything else frozen,
+trained on the same cached expert data that the mixture heads failed on.
+\begin{table}[h]
+\centering\small
+\caption{The fix, on both model families (Metaworld; pooled, door-close
+excluded).}
+\label{tab:fix}
+\begin{tabular}{lcc}
+\toprule
+ & DINO-WM & JEPA-WM \\
+\midrule
+counterfactual tracking corr (frozen $\to$ $+h$) & $0.035 \to \mathbf{0.682}$ & $0.268^{*} \to \mathbf{0.702}$ \\
+$\bb_{\mathrm{boundary}}$ pre-grasp & $1.323 \to \mathbf{0.660}$ ($-50\%$) & $1.280 \to \mathbf{0.620}$ ($-52\%$) \\
+boundary-vs-free gap & $1.04 \to 0.32$ & $0.98 \to 0.27$ \\
+\bottomrule
+\end{tabular}\\[2pt]
+{\scriptsize $^{*}$probe-only ceiling on JEPA-WM.}
+\end{table}
+
+The mixture-null + grounded-success pair revises the natural reading: the
+bottleneck is not missing counterfactual \emph{data} (cross-sample
+neighbourhood variation suffices) but the \emph{training target} ---
+full-latent $L_2$ buries the object's action-dependence.
+
+\begin{figure}[h]
+\centering
+\todo{Figure 2: the ladder as bars (frozen 1.32 $\to$ mixtures 1.32 $\to$
+$\varphi$-metric 1.17 $\to$ grounded 0.66) + V1/V2/V3 inset. Data:
+metaworld\_boundary\{,\_fix,\_metric,\_dynamics\}.csv}
+\caption{The fix ladder: capacity and metric are nulls; the grounded channel
+halves boundary BB.}
+\label{fig:ladder}
+\end{figure}
+
+\subsection{Honest negatives}
+% (CLAIMS 3.9, 3.10)
+The recipe does not transfer to DROID's noisy whole-state proxy label at 2.1k
+transitions (val MSE $0.865$; rank correlation $+0.708$ but spread magnitude
+collapsed; BB unchanged): the principle needs a learnable grounding label, which
+real-robot datasets currently lack. Open-loop Action Error is no-harm/no-gain
+(the metric rewards full-arm expert mimicry); a scale-bug run is disclosed in
+the artifact set.
+
+% ======================================================================
+\section{Discussion, scope, and limitations}\label{sec:discussion}
+% - Metaworld is the boundary *proof* (only dataset with object GT); the
+%   boundary label is an object-displacement proxy.
+% - DROID is a transfer check; no force/tactile grounding claimed.
+% - V-JEPA-2-AC: \todo{DECISION D.1 — run BB gate on server OR scope claim to
+%   DINO-WM/JEPA-WM + cite V-JEPA-2's sub-goal dependence as corroboration}
+% - Success-criterion caveat (any-step vs final-state); n=16 vs their 96x3.
+% - Future work (one sentence): contact-aware action proposal (planner-side).
+\todo{discussion; 0.75 page}
+
+\section{Conclusion}
+\todo{half page: the one-paragraph method statement from FIX\_C1\_EXPLAINER §7}
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\appendix
+\section{Reproduction integrity}
+% The three env-side bugs + verification numbers (CLAIMS R.1-R.3) — this
+% subsection doubles as the "sim-eval fidelity" appendix reviewers like.
+\todo{port from diagnosis/results/closed\_loop\_report.md §pitfalls}
+
+\section{Full per-task BB tables and ablations}
+\todo{per-task CSV dumps; mixture-K, boundary-head on/off, state-slice ablations}
+
+\end{document}

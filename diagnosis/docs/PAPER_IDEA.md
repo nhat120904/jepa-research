@@ -1,19 +1,32 @@
 # Paper idea — Boundary-Blind JEPA World Models (contact-boundary reframing)
 
-**Status:** 2026-06-10. Current idea-of-record. Supersedes the *fix* framing of
+**Status:** 2026-06-12. Current idea-of-record. **All experimental legs are
+measured.** Supersedes the *fix* framing of
 `cai_jepa_paper_proposal.md` §6 (the one-step counterfactual margin loss); the
 diagnostic framing (§4–§5 of the proposal) stands and is extended here with the
 **Boundary Blindness** metric. **The BB gate has been RUN and PASSED**
 (2026-06-10, frozen baselines, Metaworld + DROID transfer): BB concentrates at the
 pre-grasp boundary, CI-aware, on both datasets — see §3/C1 below and
-`results/boundary_gate_report.md`. **The fix leg is now complete on Metaworld**
-(same day): head-level mixture C3 → quantified null; metric-only re-weighting →
+`results/boundary_gate_report.md`. **The fix leg is complete on Metaworld**:
+head-level mixture C3 → quantified null; metric-only re-weighting →
 null (both kept as ablations); **the grounded object-dynamics channel
-`h(z,a)→Δobject` works** — counterfactual tracking corr +0.035 → **+0.682**, BB
-at the pre-grasp boundary **−50%** (1.323 → 0.660), the pre_grasp-vs-free_space
-BB gap collapses 1.04 → 0.32. See the revised C3 below and
-`docs/FIX_C1_EXPLAINER.md` §6–§7. Planning A/B (CEM with the grounded cost) in
-progress.
+`h(z,a)→Δobject` works** — counterfactual tracking corr +0.035 → **+0.682**
+(dino; **+0.702** jepa), BB at the pre-grasp boundary **−50% / −52%**
+(1.323→0.660 dino, 1.280→0.620 jepa), the pre_grasp-vs-free_space BB gap
+collapses 1.04→0.32 / 0.98→0.27. See the revised C3 and
+`docs/FIX_C1_EXPLAINER.md` §6–§7b. **The closed-loop leg is complete
+(2026-06-12, `results/closed_loop_report.md`):** reach reproduces ABOVE the
+published baseline (L2 15/16 = 94% vs paper DWM 44.8±8.9; grounded 16/16);
+push/pick-place are **0% for both arms** — the closed-loop face of BB (arm
+reaches, ee 2–4 cm; the object never moves; the upstream paper's own appendix
+admits "hallucinates grasping the object"); the grounded cost yields a
+CI-supported paired improvement in final state distance on pooled contact
+(**+0.089 [+0.022, +0.162]**) without flipping successes. C2 is recast around
+this closed-loop evidence (below). **Remaining work is writing**: draft
+`paper/main.tex`, claim map `docs/CLAIMS_EVIDENCE.md`, figures 2–3 assembly,
+and a scope decision on V-JEPA-2-AC (BB gate needs the A5000 server; otherwise
+scope the claim to DINO-WM/JEPA-WM and cite V-JEPA-2's own published need for
+hand-crafted sub-goals on pick-and-place as external corroboration).
 
 ---
 
@@ -64,13 +77,31 @@ On frozen, pretrained checkpoints (nothing trained):
   (Implemented: `metrics/boundary_blindness.py`, `stratification/boundary_regime.py`,
   `scripts/12_boundary_diagnostic.py`.)
 
-**C2 — Counterfactual sensitivity ⇄ planning failure (correlation study).**
-A faithful CEM planner (paper's DROID Action Error) correlated with per-transition
-action-grounding. The one-step CRA_eff correlation is null/underpowered (severe
-class imbalance: ~4% positives) — *which is itself evidence for the reframing*:
-the relevant failure is the boundary bifurcation, not one-step action-ignoring. BB,
-not CRA_eff, is the right planning-linked signal; the planning leg is recast around
-it.
+**C2 — Boundary Blindness ⇄ planning failure (now measured closed-loop).**
+The original per-transition correlation attempt (CRA_eff vs open-loop Action
+Error) is null/underpowered (severe class imbalance: ~4% positives) — *which is
+itself evidence for the reframing*: the relevant failure is the boundary
+bifurcation, not one-step action-ignoring. The planning link is now established
+at the **regime level, closed-loop** (`results/closed_loop_report.md`,
+`metaworld_closed_loop.csv`, 96 paired arm-episodes at upstream-parity
+protocol):
+- Where BB is **low** (free-space: 0.28–0.30), planning works: mw-reach
+  **15/16 (94%)** for the L2 baseline — *above* the published number for the
+  same model+planner (44.8 ± 8.9), so the harness is not the bottleneck.
+- Where BB is **high** (pre-grasp/contact: 1.28–1.32), planning collapses:
+  mw-push and mw-pick-place are **0/16 for both arms**, with the signature BB
+  predicts — the arm reaches the goal pose (final ee 2–4 cm) while the object
+  never moves (final state-dist ~0.5–0.6). The upstream paper reports the same
+  phenomenon qualitatively ("hallucinates grasping the object") and stops its
+  closed-loop Metaworld tables at Reach/Reach-Wall.
+- The model-side fix moves the planning cost surface measurably: paired final
+  state-dist improvement pooled over the contact tasks **+0.089
+  [bootstrap CI +0.022, +0.162]** (no-harm on reach: 16/16) — but flips no
+  successes, because CEM rarely *samples* a contact-creating sequence for the
+  grounded term to score. BB is thus **necessary-but-not-sufficient** for
+  contact planning: fixing the model repairs scoring; converting that into task
+  success additionally needs contact-aware action proposal (future work, one
+  sentence — deliberately out of scope, planner-side).
 
 **C3 — The fix. MEASURED UPDATE (2026-06-10): head-level C1 (incl. C1+D at the
 head) is a quantified structural null; the fix moves down the stack.**
@@ -109,9 +140,11 @@ head) is a quantified structural null; the fix moves down the stack.**
   contact −0.07 [−0.51, +0.34] n=21 — `results/metaworld_planning_metric.csv`;
   a first run with a per-dim-MSE scale bug is preserved as `_buggy_scale.csv`).
   Expected: Action Error rewards full-arm expert mimicry, which the L2 term
-  already optimises; the boundary fix matters closed-loop. **Closed-loop success
-  rate with the grounded cost is the declared next experiment** (needs env
-  rollouts — server-side).
+  already optimises; the boundary fix matters closed-loop. **Closed-loop: now
+  measured** (2026-06-12, local) — see C2 above and
+  `results/closed_loop_report.md`: no-harm on reach (16/16), CI-supported paired
+  distance improvement on pooled contact (+0.089 [+0.022, +0.162]), no success
+  flips (the residual bottleneck is contact-creating exploration in CEM).
 
 ## 4. What makes it publishable (claims, falsifiable)
 
@@ -153,7 +186,10 @@ head) is a quantified structural null; the fix moves down the stack.**
    channel 0.660** at pre_grasp (pooled bb_boundary, excl. door-close; CSVs:
    `metaworld_boundary{,_fix,_metric,_dynamics}.csv`). Support panel: the
    V1/V2/V3 localization chain + counterfactual-tracking corr 0.035 → 0.682.
-3. **Planning Action Error vs. BB**: the link that CRA_eff could not establish.
+3. **BB-per-regime vs. closed-loop success-per-task** (the C2 figure, data now
+   real): free-space BB 0.28 → reach 94–100%; boundary BB 1.3 → push/pick-place
+   0%; grounded fix BB 0.66 → paired distance +0.089 [CI +0.022, +0.162]. Data:
+   `metaworld_boundary{,_dynamics}.csv` + `metaworld_closed_loop.csv`.
 4. Ablation: C1-only / D-only / C1+D, mixture-K, boundary-head on/off.
 
 ## 7. Working titles
