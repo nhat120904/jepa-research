@@ -208,20 +208,40 @@ boundary.
 
 \subsection{CounterfactualBench: action-grounding metrics}\label{sec:cfbench}
 % metrics/cra.py, aug.py, ecs.py; scripts/05_run_diagnostic.py
-For a factual transition $(z_t, a_t, z_{t+1})$ we measure:
-\textbf{CRA} (Counterfactual Ranking Accuracy) --- the factual prediction
-$F(z_t,a_t)$ should be closer to $z_{t+1}$ than predictions for $K$ distractor
-actions $a^-$; we report top-1 accuracy under two distractor families,
-\emph{opposite} (the negated action, easy) and \emph{nearest-neighbour}
-(the closest other executed action, hard).
-\textbf{AUG} (Action Usage Gap) $=\mathbb{E}[\mathrm{MSE}(F(z_t,\pi(a_t)),z_{t+1})
--\mathrm{MSE}(F(z_t,a_t),z_{t+1})]$ with $\pi$ a batch permutation; $\approx 0$
-if actions are ignored.
-\textbf{ECS} (Effect-Conditional Sensitivity) --- AUG (and CRA) restricted to
-transitions that actually move the latent ($\|z_{t+1}-z_t\|>\tau$), so a low
-score reflects genuine action-ignoring rather than a near-static step. The
-effect-conditioned CRA is the primary signal. CIs are trajectory-clustered
-bootstrap.
+Let $F(z,a)$ be the frozen one-step latent predictor (driven through the model's
+own \texttt{unroll} primitive, with the model's action normalisation) and
+$d(\cdot,\cdot)$ the planning distance ($L_2$ for every baseline, matching the
+upstream \texttt{L2\_cem} configuration). We measure three quantities on factual
+transitions $(z_t,a_t,z_{t+1})$.
+
+\textbf{CRA} (Counterfactual Ranking Accuracy). The factual prediction should be
+closer to the realised next state than predictions under $K$ distractor actions:
+\begin{equation}
+  \mathrm{CRA} = \Pr\!\Big[\, d\big(F(z_t,a_t),z_{t+1}\big) <
+       \min_{k=1\ldots K} d\big(F(z_t,a^-_k),z_{t+1}\big) \Big].
+\end{equation}
+We report top-1 accuracy under two distractor families: \emph{opposite}
+($a^- = -a_t$, easy) and \emph{nearest-neighbour} ($a^-$ drawn from the closest
+other executed actions in the similar-state neighbourhood of
+Sec.~\ref{sec:bb-def}, hard).
+
+\textbf{AUG} (Action Usage Gap). How much does the realised action help over a
+random one,
+\begin{equation}
+  \mathrm{AUG} = \mathbb{E}\big[\, d\big(F(z_t,\pi(a_t)),z_{t+1}\big)
+                          - d\big(F(z_t,a_t),z_{t+1}\big)\,\big],
+\end{equation}
+with $\pi$ a batch permutation of actions; $\mathrm{AUG}\approx 0$ iff actions are
+ignored. (AUG is a raw latent gap, comparable across regimes within a model but
+not across models with different latent scales; CRA, a ranking, is the
+cross-model-comparable metric.)
+
+\textbf{ECS} (Effect-Conditional Sensitivity). AUG, and the primary
+\emph{effect-conditioned} CRA, restricted to transitions that actually move the
+latent, $\|z_{t+1}-z_t\| > \tau$ with $\tau$ the per-model median displacement.
+This removes near-static steps where the action genuinely should not change much,
+so a low effect-conditioned score reflects true action-ignoring rather than a
+quiet transition. Confidence intervals are trajectory-clustered bootstrap.
 
 \begin{table}[h]
 \centering\small
@@ -251,23 +271,76 @@ fail specifically to resolve \emph{small} action differences, and most in the
 pre-grasp/contact regimes. CRA alone cannot say whether this is a real boundary
 failure or just small one-step latent deltas --- which is what BB resolves.
 
-\subsection{Boundary Blindness: definition}
+\subsection{Boundary Blindness: definition}\label{sec:bb-def}
 % metrics/boundary_blindness.py; stratification/boundary_regime.py
-For a transition $(z_t, a_t, z_{t+1})$ with a similar-state neighbourhood
-$\mathcal{N}(z_t)$ (states within a proprioceptive radius, relaxed to nearest
-neighbours), let $S_{\mathrm{true}}$ be the dispersion of \emph{true} outcomes
-across $\mathcal{N}$ and $S_{\mathrm{model}}$ the dispersion of the frozen
-predictor's outputs for the same (state, action) set. Both are normalized per
-task; then
+The idea is to compare, on a neighbourhood of similar states, how much the
+\emph{world's} outcome fans out under nearby actions against how much the
+\emph{model's} prediction fans out under the same actions. Where the world
+bifurcates but the model does not, the model is blind to the boundary.
+
+\paragraph{Neighbourhood.}
+For each anchor transition $i$ with latent state $z_i$ and action $a_i$ we form a
+similar-state neighbourhood $\mathcal{N}(i)$ from the cached reference set: its
+$M$ ($=16$) nearest transitions in latent distance $\|z_i - z_j\|$, keeping those
+within a radius $\rho$ and, when fewer than $M$ fall inside, relaxing to the $M$
+nearest (this is the same neighbourhood the hard-negative CRA sampler uses; the
+relaxation is necessary because a fixed radius in raw latent units otherwise
+selects almost nothing). Let $o_j$ denote the \emph{true} scalar outcome of
+neighbour $j$ --- object displacement $\|\Delta\mathrm{obj}_j\|$ on Metaworld, the
+latent-change proxy $\|\Delta z_j\|$ on DROID --- and let $\mathcal{M}(i)$ be the
+valid (in-radius or relaxed) members.
+
+\paragraph{Boundary regime.}
+A transition lies in the \emph{boundary regime} when small action changes produce
+large true-outcome changes across its neighbourhood:
 \begin{equation}
-  \bb = \mathrm{relu}\big(S_{\mathrm{true}}^{\mathrm{norm}} -
-        S_{\mathrm{model}}^{\mathrm{norm}}\big).
+  \mathrm{boundary\_score}_i \;=\;
+  \frac{\operatorname{std}_{j\in\mathcal{M}(i)}\, o_j}
+       {\operatorname{mean}_{j\in\mathcal{M}(i)} \|a_j - a_i\| + \varepsilon}.
 \end{equation}
-$\bb_{\mathrm{boundary}}$ restricts to transitions whose neighbourhood
-straddles an outcome bifurcation (object-displacement label). Unlike CRA, BB
-compares the model's action-sensitivity to the \emph{world's} ground-truth
-sensitivity, so a high BB cannot be explained away by small one-step deltas.
-\todo{formal details: neighbourhood radius, boundary labelling, trajectory-clustered bootstrap}
+A high score requires outcomes to fan out under nearly identical actions; note
+this is \emph{not} the same as ``large effect'' --- free-space drift has large
+$\|\Delta z\|$ but smooth, low-variance neighbourhoods and so scores low. A
+percentile threshold (mirroring the ECS effect mask) turns the score into the
+boundary mask used for $\bb_{\mathrm{boundary}}$.
+
+\paragraph{The two sensitivities.}
+The world's local action-sensitivity at anchor $i$ is the dispersion of true
+outcomes across the neighbourhood,
+\begin{equation}
+  S^{\mathrm{true}}_i \;=\;
+  \sqrt{\tfrac{1}{|\mathcal{M}(i)|}\textstyle\sum_{j\in\mathcal{M}(i)}
+        (o_j - \bar o_i)^2 },
+\end{equation}
+a property of the data alone. The model's local action-sensitivity applies each
+neighbour's action $a_j$ to the \emph{single} anchor state $z_i$ and measures how
+far the resulting predictions spread, as the root-mean-square latent distance to
+their centroid $\bar F_i = \tfrac{1}{|\mathcal{M}(i)|}\sum_j F(z_i,a_j)$,
+\begin{equation}
+  S^{\mathrm{model}}_i \;=\;
+  \sqrt{\tfrac{1}{|\mathcal{M}(i)|}\textstyle\sum_{j\in\mathcal{M}(i)}
+        \big\| F(z_i,a_j) - \bar F_i \big\|^2 },
+\end{equation}
+a property of the frozen predictor $F$.
+
+\paragraph{Boundary Blindness.}
+Because $S^{\mathrm{true}}$ and $S^{\mathrm{model}}$ carry different units
+(outcome vs.\ latent), each is standardized (z-scored) over the whole reference
+population $\mathcal{P}$, $\tilde S = (S - \mu_{\mathcal{P}}(S))/\sigma_{\mathcal{P}}(S)$,
+and Boundary Blindness is the rectified gap
+\begin{equation}
+  \bb_i \;=\; \operatorname{relu}\!\big(\tilde S^{\mathrm{true}}_i
+                                       - \tilde S^{\mathrm{model}}_i\big).
+\end{equation}
+$\bb_i\!\approx\!0$ means the model's action-sensitivity matches the world's;
+$\bb_i$ large means the world bifurcates at $i$ while the model predicts nearly
+the same future for every nearby action --- it is blind to the boundary.
+$\bb_{\mathrm{boundary}}$ pools $\bb$ over the boundary-masked transitions.
+Standardizing over the population (not per anchor) keeps $\bb$ comparable across
+regimes, which is what lets us read off ``BB is high at pre-grasp, low in free
+space''. Unlike CRA, BB references the world, so a high value cannot be an
+artefact of small one-step latent deltas. All reported $\bb$ values are pooled
+$n_b$-weighted with trajectory-clustered bootstrap confidence intervals.
 
 \subsection{Setup}
 We operate entirely on pretrained, frozen checkpoints (DINO-WM and JEPA-WM for
@@ -411,9 +484,66 @@ $0.094$). V2: it propagates through the predictor for \emph{factual} actions
 action$\to$object channel.
 
 \subsection{What works: a grounded dynamics channel}
-% (CLAIMS 3.6-3.8)
-$h(z_t, a)\!\to\!\Delta\mathrm{obj}$: 0.5M parameters, everything else frozen,
-trained on the same cached expert data that the mixture heads failed on.
+% (CLAIMS 3.6-3.8); models/probes/object_probe.py, scripts/17
+The diagnosis says the object's action-dependence exists in the latent but is not
+exposed by the predictor. So rather than change the predictor or the metric, we
+add a small \emph{auxiliary} channel that predicts the object outcome directly,
+supervised by the one signal the full-latent $L_2$ objective under-weights.
+
+\paragraph{Architecture.}
+A grounded dynamics head $h(z_t, a)\!\to\!\widehat{\Delta\mathrm{obj}}$ reads the
+frozen latent token grid and the action. It pools the $N$ latent tokens
+$z_t\in\mathbb{R}^{N\times D}$ by concatenating their mean and max, embeds the
+action with a one-layer MLP $\phi_a$, and maps the concatenation to the object
+displacement with a small MLP:
+\begin{equation}
+  h(z_t,a) = \mathrm{MLP}\big(\,[\,\operatorname{mean}_n z_t \;\Vert\;
+             \operatorname{max}_n z_t \;\Vert\; \phi_a(a)\,]\,\big)
+             \;\in\; \mathbb{R}^{3}.
+\end{equation}
+At $\sim$0.5M parameters this is two orders of magnitude smaller than the frozen
+predictor ($17$--$21$M). The encoder, predictor, and action encoder are all
+frozen; only $h$ trains, on the \emph{cached} latents --- no environment, no
+backprop through the world model (``force-free'').
+
+\paragraph{Training.}
+We regress object displacement with a plain MSE,
+\begin{equation}
+  \mathcal{L}(h) = \mathbb{E}_{(z_t,a_t,s_t,s_{t+1})}\big\|
+    h(z_t,a_t) - (\,\mathrm{obj}(s_{t+1}) - \mathrm{obj}(s_t)\,)\big\|^2,
+\end{equation}
+where $\mathrm{obj}(\cdot)$ is the object slice of the Metaworld state ($3$-dim;
+on DROID, lacking object state, the label degrades to the full proprioceptive
+state difference --- the transfer attempt that fails, Sec.~\ref{sec:fix}
+honest negatives). Three epochs of Adam at $10^{-3}$ on the cached transitions
+suffice.
+
+\paragraph{Counterfactual gate.}
+Before trusting $h$ we verify it learned an action-dependent object response, not
+a per-state constant: on held-out boundary neighbourhoods we measure the
+correlation between the spread of $h$'s predictions across the neighbourhood's
+actions and the spread of the true outcomes; we accept only if this
+counterfactual-tracking correlation exceeds $0.2$. The frozen predictor scores
+$0.035$ (DINO); $h$ scores $0.682$ --- it has recovered the channel.
+
+\paragraph{Use at test time.}
+$h$ supplies a grounded read-out of the predicted object position. For the BB
+evaluation we substitute $h$'s object-spread for the predictor's latent spread in
+$S^{\mathrm{model}}$. For planning we add a grounded term to the CEM cost:
+integrating $h$ along the unrolled plan gives a predicted object trajectory whose
+endpoint is compared to the goal's probed object position, weighted by $\beta$ and
+normalised by a pooled scale $s_g$, on top of the upstream latent-$L_2$ term:
+\begin{equation}
+  C(\text{plan}) = \underbrace{d\big(F^{(H)}(z_t,\mathbf a),z_g\big)}_{\text{upstream }L_2}
+   + \beta \,\Big\| \tfrac{1}{s_g}\big(\widehat{\mathrm{obj}}_H - \mathrm{obj}(z_g)\big)\Big\|^2,
+   \quad
+   \widehat{\mathrm{obj}}_H = g(z_t) + \textstyle\sum_{t=1}^{H} h\big(F^{(t)},a_t\big),
+\end{equation}
+with $g$ the object probe (the read-out used to initialise and to define the
+goal). This is the ``grounded'' planner arm of Sec.~\ref{sec:planning}; note the
+squared-norm-over-scale normalisation (an earlier per-dimension MSE scaling made
+the latent term vanish and is disclosed as a corrected bug).
+
 \begin{table}[h]
 \centering\small
 \caption{The fix, on both model families (Metaworld; pooled, door-close
