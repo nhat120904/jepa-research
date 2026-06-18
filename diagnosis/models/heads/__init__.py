@@ -8,6 +8,7 @@ from .mixture_predictor import (
     metaworld_boundary_state_slice,
     MW_STATE_SLICE_DIM,
 )
+from .residual_predictor import ResidualPredictorHead, load_residual_head
 
 __all__ = [
     "MixtureDensityHead",
@@ -18,4 +19,6 @@ __all__ = [
     "flatten_tokens",
     "metaworld_boundary_state_slice",
     "MW_STATE_SLICE_DIM",
+    "ResidualPredictorHead",
+    "load_residual_head",
 ]

@@ -102,11 +102,15 @@ class _PlanAdapter:
     (`planning_objective.alpha: 0.1` in the mw configs). Only the methods
     cem_plan touches are forwarded."""
 
-    def __init__(self, base):
+    def __init__(self, base, residual_head=None):
         self.base = base
         self.spec = base.spec
         self.device = base.device
         self.last_proprio = None                     # (B, H+1, ...) features
+        # When set, the rollout is corrected per step: ẑ_{t+1}=F(z,a)+Δ(z,a)
+        # (option C). Δ corrects the visual latent only; proprio (reliable) is
+        # propagated uncorrected. Requires the per-step loop below.
+        self.residual_head = residual_head
 
     # CEM batches of 300 unrolls peak at ~11.6 of 12.2 GB VRAM — any other GPU
     # user (a notebook kernel, the desktop) then crashes the run natively.
@@ -129,6 +133,8 @@ class _PlanAdapter:
         return torch.cat(outs, dim=0)
 
     def _predict_rollout_chunk(self, z_t, actions, proprio_t=None):
+        if self.residual_head is not None:
+            return self._corrected_rollout_chunk(z_t, actions, proprio_t)
         from einops import rearrange
         from tensordict.tensordict import TensorDict
 
@@ -148,6 +154,42 @@ class _PlanAdapter:
         self.last_proprio = None
         pred = b.encpred.unroll(z_ctxt_visual, act_suffix=act_suffix)
         return rearrange(pred, "t b ... -> b t ...")
+
+    def _corrected_rollout_chunk(self, z_t, actions, proprio_t=None):
+        """Recursive corrected rollout: ẑ_{t+1} = F(z_t,a_t) + Δ(z_t,a_t), one
+        model-step at a time so the correction (and the predicted proprio
+        context) feed back. Mirrors the frozen path's normalisation exactly."""
+        from einops import rearrange
+        from tensordict.tensordict import TensorDict
+
+        b, rh = self.base, self.residual_head
+        B, H, _ = actions.shape
+        z_cur = z_t.to(b.device, dtype=torch.float32)
+        a = actions.to(b.device, dtype=torch.float32).reshape(B, -1, b.spec.action_dim)
+        a = b.normalize_action(a).reshape(B, H, b._model_action_dim)   # model-space per step
+        uses_p = b.spec.uses_proprio and proprio_t is not None
+        prop_feat = (b.encode_proprio_features(proprio_t.reshape(B, 1, -1))
+                     if uses_p else None)                              # (B, 1, ...) batch-first
+        outs, props = [z_cur], []
+        for t in range(H):
+            a_t = a[:, t]                                              # (B, model_action_dim)
+            act_suffix = a_t.unsqueeze(0)                             # (1, B, A)
+            if uses_p:
+                ctxt = TensorDict({"visual": z_cur.unsqueeze(1), "proprio": prop_feat},
+                                  batch_size=[])
+                pred = b.encpred.unroll(ctxt, act_suffix=act_suffix)
+                z_next = pred["visual"][-1]                           # frozen one-step (B,V,H,W,D)
+                prop_bt = rearrange(pred["proprio"], "t b ... -> b t ...")
+                prop_feat = prop_bt[:, -1:]                          # next ctxt proprio (uncorrected)
+                props.append(prop_bt[:, -1])
+            else:
+                pred = b.encpred.unroll(z_cur.unsqueeze(1), act_suffix=act_suffix)
+                z_next = pred[-1]
+            z_next = z_next + rh(z_cur, a_t)                          # CORRECT the visual latent
+            z_cur = z_next
+            outs.append(z_cur)
+        self.last_proprio = (torch.stack(props, dim=1) if props else None)   # (B, H, ...)
+        return torch.stack(outs, dim=1)                              # (B, H+1, V,H,W,D)
 
     def predict(self, z_t, a_t, proprio_t=None):
         return self.base.predict(z_t, a_t, proprio_t=proprio_t)
@@ -282,7 +324,8 @@ def run_episode(arm, task, seed, env, init_state, goal_frame, goal_state,
                 expert_succ, adapter, plan_adapter, device, *, probe, dyn_head,
                 s_g, alpha, beta, cem_kw, horizon, num_act_stepped,
                 max_episode_steps, proprio_ctxt, ee_probe=None,
-                lambda_app=0.0, lambda_obj=0.0):
+                lambda_app=0.0, lambda_obj=0.0, cost_arm=None):
+    cost_arm = cost_arm or arm
     obs, _ = env.reset()
     if not np.allclose(obs, init_state, atol=1e-5):
         print(f"  [warn] init-state mismatch after reset (seed {seed})")
@@ -302,7 +345,7 @@ def run_episode(arm, task, seed, env, init_state, goal_frame, goal_state,
         prop = None
         if proprio_ctxt:
             prop = torch.from_numpy(obs[:4].astype(np.float32)).to(device)
-        tcf = make_traj_cost(arm, plan_adapter, adapter, probe, dyn_head,
+        tcf = make_traj_cost(cost_arm, plan_adapter, adapter, probe, dyn_head,
                              z_t, z_goal, goal_prop_feat,
                              alpha=alpha, beta=beta, s_g=s_g, ee_probe=ee_probe,
                              lambda_app=lambda_app, lambda_obj=lambda_obj)
@@ -359,7 +402,12 @@ def main() -> int:
     ap.add_argument("--cem-iterations", type=int, default=15)
     ap.add_argument("--var-scale", type=float, default=1.0)
     ap.add_argument("--max-episode-steps", type=int, default=100)
-    ap.add_argument("--arms", nargs="+", default=["l2", "hdyn"])
+    ap.add_argument("--arms", nargs="+", default=["l2", "hdyn"],
+                    help="l2/hdyn/hexp use the frozen predictor; suffix 'c' "
+                         "(l2c/hdync) uses the corrected predictor F+Δ (--residual-head)")
+    ap.add_argument("--residual-head", default=None,
+                    help="residual corrective predictor ckpt (scripts/20); "
+                         "required for any 'c'-suffixed arm")
     ap.add_argument("--out", default="results/metaworld_closed_loop.csv")
     args = ap.parse_args()
 
@@ -368,6 +416,17 @@ def main() -> int:
     device = torch.device(cfg["eval"]["device"] if torch.cuda.is_available() else "cpu")
     adapter = build_adapter(args.model, device=str(device)).eval()
     plan_adapter = _PlanAdapter(adapter)
+    # Corrected predictor adapter for 'c'-suffixed arms (option C).
+    plan_adapter_c = None
+    if any(a.endswith("c") for a in args.arms):
+        from models.heads import load_residual_head
+        if not args.residual_head:
+            raise SystemExit("--residual-head is required for a 'c'-suffixed arm")
+        rh, rh_meta = load_residual_head(args.residual_head, device)
+        plan_adapter_c = _PlanAdapter(adapter, residual_head=rh)
+        print(f"residual head: obj err corrected/frozen="
+              f"{rh_meta.get('corrected_obj_mse', float('nan'))/max(rh_meta.get('frozen_obj_mse', 1), 1e-9):.3f}x "
+              f"lambda_obj_train={rh_meta.get('lambda_obj')}", flush=True)
     probe, _ = load_probe(args.probe, device)
     dyn_head, dyn_meta = load_dynamics_head(args.dyn_head, device)
     ee_probe = None
@@ -424,9 +483,14 @@ def main() -> int:
                 continue
             for arm in args.arms:
                 t0 = time.time()
+                # 'c'-suffixed arms use the corrected predictor; the cost is the
+                # base arm (l2c -> L2 cost, hdync -> hdyn cost).
+                corrected = arm.endswith("c")
+                pa = plan_adapter_c if corrected else plan_adapter
+                cost_arm = arm[:-1] if corrected else arm
                 try:
                     r = run_episode(arm, task, seed, env, init_state, goal_frame,
-                                    goal_state, expert_succ, adapter, plan_adapter,
+                                    goal_state, expert_succ, adapter, pa,
                                     device, probe=probe, dyn_head=dyn_head,
                                     s_g=args.s_g, alpha=args.alpha, beta=args.beta,
                                     cem_kw=cem_kw, horizon=args.horizon,
@@ -434,7 +498,7 @@ def main() -> int:
                                     max_episode_steps=args.max_episode_steps,
                                     proprio_ctxt=args.proprio_ctxt,
                                     ee_probe=ee_probe, lambda_app=args.lambda_app,
-                                    lambda_obj=args.lambda_obj)
+                                    lambda_obj=args.lambda_obj, cost_arm=cost_arm)
                 except Exception as e:  # noqa: BLE001 — keep the sweep alive
                     print(f"  [error] {task} ep{ep} {arm}: {e}", flush=True)
                     continue
