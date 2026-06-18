@@ -92,7 +92,7 @@ def main() -> int:
         records = helpers.build_transition_records(cache, regime_by_traj, step, per_task=True)
         train_recs, val_recs = split_by_trajectory(records, args.val_frac, args.seed)
         print(f"transitions: train={len(train_recs)} val={len(val_recs)}", flush=True)
-        d0 = helpers.materialize_records(cache, train_recs[:2], step, want_state=True)
+        d0 = helpers.materialize_records(cache, train_recs[:2], step, want_proprio=False, want_state=True)
         latent_dim = int(d0["z_t"].shape[-1]); del d0
         probe = SpatialObjectProbe(latent_dim=latent_dim, out_dim=3,
                                    n_layers=args.n_layers, hidden=args.hidden).to(device).train()
@@ -102,7 +102,7 @@ def main() -> int:
         def epoch_pass(recs, train):
             se = n = 0.0
             for sel in iter_chunks(recs, args.chunk, rng if train else np.random.default_rng(1)):
-                d = helpers.materialize_records(cache, sel, step, want_state=True)
+                d = helpers.materialize_records(cache, sel, step, want_proprio=False, want_state=True)
                 obj = d["state_t"][:, OBJECT_SLICE].float()
                 m = d["z_t"].shape[0]; order = np.arange(m)
                 if train: rng.shuffle(order)
@@ -129,7 +129,7 @@ def main() -> int:
         errs, regimes = [], []
         for sel in [val_recs[i:i+args.chunk] for i in range(0, len(val_recs), args.chunk)]:
             sel = sorted(sel, key=lambda r: r["tid"])
-            d = helpers.materialize_records(cache, sel, step, want_state=True)
+            d = helpers.materialize_records(cache, sel, step, want_proprio=False, want_state=True)
             obj_true = d["state_t1"][:, OBJECT_SLICE].float()
             with torch.no_grad():
                 for lo in range(0, d["z_t1"].shape[0], args.batch_size):
