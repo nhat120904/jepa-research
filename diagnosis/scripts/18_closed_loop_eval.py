@@ -215,18 +215,30 @@ def encode_frame(adapter, frame: np.ndarray, proprio: np.ndarray, device):
     return z[0, 0]                                                              # (V,H,W,D)
 
 
+_COST_DEBUG = os.environ.get("CAI_JEPA_COST_DEBUG")
+_cost_dbg_n = 0
+
+
 def make_traj_cost(arm, plan_adapter, base, probe, dyn_head, z_t, z_goal,
-                   goal_prop_feat, *, alpha, beta, s_g):
-    """Upstream objective (visual MSE + α·proprio-feature MSE) plus, for the
-    hdyn arm, the grounded object term (per-dim normalised, weighted β)."""
+                   goal_prop_feat, *, alpha, beta, s_g, ee_probe=None,
+                   lambda_app=0.0, lambda_obj=0.0):
+    """Upstream objective (visual MSE + α·proprio-feature MSE) plus a grounded
+    object term. ``hdyn``: final object-at-goal (scoring only). ``hexp``: dense
+    APPROACH (predicted ee → current object, drives contact) + dense MANIPULATE
+    (object → goal, denser selection signal) — the exploration fix (option B,
+    docs/plans/2026-06-18-grounded-exploration-design.md). All per-dim normalised
+    on the object scale s_g so the weights are comparable to β."""
     g_goal = g_init = None
-    if arm == "hdyn":
+    if arm in ("hdyn", "hexp"):
         with torch.no_grad():
             g_goal = probe(z_goal.unsqueeze(0))
             g_init = probe(z_t.unsqueeze(0))
+    if arm == "hexp" and ee_probe is None:
+        raise ValueError("hexp arm needs --ee-probe")
     s_g_dim = s_g / np.sqrt(probe.out_dim)
 
     def cost(pred, actions, z_goal_):
+        global _cost_dbg_n
         B = pred.shape[0]
         c = ((pred[:, -1].reshape(B, -1) - z_goal_.reshape(1, -1)) ** 2).mean(-1)
         lp = plan_adapter.last_proprio
@@ -241,6 +253,26 @@ def make_traj_cost(arm, plan_adapter, base, probe, dyn_head, z_t, z_goal,
                 a = base.normalize_action(a).reshape(B, -1)
                 obj = obj + dyn_head(pred[:, t], a)
             c = c + beta * (((obj - g_goal) / s_g_dim) ** 2).mean(-1)
+        elif arm == "hexp":
+            H = pred.shape[1] - 1
+            obj = g_init.expand(B, -1).clone()
+            app = torch.zeros(B, device=pred.device)
+            man = torch.zeros(B, device=pred.device)
+            for t in range(H):
+                ee = ee_probe(pred[:, t])                          # (B,3) predicted ee
+                app = app + (((ee - obj) / s_g_dim) ** 2).mean(-1)  # ee → current object
+                a = actions[:, t].reshape(B, -1, base.action_dim())
+                a = base.normalize_action(a).reshape(B, -1)
+                obj = obj + dyn_head(pred[:, t], a)               # integrate object motion
+                man = man + (((obj - g_goal) / s_g_dim) ** 2).mean(-1)  # dense object → goal
+            app, man = app / H, man / H
+            if _COST_DEBUG and _cost_dbg_n < 8:
+                print(f"    [cost] visual={c.mean():.4f} app={app.mean():.4f} "
+                      f"(x{lambda_app}={lambda_app*app.mean():.4f}) "
+                      f"man={man.mean():.4f} (x{lambda_obj}={lambda_obj*man.mean():.4f})",
+                      flush=True)
+                _cost_dbg_n += 1
+            c = c + lambda_app * app + lambda_obj * man
         return c
 
     return cost
@@ -249,7 +281,8 @@ def make_traj_cost(arm, plan_adapter, base, probe, dyn_head, z_t, z_goal,
 def run_episode(arm, task, seed, env, init_state, goal_frame, goal_state,
                 expert_succ, adapter, plan_adapter, device, *, probe, dyn_head,
                 s_g, alpha, beta, cem_kw, horizon, num_act_stepped,
-                max_episode_steps, proprio_ctxt):
+                max_episode_steps, proprio_ctxt, ee_probe=None,
+                lambda_app=0.0, lambda_obj=0.0):
     obs, _ = env.reset()
     if not np.allclose(obs, init_state, atol=1e-5):
         print(f"  [warn] init-state mismatch after reset (seed {seed})")
@@ -271,7 +304,8 @@ def run_episode(arm, task, seed, env, init_state, goal_frame, goal_state,
             prop = torch.from_numpy(obs[:4].astype(np.float32)).to(device)
         tcf = make_traj_cost(arm, plan_adapter, adapter, probe, dyn_head,
                              z_t, z_goal, goal_prop_feat,
-                             alpha=alpha, beta=beta, s_g=s_g)
+                             alpha=alpha, beta=beta, s_g=s_g, ee_probe=ee_probe,
+                             lambda_app=lambda_app, lambda_obj=lambda_obj)
         # upstream shrinks the plan to the remaining model-steps near the end
         plan_h = min(horizon, max(1, -(-(max_episode_steps - steps) // FRAMESKIP)))
         plan = cem_plan(
@@ -311,7 +345,13 @@ def main() -> int:
                     help="drop proprio from the unroll context (NOTE: dino_wm's "
                          "predictor needs it — 384 visual + 20 proprio + 20 action "
                          "= 424; upstream always carries proprio in the obs td)")
-    ap.add_argument("--beta", type=float, default=0.1, help="grounded-term weight")
+    ap.add_argument("--beta", type=float, default=0.1, help="grounded-term weight (hdyn)")
+    ap.add_argument("--ee-probe", default=None,
+                    help="ee-probe ckpt (scripts/19); required for the hexp arm")
+    ap.add_argument("--lambda-app", type=float, default=1.0,
+                    help="hexp APPROACH (ee→object) weight")
+    ap.add_argument("--lambda-obj", type=float, default=1.0,
+                    help="hexp MANIPULATE (dense object→goal) weight")
     ap.add_argument("--s-g", type=float, default=0.1276)   # pool scale (scripts/15 log)
     ap.add_argument("--horizon", type=int, default=6)      # upstream mw config
     ap.add_argument("--num-act-stepped", type=int, default=3)
@@ -330,6 +370,13 @@ def main() -> int:
     plan_adapter = _PlanAdapter(adapter)
     probe, _ = load_probe(args.probe, device)
     dyn_head, dyn_meta = load_dynamics_head(args.dyn_head, device)
+    ee_probe = None
+    if "hexp" in args.arms:
+        if not args.ee_probe:
+            raise SystemExit("--ee-probe is required when the hexp arm is selected")
+        ee_probe, ee_meta = load_probe(args.ee_probe, device)
+        print(f"ee probe: v1_median={ee_meta.get('v1_median')} "
+              f"lambda_app={args.lambda_app} lambda_obj={args.lambda_obj}", flush=True)
     cem_kw = dict(num_samples=args.cem_num_samples, iterations=args.cem_iterations,
                   num_elites=10, var_scale=args.var_scale,
                   max_norms=[1.0], max_norm_dims=[list(range(RAW_A * FRAMESKIP))])
@@ -385,7 +432,9 @@ def main() -> int:
                                     cem_kw=cem_kw, horizon=args.horizon,
                                     num_act_stepped=args.num_act_stepped,
                                     max_episode_steps=args.max_episode_steps,
-                                    proprio_ctxt=args.proprio_ctxt)
+                                    proprio_ctxt=args.proprio_ctxt,
+                                    ee_probe=ee_probe, lambda_app=args.lambda_app,
+                                    lambda_obj=args.lambda_obj)
                 except Exception as e:  # noqa: BLE001 — keep the sweep alive
                     print(f"  [error] {task} ep{ep} {arm}: {e}", flush=True)
                     continue
