@@ -1,6 +1,5 @@
 """Build the plain weekly-report deck (white slides, bullets + figures).
-Revised 2026-06-19 after the spatial-probe diagnostics overturned the
-encoder/residual story."""
+Revised 2026-06-19: plainer language + per-slide 'In plain terms' takeaway."""
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
@@ -8,9 +7,19 @@ from PIL import Image
 from pathlib import Path
 
 FIG = Path("results/figures/week_report")
-OUT = Path("../Weekly_Report_2026-06-19.pptx")
+import os
+_pref = Path("../Weekly_Report_2026-06-19.pptx")
+# If the preferred file is locked (open in PowerPoint), fall back to a _v2 name.
+OUT = _pref
+try:
+    if _pref.exists():
+        with open(_pref, "ab"):
+            pass
+except PermissionError:
+    OUT = Path("../Weekly_Report_2026-06-19_v2.pptx")
 DARK = RGBColor(0x20, 0x20, 0x20)
 GREY = RGBColor(0x55, 0x55, 0x55)
+ACC = RGBColor(0x1B, 0x5E, 0x20)   # deep green for the plain-terms line
 
 prs = Presentation()
 prs.slide_width, prs.slide_height = Inches(13.333), Inches(7.5)
@@ -18,16 +27,24 @@ blank = prs.slide_layouts[6]
 
 
 def add_title(slide, text, sub=None):
-    tb = slide.shapes.add_textbox(Inches(0.5), Inches(0.35), Inches(12.3), Inches(1.0))
+    tb = slide.shapes.add_textbox(Inches(0.5), Inches(0.3), Inches(12.3), Inches(0.9))
     tf = tb.text_frame; tf.word_wrap = True
     p = tf.paragraphs[0]; r = p.add_run(); r.text = text
-    r.font.size = Pt(27); r.font.bold = True; r.font.color.rgb = DARK
+    r.font.size = Pt(26); r.font.bold = True; r.font.color.rgb = DARK
     if sub:
         p2 = tf.add_paragraph(); r2 = p2.add_run(); r2.text = sub
         r2.font.size = Pt(14); r2.font.italic = True; r2.font.color.rgb = GREY
 
 
-def add_bullets(slide, bullets, x=0.6, y=1.5, w=6.4, h=5.4, size=16):
+def add_takeaway(slide, text):
+    tb = slide.shapes.add_textbox(Inches(0.6), Inches(1.18), Inches(12.1), Inches(0.6))
+    tf = tb.text_frame; tf.word_wrap = True
+    p = tf.paragraphs[0]
+    r = p.add_run(); r.text = "In plain terms:  "; r.font.bold = True; r.font.size = Pt(15); r.font.color.rgb = ACC
+    r2 = p.add_run(); r2.text = text; r2.font.size = Pt(15); r2.font.italic = True; r2.font.color.rgb = ACC
+
+
+def add_bullets(slide, bullets, x=0.6, y=1.95, w=6.5, h=5.0, size=15):
     tb = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
     tf = tb.text_frame; tf.word_wrap = True
     for i, (lvl, txt, *bold) in enumerate(bullets):
@@ -50,74 +67,75 @@ def add_image_fit(slide, path, x, y, maxw, maxh):
 
 # 1 — title
 s = prs.slides.add_slide(blank)
-add_title(s, "Boundary-Blind World Models — Weekly Progress",
-          "Week of 2026-06-12 → 06-19")
+add_title(s, "Boundary-Blind World Models — Weekly Progress", "Week of 2026-06-12 → 06-19")
 add_bullets(s, [
-    (0, "Goal: get JEPA world models to plan contact tasks (push / pick-place), where they fail.", True),
-    (0, "This week: pinned the failure to ONE channel — the predictor can't tell actions apart at the object level."),
-    (0, "Encoder and factual object tracking are both fine; the apparent 'fixes' were measurement artifacts."),
-    (0, "Reach still beats the paper: 94% vs 44.8%."),
-], y=2.2, w=12.0, h=4.8, size=18)
+    (0, "Goal: make these AI 'world models' plan contact tasks (push, pick-and-place) — today they fail.", True),
+    (0, "This week we found exactly why: the model predicts almost the same result no matter which action you try."),
+    (0, "Its 'eyes' and 'memory' are fine — the earlier 'fixes' only looked like fixes."),
+    (0, "On the one task it does handle (reaching), we already beat the published result: 94% vs 44.8%."),
+], y=2.0, w=12.2, h=4.8, size=18)
 
 # 2 — recap + question
 s = prs.slides.add_slide(blank)
-add_title(s, "Recap & this week's question")
+add_title(s, "Recap & the question")
+add_takeaway(s, "the arm reaches the target, but the robot never actually moves the object.")
 add_bullets(s, [
-    (0, "Boundary Blindness (BB): the predictor smears different actions into one latent near contact."),
-    (0, "Closed-loop: Reach works (94%); Push / Pick-place stuck at 0% — the BB gap."),
-    (0, "Last week: a scoring fix gave a small placement gain but zero successes."),
-    (0, "Question:", True),
-    (1, "Is the bottleneck the PLANNER, the ENCODER, or the PREDICTOR itself?"),
+    (0, "A 'world model' imagines what the robot will see after an action; the planner uses it to pick actions."),
+    (0, "Reaching an empty-space target works (94%). The moment the arm must move an OBJECT, it fails (0%)."),
+    (0, "Question: is the problem the planner, the model's vision, or the model's predictions?"),
 ])
-add_image_fit(s, FIG / "closed_loop.png", 7.2, 1.6, 5.8, 5.2)
+add_image_fit(s, FIG / "closed_loop.png", 7.3, 2.0, 5.7, 4.8)
 
-# 3 — two legs + the catch
+# 3 — three fixes + the catch
 s = prs.slides.add_slide(blank)
-add_title(s, "Two fix legs — and why we had to dig deeper")
+add_title(s, "Three fixes — and why we dug deeper")
+add_takeaway(s, "two fixes looked promising, so we built a sharper ruler to check if they were real.")
 add_bullets(s, [
-    (0, "hexp — grounded EXPLORATION: null, slightly worse. Not the planner's search."),
-    (0, "l2c — residual corrective PREDICTOR: looked like the BEST leg (+0.13).", True),
-    (0, "But every fix was read through a lossy 'pooled' object readout (6.4 cm).", True),
-    (1, "So we built a precise readout and re-measured — the l2c win did not survive (next slides)."),
+    (0, "Fix 1 — score actions by how much they move the object: tiny gain."),
+    (0, "Fix 2 — push the planner to seek contact: no help (slightly worse)."),
+    (0, "Fix 3 — correct the model's predictions: looked like the best..."),
+    (0, "...but all three left success at 0/16. So we built a more precise way to read the object.", True),
 ])
-add_image_fit(s, FIG / "fix_ladder.png", 6.9, 1.9, 6.1, 4.6)
+add_image_fit(s, FIG / "fix_ladder.png", 6.9, 2.2, 6.1, 4.4)
 
-# 4 — encoder + factual tracking are fine
+# 4 — not vision, not memory
 s = prs.slides.add_slide(blank)
-add_title(s, "Not the encoder, not factual tracking")
+add_title(s, "It's not the model's vision or its memory")
+add_takeaway(s, "the model's 'eyes' (where the object is) and 'memory' (what just happened) are both fine.")
 add_bullets(s, [
-    (0, "A spatially-aware probe recovers the object to 2 cm from the SAME latent (pooled said 6.4 cm)."),
-    (0, "92% within the 5 cm push radius → the encoder clearly holds the object.", True),
-    (0, "The frozen predictor also tracks the object factually to ~3 cm over a 6-step rollout."),
-    (0, "And the residual 'fix' is no better than frozen under the precise probe — it gamed the old readout.", True),
-], y=1.4, w=12.2, h=2.4)
-add_image_fit(s, FIG / "precision_pooled_vs_spatial.png", 2.5, 3.9, 8.3, 3.4)
+    (0, "We read the object's position out of the model two ways; the old readout was blurry (6 cm)."),
+    (0, "A better readout pins it to 2 cm — inside the 5 cm success zone 92% of the time. The info was always there.", True),
+    (0, "The model also correctly replays what really happened (~3 cm over 6 steps)."),
+    (0, "And Fix 3 is no better than no-fix under the precise readout — it had just gamed the blurry one.", True),
+], y=1.9, w=12.3, h=2.0)
+add_image_fit(s, FIG / "precision_pooled_vs_spatial.png", 2.5, 4.0, 8.3, 3.3)
 
-# 5 — the real bottleneck
+# 5 — the real problem
 s = prs.slides.add_slide(blank)
-add_title(s, "The real bottleneck: the predictor can't tell actions apart")
+add_title(s, "The real problem: it can't tell actions apart")
+add_takeaway(s, "the model imagines almost the same object outcome for every action — so the planner can't choose.")
 add_bullets(s, [
-    (0, "Planning needs different actions → different predicted object (so CEM can choose)."),
-    (0, "From one state, different actions move the object ~2.4 cm apart (ground truth)."),
-    (0, "But the predictor predicts ~the same object for every action: 0.74 cm spread, corr ≈ 0.", True),
-    (0, "→ True Boundary Blindness, at the object level, confirmed with a 2 cm-precise readout.", True),
+    (0, "Planning = imagine many actions, keep the one that best moves the object to the goal."),
+    (0, "In reality, different actions send the object ~2.4 cm apart."),
+    (0, "But the model imagines them all landing in nearly the same spot (0.74 cm) — unrelated to the truth.", True),
+    (0, "So every action looks equally good to the planner. That is the core failure.", True),
 ])
-add_image_fit(s, FIG / "counterfactual_smear.png", 7.4, 1.7, 5.6, 5.0)
+add_image_fit(s, FIG / "counterfactual_smear.png", 7.5, 2.0, 5.5, 4.7)
 
 # 6 — resolved + next
 s = prs.slides.add_slide(blank)
-add_title(s, "Resolved picture & next step")
+add_title(s, "Where it stands & what's next")
+add_takeaway(s, "vision ✓, memory ✓, imagining different actions ✗ — that last part is what we now fix.")
 add_bullets(s, [
-    (0, "Where the contact-planning failure lives:", True),
-    (1, "Encoder (object in latent): FINE — 2 cm."),
-    (1, "Predictor, factual object tracking: FINE — ~3 cm / 6 steps."),
-    (1, "Predictor, counterfactual object response: DEAD — the locus."),
-    (0, "The residual fix was illusory (gamed the old readout) — an honest negative."),
-    (0, "Next (launching now):", True),
-    (1, "Supervise the action→object channel separately + plan against it with the 2 cm readout —"),
-    (1, "the precisely-motivated shot at flipping contact successes beyond the paper."),
-    (0, "Reach 94% vs 44.8% stands.", True),
-], y=1.5, w=12.2)
+    (0, "The failure, located:", True),
+    (1, "Vision (where the object is): FINE — 2 cm."),
+    (1, "Memory (replaying what happened): FINE — ~3 cm over 6 steps."),
+    (1, "Imagining different actions differently: BROKEN — the culprit."),
+    (0, "Fix 3 was a mirage (it gamed the blurry readout) — an honest negative."),
+    (0, "Running now: give the planner an accurate object target + the one part that DOES tell actions"),
+    (1, "apart, weighted to drive the choice. Works → first contact successes; if not → strengthen that part."),
+    (0, "Reaching already beats the paper (94% vs 44.8%).", True),
+], y=1.95, w=12.3)
 
 prs.save(str(OUT))
 print("wrote", OUT.resolve())
