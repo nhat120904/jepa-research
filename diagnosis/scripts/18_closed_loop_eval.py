@@ -294,7 +294,13 @@ def make_traj_cost(arm, plan_adapter, base, probe, dyn_head, z_t, z_goal,
                 a = actions[:, t].reshape(B, -1, base.action_dim())
                 a = base.normalize_action(a).reshape(B, -1)
                 obj = obj + dyn_head(pred[:, t], a)
-            c = c + beta * (((obj - g_goal) / s_g_dim) ** 2).mean(-1)
+            obj_term = (((obj - g_goal) / s_g_dim) ** 2).mean(-1)
+            if _COST_DEBUG and _cost_dbg_n < 8:
+                print(f"    [hdyn] visual={c.mean():.4f} obj_term={obj_term.mean():.4f} "
+                      f"(xbeta={beta}={beta*obj_term.mean():.4f}) "
+                      f"obj_spread_across_samples={obj_term.std():.4f}", flush=True)
+                _cost_dbg_n += 1
+            c = c + beta * obj_term
         elif arm == "hexp":
             H = pred.shape[1] - 1
             obj = g_init.expand(B, -1).clone()
