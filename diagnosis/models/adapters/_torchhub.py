@@ -8,6 +8,7 @@ per-model image preprocessing (resize, mean/std, channel order).
 
 from __future__ import annotations
 
+import contextlib
 import importlib
 import sys
 import types
@@ -125,6 +126,37 @@ def _strip_nonpublic_head_checkpoints(repo: str = HUB_REPO) -> None:
                 yaml.safe_dump(cfg, f, sort_keys=False)
 
 
+@contextlib.contextmanager
+def _torch_load_mmap():
+    """Force ``torch.load(mmap=True)`` while the hub deserializes checkpoints.
+
+    PyTorch's default loads the entire checkpoint into host RAM before the model
+    is moved to the GPU, so a brief spike holds the weights twice in RAM. For
+    DROID that includes the unused ViT-L image-head decoder + LPIPS, which spiked
+    ~8 GB of host RAM and tripped the OOM watchdog on the 16 GB box. ``mmap=True``
+    memory-maps the tensor storages from the ``.pth.tar`` instead, so pages are
+    file-backed (low *private* RAM) and copied to the GPU lazily.
+
+    Non-persistent (restores ``torch.load`` on exit) and self-healing: if a
+    checkpoint format rejects mmap, fall back to the normal load for that file.
+    """
+    orig = torch.load
+
+    def patched(*args, **kwargs):
+        if "mmap" not in kwargs:
+            try:
+                return orig(*args, mmap=True, **kwargs)
+            except (RuntimeError, TypeError, ValueError, NotImplementedError):
+                return orig(*args, **kwargs)
+        return orig(*args, **kwargs)
+
+    torch.load = patched
+    try:
+        yield
+    finally:
+        torch.load = orig
+
+
 def load_from_hub(hub_id: str, repo: str = HUB_REPO) -> Tuple[Any, Any]:
     """Load (model, preprocessor) from the unified jepa-wms hub.
 
@@ -133,4 +165,5 @@ def load_from_hub(hub_id: str, repo: str = HUB_REPO) -> Tuple[Any, Any]:
     """
     _install_lightweight_eval_stub()
     _strip_nonpublic_head_checkpoints(repo)
-    return torch.hub.load(repo, hub_id, trust_repo=True)
+    with _torch_load_mmap():
+        return torch.hub.load(repo, hub_id, trust_repo=True)

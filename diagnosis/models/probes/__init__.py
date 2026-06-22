@@ -1,5 +1,6 @@
 from .object_probe import (
     ObjectProbe,
+    SpatialObjectProbe,
     ObjectDynamicsHead,
     ObjectDynamicsAdapter,
     BoundaryAwareMetricAdapter,
@@ -11,6 +12,7 @@ from .object_probe import (
 
 __all__ = [
     "ObjectProbe",
+    "SpatialObjectProbe",
     "ObjectDynamicsHead",
     "ObjectDynamicsAdapter",
     "BoundaryAwareMetricAdapter",

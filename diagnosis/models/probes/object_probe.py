@@ -62,10 +62,46 @@ class ObjectProbe(nn.Module):
         return self.net(pooled)
 
 
-def load_probe(ckpt_path: str | Path, device) -> tuple[ObjectProbe, dict]:
+class SpatialObjectProbe(nn.Module):
+    """Spatially-aware object readout: a CLS query attends over the patch tokens
+    (via a small transformer) instead of mean+max pooling them. Pooling is
+    permutation-invariant and discards *which* patch lit up; this probe can route
+    to the object patch, so it upper-bounds what spatial information the frozen
+    latent actually carries. If this still cannot localise below the task radius,
+    the precision ceiling is the encoder, not the readout (Test 1b)."""
+
+    def __init__(self, latent_dim: int, out_dim: int = 3, *, n_layers: int = 2,
+                 n_heads: int = 6, ff_mult: int = 2, hidden: int = 512):
+        super().__init__()
+        self.latent_dim = latent_dim
+        self.out_dim = out_dim
+        self.cls = nn.Parameter(torch.zeros(1, 1, latent_dim))
+        nn.init.normal_(self.cls, std=0.02)
+        layer = nn.TransformerEncoderLayer(
+            d_model=latent_dim, nhead=n_heads, dim_feedforward=ff_mult * latent_dim,
+            batch_first=True, activation="gelu", norm_first=True)
+        self.encoder = nn.TransformerEncoder(layer, num_layers=n_layers)
+        self.head = nn.Sequential(nn.Linear(latent_dim, hidden), nn.SiLU(),
+                                  nn.Linear(hidden, out_dim))
+
+    def forward(self, z: torch.Tensor) -> torch.Tensor:
+        tok = flatten_tokens(z, self.latent_dim)                  # (B, N, D)
+        B = tok.shape[0]
+        h = torch.cat([self.cls.expand(B, -1, -1), tok], dim=1)   # prepend CLS
+        h = self.encoder(h)
+        return self.head(h[:, 0])                                 # CLS readout -> xyz
+
+
+def load_probe(ckpt_path: str | Path, device) -> tuple[nn.Module, dict]:
     ckpt = torch.load(ckpt_path, map_location=device, weights_only=False)
-    probe = ObjectProbe(latent_dim=ckpt["latent_dim"], out_dim=ckpt["out_dim"],
-                        hidden=ckpt["hidden"])
+    if ckpt.get("probe_type") == "spatial":
+        probe = SpatialObjectProbe(
+            latent_dim=ckpt["latent_dim"], out_dim=ckpt["out_dim"],
+            n_layers=ckpt.get("n_layers", 2), n_heads=ckpt.get("n_heads", 6),
+            hidden=ckpt["hidden"])
+    else:
+        probe = ObjectProbe(latent_dim=ckpt["latent_dim"], out_dim=ckpt["out_dim"],
+                            hidden=ckpt["hidden"])
     probe.load_state_dict(ckpt["state_dict"])
     return probe.to(device).eval(), ckpt
 
