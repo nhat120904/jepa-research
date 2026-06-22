@@ -6,16 +6,22 @@ Both DROID baselines (`dino_wm_droid` DINOv2 ViT-S/14 22M and `vjepa2_ac_droid`
 V-JEPA-2 ViT-G/16 1.01B) were extracted + scored on the **same** 333-episode /
 2331-transition subset, fresh, on one machine.
 
+> Numbers below are the **gripper-primary stratifier** (post origin/main merge): the
+> 04-regime assignment now prioritises the gripper channel, shifting per-regime counts
+> (free_space 998→409, contact 415→1000 for dino) but leaving effect-conditioned CRA
+> essentially invariant. Latent caches were reused; only 04/05/12 were re-run
+> (`scripts/slurm_reconcile.sh`, job 21780).
+
 ## Headline: scaling the encoder 45× (22M → 1.01B) does NOT fix action-grounding
 
 **Effect-conditioned CRA (top-1, 16-way; primary decision signal), trajectory-clustered CI:**
 
 | regime | strategy | dino_wm_droid CRA_eff | vjepa2_ac_droid CRA_eff [95% CI] |
 | --- | --- | ---: | --- |
-| pre_grasp | random | 0.368 | 0.132 [0.104, 0.158] |
-| pre_grasp | hard_nn | 0.069 | **0.061 [0.042, 0.080]** |
-| pre_grasp | opposite | 0.050 | 0.066 [0.048, 0.086] |
-| contact_manipulation | random | 0.448 | 0.081 [0.051, 0.114] |
+| pre_grasp | random | 0.374 | 0.140 [0.114, 0.165] |
+| pre_grasp | hard_nn | 0.068 | **0.061 [0.044, 0.079]** |
+| pre_grasp | opposite | 0.050 | 0.065 [0.046, 0.086] |
+| contact_manipulation | random | 0.448 | 0.110 [0.075, 0.145] |
 | contact_manipulation | hard_nn | 0.055 | **0.035 [0.015, 0.058]** |
 | gripper_actuation | hard_nn | 0.031 | 0.049 [0.028, 0.072] |
 
@@ -31,12 +37,12 @@ every regime (0.000–0.004; slightly negative in contact), vs DINO-WM's small-b
 
 | regime | BB_boundary | n_b |
 | --- | ---: | ---: |
-| **pre_grasp** | **+1.942** | 126 |
-| contact_manipulation | +0.757 | 33 |
-| free_space | +0.677 | 394 |
+| **pre_grasp** | **+1.933** | 133 |
+| free_space | +1.010 | 186 |
 | gripper_actuation | +0.643 | 30 |
+| contact_manipulation | +0.390 | 234 |
 
-The pre-grasp boundary is the blindness locus (≈2.9× free_space) — the same signature
+The pre-grasp boundary is the blindness locus (≈1.9× free_space) — the same signature
 DINO-WM / JEPA-WM showed on Metaworld (pre_grasp 1.32/1.28 vs free_space 0.28). DROID
 uses the `‖Δz‖` latent proxy for the true outcome (no object GT), so this is a transfer
 check, not the boundary *proof*; it agrees with the Metaworld proof.

@@ -199,11 +199,12 @@ other services.
 - [x] **Moved to A5000 (24 GB)** — the old 8 GB GPU fault (§6) no longer applies.
 - [x] `03_extract_latents.py` for **`vjepa2_ac_droid`** → `droid__vjepa2_ac_droid.h5` (~3.6 GB) **(2026-06-22, H100)**.
 - [x] `05_run_diagnostic.py` → `results/droid_diagnostic.csv` (**both** baselines, 32 rows).
-- [x] `12_boundary_diagnostic.py` → `results/droid_boundary.csv` (8 rows); pre_grasp BB_boundary +1.94 ≫ free_space.
+- [x] `12_boundary_diagnostic.py` → `results/droid_boundary.csv` (8 rows); vjepa2 pre_grasp BB_boundary **+1.933** ≫ free_space +1.010 (reconciled on gripper-primary, `scripts/slurm_reconcile.sh` job 21780).
 - [x] `terver_gripper_test.py` sanity — **PASS** both; vjepa2 fact_to_next≈zero_to_next (533.9 vs 525.3) ⇒ the null is real, not plumbing. See `results/vjepa2_ac_droid_completion.md`.
 - [ ] `06_analyze_results.py` with **both** CSVs → updated `results/decision_report.md`.
 - [ ] **Planning probe** for `vjepa2_ac_droid` — `08_planning_probe.py` + `09_correlate_planning.py` (§8); optional, BB framing is the headline.
 - [ ] (Optional) add `jepa_wm_droid` once gated DINOv3 weights are obtained (§1).
+- [x] **Secondary datasets (2026-06-22, H100):** toy free-space positive controls `pusht`/`point_maze`/`wall` score eff-CRA **0.66–1.0** (the diagnostic returns HIGH when actions genuinely drive dynamics — validates the near-chance DROID contact scores as real). Robot side-datasets underpowered: `franka_custom` 18–43 tr/cell, `robocasa` 0/cell (filter `PnPCounterToCab`+`robot0_leftview`) → all `insufficient_data` (`min_transitions_per_cell=150`). To revive: pull a larger franka/robocasa split or relax the filter; the cell threshold is there for CI reliability. CSVs `results/{pusht,point_maze,wall,franka_custom,robocasa}_diagnostic.csv`.
 
 > **Infra note (2026-06-22):** ran on a SLURM cluster (8×H100-80GB/node), not the A5000.
 > The cluster **blocks egress to `dl.fbaipublicfiles.com`** (only HF + GitHub reachable), so
