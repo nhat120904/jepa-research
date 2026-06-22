@@ -32,7 +32,7 @@ two VRAM-bound baselines both fit, which restores the paper's headline DROID com
 | hub id            | backbone                    | verdict on A5000 (24 GB)                                                                                                                                                                                                                                                       |
 | ----------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `dino_wm_droid`   | DINOv2 **ViT-S/14**         | ✅ **runs** — latents already cached (peak ~1.44 GB)                                                                                                                                                                                                                            |
-| `vjepa2_ac_droid` | V-JEPA-2 **ViT-G/16** (~1B) | ✅ **runs** on 24 GB — **but** run `03_extract_latents.py` for it first (no cache yet)                                                                                                                                                                                          |
+| `vjepa2_ac_droid` | V-JEPA-2 **ViT-G/16** (~1B) | ✅ **DONE (2026-06-22, H100)** — extracted + scored + sanity-gated; boundary-blind like DINO-WM. `results/vjepa2_ac_droid_completion.md`                                                                                                                                                                          |
 | `jepa_wm_droid`   | DINOv3 **ViT-L/16**         | ❌ blocked by **gated** DINOv3 `.pth` weights (Meta request-form), *not* hardware. HF mirror only ships `model.safetensors`; upstream `app/plan_common/models/dino.py` loads the original `.pth` via a local `~/dinov3` hub clone (`$JEPAWM_OSSCKPT/dinov3/...pth`).            |
 
 
@@ -197,12 +197,22 @@ other services.
 - [x] `04_classify_regimes.py` → regime sidecar; `CONTACT_LATENT_RATIO` recalibrated (1.5→1.0).
 - [x] Offline: `pytest` 34/34; `07_validate_synthetic.py` PASS; adapter load+predict OK.
 - [x] **Moved to A5000 (24 GB)** — the old 8 GB GPU fault (§6) no longer applies.
-- [ ] `03_extract_latents.py` for **`vjepa2_ac_droid`** (now runnable on 24 GB) → its latent cache.
-- [ ] `05_run_diagnostic.py` → `results/droid_diagnostic.csv` (both baselines).
-- [ ] `terver_gripper_test.py` sanity (expect 2-way CRA > 0.90).
+- [x] `03_extract_latents.py` for **`vjepa2_ac_droid`** → `droid__vjepa2_ac_droid.h5` (~3.6 GB) **(2026-06-22, H100)**.
+- [x] `05_run_diagnostic.py` → `results/droid_diagnostic.csv` (**both** baselines, 32 rows).
+- [x] `12_boundary_diagnostic.py` → `results/droid_boundary.csv` (8 rows); pre_grasp BB_boundary +1.94 ≫ free_space.
+- [x] `terver_gripper_test.py` sanity — **PASS** both; vjepa2 fact_to_next≈zero_to_next (533.9 vs 525.3) ⇒ the null is real, not plumbing. See `results/vjepa2_ac_droid_completion.md`.
 - [ ] `06_analyze_results.py` with **both** CSVs → updated `results/decision_report.md`.
-- [ ] **Planning probe** — `08_planning_probe.py` + `09_correlate_planning.py` (§8).
+- [ ] **Planning probe** for `vjepa2_ac_droid` — `08_planning_probe.py` + `09_correlate_planning.py` (§8); optional, BB framing is the headline.
 - [ ] (Optional) add `jepa_wm_droid` once gated DINOv3 weights are obtained (§1).
+
+> **Infra note (2026-06-22):** ran on a SLURM cluster (8×H100-80GB/node), not the A5000.
+> The cluster **blocks egress to `dl.fbaipublicfiles.com`** (only HF + GitHub reachable), so
+> the DINOv2 ViT-S + V-JEPA-2 ViT-G encoders and both WM decoders were pre-staged from the
+> `facebook/jepa-wms` + `facebook/vjepa2-vitg-fpc64-256` + `hdtech/dinov2_vits14_pretrain`
+> HF repos into `$TORCH_HOME/hub/checkpoints` (decoder cache key = fbai basename) and
+> `$JEPAWM_OSSCKPT/vjepa2_opensource/vjepa2_vit_giant.pth`. The ViT-G load reported
+> `<All keys matched successfully>` (1,012,173,952 params). Submit scripts:
+> `scripts/slurm_droid_pipeline.sh`, `scripts/slurm_sanity.sh`.
 
 ---
 

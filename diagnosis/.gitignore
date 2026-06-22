@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 .venv/
+.venv
 .uv/
 uv.lock
 data/metaworld/
@@ -9,6 +10,15 @@ data/hf_mw/
 data/droid_subset/
 data/robocasa/
 data/precomputed_latents/
+# dataset dirs are symlinks to /mnt on the H100 box — never commit (no trailing
+# slash so the symlink itself is matched, not just a real directory)
+data/droid_subset
+data/precomputed_latents
+data/robocasa
+data/franka_custom
+data/point_maze
+data/pusht_noise
+data/wall_single
 external/jepa-wms/
 external/vjepa2/
 models/checkpoints/
