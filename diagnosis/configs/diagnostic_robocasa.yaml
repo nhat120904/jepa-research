@@ -12,8 +12,9 @@ dataset:
     custom_teleop_dset: true
 
 models:
-  - jepa_wm_droid       # RoboCasa shares the Franka 7-dim action space.
+  - jepa_wm_droid       # RoboCasa shares the Franka 7-dim action space. (blocked: gated DINOv3 weights)
   - dino_wm_droid
+  - vjepa2_ac_droid     # ViT-G/16 1B; shares the droid 7-dim action space + 256px.
 
 negative_strategies:
   - random

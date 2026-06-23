@@ -1,0 +1,13 @@
+dataset,task,model,strategy,regime,n_transitions,status
+robocasa,all,vjepa2_ac_droid,random,free_space,0,insufficient_data
+robocasa,all,vjepa2_ac_droid,opposite,free_space,0,insufficient_data
+robocasa,all,vjepa2_ac_droid,hard_nn,free_space,0,insufficient_data
+robocasa,all,vjepa2_ac_droid,random,pre_grasp,0,insufficient_data
+robocasa,all,vjepa2_ac_droid,opposite,pre_grasp,0,insufficient_data
+robocasa,all,vjepa2_ac_droid,hard_nn,pre_grasp,0,insufficient_data
+robocasa,all,vjepa2_ac_droid,random,gripper_actuation,0,insufficient_data
+robocasa,all,vjepa2_ac_droid,opposite,gripper_actuation,0,insufficient_data
+robocasa,all,vjepa2_ac_droid,hard_nn,gripper_actuation,0,insufficient_data
+robocasa,all,vjepa2_ac_droid,random,contact_manipulation,0,insufficient_data
+robocasa,all,vjepa2_ac_droid,opposite,contact_manipulation,0,insufficient_data
+robocasa,all,vjepa2_ac_droid,hard_nn,contact_manipulation,0,insufficient_data

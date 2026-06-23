@@ -34,7 +34,15 @@ dataset:
 #                        licensing/format blocker, NOT hardware; see HANDOFF_DROID §1.
 models:
   - dino_wm_droid
+  - jepa_wm_droid     # JEPA-WM, DINOv3 ViT-L/16 encoder (~300M) — mid-scale point of
+                      # the DROID scaling curve (22M dino_wm -> 300M jepa_wm -> 1B vjepa2_ac).
+                      # DINOv3 ViT-L .pth reconstructed from the HF safetensors mirror
+                      # (scripts/convert_dinov3_hf_to_orig.py; fbaipublicfiles is firewalled).
   - vjepa2_ac_droid
+  - vjepa2_ac_oss     # V-JEPA-2-AC ViT-G/16 (~1B), public OSS checkpoint (buggy-loss
+                      # variant per JEPA-WMs paper appendix). Same encoder+decoder as
+                      # vjepa2_ac_droid; WM ckpt auto-downloads from HF. Independent-
+                      # checkpoint robustness replicate of the 1B boundary-blindness.
 
 negative_strategies:
   - random
