@@ -2,80 +2,71 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Repository Status
+## What this repo is
 
-This repository contains the CAI-JEPA research and a **fully implemented diagnostic** in `diagnosis/`:
+CAI-JEPA research. A **go/no-go validation study**: quantitatively determine whether existing action-conditioned JEPA world models (DINO-WM, V-JEPA-2-AC, JEPA-WM/Terver) exhibit measurable **action-grounding failures** — i.e. they produce near-identical latent predictions for *different* actions from the same state, especially in contact-rich Franka manipulation. If failures are real → pursue the full paper; if not → pivot or abandon. The deliverable is `diagnosis/results/decision_report.md`.
 
-- `cai_jepa_paper_proposal.md` — the research proposal for "Counterfactual Action-Identifiable JEPA World Models for Robot Planning" (CAI-JEPA). Defines the problem, the four diagnostic metrics, and the proposed training objectives.
-- `diagnostic_implementation_plan_v2.md` — the phased plan to validate the idea. **Section 12 records the v2.1 adjustments** made after reading the real upstream API.
-- `diagnosis/` — the implemented go/no-go diagnostic **plus the fix legs**. Code is correct against the real `facebookresearch/jepa-wms` API and unit-tested offline (`pytest diagnosis/tests`, 68 tests). The GPU/data path runs on the server A5000 (24 GB) per `diagnosis/RUNBOOK.md` **or locally on a 12 GB GPU** (everything except `vjepa2_ac_droid`; run GPU scripts through `diagnosis/scripts/run_with_watchdog.ps1` on the 16 GB-RAM Windows box).
+`AGENTS.md` (for Codex) covers the same project; keep both roughly in sync when changing orientation facts.
 
-**Execution status (2026-06-10):**
-- **Metaworld (primary): complete** — `diagnosis/results/metaworld_diagnostic.csv`, decision **CONDITIONAL_GO**. Gap is visible: `opposite` CRA ~0.97–0.99 but `hard_nn` ~0.46–0.57 in pre-grasp/contact regimes.
-- **Boundary Blindness gate (`12`): RUN — PASS (2026-06-10, local 12 GB RTX 5070)** — `results/metaworld_boundary.csv` + `results/droid_boundary.csv`. Pooled `bb_boundary` (n_b-weighted, excl. the `mw-door-close` proxy anomaly): pre_grasp **1.323/1.280** (dino/jepa) vs free_space 0.282/0.299, confirmed CI-aware per task; DROID transfer (‖Δz‖ proxy): pre_grasp **1.939 [1.595, 2.300]** vs free_space 0.968 [0.804, 1.164] (re-run 2026-06-17 on the gripper-primary DROID regimes; pre_grasp ~identical to the prior 1.975, free_space rose from 0.721 now that closed-gripper steps are no longer pooled into it). The locus is the **pre-grasp boundary**, as the Boundary-Blind framing predicted → **fix C1 green-lit**. Full run log + caveats: `results/boundary_gate_report.md`. Two fixes shipped with the run: chunked BB predict (`CAI_JEPA_BB_PREDICT_ROWS`; an unchunked B×M unroll froze a 16 GB Windows box via driver sysmem fallback) and the hard_nn relax-to-nearest fallback in `state_neighbours` (without it BB degenerates to 0 on real caches — the radius never matches in raw latent units).
-- **DROID (secondary): dino_wm_droid complete** — gripper sanity gate PASS; `05`+`12` re-run 2026-06-17 on the **gripper-primary** DROID regimes (`results/droid_diagnostic.csv`, `droid_boundary.csv`; backups `*.pre_gripperfix.csv`): hard_nn/hard_effect still at the 16-way chance floor in pre-grasp/gripper/contact. Stratifier change (`stratification/droid_regimes.py`): `contact_manipulation` is now any gripper-closed step regardless of ‖Δz‖ (the old Δz-gate mislabeled ~54% of closed-gripper steps as free_space; user-flagged in the regime gallery). Effect-conditioned CRA verified **invariant** (contact n_effect=414 both runs, identical CRA); only raw per-regime counts shifted (free_space 998→409, contact 415→1000). **`vjepa2_ac_droid` (V-JEPA-2-AC ViT-G/16, 1.01B) DONE 2026-06-22** on a SLURM H100 80GB node (the 24 GB-VRAM blocker is gone). Scaling the encoder 45× (22M→1.01B) does **not** fix action-grounding: effect-conditioned CRA at/below the 16-way chance floor (0.0625) for hard negatives in pre_grasp (0.061), gripper (0.049), contact (0.035); AUG ≈ 0; sanity gate PASS but `fact_to_next`≈`zero_to_next` (533.9 vs 525.3 — true action no closer than zero action). BB reproduces: `bb_boundary` pre_grasp **+1.933** vs free_space +1.010 (boundary-blind, same pre-grasp locus as DINO-WM/Metaworld). Writeup: `results/vjepa2_ac_droid_completion.md`. Reconciled on gripper-primary via `scripts/slurm_reconcile.sh` (job 21780); latent caches reused.
-- **DROID scaling curve — action-grounding does NOT scale (2026-06-22, H100):** the 2-point result is now a **4-point curve over 45× encoder scale + 2 families**. Added `jepa_wm_droid` (DINOv3 ViT-L/16, ~300M — the mid-scale point; **unblocked** by reconstructing the gated DINOv3 backbone `.pth` from the HF safetensors mirror via `scripts/convert_dinov3_hf_to_orig.py`, since `dl.fbaipublicfiles.com` is firewalled — strict-load validated, only buffers missing) and `vjepa2_ac_oss` (public V-JEPA-2-AC 1B, independent checkpoint). Deterministic `hard_nn` effect-CRA stays at the 0.0625 chance floor for **all four** in pre_grasp/gripper/contact (300M DINOv3 = 0.077/0.059/0.045, no better than 22M); `bb_boundary` > 0 in every cell of every model (pre_grasp locus +1.2 to +1.9). Rules out "just scale the encoder" as a fix. Table + caveats: `results/droid_scaling_curve.md`. (Note: `random`/`opposite` negatives are unseeded so those columns drift run-to-run; `hard_nn`/`hard_effect` + bootstrap CIs are deterministic — lead with `hard_nn`.) Jobs: `scripts/slurm_droid_oss.sh` (21783), `scripts/slurm_droid_jepawm.sh` (21794). DINOv3 repo cloned to `~/dinov3` with `hubconf.py` trimmed to backbone exports (avoids torchmetrics/mmseg eval deps).
-- **Cross-dataset sanity (2026-06-22, H100):** toy free-space datasets are a **positive control** — `pusht`/`point_maze`/`wall` (both jepa_wm + dino_wm) score effect-conditioned CRA **0.66–1.0** (opposite ≈0.98–1.0), confirming the diagnostic returns HIGH when dynamics are genuinely action-grounded, so the near-chance DROID/Metaworld contact scores are real failures not a broken metric. Robot side-datasets are **underpowered as downloaded**: `franka_custom` 18–43 transitions/cell and `robocasa` 0/cell (after `PnPCounterToCab`+`robot0_leftview` filter) both fall below `min_transitions_per_cell=150` → all cells `insufficient_data`. CSVs: `results/{pusht,point_maze,wall,franka_custom,robocasa}_diagnostic.csv`.
-- **Planning Action-Score probe: run done** — per-transition CRA_eff correlation null (class imbalance); the regime-level link is clean on Metaworld. Per the idea-of-record (`diagnosis/docs/PAPER_IDEA.md`) the planning leg is recast around BB. Design: `diagnosis/docs/plans/2026-06-05-planning-action-score-design.md`; ops: HANDOFF_DROID §8.
-- **Fix leg: complete on Metaworld (2026-06-10) — the grounded object-dynamics channel WORKS; everything else measured-null.** Full narrative `diagnosis/docs/FIX_C1_EXPLAINER.md` (§6 nulls, §7 the fix). The ladder, every rung from a CSV: (1) head-level mixture C1, 4 variants — null (mode separation 9.9 vs residual 106; π action-flip ≈ 0); (2) φ-metric re-weighting (`models/probes`, `15`) — null, redistributes BB; (3) probe chain V1✓/V2✓/V3✗ localizes the bottleneck to the predictor's *counterfactual action→object* channel (spread corr +0.035); (4) **`h(z,a)→Δobject`** (`scripts/17`, 0.5M params, frozen everything, cache-only): counterfactual tracking corr **+0.682**, pre_grasp `bb_boundary` **1.323→0.660 (−50%)**, boundary-vs-free gap 1.04→0.32 (`results/metaworld_boundary_dynamics.csv`). Planning A/B (`16`, paired CEM, `traj_cost_fn` hook): grounded cost is no-harm/no-gain on open-loop Action Error (metric rewards arm mimicry). One scale bug disclosed (`metaworld_planning_metric_buggy_scale.csv`).
-- **Closed-loop Metaworld (2026-06-12, local): COMPLETE** — `results/closed_loop_report.md` + `metaworld_closed_loop.csv` (96 paired arm-episodes; `scripts/18` + `run_sweep_resume.ps1`, self-healing resume). Reach reproduces ABOVE the paper: L2 **15/16 (94%)** vs paper DWM 44.8±8.9 (grounded 16/16). Push/pick-place: **0% both arms** — the closed-loop face of BB (arm reaches, ee 2–4 cm; object never moves; the paper's appendix itself admits "hallucinates grasping the object"). Grounded cost: pooled-contact paired final state-dist improvement **+0.089 [CI +0.022, +0.162]** — measurable, not success-flipping; residual bottleneck = contact-creating exploration in CEM, not scoring. Three env-side reproduction bugs found+fixed (renderer silently used the default free camera at 480px — re-create MujocoRenderer; training data IS flipud(corner2+tweak), MSE 71.6 vs ≥3000 unflipped; goal frame = expert's FINAL frame, not first-success). Render fidelity verified: pred-err 1.4× dataset, latent NN ratio 0.97 (probes `_baseline_probe/_camera_calib/_replay_check`).
-- **Grounded EXPLORATION (option B, 2026-06-18, local): COMPLETE — measured NULL, decisive.** `results/grounded_explore_report.md` + `metaworld_grounded_explore.csv` (64 paired episodes; `scripts/18` arm `hexp` + `scripts/19` ee-probe + `run_explore_sweep.ps1`). Uses the grounded channel to shape the CEM **search** not just scoring: dense APPROACH (predicted ee→object, new ee-probe decodes ee to 3.7 cm) + dense MANIPULATE (object→goal via dyn-head), λ_app=λ_obj=1.0 (parity with visual, vs hdyn's 0.1). Result: **0/16 success both arms both tasks**; pooled paired state-dist Δ(l2−hexp) **−0.081 [−0.278, +0.080]** — hexp is *worse* (pick-place −0.137 [−0.332, −0.001]), INVERTING hdyn's +0.089, with 2 catastrophic divergences (object knocked 1.8–2.6 away). The intervention mechanically worked (hexp ee-dist 3–5× larger → arm went to the object, not goal-pose) but the planner then acts on the predictor's **wrong imagined contact dynamics**. → Both planner-side levers (scoring `hdyn`, exploration `hexp`) now exhausted with the model frozen; the residual is **inside the frozen predictor's rollout**. Next lever (breaks frozen-everything): latent-space **residual corrective predictor** `ẑ_{t+1}=F(z,a)+Δ(z,a)` trained cache-only with object-grounded loss (puts the cf-corr-0.682 signal *inside* the unroll). Reach still beats the paper (94% vs 44.8%); contact success needs the predictor fix.
-- **Residual predictor (option C) + spatial-probe diagnostics (2026-06-19, local): COMPLETE — the encoder/predictor framing was OVERTURNED; bottleneck is the predictor's COUNTERFACTUAL object channel (true BB confirmed).** Scripts `20` (residual `ẑ=F+Δ`, `models/heads/residual_predictor.py`), `22` (spatial object probe), `23` (rollout fidelity), `24` (V3-spatial); CSVs `metaworld_residual.csv`, `representation_precision{,_spatial}.csv`, `rollout_fidelity{,_spatial}.csv`, `counterfactual_spatial.csv`. Chain: (C) residual corrector trained cache-only (object-grounded loss via the **pooled** probe) → closed-loop `l2c` arm (`scripts/18`, corrected per-step rollout) looked like the **best leg** (push paired Δ +0.227, pooled +0.13 [+0.018,+0.273], one-step object err 0.248×) but **0/16 success**. Then the diagnostics: **Test 1b** — a *spatial* (attention-over-patches) object probe decodes the object to **2.1 cm / 92% within the 5 cm push radius** vs the pooled probe's 6.4 cm / 27%; the 6.4 cm "floor" was the **pooled readout**, not the encoder. **Test 2 (spatial)** — the **frozen** predictor tracks the object *factually* to **2.6→3.2 cm over 6 steps**; the residual is **no better** (2.6→3.8) → its gains were **pooled-probe gaming, illusory**. **V3-spatial (`24`)** — counterfactual: from similar-state/different-action anchors the true object spread is **2.42 cm** but the predictor's predicted spread is **0.74 cm, corr −0.015** (pooled reproduces the old +0.035) → the frozen predictor gives ~identical object predictions for different actions even via the 2 cm readout. **Resolved:** encoder ✓ (2 cm), predictor factual tracking ✓ (3 cm), predictor **counterfactual object response ✗ (dead) = the locus**; option C is an honest null. **Next leg (launching 2026-06-19):** the dyn-head `h(z,a)→Δobject` (exact GT targets, cf-corr +0.68 → action-discriminative *is* learnable) used as the planning object model with the **spatial probe** for the goal/init object and an object-dominant cost — the precisely-motivated shot at flipping contact success. Weekly deck `Weekly_Report_2026-06-19.pptx` (root) reflects this resolved story.
+### Top-level layout
+- `diagnosis/` — the implemented diagnostic (all the code). **This is where you work.**
+- `cai_jepa_paper_proposal.md` — the research proposal: problem, the four diagnostic metrics, proposed training objectives.
+- `diagnostic_implementation_plan_v2.md` — phased validation plan. Section 12 records v2.1 adjustments made after reading the real upstream API. Section 4.2 defines the decision threshold.
+- `PROJECT_OVERVIEW_VI.md` — long-form overview (Vietnamese).
+- `paper/` — LaTeX writeup (`main.tex`, `refs.bib`). `world_model/` — reference PDFs.
 
-**Start here for orientation, in order:**
-1. `diagnosis/docs/METHODOLOGY.md` — concepts + code map + the dataset/task/regime/strategy matrix and how it proves the gap (read this first).
-2. `diagnosis/docs/plans/2026-06-01-real-api-rewrite-design.md` — what the upstream API actually is + key design decisions.
-3. `diagnosis/docs/HANDOFF.md` (Metaworld) and `diagnosis/docs/HANDOFF_DROID.md` (DROID) — operational "how to run / how to finish" handoffs.
+The most important orientation doc is `diagnosis/docs/plans/2026-06-01-real-api-rewrite-design.md` — it records what the upstream `facebookresearch/jepa-wms` API actually is and the key design decisions. The `docs/plans/*.md` files are dated design docs for each successive metric/fix (read the latest ones for current direction).
 
-## The Research Goal
+## Architecture of the diagnostic (`diagnosis/`)
 
-A go/no-go validation study: quantitatively determine whether existing action-conditioned JEPA world models (DINO-WM, V-JEPA-2-AC, JEPA-WM/Terver) exhibit measurable **action-grounding failures** — i.e. they produce near-identical latent predictions for different actions from the same state — especially in contact-rich Franka manipulation. If failures are real → pursue the full paper; if not → pivot or abandon. The deliverable is `diagnosis/results/decision_report.md`.
+Operates entirely on **pretrained, frozen checkpoints** — nothing here is trained except small linear probes / predictor heads (`models/probes/`, `models/heads/`, the `1[4-9]_*`/`2[0-5]_*` scripts). Data flow:
 
-## Architecture of the Diagnostic (`diagnosis/`)
+1. **Adapters** (`models/adapters/`) — `WorldModelAdapter` ABC (`base.py`) is the *only* interface the rest of the code touches a model through. One concrete `EncPredWMAdapter` (`enc_pred_adapter.py`) serves all baselines; `factory.build_adapter(model_name)` dispatches via the `_HUB_ID_INFO` registry (the canonical list of loadable checkpoints: `jepa_wm_metaworld`, `dino_wm_metaworld`, `*_droid`, `vjepa2_ac_droid`, etc.). All load via `torch.hub.load('facebookresearch/jepa-wms', hub_id, trust_repo=True)` → `(EncPredWM, preprocessor)`. The adapter drives the model through `EncPredWM.encode` (raw `[0,255]` visual → `(B,T,V,H,W,D)` patch-token latent) and `EncPredWM.unroll` — **never** `.encoder`/`.predictor` directly. `synthetic.py` provides fake adapters for offline metric validation.
+2. **Latent extraction** (`scripts/03_extract_latents.py`) — encode every frame once, cache to HDF5 under `data/precomputed_latents/` (z + proprio + raw state + gripper). All metrics run on the cache, not the GPU model. Cache I/O is `data/latent_cache.py`; trajectory iterators wrapping the upstream loaders are `data/loaders.py`.
+3. **Regime stratification** (`stratification/`) — labels each transition `free_space` / `pre_grasp` / `gripper_actuation` / `contact_manipulation`. Metaworld uses a **proxy** from the 39-dim `state` vector (object displacement = contact proxy) — the HF dataset has no MuJoCo contact GT. DROID/RoboCasa use proprioception + latent-change heuristics. The thesis is that failures concentrate in contact-rich regimes.
+4. **Metrics** (`metrics/`) — CRA, AUG, ECS, CTD, and **Boundary Blindness** (`boundary_blindness.py`, the current core metric; see its module docstring). Each exposes a *per-transition* function the runner calls directly, so synthetic validation tests the production path. Primary decision signal is **effect-conditioned CRA** (CRA on transitions with `‖Δz‖>τ`). CIs are **trajectory-clustered** bootstrap (`bootstrap.py`). Negative-sampling strategies live in `negative_samplers.py` (`random`, `opposite`, `hard_nn`, `hard_effect`).
+5. **Analysis** (`scripts/06_analyze_results.py`) — CSVs, figures, decision report. Decision logic is CI-aware (`make_decision`, per plan §4.2: ABANDON needs the upper CI bound confidently high).
 
-Operates entirely on **pretrained, frozen checkpoints** — nothing is trained. Data flow:
+Scripts are **numbered and run in order, per dataset/config**; each is idempotent and standalone. `planning/cem_planner.py` is the Action-Score planning probe (scripts `08`/`09`/`16`). One YAML config per dataset in `configs/` selects models, regimes, negative strategies, and dataset paths.
 
-1. **Adapters** (`models/adapters/`) — `WorldModelAdapter` ABC + one unified `EncPredWMAdapter` for all three baselines. They all load via `torch.hub.load('facebookresearch/jepa-wms', hub_id, trust_repo=True)` returning `(EncPredWM, preprocessor)`. The adapter drives the model through its own `EncPredWM.encode` (raw `[0,255]` visual in → `(B,T,V,H,W,D)` latent) and `EncPredWM.unroll` (the planner's prediction primitive) — **never** `.encoder`/`.predictor` directly.
-2. **Latent extraction** (`scripts/03_extract_latents.py`) — encode every frame once, cache to HDF5 under `data/precomputed_latents/` (z + proprio + raw state + gripper). All metrics run on the cache.
-3. **Regime stratification** (`stratification/`) — `free_space`, `pre_grasp`, `gripper_actuation`, `contact_manipulation`. Metaworld uses a **proxy** from the 39-dim `state` vector (ee/object positions; object displacement = contact proxy) — the HF dataset has no MuJoCo contact GT. DROID/RoboCasa use proprioception + latent-change heuristics. Metrics are per-regime; the thesis is failures concentrate in contact-rich regimes.
-4. **Metrics** (`metrics/`) — CRA, AUG, ECS, CTD (optional). Each exposes a *per-transition* function the runner calls directly (so synthetic validation tests the production path). The primary decision signal is **effect-conditioned CRA** (CRA on transitions with `‖Δz‖>τ`). CIs are **trajectory-clustered** bootstrap.
-5. **Analysis** (`scripts/06_analyze_results.py`) — CSVs, figures, and the decision report. Decision logic is CI-aware (ABANDON needs the upper CI bound confidently high).
+## Commands
 
-## Key Implementation Pitfalls
-
-- **Action normalization is the #1 bug.** The real method is `preprocessor.normalize_actions` (plural); the adapter calls it. Validate on the server with `scripts/check_normalization.py` (predict a real transition; MSE within ~2× the model's eval loss). DROID = identity (mean 0/std 1); Metaworld = real shift+scale.
-- **Always sanity-check against a published number** and run `scripts/terver_gripper_test.py` (open vs close gripper on DROID; expect 2-way CRA > 0.90).
-- **Validate metrics with synthetic models** first: `python scripts/07_validate_synthetic.py`.
-- All planning configs are `L2_cem` → CRA uses **L2** for every baseline.
-- Push-T / PointMaze are sanity checks only — never report them as thesis evidence.
-- **Low-RAM model load:** `models/adapters/_torchhub.py` forces `torch.load(mmap=True)` during `torch.hub.load` (non-persistent, self-healing). Without it, loading `dino_wm_droid` (it pulls the unused ViT-L image-head decoder + LPIPS) spikes ~8.5 GB host RAM and trips the OOM watchdog on the 16 GB box; mmap drops the load peak to ~2.6 GB (VRAM only ~1.4 GB). The model runs on GPU — the RAM spike is purely `torch.load` staging weights in host memory before `.to(cuda)`.
-
-## Environment & Commands
-
-`uv` for dependency management. Offline (no GPU/data) you can run the unit tests; the full pipeline needs a server (see `diagnosis/RUNBOOK.md`).
+`uv` for dependency management. Offline (no GPU/data) you can run the unit tests and synthetic validation; the full pipeline needs a GPU server.
 
 ```bash
 cd diagnosis
-# Offline: metric/code correctness (no GPU, no data, no checkpoints)
-.venv/bin/python -m pytest tests/
-python scripts/07_validate_synthetic.py
 
-# Server: clone upstream + run the pipeline (see RUNBOOK.md for the full sequence)
-bash scripts/01_setup_environment.sh          # clones external/jepa-wms + uv sync
-python scripts/smoke_test.py                  # real checkpoints load + encode + predict
-python scripts/check_normalization.py --config configs/diagnostic_metaworld.yaml --model jepa_wm_metaworld --ref-eval-loss <L>
+# Offline — metric/code correctness (no GPU, no data, no checkpoints)
+.venv/bin/python -m pytest tests/          # full suite
+.venv/bin/python -m pytest tests/test_metrics_synthetic.py::test_name   # single test
+python scripts/07_validate_synthetic.py    # validate metrics on synthetic models first
+
+# Server — full pipeline (see diagnosis/RUNBOOK.md for the authoritative sequence)
+bash scripts/01_setup_environment.sh        # clones external/jepa-wms + uv sync
+python scripts/smoke_test.py                # every checkpoint loads + encode + predict
+python scripts/check_normalization.py --config configs/diagnostic_metaworld.yaml \
+    --model jepa_wm_metaworld --ref-eval-loss <EVAL_LOSS>
 python scripts/03_extract_latents.py  --config configs/diagnostic_metaworld.yaml
 python scripts/04_classify_regimes.py --config configs/diagnostic_metaworld.yaml
 python scripts/05_run_diagnostic.py   --config configs/diagnostic_metaworld.yaml
-python scripts/12_boundary_diagnostic.py --config configs/diagnostic_metaworld.yaml   # BB gate
-python scripts/06_analyze_results.py  --metaworld_csv results/metaworld_diagnostic.csv --droid_csv results/droid_diagnostic.csv
-
-# Fix legs (frozen trunk, cached latents; see docs/FIX_C1_EXPLAINER.md):
-python scripts/train_predictor_head.py --config configs/diagnostic_metaworld.yaml --model dino_wm_metaworld --K 3 --objective wta   # head-level C1 (measured null)
-python scripts/13_eval_fix_boundary.py --config configs/diagnostic_metaworld.yaml --model dino_wm_metaworld --ckpt checkpoints/<head>.pt
-python scripts/14_train_object_probe.py --config configs/diagnostic_metaworld.yaml --model dino_wm_metaworld                        # state-grounded metric fix
-python scripts/15_eval_metric_boundary.py --config configs/diagnostic_metaworld.yaml --model dino_wm_metaworld --probe checkpoints/object_probe_dino_wm_metaworld.pt
-python scripts/16_planning_metric_compare.py --config configs/diagnostic_metaworld.yaml --model dino_wm_metaworld --probe checkpoints/object_probe_dino_wm_metaworld.pt
+python scripts/06_analyze_results.py \
+    --metaworld_csv results/metaworld_diagnostic.csv --droid_csv results/droid_diagnostic.csv
 ```
 
-If `torch.hub.load` returns 503s, delete `external/jepa-wms/uv.lock` and re-run `uv sync`.
+SLURM batch scripts for the H100 cluster are `scripts/slurm_*.sh`; PowerShell sweep drivers are `scripts/run_*.ps1`. The upstream repo is cloned to `external/jepa-wms` (gitignored, with its own `.venv`) — adapters add it to `sys.path` lazily via `data.loaders.add_upstream_to_path`.
+
+## Critical pitfalls (these cause silently-wrong numbers)
+
+- **Action normalization is the #1 bug.** The real upstream method is `preprocessor.normalize_actions` (plural); the adapter wraps it as `normalize_action`. Always gate with `scripts/check_normalization.py` (predicts a real transition; MSE must be within ~2× the model's eval loss). DROID = identity (mean 0/std 1); Metaworld = real shift+scale. If MSE ≫ 2× eval loss → STOP.
+- **Always sanity-check against a published number** and run `scripts/terver_gripper_test.py` (open vs close gripper on DROID; expect 2-way CRA > 0.90). Use the Terver-fixed `vjepa2_ac_droid` — the original Meta release shipped with an action-norm bug.
+- **Validate metrics on synthetic models first** (`07_validate_synthetic.py`) before trusting any real-model number.
+- All upstream planning configs are `L2_cem` → CRA and planning distance use **L2** for every baseline.
+- ECS thresholds are **calibrated per model** automatically (median `‖z_{t+1}−z_t‖` over the eval set); the YAML `fallback_threshold` is a fallback only.
+- **Push-T / PointMaze / Wall are saturated sanity checks only — never report them as thesis evidence.**
+- `jepa_wm_robocasa` has a hub entrypoint but no checkpoint; run RoboCasa via the droid-trained checkpoints (shared 7-dim action format).
+- `torch.hub.load` returning 503s → `rm external/jepa-wms/uv.lock && uv sync`.
+- The ViT-G V-JEPA-2 / heavy-model paths are guarded against accidental small-GPU runs; set `CAI_JEPA_ALLOW_HEAVY_MODEL=1` (and `JEPAWM_OSSCKPT`) only on the intended 24 GB+ server.
+
+## Result so far (2026-06-22)
+
+Scaling study across 4 models (22M→1B): action-grounding does **not** scale away; all baselines remain boundary-blind (`results/droid_scaling_curve.md`, `results/decision_report.md`). This is the central finding driving the paper.

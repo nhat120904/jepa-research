@@ -78,7 +78,9 @@ cached transitions with an object-grounded loss, so the corrected object channel
 lives *inside* the unroll rather than in a side-cost. The dyn-head already proved
 the signal is learnable (cf-corr +0.682); this puts it where CEM can use it.
 
-Note: on the task the **paper actually reports** (Reach), the harness already
-beats it — 94% (15/16) / 100% grounded vs the paper's 44.8 ± 8.9 % (see
-`closed_loop_report.md`). Contact-task success is where both we and the paper sit
-at 0, and reaching it requires the predictor-side fix above.
+Note: on the task the **paper actually reports** (Reach), the harness
+*reproduces* the published number — episode-end L2 37.5% [18.5–61.4%] /
+grounded 50.0% vs the paper's 44.8 ± 8.9 %, inside the CI (D.2 strict re-score;
+the earlier "beats it / 94%" was an any-step latch artifact, retracted — see
+`closed_loop_report.md`). Contact-task success is where both we and the paper
+sit at 0, and reaching it requires the predictor-side fix above.

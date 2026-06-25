@@ -311,9 +311,11 @@ per transition, H=3, 41 plannable transitions):
 `results/closed_loop_report.md`; data `results/metaworld_closed_loop.csv`
 (96 paired arm-episodes, upstream-parity protocol, local 12 GB box). Headlines:
 
-- **Reach reproduces above the paper**: L2 15/16 (94%) vs paper DWM 44.8 ±8.9
-  (grounded 16/16) — the harness and protocol are right (three env-side
-  reproduction bugs had to be found first: default-camera 480px renderer,
+- **Reach reproduces the paper** (D.2 strict re-score, episode-end judging):
+  L2 **37.5%** [18.5–61.4%] vs paper DWM **44.8 ±8.9** — inside the CI, the
+  harness is right (grounded hdyn 50.0%; the prior 94% headline was an any-step
+  latch artifact, retracted). Three env-side reproduction bugs had to be found
+  first: default-camera 480px renderer,
   the training data being flipud(corner2+tweak), goal = expert's FINAL frame).
 - **Push and pick-place are 0% for BOTH arms** — the closed-loop face of
   Boundary Blindness: the arm reaches the goal pose (final ee 2–4 cm) while

@@ -59,6 +59,12 @@ def main() -> int:
     ap.add_argument("--model", required=True)
     ap.add_argument("--pooled-probe", required=True)
     ap.add_argument("--spatial-probe", required=True)
+    ap.add_argument("--predictor-lora", default=None,
+                    help="LoRA partial-unfreeze ckpt (scripts/26): injected into the "
+                         "predictor so adapter.predict is the CORRECTED rollout (no +head)")
+    ap.add_argument("--residual-head", default=None,
+                    help="optional Δ(z,a) corrector (scripts/20/25): score F+Δ instead of F "
+                         "— the gate for option D's cf-channel fix")
     ap.add_argument("--n-anchors", type=int, default=128)
     ap.add_argument("--val-frac", type=float, default=0.1)
     ap.add_argument("--seed", type=int, default=0)
@@ -72,8 +78,29 @@ def main() -> int:
     cache_path = latent_cache_path(cfg["latent_cache"]["root"], args.model, cfg["dataset"]["name"])
     adapter = build_adapter(args.model, device=str(device)).eval()
     step = adapter.frames_per_step
+    a_dim = adapter.action_dim()
+    ma_dim = adapter._model_action_dim
     probes = {"pooled": load_probe(args.pooled_probe, device)[0],
               "spatial": load_probe(args.spatial_probe, device)[0]}
+
+    if args.predictor_lora:
+        from models.heads.lora_predictor import load_predictor_lora
+        load_predictor_lora(adapter, args.predictor_lora, device)
+        print(f"predictor LoRA: {args.predictor_lora} — adapter.predict is the "
+              f"CORRECTED (LoRA-enabled) rollout", flush=True)
+
+    head = None
+    if args.residual_head:
+        from models.heads import load_residual_head
+        head, _ = load_residual_head(args.residual_head, device)
+        print(f"residual head: {args.residual_head} — scoring the CORRECTED predictor F+Δ",
+              flush=True)
+
+    def to_model_action(a_raw: torch.Tensor) -> torch.Tensor:
+        B = a_raw.shape[0]
+        a = adapter.normalize_action(a_raw.to(device).float().reshape(B, -1, a_dim))
+        return a.reshape(B, ma_dim)
+
     regime_by_traj = read_regimes(cache_path)
 
     with LatentCache(cache_path, mode="r") as cache:
@@ -111,6 +138,8 @@ def main() -> int:
                 prop = (d["proprio_t"][i: i + 1].expand(m, -1).to(device)
                         if d.get("proprio_t") is not None else None)
                 pred = adapter.predict(z_rep, acts.to(device), proprio_t=prop)   # (m, latent)
+                if head is not None:
+                    pred = pred + head(z_rep.float(), to_model_action(acts))     # corrected F+Δ
                 for name, pr in probes.items():
                     g = pr(pred)
                     spreads[name].append(

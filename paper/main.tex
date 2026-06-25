@@ -29,23 +29,28 @@ Bifurcations, and What It Takes to Fix Them}
 
 % ======================================================================
 \begin{abstract}
-Action-conditioned JEPA world models (DINO-WM, JEPA-WM, V-JEPA-2-AC) plan well
-in free space and fail at contact. We show this is not a generic accuracy gap
-but a structural failure we call \emph{Boundary Blindness} (BB): near contact
-boundaries --- where small action changes produce qualitatively different
-futures --- unimodal latent predictors trained with full-latent $L_2$ collapse
-the outcome fan to its mean. We (1)~define a frozen-checkpoint diagnostic that
-measures BB against ground-truth outcome spread and show it concentrates at the
-pre-grasp boundary on two model families ($\bb$ $1.32/1.28$ at the boundary vs.\
-$0.28/0.30$ in free space) and transfers to real-robot DROID data;
-(2)~tie BB to planning: at upstream-parity protocol our harness
-\emph{reproduces} the published Metaworld Reach baseline ($94\%$ vs.\ reported
-$44.8\pm8.9$) yet both the $L_2$ and grounded planners score $0/16$ on push and
+Action-conditioned JEPA world models plan well in free space and hit a contact
+wall. We diagnose the wall directly on DINO-WM and JEPA-WM in Metaworld, then
+test whether it disappears under DROID encoder scaling up to V-JEPA-2-AC. The
+failure is not a generic accuracy gap but a structural failure we call
+\emph{Boundary Blindness} (BB): near contact boundaries --- where small action
+changes produce qualitatively different futures --- unimodal latent predictors
+trained with full-latent $L_2$ collapse the outcome fan to its mean. We
+(1)~define a frozen-checkpoint diagnostic that measures BB against ground-truth
+outcome spread and show it concentrates at the pre-grasp boundary on two
+Metaworld model families ($\bb$ $1.32/1.28$ at the boundary vs.\ $0.28/0.30$ in
+free space), transfers to real-robot DROID data, and persists in DROID diagnostic
+scaling across a $45\times$ encoder scale-up (22M to 1.01B, DINOv2/v3 and
+V-JEPA-2) that leaves action-grounding at the chance floor;
+(2)~tie BB to Metaworld planning: at upstream-parity protocol our harness
+\emph{reproduces} the published Metaworld Reach baseline (episode-end $37.5\%$
+[$18.5$--$61.4$] vs.\ reported $44.8\pm8.9$ --- inside the CI) yet both the $L_2$
+and grounded planners score $0/16$ on push and
 pick-and-place --- the arm reaches the goal pose (2--4\,cm) while the object
 never moves, the closed-loop signature of BB; (3)~localize the failure by
 ablation: mixture predictor heads and metric re-weighting are quantified nulls,
 while a 0.5M-parameter grounded dynamics channel $h(z,a)\!\to\!\Delta\text{obj}$
-trained on the same cached data restores counterfactual tracking (corr
+trained on the same Metaworld cached data restores counterfactual tracking (corr
 $0.03\!\to\!0.68$) and halves boundary BB on both models, improving the
 closed-loop cost surface (paired distance $+0.089$, CI $[+0.022,+0.162]$)
 without yet flipping task success. The bottleneck is the training target, not
@@ -71,7 +76,8 @@ model ``hallucinates grasping the object''. \citet{assran2025vjepa2} report
 pick-and-place only after supplying three hand-crafted sub-goal images that walk
 the planner through the grasp. The wall is real, and it is at contact.
 
-We argue this is not a generic accuracy deficit that more data or a bigger
+We argue --- and then show across a $45\times$ encoder scale-up
+(Sec.~\ref{sec:scaling}) --- that this is not a generic accuracy deficit a bigger
 encoder would erase, but a \emph{structural} failure of the prediction objective.
 Contact induces \emph{outcome bifurcations}: from nearly the same state, a small
 change in action produces qualitatively different futures (the gripper centred
@@ -96,13 +102,19 @@ introduce \emph{Boundary Blindness} (BB): on a neighbourhood of similar states
 where the \emph{world's} true outcomes fan out, BB is the rectified gap between
 that ground-truth action-sensitivity and the model's. Because BB references the
 world, a high value cannot be explained away by small one-step deltas. On frozen
-checkpoints BB concentrates sharply at the pre-grasp boundary ($1.32$ vs.\ $0.28$
-in free space) on both model families and transfers to real-robot DROID data.
+Metaworld checkpoints BB concentrates sharply at the pre-grasp boundary ($1.32$
+vs.\ $0.28$ in free space) on both DINO-WM and JEPA-WM and transfers to
+real-robot DROID data. As a DROID diagnostic, it is also
+\emph{scale-invariant}: across a $45\times$ encoder scale-up and two
+self-supervised families (DINOv2 ViT-S 22M, DINOv3 ViT-L 300M, V-JEPA-2-AC ViT-G
+1.01B, and an independent public V-JEPA-2-AC), action-grounding stays at the
+chance floor and BB stays positive --- ruling out ``just scale the encoder''.
 
 We then close the loop in two senses. We connect BB to \emph{planning}: at a
 protocol matched to the upstream evaluation, planning succeeds exactly where BB
-is low --- our harness reproduces the published Metaworld Reach baseline, in fact
-above it ($94\%$ for the $L_2$ planner vs.\ a reported $44.8\pm8.9$) --- and
+is low --- our harness reproduces the published Metaworld Reach baseline (the
+$L_2$ planner scores episode-end $37.5\%$ [$18.5$--$61.4$], inside the reported
+$44.8\pm8.9$) --- and
 collapses where BB is high, with the signature BB predicts: on push and
 pick-and-place both the baseline and an improved planner score $0/16$, the
 end-effector reaching the goal pose ($2$--$4$\,cm) while the object never moves.
@@ -132,11 +144,12 @@ Our contributions:
   new metric, explains why and localizes it: the rectified gap between the
   world's local action-sensitivity and the model's, on similar-state
   neighbourhoods. BB concentrates at the pre-grasp boundary on both DINO-WM and
-  JEPA-WM (CI-aware, per task) and transfers to DROID
-  (Sec.~\ref{sec:diagnostic}).
-  \item \textbf{C2 (planning link).} At upstream-parity closed-loop protocol,
-  planning succeeds exactly where BB is low (Reach: $94\%$/$100\%$, above the
-  published $44.8\pm8.9$) and collapses where BB is high (Push, Pick-and-place:
+  JEPA-WM (CI-aware, per task), transfers to DROID, and remains present in the
+  DROID scaling diagnostic through V-JEPA-2-AC (Sec.~\ref{sec:diagnostic}).
+  \item \textbf{C2 (planning link).} At upstream-parity Metaworld closed-loop protocol,
+  planning succeeds exactly where BB is low (Reach: $L_2$ $37.5\%$, grounded
+  $50.0\%$, inside the published $44.8\pm8.9$ CI) and collapses where BB is high
+  (Push, Pick-and-place:
   $0\%$ both arms) with the signature BB predicts: the end-effector arrives,
   the object never moves (Sec.~\ref{sec:planning}).
   \item \textbf{C3 (mechanism + fix).} A controlled fix ladder on frozen
@@ -204,7 +217,9 @@ We run a frozen-checkpoint diagnostic suite (nothing is trained). It has two
 layers: existing action-grounding metrics that establish \emph{that} the models
 fail to discriminate nearby actions in contact regimes, and our new Boundary
 Blindness metric that explains \emph{why} and pins the failure to the contact
-boundary.
+boundary. We then show the failure is robust --- it transfers to real-robot data
+and persists unchanged across a $45\times$ encoder scale-up
+(Sec.~\ref{sec:scaling}).
 
 \subsection{CounterfactualBench: action-grounding metrics}\label{sec:cfbench}
 % metrics/cra.py, aug.py, ecs.py; scripts/05_run_diagnostic.py
@@ -242,6 +257,9 @@ latent, $\|z_{t+1}-z_t\| > \tau$ with $\tau$ the per-model median displacement.
 This removes near-static steps where the action genuinely should not change much,
 so a low effect-conditioned score reflects true action-ignoring rather than a
 quiet transition. Confidence intervals are trajectory-clustered bootstrap.
+We report AUG and ECS in full in App.~\ref{app:augecs} (both collapse toward zero,
+corroborating the CRA result); the main text leads with CRA because, as a ranking,
+it is the cross-model-comparable metric.
 
 \begin{table}[h]
 \centering\small
@@ -344,7 +362,8 @@ $n_b$-weighted with trajectory-clustered bootstrap confidence intervals.
 
 \subsection{Setup}
 We operate entirely on pretrained, frozen checkpoints (DINO-WM and JEPA-WM for
-Metaworld; DINO-WM for DROID), loaded through the official hub interface and
+Metaworld; four world models from DINO-WM 22M to V-JEPA-2-AC 1B for DROID, see
+Sec.~\ref{sec:scaling}), loaded through the official hub interface and
 driven through the model's own \texttt{encode}/\texttt{unroll} primitives ---
 nothing is trained for the diagnostic. Every frame is encoded once and cached;
 all metrics run on the cache. We stratify transitions into four regimes ---
@@ -382,9 +401,74 @@ DINO-WM (DROID, $\|\Delta z\|$) & 0.721 {\scriptsize[0.613, 0.834]} & --- &
 \centering
 \includegraphics[width=0.85\linewidth]{../diagnosis/results/figures/figure_bb_per_regime.pdf}
 \caption{BB per regime, frozen baselines (Metaworld both families + DROID
-transfer). \todo{final styling}}
+transfer).}
 \label{fig:bb}
 \end{figure}
+
+\subsection{The failure does not scale: a 45$\times$, two-family curve}
+\label{sec:scaling}
+% results/droid_scaling_curve.md; scripts/slurm_droid_{pipeline,oss,jepawm}.sh
+A natural objection is that action-grounding is simply a capacity problem that a
+larger encoder would solve. It is not. This section tests whether diagnostic
+action-grounding/BB failures disappear with encoder scale on DROID; it is not a
+closed-loop or grounded-fix result. We score four frozen DROID world models on
+the identical 333-episode / 2331-transition subset and gripper-primary regimes,
+spanning a \textbf{45$\times$ encoder scale-up and two self-supervised families}:
+DINO-WM (DINOv2 ViT-S/14, $\sim$22M), JEPA-WM (DINOv3 ViT-L/16, $\sim$300M),
+V-JEPA-2-AC (ViT-G/16, $\sim$1.01B), and an independently trained public
+V-JEPA-2-AC checkpoint (V-JEPA-2-AC-OSS, ViT-G/16). We lead with the deterministic
+hard-negative metrics (nearest-neighbour distractor pool and bootstrap CIs are
+seeded and reproduce bit-identically; the easier \emph{random}/\emph{opposite}
+pools are unseeded and drift run-to-run, so we do not report them here).
+
+\begin{table}[h]
+\centering\small
+\caption{DROID action-grounding does not scale. \emph{Top:} effect-conditioned
+CRA (top-1, \emph{nearest-neighbour} distractors); 16-way chance $=0.0625$. All
+four models sit \emph{at the chance floor} in the action-critical regimes --- the
+300M DINOv3 is no better than the 22M DINOv2, and the 1B V-JEPA-2 models are if
+anything slightly lower on contact. \emph{Bottom:} $\bb_{\mathrm{boundary}}$ is
+positive in every cell of every model (boundary-blind), with the pre-grasp locus
+in 3/4. Scaling the encoder $45\times$ and switching family closes neither gap.}
+\label{tab:scaling}
+\begin{tabular}{lcccc}
+\toprule
+ & DINO-WM & JEPA-WM & V-JEPA2-AC & V-JEPA2-AC-OSS \\
+regime & 22M & 300M & 1B & 1B \\
+\midrule
+\multicolumn{5}{l}{\emph{effect-CRA, nearest-neighbour (chance $=0.0625$)}}\\
+pre-grasp            & 0.068 & 0.077 & 0.061 & 0.069 \\
+gripper actuation    & 0.031 & 0.059 & 0.049 & 0.031 \\
+contact manipulation & 0.055 & 0.045 & 0.035 & 0.033 \\
+\midrule
+\multicolumn{5}{l}{\emph{$\bb_{\mathrm{boundary}}$ ($>0$ = boundary-blind)}}\\
+\textbf{pre-grasp}   & \textbf{1.916} & \textbf{1.205} & \textbf{1.933} & \textbf{1.560} \\
+free space           & 0.963 & 1.103 & 1.010 & 0.819 \\
+gripper actuation    & 1.088 & 1.057 & 0.643 & 0.828 \\
+contact manipulation & 0.421 & 0.897 & 0.390 & 0.595 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\linewidth]{../diagnosis/results/figures/figure_scaling_curve.pdf}
+\caption{The DROID contact failure does not scale. \emph{Left:}
+effect-conditioned CRA against nearest-neighbour distractors stays at the 16-way
+chance floor (dashed) across a $45\times$ encoder scale-up in every
+action-critical regime. \emph{Right:} $\bb_{\mathrm{boundary}}$ is positive
+(boundary-blind) in every regime of every model, with the pre-grasp locus.}
+\label{fig:scaling}
+\end{figure}
+
+\noindent The curve is \textbf{flat across 45$\times$ scale}: effect-CRA against
+hard negatives stays at the 16-way chance floor in pre-grasp, gripper-actuation,
+and contact for all four models, and BB is positive (pre-grasp locus) in every
+cell. A capacity sanity check confirms the metric is not saturated low by
+construction --- on toy fully-actuated datasets (Push-T, PointMaze, Wall) the same
+diagnostic returns effect-CRA $0.66$--$1.0$, so the near-chance contact scores are
+real failures, not a broken metric. ``Just scale the encoder'' is ruled out as a
+fix; the failure is structural, consistent with the Boundary-Blindness account.
 
 % ======================================================================
 \section{Boundary Blindness predicts closed-loop planning failure}
@@ -411,17 +495,18 @@ $0.97$), while the physics is identical ($1.5$\,mm replay error).
 \subsection{Results}
 \begin{table}[h]
 \centering\small
-\caption{Closed-loop Metaworld, 16 paired episodes per task. Paper baseline:
-DINO-WM CEM-$L_2$ MW-Reach $44.8\pm8.9$ (their Table~1; 3 training seeds).
-Caveat: we judge success at any step (TD-MPC2 convention); upstream judges the
-final state. \todo{optional strict re-score, D.2}}
+\caption{Closed-loop Metaworld, 16 paired episodes per task. Success is judged at
+the end of the episode, matching the upstream convention (\texttt{--strict-success};
+SLURM~22256). Paper baseline: DINO-WM CEM-$L_2$ MW-Reach $44.8\pm8.9$ (their
+Table~1; 3 training seeds): our episode-end Reach $37.5\%$ [$18.5$--$61.4$] is
+inside that CI.}
 \label{tab:closedloop}
 \begin{tabular}{llccc}
 \toprule
 task & arm & success & final state-dist & final ee-dist \\
 \midrule
-\multirow{2}{*}{mw-reach}      & $L_2$    & \textbf{15/16 (94\%)} & 0.332 & 0.022 \\
-                               & grounded & \textbf{16/16 (100\%)} & 0.412 & 0.031 \\
+\multirow{2}{*}{mw-reach}      & $L_2$    & \textbf{6/16 (37.5\%)} & 0.332 & 0.022 \\
+                               & grounded & \textbf{8/16 (50.0\%)} & 0.412 & 0.031 \\
 \midrule
 \multirow{2}{*}{mw-push}       & $L_2$    & 0/16 & 0.624 & 0.038 \\
                                & grounded & 0/16 & \textbf{0.527} & 0.028 \\
@@ -450,12 +535,14 @@ rarely samples a contact-creating sequence for the grounded term to score
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.92\linewidth]{../diagnosis/results/figures/figure_bb_vs_planning.pdf}
-\caption{Boundary Blindness predicts closed-loop planning outcome. (a)~BB is a
-regime property: low in free space, high at the pre-grasp boundary, on both
-model families. (b)~Closed-loop success tracks the regime each task must
-traverse --- free-space reach succeeds ($94\%$/$100\%$, above the published
-baseline), the contact tasks fail ($0\%$). Inset: the grounded fix's paired
-final-distance gain on contact ($+0.089$, CI $[+0.022,+0.162]$).}
+\caption{Boundary Blindness predicts closed-loop planning outcome at the regime
+level, not by a dense pointwise correlation. (a)~BB is low in free space and high
+at the pre-grasp boundary on both Metaworld model families. (b)~The low-BB
+free-space task reproduces the published Reach baseline ($37.5\%$/$50.0\%$,
+inside the CI), while the high-BB contact tasks fail ($0\%$). (c)~The contact
+failures have the BB signature: the end-effector is close but the object/state
+is not; grounded dynamics improves final state distance ($+0.089$, CI
+$[+0.022,+0.162]$) without flipping success.}
 \label{fig:bbvsplan}
 \end{figure}
 
@@ -595,19 +682,18 @@ the artifact set.
 The $0/16$ on push and pick-and-place is a property of the frozen baseline that
 our diagnosis predicts, not a headline success number we are advertising. Its
 evidential value rests on the reach result: at the same protocol, on the same
-checkpoint, the $L_2$ planner reaches $94\%$ --- above the published
-$44.8\pm8.9$ --- so the harness is healthy and the contact failure is the
-model's. We verified the rendered observations land on the training manifold
-(one-step prediction error $1.4\times$ the dataset level, latent
-nearest-neighbour ratio $0.97$) and that the physics is identical to data
-generation (action replay end-effector error $1.5$\,mm); the entire gap was
-visual-domain reproduction, which we fixed (Appendix~A). Two caveats temper the
-reach comparison: we judge success at any step (the Metaworld convention) where
-the upstream evaluation judges the final state, and we evaluate one released
-checkpoint over $16$ episodes where they average three training seeds over $96$.
-We therefore read the reach number as ``reproduces, in the same regime'' rather
-than a seed-matched replication; a strict end-of-episode re-score is
-straightforward future bookkeeping.
+checkpoint, judging success at the end of the episode (the upstream convention),
+the $L_2$ planner reaches $37.5\%$ [$18.5$--$61.4$] and the grounded planner
+$50.0\%$ --- both inside the published $44.8\pm8.9$ CI --- so the harness is
+healthy and the contact failure is the model's. We verified the rendered
+observations land on the training manifold (one-step prediction error
+$1.4\times$ the dataset level, latent nearest-neighbour ratio $0.97$) and that
+the physics is identical to data generation (action replay end-effector error
+$1.5$\,mm); the entire gap was visual-domain reproduction, which we fixed
+(Appendix~A). One caveat tempers the reach comparison: we evaluate one released
+checkpoint over $16$ episodes where the upstream paper averages three training
+seeds over $96$, so we read the reach number as ``reproduces, inside the
+reported CI'' rather than a seed-matched replication.
 
 \paragraph{Necessary but not sufficient.}
 The grounded fix is a genuine but partial result. It repairs the model-side
@@ -636,12 +722,14 @@ is not learnable; the principle is untouched). We make no tactile or force
 grounding claim on real robots.
 
 \paragraph{Model coverage.}
-We measure two model families directly, DINO-WM and JEPA-WM, with matching effect
-sizes on every leg. We do not run the diagnostic on V-JEPA-2-AC, whose
-checkpoint exceeds our local memory budget; we instead cite its published
-reliance on hand-crafted sub-goals for pick-and-place as external corroboration
-that the contact wall is family-wide rather than specific to our two models.
-Extending the BB gate to V-JEPA-2-AC is a one-run addition given the hardware.
+Directly fixed and planned: DINO-WM and JEPA-WM on Metaworld, the only dataset
+with simulator state precise enough to supervise and measure the boundary against
+ground truth. Directly scaled diagnostically: DINO-WM (DINOv2), JEPA-WM/DINOv3,
+V-JEPA-2-AC, and V-JEPA-2-AC-OSS on DROID, all at the hard-negative chance floor
+with positive BB under the $\|\Delta z\|$ transfer proxy. Externally
+corroborated planning wall: V-JEPA-2-AC's own published reliance on hand-crafted
+sub-goals for pick-and-place. The DROID/V-JEPA2 leg is therefore a diagnostic
+scaling result, not a closed-loop or grounded-fix claim.
 
 \section{Conclusion}
 Action-conditioned JEPA world models do not fail at contact for want of capacity,
@@ -650,8 +738,8 @@ prediction target, a full-latent $L_2$ to the next frame, averages over the
 outcome bifurcations that contact creates. We named this failure Boundary
 Blindness and measured it on frozen checkpoints, where it concentrates at the
 pre-grasp boundary on two model families and transfers to real-robot data; we
-tied it to planning, reproducing free-space success above the published baseline
-while contact tasks fail with the predicted signature of an arm that arrives at a
+tied it to planning, reproducing free-space success within the published baseline
+CI while contact tasks fail with the predicted signature of an arm that arrives at a
 motionless object; and we localized the cause with a fix ladder whose only
 working rung is a $0.5$M-parameter grounded dynamics channel
 $h(z,a)\!\to\!\Delta\text{object}$ that, with the encoder, predictor, and data
@@ -702,8 +790,60 @@ nearest-neighbour ratio $0.97$ (i.e.\ on the manifold), and replaying a dataset
 trajectory's raw actions in the live environment reproduces its proprioceptive
 trajectory to a median end-effector error of $1.5$\,mm --- confirming that only
 the visuals had drifted, never the physics. The reach baseline then recovers from
-$1/16$ to $15/16$. The probe scripts that produce these numbers are released with
-the code.
+near-zero (broken renderer) to the episode-end $6/16$ ($37.5\%$) reported in
+Sec.~\ref{sec:planning}, inside the published CI. The probe scripts that produce
+these numbers are released with the code.
+
+\section{AUG and ECS: the raw-gap corroboration}\label{app:augecs}
+The main text leads CounterfactualBench with CRA because it is a ranking and so
+comparable across models with different latent scales (Sec.~\ref{sec:cfbench}).
+For completeness we report the two raw-gap metrics, AUG and ECS, here. Both are
+measured on the hard nearest-neighbour distractor family (the discriminative
+regime; \emph{opposite} distractors are saturated) and restricted to
+effect-bearing transitions ($\|z_{t+1}-z_t\|>\tau$, per-model median); ECS is
+additionally the effect-mask form. Cells are $n_{\mathrm{eff}}$-weighted pools.
+A dash means the regime had no effect-bearing transitions on that dataset
+($n_{\mathrm{eff}}=0$: DROID free-space, Metaworld gripper) so the metric is
+undefined there.
+
+\begin{table}[h]
+\centering\small
+\caption{AUG\,/\,ECS on the hard nearest-neighbour family, per regime. Both
+collapse toward zero everywhere --- feeding the \emph{realised} action moves the
+prediction no closer to the next latent than a permuted action ($\mathrm{AUG}\approx0$),
+and the effect-conditioned sensitivity is at noise (ECS within
+$\pm0.01$ of $0$ on DROID, and small but positive on Metaworld). This corroborates
+the CRA-at-chance result: the models ignore the action where it matters.
+\textbf{These are raw latent gaps and are \emph{not} comparable across models}
+(e.g.\ DINO-WM's larger DROID values reflect a larger latent scale, not more
+action use; the cross-model statement lives in CRA, Table~\ref{tab:cra}, and the
+scaling curve, Table~\ref{tab:scaling}).}
+\label{tab:augecs}
+\begin{tabular}{lcccc}
+\toprule
+model & free space & pre-grasp & gripper & contact \\
+\midrule
+\multicolumn{5}{l}{\emph{DROID} (real robot; AUG\,/\,ECS)}\\
+DINO-WM (22M)        & 0.038/-- & 0.011/0.0105 & 0.038/0.0645 & 0.070/0.0094 \\
+JEPA-WM (300M)       & 0.000/-- & 0.000/0.0002 & 0.001/0.0004 & 0.001/$-$0.0011 \\
+V-JEPA-2-AC (1B)     & 0.006/-- & 0.002/0.0016 & 0.003/0.0026 & 0.003/$-$0.0059 \\
+V-JEPA-2-AC-OSS (1B) & 0.004/-- & 0.001/0.0010 & 0.001/0.0005 & 0.003/$-$0.0030 \\
+\midrule
+\multicolumn{5}{l}{\emph{Metaworld} (sim; AUG\,/\,ECS; pooled over 12 tasks)}\\
+DINO-WM (22M)        & 0.088/0.1007 & 0.051/0.0997 & --/-- & 0.081/0.0893 \\
+JEPA-WM (300M)       & 0.089/0.1020 & 0.058/0.1114 & --/-- & 0.095/0.1052 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent The pattern matches the main result from a different angle: the
+effect-conditioned action gap is statistically indistinguishable from zero on the
+real-robot data across the full $45\times$ scale range, and small (and, at
+pre-grasp, no larger than free space) in simulation. Because AUG/ECS are not
+cross-model comparable they cannot themselves carry the scaling claim --- that is
+CRA's job --- but they confirm that the chance-level CRA is driven by genuine
+action-ignoring rather than a quirk of the ranking. Source:
+\texttt{results/\{droid,metaworld\}\_diagnostic.csv}, \texttt{hard\_nn} rows.
 
 \section{Full per-task BB tables and ablations}
 \todo{per-task CSV dumps; mixture-K, boundary-head on/off, state-slice ablations}

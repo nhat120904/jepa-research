@@ -699,6 +699,16 @@ if DROID_HAVE:
     print(f"\n{sum(ok for _, ok in dchecks)}/{len(dchecks)} DROID checks passed")
 """)
 
+# --- Part 3 (cross-dataset + scaling curve) --------------------------------
+# Shared source of truth with notebooks/_append_part3.py. A full rebuild here
+# emits Part 3 UNEXECUTED; use _append_part3.py to embed its figures without
+# disturbing the already-executed Metaworld/DROID frame galleries.
+import sys as _sys
+_sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _part3_cells import PART3  # noqa: E402
+for _kind, _src in PART3:
+    (md if _kind == "md" else code)(_src)
+
 # ---------------------------------------------------------------------------
 nb = {
     "cells": cells,

@@ -330,7 +330,8 @@ def run_episode(arm, task, seed, env, init_state, goal_frame, goal_state,
                 expert_succ, adapter, plan_adapter, device, *, probe, dyn_head,
                 s_g, alpha, beta, cem_kw, horizon, num_act_stepped,
                 max_episode_steps, proprio_ctxt, ee_probe=None,
-                lambda_app=0.0, lambda_obj=0.0, cost_arm=None):
+                lambda_app=0.0, lambda_obj=0.0, cost_arm=None, strict=False,
+                inverse_head=None, seeded=False):
     cost_arm = cost_arm or arm
     obs, _ = env.reset()
     if not np.allclose(obs, init_state, atol=1e-5):
@@ -344,7 +345,12 @@ def run_episode(arm, task, seed, env, init_state, goal_frame, goal_state,
         with torch.no_grad():
             goal_prop_feat = adapter.encode_proprio_features(
                 torch.from_numpy(goal_state[:4].astype(np.float32))[None, None].to(device))
+    # success      — any-step latch (TD-MPC2 convention): True if the flag ever fires.
+    # last_success — the env flag at the most recent executed step. With strict=True
+    #                we never break early, so this is the flag AT EPISODE END — the
+    #                upstream/paper judging convention (D.2 strict re-score).
     success, steps = False, 0
+    last_success = False
     while steps < max_episode_steps:
         frame = render(env)
         z_t = encode_frame(adapter, frame, obs[:4], device)
@@ -357,23 +363,35 @@ def run_episode(arm, task, seed, env, init_state, goal_frame, goal_state,
                              lambda_app=lambda_app, lambda_obj=lambda_obj)
         # upstream shrinks the plan to the remaining model-steps near the end
         plan_h = min(horizon, max(1, -(-(max_episode_steps - steps) // FRAMESKIP)))
+        # WAV-style contact-aware seed: propose the action that drives the OBJECT
+        # from its probed position toward the goal object, spread over the horizon,
+        # and use it as the CEM init mean (the planner then refines). Fixes the
+        # sampling failure — CEM never proposes a contact from a zero-mean Gaussian.
+        init_mean = None
+        if seeded and inverse_head is not None:
+            with torch.no_grad():
+                g_t = probe(z_t.unsqueeze(0))                     # (1, obj_dim)
+                g_goal_obj = probe(z_goal.unsqueeze(0))           # (1, obj_dim)
+                dobj_step = (g_goal_obj - g_t) / max(plan_h, 1)
+                init_mean = inverse_head(z_t.unsqueeze(0), dobj_step)[0]  # (RAW_A*FRAMESKIP,)
         plan = cem_plan(
             plan_adapter, z_t, z_goal, horizon=plan_h, action_dim=RAW_A * FRAMESKIP,
             num_act_stepped=min(num_act_stepped, plan_h), proprio_t=prop,
             generator=torch.Generator(device=device).manual_seed(seed * 1000 + steps),
-            traj_cost_fn=tcf, **cem_kw)
+            traj_cost_fn=tcf, init_mean=init_mean, **cem_kw)
         raw = plan.reshape(-1, RAW_A).cpu().numpy()
         for a in raw:
             obs, _, _, _, info = env.step(np.clip(a, -1, 1))
             steps += 1
-            if info.get("success", 0) > 0.5:
+            last_success = info.get("success", 0) > 0.5
+            if last_success:
                 success = True
             if steps >= max_episode_steps:
                 break
-        if success:
+        if success and not strict:
             break
     return {"task": task, "arm": arm, "seed": seed, "success": int(success),
-            "steps": steps,
+            "success_end": int(last_success), "steps": steps,
             "final_state_dist": float(np.linalg.norm(obs - goal_state)),
             "ee_dist": float(np.linalg.norm(obs[:3] - goal_state[:3])),
             "state_dist_success": int(np.linalg.norm(obs - goal_state) < 0.3),
@@ -414,7 +432,21 @@ def main() -> int:
     ap.add_argument("--residual-head", default=None,
                     help="residual corrective predictor ckpt (scripts/20); "
                          "required for any 'c'-suffixed arm")
+    ap.add_argument("--inverse-head", default=None,
+                    help="inverse action-proposal ckpt (scripts/28); required for "
+                         "any 'inv'-suffixed arm (l2inv/hdyninv). Seeds the CEM mean "
+                         "with a contact-creating proposal toward the goal object.")
+    ap.add_argument("--predictor-lora", default=None,
+                    help="LoRA partial-unfreeze ckpt (scripts/26); required for any "
+                         "'lora'-suffixed arm (l2lora/hdynlora). Toggled per arm so the "
+                         "frozen and corrected arms share one adapter.")
     ap.add_argument("--out", default="results/metaworld_closed_loop.csv")
+    ap.add_argument("--strict-success", action="store_true",
+                    help="D.2 strict re-score: do NOT break on the first success "
+                         "touch; run the full episode and judge success by the env "
+                         "flag AT EPISODE END (upstream/paper convention). The "
+                         "any-step latch is still reported in the 'success' column; "
+                         "the end-of-episode verdict is 'success_end'.")
     args = ap.parse_args()
 
     torch.set_num_threads(int(os.environ.get("CAI_JEPA_TORCH_THREADS", "2")))
@@ -433,6 +465,26 @@ def main() -> int:
         print(f"residual head: obj err corrected/frozen="
               f"{rh_meta.get('corrected_obj_mse', float('nan'))/max(rh_meta.get('frozen_obj_mse', 1), 1e-9):.3f}x "
               f"lambda_obj_train={rh_meta.get('lambda_obj')}", flush=True)
+    lora_modules = None
+    if any("lora" in a for a in args.arms):
+        from models.heads.lora_predictor import load_predictor_lora, set_lora_enabled
+        if not args.predictor_lora:
+            raise SystemExit("--predictor-lora is required for a 'lora'-suffixed arm")
+        lora_modules, _ = load_predictor_lora(adapter, args.predictor_lora, device)
+        set_lora_enabled(lora_modules, False)   # default off; toggled per arm
+        print(f"predictor LoRA: {args.predictor_lora} ({len(lora_modules)} adapters, "
+              f"toggled per arm)", flush=True)
+    inverse_head = None
+    if any(a.endswith("inv") for a in args.arms):
+        from models.probes import load_inverse_head
+        if not args.inverse_head:
+            raise SystemExit("--inverse-head is required for an 'inv'-suffixed arm")
+        inverse_head, inv_meta = load_inverse_head(args.inverse_head, device)
+        print(f"inverse head: val action-MSE corrected/baseline="
+              f"{inv_meta.get('val_action_mse', float('nan')):.4f}/"
+              f"{inv_meta.get('baseline_action_mse', float('nan')):.4f} "
+              f"contact_action_spread={inv_meta.get('contact_action_spread', float('nan')):.3f} "
+              f"obj_scale={float(inv_meta.get('obj_scale', 1.0)):.4f}", flush=True)
     probe, _ = load_probe(args.probe, device)
     dyn_head, dyn_meta = load_dynamics_head(args.dyn_head, device)
     ee_probe = None
@@ -489,11 +541,24 @@ def main() -> int:
                 continue
             for arm in args.arms:
                 t0 = time.time()
-                # 'c'-suffixed arms use the corrected predictor; the cost is the
-                # base arm (l2c -> L2 cost, hdync -> hdyn cost).
-                corrected = arm.endswith("c")
+                # Suffixes compose: <basecost>[lora][inv]. 'lora' -> corrected
+                # predictor in the rollout; 'inv' -> CEM mean seeded from the inverse
+                # proposal. e.g. l2lorainv = LoRA predictor + inverse seed + L2 cost
+                # (the 2A+2B composition arm). Strip suffixes to recover the cost arm.
+                seeded = arm.endswith("inv")
+                lora_arm = "lora" in arm
+                corrected = arm.endswith("c") and not lora_arm
                 pa = plan_adapter_c if corrected else plan_adapter
-                cost_arm = arm[:-1] if corrected else arm
+                cost_arm = arm
+                if seeded:
+                    cost_arm = cost_arm[:-3]      # drop 'inv'
+                if lora_arm:
+                    cost_arm = cost_arm[:-4]      # drop now-trailing 'lora'
+                elif corrected:
+                    cost_arm = cost_arm[:-1]      # drop 'c'
+                # LoRA lives in the shared predictor; enable only for a lora arm.
+                if lora_modules is not None:
+                    set_lora_enabled(lora_modules, lora_arm)
                 try:
                     r = run_episode(arm, task, seed, env, init_state, goal_frame,
                                     goal_state, expert_succ, adapter, pa,
@@ -504,13 +569,16 @@ def main() -> int:
                                     max_episode_steps=args.max_episode_steps,
                                     proprio_ctxt=args.proprio_ctxt,
                                     ee_probe=ee_probe, lambda_app=args.lambda_app,
-                                    lambda_obj=args.lambda_obj, cost_arm=cost_arm)
+                                    lambda_obj=args.lambda_obj, cost_arm=cost_arm,
+                                    strict=args.strict_success,
+                                    inverse_head=inverse_head, seeded=seeded)
                 except Exception as e:  # noqa: BLE001 — keep the sweep alive
                     print(f"  [error] {task} ep{ep} {arm}: {e}", flush=True)
                     continue
                 r["minutes"] = round((time.time() - t0) / 60, 2)
                 rows.append(r)
                 print(f"  {task:16s} ep{ep:02d} {arm:5s} success={r['success']} "
+                      f"end={r['success_end']} "
                       f"steps={r['steps']:3d} dist={r['final_state_dist']:.3f} "
                       f"ee={r['ee_dist']:.3f} ({r['minutes']:.1f} min)", flush=True)
                 pd.DataFrame(rows).to_csv(args.out, index=False)   # checkpoint as we go
@@ -520,8 +588,11 @@ def main() -> int:
         for arm in args.arms:
             sel = d[(d.task == task) & (d.arm == arm)]
             if len(sel):
-                print(f"== {task} {arm}: success {sel.success.mean():.2%} "
-                      f"({int(sel.success.sum())}/{len(sel)}), "
+                end_str = (f", success_end {sel.success_end.mean():.2%} "
+                           f"({int(sel.success_end.sum())}/{len(sel)})"
+                           if "success_end" in sel else "")
+                print(f"== {task} {arm}: success(any-step) {sel.success.mean():.2%} "
+                      f"({int(sel.success.sum())}/{len(sel)}){end_str}, "
                       f"state-dist<0.3 {sel.state_dist_success.mean():.2%}", flush=True)
 
     print(f"\nWrote {args.out} ({len(rows)} episodes)")
