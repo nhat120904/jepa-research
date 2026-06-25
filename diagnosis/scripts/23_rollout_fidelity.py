@@ -97,7 +97,9 @@ def main() -> int:
     ap.add_argument("--config", required=True)
     ap.add_argument("--model", required=True)
     ap.add_argument("--probe", required=True)
-    ap.add_argument("--residual-head", required=True)
+    ap.add_argument("--residual-head", default=None)
+    ap.add_argument("--predictor-lora", default=None,
+                    help="LoRA ckpt (scripts/26): frozen=LoRA-off rollout, corrected=LoRA-on")
     ap.add_argument("--H", type=int, default=6)
     ap.add_argument("--stride", type=int, default=4, help="start-index stride (in model-steps)")
     ap.add_argument("--max-seqs", type=int, default=600)
@@ -114,7 +116,16 @@ def main() -> int:
     adapter = build_adapter(args.model, device=str(device)).eval()
     step = adapter.frames_per_step
     probe, _ = load_probe(args.probe, device)
-    rh, _ = load_residual_head(args.residual_head, device)
+    lora = None
+    rh = None
+    if args.predictor_lora:
+        from models.heads.lora_predictor import load_predictor_lora, set_lora_enabled
+        lora, _ = load_predictor_lora(adapter, args.predictor_lora, device)
+        print(f"predictor LoRA: {args.predictor_lora} — corrected = LoRA-on rollout", flush=True)
+    elif args.residual_head:
+        rh, _ = load_residual_head(args.residual_head, device)
+    else:
+        raise SystemExit("need --residual-head or --predictor-lora")
 
     with LatentCache(cache_path, mode="r") as cache:
         tids = sorted(cache.trajectory_ids())
@@ -129,8 +140,14 @@ def main() -> int:
     fro = np.zeros((args.H + 1,)); cor = np.zeros((args.H + 1,)); n = 0
     for s in range(0, len(z0), args.chunk):
         e = slice(s, s + args.chunk)
-        zf = frozen_rollout(adapter, z0[e], acts[e], p0[e])          # (b,H+1,...)
-        zc = corrected_rollout(adapter, rh, z0[e], acts[e], p0[e])
+        if lora is not None:
+            set_lora_enabled(lora, False)
+            zf = frozen_rollout(adapter, z0[e], acts[e], p0[e])      # LoRA off = frozen
+            set_lora_enabled(lora, True)
+            zc = frozen_rollout(adapter, z0[e], acts[e], p0[e])      # LoRA on = corrected
+        else:
+            zf = frozen_rollout(adapter, z0[e], acts[e], p0[e])      # (b,H+1,...)
+            zc = corrected_rollout(adapter, rh, z0[e], acts[e], p0[e])
         ot = obj[e].to(device)
         for h in range(args.H + 1):
             with torch.no_grad():

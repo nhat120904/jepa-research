@@ -26,8 +26,8 @@ simulator's flag. Arms:
 
 | task | arm | success | mean final state-dist | mean final ee-dist |
 |---|---|---|---|---|
-| mw-reach | l2 | **15/16 (94%)** [Wilson 72–99%] | 0.332 | 0.022 |
-| mw-reach | hdyn | **16/16 (100%)** [81–100%] | 0.412 | 0.031 |
+| mw-reach | l2 | any-step 15/16 (94%); **episode-end 6/16 (37.5%)** [18.5–61.4%] | 0.332 | 0.022 |
+| mw-reach | hdyn | any-step 16/16 (100%); **episode-end 8/16 (50.0%)** [28.0–72.0%] | 0.412 | 0.031 |
 | mw-push | l2 | 0/16 | 0.624 | 0.038 |
 | mw-push | hdyn | 0/16 | **0.527** | 0.028 |
 | mw-pick-place | l2 | 0/16 | 0.578 | 0.035 |
@@ -44,11 +44,22 @@ ends closer; 10k-resample bootstrap over pairs):
 
 ## Reading
 
-1. **Reproduction: PASS, above the published number.** Paper Table 1
-   (CEM-L2): DINO-WM MW-Reach 44.8 (±8.9). We measure 94% on the public
-   checkpoint. (The paper averages 3 training seeds × 96 episodes; we
-   evaluate the released checkpoint at 16 episodes — same ballpark test, not
-   a seed-matched replication.)
+1. **Reproduction: PASS, matches the published number (D.2 strict re-score,
+   2026-06-23).** The headline table below uses an **any-step** success latch
+   (TD-MPC2 convention: success if the env flag *ever* fires), which gives
+   L2 15/16 = 94% — but the upstream/paper protocol judges at **episode end**.
+   Re-scored strictly (`scripts/18 --strict-success`, same seeds 10000–10015,
+   cluster EGL; `results/metaworld_reach_strict.csv`), the **episode-end**
+   success is **L2 6/16 = 37.5% [Wilson 18.5–61.4%]**, grounded **hdyn 8/16 =
+   50.0% [28.0–72.0%]**. Paper Table 1 (CEM-L2): DINO-WM MW-Reach **44.8 ±8.9
+   → [35.9, 53.7%]**. Our strict L2 lands **inside the paper's CI** — the
+   harness *reproduces* the published baseline, it does **not** beat it. The
+   earlier "94% > 44.8%" was an artifact of the lenient any-step convention and
+   has been retracted. (We evaluate the released checkpoint at 16 episodes; the
+   paper averages 3 training seeds × 96 episodes — same ballpark, not a
+   seed-matched replication.) This *strengthens* point 3 below: a harness that
+   reproduces the published Reach number, then sees contact collapse to 0, is
+   measuring a model failure, not a harness artifact.
 2. **Contact tasks are 0% for BOTH arms — the closed-loop face of Boundary
    Blindness.** The arm reliably reaches the goal's end-effector pose
    (final ee 2–4 cm) while the object never moves to its target (state-dist

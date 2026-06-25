@@ -15,25 +15,26 @@ null (both kept as ablations); **the grounded object-dynamics channel
 (1.323→0.660 dino, 1.280→0.620 jepa), the pre_grasp-vs-free_space BB gap
 collapses 1.04→0.32 / 0.98→0.27. See the revised C3 and
 `docs/FIX_C1_EXPLAINER.md` §6–§7b. **The closed-loop leg is complete
-(2026-06-12, `results/closed_loop_report.md`):** reach reproduces ABOVE the
-published baseline (L2 15/16 = 94% vs paper DWM 44.8±8.9; grounded 16/16);
+(2026-06-12, `results/closed_loop_report.md`):** reach reproduces the
+published baseline (D.2 strict episode-end re-score: L2 37.5% [18.5–61.4%] vs
+paper DWM 44.8±8.9, inside the CI; grounded hdyn 50.0%);
 push/pick-place are **0% for both arms** — the closed-loop face of BB (arm
 reaches, ee 2–4 cm; the object never moves; the upstream paper's own appendix
 admits "hallucinates grasping the object"); the grounded cost yields a
 CI-supported paired improvement in final state distance on pooled contact
 (**+0.089 [+0.022, +0.162]**) without flipping successes. C2 is recast around
-this closed-loop evidence (below). **Remaining work is writing**: draft
-`paper/main.tex`, claim map `docs/CLAIMS_EVIDENCE.md`, figures 2–3 assembly,
-and a scope decision on V-JEPA-2-AC (BB gate needs the A5000 server; otherwise
-scope the claim to DINO-WM/JEPA-WM and cite V-JEPA-2's own published need for
-hand-crafted sub-goals on pick-and-place as external corroboration).
+this closed-loop evidence (below). **V-JEPA2/DROID scaling is measured and used
+only for diagnostic/scaling; Metaworld remains the proof/fix/planning dataset.**
+**Remaining work is writing**: draft `paper/main.tex`, claim map
+`docs/CLAIMS_EVIDENCE.md`, and figures 2–3 assembly.
 
 ---
 
 ## 1. One-paragraph thesis
 
-Action-conditioned JEPA world models (DINO-WM, V-JEPA-2-AC, JEPA-WM) are not
-merely weak at amplifying action effects — they **fail to model high-sensitivity
+Action-conditioned JEPA world models (DINO-WM and JEPA-WM on Metaworld, with
+V-JEPA2-AC measured as a DROID diagnostic-scaling leg) are not merely weak at
+amplifying action effects — they **fail to model high-sensitivity
 action regimes, where small action perturbations near a contact boundary produce
 qualitatively different futures** (gripper centred → object lifts; 2–3° off → no
 lift). Unimodal latent prediction (a point predictor trained with L2) *provably
@@ -72,8 +73,11 @@ On frozen, pretrained checkpoints (nothing trained):
   0.481 / 0.441; per-task CI-aware pairing: pre_grasp confidently elevated in 4/6
   (dino) and 5/6 (jepa) tasks, zero confident reversals. DROID transfer (‖Δz‖
   proxy, dino_wm): pre_grasp **1.975 [1.601, 2.350]** vs free_space 0.721
-  [0.613, 0.834] — CI-confident. Source: `results/metaworld_boundary.csv`,
-  `results/droid_boundary.csv`; analysis in `results/boundary_gate_report.md`.
+  [0.613, 0.834] — CI-confident. The DROID scaling curve extends this diagnostic
+  to DINOv2/DINOv3/V-JEPA2-AC/V-JEPA2-AC-OSS (22M→300M→1B), all at hard-negative
+  chance floor with positive BB. Source: `results/metaworld_boundary.csv`,
+  `results/droid_boundary.csv`, `results/droid_scaling_curve.md`; analysis in
+  `results/boundary_gate_report.md`.
   (Implemented: `metrics/boundary_blindness.py`, `stratification/boundary_regime.py`,
   `scripts/12_boundary_diagnostic.py`.)
 
@@ -86,8 +90,9 @@ at the **regime level, closed-loop** (`results/closed_loop_report.md`,
 `metaworld_closed_loop.csv`, 96 paired arm-episodes at upstream-parity
 protocol):
 - Where BB is **low** (free-space: 0.28–0.30), planning works: mw-reach
-  **15/16 (94%)** for the L2 baseline — *above* the published number for the
-  same model+planner (44.8 ± 8.9), so the harness is not the bottleneck.
+  **37.5%** [18.5–61.4%] for the L2 baseline (episode-end judging, D.2) —
+  *matches* the published number for the same model+planner (44.8 ± 8.9), so
+  the harness reproduces the baseline and is not the bottleneck.
 - Where BB is **high** (pre-grasp/contact: 1.28–1.32), planning collapses:
   mw-push and mw-pick-place are **0/16 for both arms**, with the signature BB
   predicts — the arm reaches the goal pose (final ee 2–4 cm) while the object
@@ -171,6 +176,10 @@ head) is a quantified structural null; the fix moves down the stack.**
   proprio is 7-dim pose+gripper with **no force/torque, no joint** channel. So
   direction D's force-grounded form is impossible there and BB uses the weaker
   ‖Δz‖ proxy. We do **not** claim tactile/force grounding on DROID.
+- **V-JEPA2 is scoped to DROID diagnostic/scaling.** It is directly measured in
+  the 45× DROID scaling curve, not in the Metaworld closed-loop or grounded-fix
+  legs. Its published hand-crafted sub-goal dependence is external corroboration,
+  not a new closed-loop result from this paper.
 - Push-T / PointMaze are sanity checks only — never thesis evidence.
 
 ## 6. Headline figures (target)
@@ -186,9 +195,11 @@ head) is a quantified structural null; the fix moves down the stack.**
    channel 0.660** at pre_grasp (pooled bb_boundary, excl. door-close; CSVs:
    `metaworld_boundary{,_fix,_metric,_dynamics}.csv`). Support panel: the
    V1/V2/V3 localization chain + counterfactual-tracking corr 0.035 → 0.682.
-3. **BB-per-regime vs. closed-loop success-per-task** (the C2 figure, data now
-   real): free-space BB 0.28 → reach 94–100%; boundary BB 1.3 → push/pick-place
-   0%; grounded fix BB 0.66 → paired distance +0.089 [CI +0.022, +0.162]. Data:
+3. **BB-per-regime → closed-loop outcome → failure signature** (the C2 figure,
+   data now real): free-space BB 0.28 → reach 37.5%/50.0% (episode-end, inside
+   the published 44.8±8.9 CI); boundary BB 1.3 → push/pick-place 0%; contact
+   failure shows small final ee distance but large state/object distance; grounded
+   fix gives paired distance +0.089 [CI +0.022, +0.162]. Data:
    `metaworld_boundary{,_dynamics}.csv` + `metaworld_closed_loop.csv`.
 4. Ablation: C1-only / D-only / C1+D, mixture-K, boundary-head on/off.
 

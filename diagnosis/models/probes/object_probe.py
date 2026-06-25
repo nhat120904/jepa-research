@@ -206,6 +206,52 @@ def load_dynamics_head(ckpt_path: str | Path, device) -> tuple["ObjectDynamicsHe
     return h.to(device).eval(), ckpt
 
 
+class InverseProposalHead(nn.Module):
+    """``h_inv(z_t, Δobj) → raw action chunk`` — the WAV-style sparse inverse that
+    PROPOSES a contact-creating action to seed the CEM mean
+    (docs/plans/2026-06-24-inverse-action-proposal-design.md).
+
+    The forward–inverse asymmetry (World Action Verifier): the action is
+    identifiable from a low-dimensional, object/agent-relevant readout of the
+    state, so an inverse over ``(latent, desired object motion)`` is reliable even
+    where the frozen forward predictor's *counterfactual* object channel is dead
+    (cf-corr ≈ 0). It outputs a raw stacked action (the space the CEM samples in);
+    the requested ``Δobj`` is standardised by ``obj_scale`` (a buffer, so training
+    and the planner-time call match). At plan time ``Δobj = g(z_goal) − g(z_t)``
+    from the spatial probe, distributed over the horizon."""
+
+    def __init__(self, latent_dim: int, action_dim: int, obj_dim: int = 3,
+                 hidden: int = 512, obj_emb_dim: int = 64, obj_scale: float = 1.0):
+        super().__init__()
+        self.latent_dim = latent_dim
+        self.action_dim = action_dim
+        self.obj_dim = obj_dim
+        self.register_buffer("obj_scale", torch.tensor(float(obj_scale)))
+        self.obj_emb = nn.Sequential(nn.Linear(obj_dim, obj_emb_dim), nn.SiLU())
+        self.net = nn.Sequential(
+            nn.Linear(2 * latent_dim + obj_emb_dim, hidden), nn.SiLU(),
+            nn.Linear(hidden, hidden // 2), nn.SiLU(),
+            nn.Linear(hidden // 2, action_dim),
+        )
+
+    def forward(self, z: torch.Tensor, dobj: torch.Tensor) -> torch.Tensor:
+        tok = flatten_tokens(z, self.latent_dim)
+        dobj = dobj.to(tok.dtype) / self.obj_scale.clamp(min=1e-8)
+        pooled = torch.cat([tok.mean(dim=1), tok.max(dim=1).values,
+                            self.obj_emb(dobj)], dim=-1)
+        return self.net(pooled)
+
+
+def load_inverse_head(ckpt_path: str | Path, device) -> tuple["InverseProposalHead", dict]:
+    ckpt = torch.load(ckpt_path, map_location=device, weights_only=False)
+    h = InverseProposalHead(
+        latent_dim=ckpt["latent_dim"], action_dim=ckpt["action_dim"],
+        obj_dim=ckpt.get("obj_dim", 3), hidden=ckpt.get("hidden", 512),
+        obj_emb_dim=ckpt.get("obj_emb_dim", 64), obj_scale=ckpt.get("obj_scale", 1.0))
+    h.load_state_dict(ckpt["state_dict"])
+    return h.to(device).eval(), ckpt
+
+
 class ObjectDynamicsAdapter(WorldModelAdapter):
     """Exposes ``h`` behind the standard interface: ``predict(z_t, a) = h(z_t, a)``
     (the predicted object displacement, a 3-vector). BB's ``S_model`` then measures
