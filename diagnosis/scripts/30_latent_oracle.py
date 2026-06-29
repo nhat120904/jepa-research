@@ -72,8 +72,8 @@ snapshot, restore = _or.snapshot, _or.restore
 from stratification.metaworld_regimes import OBJECT_SLICE  # noqa: E402
 
 
-def build_oracle_cost(cost, z_goal, *, probe=None, metric=None, s_g=0.1276,
-                      beta=0.1, gamma_l2=1.0):
+def build_oracle_cost(cost, z_goal, *, probe=None, metric=None, ee_probe=None,
+                      w_hand=0.5, s_g=0.1276, beta=0.1, gamma_l2=1.0):
     """Build the latent-oracle scoring fn ``(z_fin (B,*frame)) -> cost (B,)``.
 
     The latent oracle gives PERFECT latent dynamics; the only thing swapped here
@@ -86,6 +86,12 @@ def build_oracle_cost(cost, z_goal, *, probe=None, metric=None, s_g=0.1276,
                     object READOUT is precise enough to plan with under perfect
                     dynamics. ``--gamma-l2 0`` = pure-readout (no L2 anchor).
       * ``metric``— a learned latent metric ``d_θ(z_fin, z_goal)`` (scripts/33).
+      * ``stateprobe`` — the EXACT state-oracle cost (scripts/29 ``roll_cost``:
+                    ``‖obj−goal‖ + w_hand·‖hand−obj‖``) but with object AND hand read
+                    from PROBES instead of sim truth. The fair probe-analogue of the
+                    state-oracle (push 16/16): same structure incl. the hand-APPROACH
+                    term plain ``gobj`` lacked, so a failure isolates the probe readout,
+                    not the missing approach shaping.
 
     Decisive: if a non-L2 cost flips push/pick 0→>0 here, the cost is viable and the
     closed-loop corrector program is licensed; if all stay 0, the wall is deeper
@@ -111,6 +117,21 @@ def build_oracle_cost(cost, z_goal, *, probe=None, metric=None, s_g=0.1276,
             c = ((z_fin.reshape(B, -1) - zg[None]) ** 2).mean(-1)
             obj_term = (((probe(z_fin) - g_goal) / s_g_dim) ** 2).mean(-1)
             return gamma_l2 * c + beta * obj_term
+        return fn
+
+    if cost == "stateprobe":
+        if probe is None or ee_probe is None:
+            raise ValueError("--cost stateprobe needs --probe and --ee-probe")
+        with torch.no_grad():
+            g_goal = probe(z_goal.unsqueeze(0))                    # (1, 3) object@goal
+
+        @torch.no_grad()
+        def fn(z_fin):
+            obj = probe(z_fin)                                     # (B, 3) object xyz
+            hand = ee_probe(z_fin)                                 # (B, 3) ee xyz
+            d_obj = (obj - g_goal).norm(dim=-1)                    # ‖obj − goal‖
+            d_app = (hand - obj).norm(dim=-1)                      # ‖hand − obj‖ (approach)
+            return d_obj + w_hand * d_app                          # exact scripts/29 form
         return fn
 
     if cost == "metric":
@@ -222,10 +243,16 @@ def main() -> int:
     ap.add_argument("--strict-success", action="store_true")
     # Phase-0 cost gate: only the COST is swapped vs the L2 null (the dynamics stay
     # perfect). See build_oracle_cost for the decision rule.
-    ap.add_argument("--cost", choices=["l2", "gobj", "metric"], default="l2",
+    ap.add_argument("--cost", choices=["l2", "gobj", "stateprobe", "metric"], default="l2",
                     help="latent-oracle scoring: l2 (null) / gobj (object readout) / "
+                         "stateprobe (state-oracle cost via probes: object + hand-approach) / "
                          "metric (learned d_theta)")
-    ap.add_argument("--probe", default=None, help="object-probe ckpt (scripts/22); --cost gobj")
+    ap.add_argument("--probe", default=None,
+                    help="object-probe ckpt (scripts/22); --cost gobj/stateprobe")
+    ap.add_argument("--ee-probe", default=None,
+                    help="ee-probe ckpt (scripts/19); --cost stateprobe (hand-approach term)")
+    ap.add_argument("--w-hand", type=float, default=0.5,
+                    help="hand-approach weight for --cost stateprobe (matches scripts/29)")
     ap.add_argument("--metric-head", default=None,
                     help="learned latent-metric ckpt (scripts/33); --cost metric")
     ap.add_argument("--s-g", type=float, default=0.1276,
@@ -239,25 +266,32 @@ def main() -> int:
     cfg = yaml.safe_load(open(args.config))
     device = torch.device(cfg["eval"]["device"] if torch.cuda.is_available() else "cpu")
     adapter = build_adapter(args.model, device=str(device)).eval()
-    probe = metric = None
-    if args.cost == "gobj":
+    probe = metric = ee_probe = None
+    if args.cost in ("gobj", "stateprobe"):
         if not args.probe:
-            raise SystemExit("--probe is required for --cost gobj")
+            raise SystemExit(f"--probe is required for --cost {args.cost}")
         from models.probes import load_probe
         probe, pmeta = load_probe(args.probe, device)
         print(f"object probe: {args.probe} (out_dim={probe.out_dim}, "
               f"v1_median={pmeta.get('v1_median')})", flush=True)
-    elif args.cost == "metric":
+    if args.cost == "stateprobe":
+        if not args.ee_probe:
+            raise SystemExit("--ee-probe is required for --cost stateprobe")
+        from models.probes import load_probe
+        ee_probe, emeta = load_probe(args.ee_probe, device)
+        print(f"ee probe: {args.ee_probe} (out_dim={ee_probe.out_dim}, "
+              f"v1_median={emeta.get('v1_median')}) w_hand={args.w_hand}", flush=True)
+    if args.cost == "metric":
         if not args.metric_head:
             raise SystemExit("--metric-head is required for --cost metric")
         from models.heads.latent_metric import load_latent_metric
         metric, mmeta = load_latent_metric(args.metric_head, device)
         print(f"latent metric: {args.metric_head} "
               f"(spearman={mmeta.get('val_spearman')})", flush=True)
-    cost_spec = dict(cost=args.cost, probe=probe, metric=metric,
-                     s_g=args.s_g, beta=args.beta, gamma_l2=args.gamma_l2)
+    cost_spec = dict(cost=args.cost, probe=probe, metric=metric, ee_probe=ee_probe,
+                     w_hand=args.w_hand, s_g=args.s_g, beta=args.beta, gamma_l2=args.gamma_l2)
     print(f"latent-oracle cost={args.cost} (s_g={args.s_g} beta={args.beta} "
-          f"gamma_l2={args.gamma_l2})", flush=True)
+          f"gamma_l2={args.gamma_l2} w_hand={args.w_hand})", flush=True)
     cem_kw = dict(num_samples=args.cem_num_samples, iterations=args.cem_iterations,
                   elite_frac=args.elite_frac, var0=args.var0)
     out = Path(args.out); out.parent.mkdir(parents=True, exist_ok=True)
