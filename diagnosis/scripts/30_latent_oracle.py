@@ -72,6 +72,61 @@ snapshot, restore = _or.snapshot, _or.restore
 from stratification.metaworld_regimes import OBJECT_SLICE  # noqa: E402
 
 
+def build_oracle_cost(cost, z_goal, *, probe=None, metric=None, s_g=0.1276,
+                      beta=0.1, gamma_l2=1.0):
+    """Build the latent-oracle scoring fn ``(z_fin (B,*frame)) -> cost (B,)``.
+
+    The latent oracle gives PERFECT latent dynamics; the only thing swapped here
+    is the *cost*, which the oracle ladder localised as the contact-task wall:
+
+      * ``l2``    — the upstream ``mean‖z_fin − z_goal‖²`` (the null; push/pick 0/16).
+      * ``gobj``  — read the object straight off the true encoded final latent and
+                    drive ``g(z_fin) → g(z_goal)``; mirrors the ``gobj`` arm in
+                    ``scripts/18`` (γ·L2 + β·mean((Δg/s_g_dim)²)). Tests whether the
+                    object READOUT is precise enough to plan with under perfect
+                    dynamics. ``--gamma-l2 0`` = pure-readout (no L2 anchor).
+      * ``metric``— a learned latent metric ``d_θ(z_fin, z_goal)`` (scripts/33).
+
+    Decisive: if a non-L2 cost flips push/pick 0→>0 here, the cost is viable and the
+    closed-loop corrector program is licensed; if all stay 0, the wall is deeper
+    than the cost (readout/metric precision or the encoder)."""
+    zg = z_goal.reshape(-1)
+
+    if cost == "l2":
+        def fn(z_fin):
+            B = z_fin.shape[0]
+            return ((z_fin.reshape(B, -1) - zg[None]) ** 2).mean(-1)
+        return fn
+
+    if cost == "gobj":
+        if probe is None:
+            raise ValueError("--cost gobj needs --probe")
+        s_g_dim = s_g / np.sqrt(probe.out_dim)
+        with torch.no_grad():
+            g_goal = probe(z_goal.unsqueeze(0))                    # (1, out_dim)
+
+        @torch.no_grad()
+        def fn(z_fin):
+            B = z_fin.shape[0]
+            c = ((z_fin.reshape(B, -1) - zg[None]) ** 2).mean(-1)
+            obj_term = (((probe(z_fin) - g_goal) / s_g_dim) ** 2).mean(-1)
+            return gamma_l2 * c + beta * obj_term
+        return fn
+
+    if cost == "metric":
+        if metric is None:
+            raise ValueError("--cost metric needs --metric-head")
+        zg_frame = z_goal.unsqueeze(0)                             # (1, *frame)
+
+        @torch.no_grad()
+        def fn(z_fin):
+            B = z_fin.shape[0]
+            return metric(z_fin, zg_frame.expand(B, *([-1] * (zg_frame.dim() - 1))))
+        return fn
+
+    raise ValueError(f"unknown --cost {cost}")
+
+
 @torch.no_grad()
 def encode_batch(adapter, frames, proprios, device):
     """Encode a population of final frames in one GPU call. frames: list of
@@ -97,13 +152,12 @@ def roll_final_frame(env, snap, plan_raw):
 
 
 def cem_plan_latent(env, adapter, z_goal, device, *, plan_h, num_samples, iterations,
-                    elite_frac, var0, rng):
+                    elite_frac, var0, rng, cost_fn):
     plan_raw_len = plan_h * FRAMESKIP
     dim = plan_raw_len * RAW_A
     mean = np.zeros(dim); var = np.full(dim, var0)
     n_elite = max(2, int(num_samples * elite_frac))
     snap = snapshot(env)
-    zg = z_goal.reshape(-1)
     for _ in range(iterations):
         samples = np.clip(mean[None] + np.sqrt(var)[None] * rng.standard_normal((num_samples, dim)),
                           -1.0, 1.0)
@@ -112,7 +166,7 @@ def cem_plan_latent(env, adapter, z_goal, device, *, plan_h, num_samples, iterat
             fr, pr, _ = roll_final_frame(env, snap, samples[i].reshape(plan_raw_len, RAW_A))
             frames.append(fr); props.append(pr)
         z_fin = encode_batch(adapter, frames, props, device)        # (B,V,H,W,D) — TRUE latent
-        costs = ((z_fin.reshape(num_samples, -1) - zg[None]) ** 2).mean(-1).cpu().numpy()
+        costs = cost_fn(z_fin).detach().cpu().numpy()               # only the COST is swapped
         elites = samples[np.argsort(costs)[:n_elite]]
         mean = elites.mean(0); var = elites.var(0) + 1e-4
     restore(env, snap)
@@ -120,16 +174,18 @@ def cem_plan_latent(env, adapter, z_goal, device, *, plan_h, num_samples, iterat
 
 
 def run_episode(task, seed, env, goal_frame, goal_state, expert_succ, adapter, device, *,
-                plan_h, num_act_stepped, max_episode_steps, cem_kw, strict):
+                plan_h, num_act_stepped, max_episode_steps, cem_kw, strict, cost_spec):
     goal_obj = goal_state[OBJECT_SLICE]
     z_goal = encode_frame(adapter, goal_frame, goal_state[:4], device)
+    cost_fn = build_oracle_cost(z_goal=z_goal, **cost_spec)
     obs, _ = env.reset()
     obs, _, _, _, _ = env.step(np.zeros(RAW_A))                     # upstream reset_warmup
     success, last_success, steps = False, False, 0
     rng = np.random.default_rng(seed)
     while steps < max_episode_steps:
         plan_h_eff = min(plan_h, max(1, -(-(max_episode_steps - steps) // FRAMESKIP)))
-        plan = cem_plan_latent(env, adapter, z_goal, device, plan_h=plan_h_eff, rng=rng, **cem_kw)
+        plan = cem_plan_latent(env, adapter, z_goal, device, plan_h=plan_h_eff, rng=rng,
+                               cost_fn=cost_fn, **cem_kw)
         for a in plan[: num_act_stepped * FRAMESKIP]:
             obs, _, _, _, info = env.step(np.clip(a, -1, 1))
             steps += 1
@@ -140,7 +196,8 @@ def run_episode(task, seed, env, goal_frame, goal_state, expert_succ, adapter, d
                 break
         if success and not strict:
             break
-    return {"task": task, "arm": "latent_oracle", "seed": seed, "success": int(success),
+    return {"task": task, "arm": f"latent_oracle_{cost_spec['cost']}", "seed": seed,
+            "success": int(success),
             "success_end": int(last_success), "steps": steps,
             "final_state_dist": float(np.linalg.norm(obs - goal_state)),
             "ee_dist": float(np.linalg.norm(obs[:3] - goal_state[:3])),
@@ -163,12 +220,44 @@ def main() -> int:
     ap.add_argument("--elite-frac", type=float, default=0.1)
     ap.add_argument("--var0", type=float, default=1.0)
     ap.add_argument("--strict-success", action="store_true")
+    # Phase-0 cost gate: only the COST is swapped vs the L2 null (the dynamics stay
+    # perfect). See build_oracle_cost for the decision rule.
+    ap.add_argument("--cost", choices=["l2", "gobj", "metric"], default="l2",
+                    help="latent-oracle scoring: l2 (null) / gobj (object readout) / "
+                         "metric (learned d_theta)")
+    ap.add_argument("--probe", default=None, help="object-probe ckpt (scripts/22); --cost gobj")
+    ap.add_argument("--metric-head", default=None,
+                    help="learned latent-metric ckpt (scripts/33); --cost metric")
+    ap.add_argument("--s-g", type=float, default=0.1276,
+                    help="object scale for the gobj cost (matches scripts/18)")
+    ap.add_argument("--beta", type=float, default=0.1, help="gobj object-term weight")
+    ap.add_argument("--gamma-l2", type=float, default=1.0,
+                    help="gobj L2-anchor weight (0 = pure object-readout cost)")
     ap.add_argument("--out", default="results/metaworld_latent_oracle.csv")
     args = ap.parse_args()
 
     cfg = yaml.safe_load(open(args.config))
     device = torch.device(cfg["eval"]["device"] if torch.cuda.is_available() else "cpu")
     adapter = build_adapter(args.model, device=str(device)).eval()
+    probe = metric = None
+    if args.cost == "gobj":
+        if not args.probe:
+            raise SystemExit("--probe is required for --cost gobj")
+        from models.probes import load_probe
+        probe, pmeta = load_probe(args.probe, device)
+        print(f"object probe: {args.probe} (out_dim={probe.out_dim}, "
+              f"v1_median={pmeta.get('v1_median')})", flush=True)
+    elif args.cost == "metric":
+        if not args.metric_head:
+            raise SystemExit("--metric-head is required for --cost metric")
+        from models.heads.latent_metric import load_latent_metric
+        metric, mmeta = load_latent_metric(args.metric_head, device)
+        print(f"latent metric: {args.metric_head} "
+              f"(spearman={mmeta.get('val_spearman')})", flush=True)
+    cost_spec = dict(cost=args.cost, probe=probe, metric=metric,
+                     s_g=args.s_g, beta=args.beta, gamma_l2=args.gamma_l2)
+    print(f"latent-oracle cost={args.cost} (s_g={args.s_g} beta={args.beta} "
+          f"gamma_l2={args.gamma_l2})", flush=True)
     cem_kw = dict(num_samples=args.cem_num_samples, iterations=args.cem_iterations,
                   elite_frac=args.elite_frac, var0=args.var0)
     out = Path(args.out); out.parent.mkdir(parents=True, exist_ok=True)
@@ -187,14 +276,15 @@ def main() -> int:
                                 adapter, device, plan_h=args.horizon,
                                 num_act_stepped=args.num_act_stepped,
                                 max_episode_steps=args.max_episode_steps, cem_kw=cem_kw,
-                                strict=args.strict_success)
+                                strict=args.strict_success, cost_spec=cost_spec)
                 env.close()
                 w.writerow(r); f.flush(); rows.append(r)
-                print(f"  {task:16s} ep{e:02d} latent_oracle success={r['success']} "
-                      f"end={r['success_end']} obj_goal={r['obj_goal_dist']:.3f} "
+                print(f"  {task:16s} ep{e:02d} latent_oracle[{args.cost}] "
+                      f"success={r['success']} end={r['success_end']} "
+                      f"obj_goal={r['obj_goal_dist']:.3f} "
                       f"({(time.time()-t0)/60:.1f} min)", flush=True)
 
-    print("\n=== latent oracle: success by task ===")
+    print(f"\n=== latent oracle [cost={args.cost}]: success by task ===")
     for task in args.tasks:
         tr = [r for r in rows if r["task"] == task]
         s = sum(r["success"] for r in tr); se = sum(r["success_end"] for r in tr)

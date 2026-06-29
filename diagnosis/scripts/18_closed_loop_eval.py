@@ -21,6 +21,11 @@ Arms (paired: same env seeds, same CEM noise seeds):
             MSE if --alpha > 0; upstream mw uses α=0)
     hdyn  — + the grounded object-dynamics term integrated along the rollout
             (per-dim normalised, weighted --beta; needs --probe and --dyn-head)
+    gobjc — object read DIRECTLY off the corrected (F+Δ) rollout latent, g(ẑ_t)
+            driven to the goal object dense along the horizon, L2 demoted to a
+            --gamma-l2 regulariser. Needs --residual-head (scripts/31 grounded
+            corrector) + --probe. The post-oracle-ladder fix: the object signal
+            lives in the latent the CEM searches, not just in the score.
 
 Implementation notes: one env per (task, seed) with the rand_vec frozen after the
 first reset, reused for the expert goal rollout and both arms (repeated MuJoCo
@@ -53,6 +58,7 @@ sys.path.insert(0, str(ROOT))
 from models.adapters import build_adapter  # noqa: E402
 from models.probes import load_probe, load_dynamics_head  # noqa: E402
 from planning.cem_planner import cem_plan  # noqa: E402
+from stratification.metaworld_regimes import OBJECT_SLICE  # noqa: E402
 
 FRAMESKIP = 5          # metaworld frameskip the checkpoints were trained with
 RAW_A = 4
@@ -263,21 +269,29 @@ _cost_dbg_n = 0
 
 def make_traj_cost(arm, plan_adapter, base, probe, dyn_head, z_t, z_goal,
                    goal_prop_feat, *, alpha, beta, s_g, ee_probe=None,
-                   lambda_app=0.0, lambda_obj=0.0):
+                   lambda_app=0.0, lambda_obj=0.0, gamma_l2=1.0, metric=None):
     """Upstream objective (visual MSE + α·proprio-feature MSE) plus a grounded
     object term. ``hdyn``: final object-at-goal (scoring only). ``hexp``: dense
     APPROACH (predicted ee → current object, drives contact) + dense MANIPULATE
     (object → goal, denser selection signal) — the exploration fix (option B,
-    docs/plans/2026-06-18-grounded-exploration-design.md). All per-dim normalised
-    on the object scale s_g so the weights are comparable to β."""
+    docs/plans/2026-06-18-grounded-exploration-design.md). ``gobj``: read the
+    object DIRECTLY off the (corrected, when paired with the F+Δ adapter) rollout
+    latent — g(ẑ_t) integrated along the horizon — with the L2 term demoted to a
+    ``gamma_l2`` regulariser. Unlike ``hdyn`` (which integrates h over a FROZEN
+    rollout for scoring only), ``gobj``'s object signal lives in the latent the CEM
+    actually searches over, so the planner can find contact-creating plans (the
+    post-oracle-ladder fix, docs/plans/2026-06-25-grounded-corrector-in-loop-design.md).
+    All per-dim normalised on the object scale s_g so the weights are comparable to β."""
     g_goal = g_init = None
-    if arm in ("hdyn", "hexp"):
+    if arm in ("hdyn", "hexp", "gobj"):
         with torch.no_grad():
             g_goal = probe(z_goal.unsqueeze(0))
             g_init = probe(z_t.unsqueeze(0))
     if arm == "hexp" and ee_probe is None:
         raise ValueError("hexp arm needs --ee-probe")
-    s_g_dim = s_g / np.sqrt(probe.out_dim)
+    if arm == "lmet" and metric is None:
+        raise ValueError("lmet arm needs --metric-head")
+    s_g_dim = s_g / np.sqrt(probe.out_dim) if probe is not None else None
 
     def cost(pred, actions, z_goal_):
         global _cost_dbg_n
@@ -321,6 +335,38 @@ def make_traj_cost(arm, plan_adapter, base, probe, dyn_head, z_t, z_goal,
                       flush=True)
                 _cost_dbg_n += 1
             c = c + lambda_app * app + lambda_obj * man
+        elif arm == "gobj":
+            # Read the object straight off the rollout latent (corrected F+Δ when
+            # paired with plan_adapter_c) and drive it to the goal object, dense
+            # along the horizon. The L2 term is demoted to a gamma_l2 regulariser
+            # (gamma_l2=1.0 keeps free-space/reach drivable; lower it to commit to
+            # the object channel on contact). per-dim normalised on s_g.
+            H = pred.shape[1] - 1
+            obj_term = torch.zeros(B, device=pred.device)
+            for t in range(1, H + 1):
+                g_t = probe(pred[:, t])                            # g(ẑ_t) on the rollout
+                obj_term = obj_term + (((g_t - g_goal) / s_g_dim) ** 2).mean(-1)
+            obj_term = obj_term / H
+            if _COST_DEBUG and _cost_dbg_n < 8:
+                print(f"    [gobj] visual={c.mean():.4f} (xgamma={gamma_l2}) "
+                      f"obj_term={obj_term.mean():.4f} (xbeta={beta}={beta*obj_term.mean():.4f}) "
+                      f"obj_spread={obj_term.std():.4f}", flush=True)
+                _cost_dbg_n += 1
+            c = gamma_l2 * c + beta * obj_term
+        elif arm == "lmet":
+            # Learned-metric cost (Track B): score the rollout's final latent by the
+            # learned temporal quasimetric d_θ(ẑ_H, z_goal) instead of L2 — a cost
+            # shaped by task progress, not appearance, and trained label-free so it
+            # also transfers to DROID (docs/plans, scripts/33). gamma_l2 keeps an
+            # optional L2 anchor (run --gamma-l2 0 --beta 1 for a pure-metric cost).
+            zg_exp = z_goal.unsqueeze(0).expand(B, *([-1] * z_goal.dim()))
+            d = metric(pred[:, -1], zg_exp)
+            if _COST_DEBUG and _cost_dbg_n < 8:
+                print(f"    [lmet] visual={c.mean():.4f} (xgamma={gamma_l2}) "
+                      f"d_metric={d.mean():.4f} (xbeta={beta}={beta*d.mean():.4f}) "
+                      f"spread={d.std():.4f}", flush=True)
+                _cost_dbg_n += 1
+            c = gamma_l2 * c + beta * d
         return c
 
     return cost
@@ -330,8 +376,8 @@ def run_episode(arm, task, seed, env, init_state, goal_frame, goal_state,
                 expert_succ, adapter, plan_adapter, device, *, probe, dyn_head,
                 s_g, alpha, beta, cem_kw, horizon, num_act_stepped,
                 max_episode_steps, proprio_ctxt, ee_probe=None,
-                lambda_app=0.0, lambda_obj=0.0, cost_arm=None, strict=False,
-                inverse_head=None, seeded=False):
+                lambda_app=0.0, lambda_obj=0.0, gamma_l2=1.0, cost_arm=None,
+                strict=False, inverse_head=None, seeded=False, metric=None):
     cost_arm = cost_arm or arm
     obs, _ = env.reset()
     if not np.allclose(obs, init_state, atol=1e-5):
@@ -360,7 +406,8 @@ def run_episode(arm, task, seed, env, init_state, goal_frame, goal_state,
         tcf = make_traj_cost(cost_arm, plan_adapter, adapter, probe, dyn_head,
                              z_t, z_goal, goal_prop_feat,
                              alpha=alpha, beta=beta, s_g=s_g, ee_probe=ee_probe,
-                             lambda_app=lambda_app, lambda_obj=lambda_obj)
+                             lambda_app=lambda_app, lambda_obj=lambda_obj,
+                             gamma_l2=gamma_l2, metric=metric)
         # upstream shrinks the plan to the remaining model-steps near the end
         plan_h = min(horizon, max(1, -(-(max_episode_steps - steps) // FRAMESKIP)))
         # WAV-style contact-aware seed: propose the action that drives the OBJECT
@@ -394,6 +441,7 @@ def run_episode(arm, task, seed, env, init_state, goal_frame, goal_state,
             "success_end": int(last_success), "steps": steps,
             "final_state_dist": float(np.linalg.norm(obs - goal_state)),
             "ee_dist": float(np.linalg.norm(obs[:3] - goal_state[:3])),
+            "obj_goal_dist": float(np.linalg.norm(obs[OBJECT_SLICE] - goal_state[OBJECT_SLICE])),
             "state_dist_success": int(np.linalg.norm(obs - goal_state) < 0.3),
             "expert_success_step": expert_succ}
 
@@ -402,8 +450,15 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", required=True)
     ap.add_argument("--model", required=True)
-    ap.add_argument("--probe", required=True)
-    ap.add_argument("--dyn-head", required=True)
+    ap.add_argument("--probe", default=None,
+                    help="object-probe ckpt (scripts/22); required for gobj/hdyn/hexp "
+                         "and any inv-seeded arm. Not needed for l2/lmet.")
+    ap.add_argument("--dyn-head", default=None,
+                    help="object-dynamics ckpt (scripts/17); required for hdyn/hexp. "
+                         "Not needed for l2/gobj/lmet.")
+    ap.add_argument("--metric-head", default=None,
+                    help="learned latent-metric ckpt (scripts/33); required for any "
+                         "'lmet'-base arm (lmet/lmetc/lmetinv). Label-free cost (Track B).")
     ap.add_argument("--tasks", nargs="+", default=["mw-reach", "mw-push", "mw-pick-place"])
     ap.add_argument("--episodes", type=int, default=16)
     ap.add_argument("--alpha", type=float, default=0.0,
@@ -412,7 +467,10 @@ def main() -> int:
                     help="drop proprio from the unroll context (NOTE: dino_wm's "
                          "predictor needs it — 384 visual + 20 proprio + 20 action "
                          "= 424; upstream always carries proprio in the obs td)")
-    ap.add_argument("--beta", type=float, default=0.1, help="grounded-term weight (hdyn)")
+    ap.add_argument("--beta", type=float, default=0.1, help="grounded-term weight (hdyn/gobj)")
+    ap.add_argument("--gamma-l2", type=float, default=1.0,
+                    help="L2-visual weight for the gobj arm (1.0 keeps reach drivable; "
+                         "lower it to commit to the object channel on contact tasks)")
     ap.add_argument("--ee-probe", default=None,
                     help="ee-probe ckpt (scripts/19); required for the hexp arm")
     ap.add_argument("--lambda-app", type=float, default=1.0,
@@ -427,8 +485,12 @@ def main() -> int:
     ap.add_argument("--var-scale", type=float, default=1.0)
     ap.add_argument("--max-episode-steps", type=int, default=100)
     ap.add_argument("--arms", nargs="+", default=["l2", "hdyn"],
-                    help="l2/hdyn/hexp use the frozen predictor; suffix 'c' "
-                         "(l2c/hdync) uses the corrected predictor F+Δ (--residual-head)")
+                    help="l2/hdyn/hexp/gobj/lmet use the frozen predictor; suffix 'c' "
+                         "(l2c/hdync/gobjc/lmetc) uses the corrected predictor F+Δ "
+                         "(--residual-head). gobjc = grounded-corrector arm: object "
+                         "read off the corrected rollout (post-oracle-ladder fix). "
+                         "lmet = learned-metric cost d_θ (--metric-head, Track B; "
+                         "label-free, also runs on DROID).")
     ap.add_argument("--residual-head", default=None,
                     help="residual corrective predictor ckpt (scripts/20); "
                          "required for any 'c'-suffixed arm")
@@ -485,8 +547,20 @@ def main() -> int:
               f"{inv_meta.get('baseline_action_mse', float('nan')):.4f} "
               f"contact_action_spread={inv_meta.get('contact_action_spread', float('nan')):.3f} "
               f"obj_scale={float(inv_meta.get('obj_scale', 1.0)):.4f}", flush=True)
-    probe, _ = load_probe(args.probe, device)
-    dyn_head, dyn_meta = load_dynamics_head(args.dyn_head, device)
+    metric = None
+    if any("lmet" in a for a in args.arms):
+        from models.heads import load_latent_metric
+        if not args.metric_head:
+            raise SystemExit("--metric-head is required for an 'lmet'-base arm")
+        metric, met_meta = load_latent_metric(args.metric_head, device)
+        print(f"latent metric: {args.metric_head} "
+              f"(val_spearman={met_meta.get('val_spearman')}, "
+              f"mono={met_meta.get('val_mono_spearman')})", flush=True)
+    # probe / dyn-head are only needed for the grounded arms (gobj/hdyn/hexp) or an
+    # inv-seeded arm; l2/lmet run without them (so lmet works on DROID, no object GT).
+    probe = load_probe(args.probe, device)[0] if args.probe else None
+    dyn_head, dyn_meta = (load_dynamics_head(args.dyn_head, device)
+                          if args.dyn_head else (None, {}))
     ee_probe = None
     if "hexp" in args.arms:
         if not args.ee_probe:
@@ -503,8 +577,9 @@ def main() -> int:
           f"arms={args.arms} alpha={args.alpha} proprio_ctxt={args.proprio_ctxt} "
           f"(upstream mw parity: rgb-only ctxt, alpha=0, warmup step, "
           f"horizon shrink)", flush=True)
-    print(f"dyn head: cf_corr={dyn_meta.get('cf_corr'):.3f} beta={args.beta} "
-          f"s_g={args.s_g}", flush=True)
+    if dyn_head is not None:
+        print(f"dyn head: cf_corr={dyn_meta.get('cf_corr'):.3f} beta={args.beta} "
+              f"s_g={args.s_g}", flush=True)
 
     import pandas as pd
     # Resume: the sweep python dies natively now and then (MuJoCo/driver on
@@ -569,9 +644,11 @@ def main() -> int:
                                     max_episode_steps=args.max_episode_steps,
                                     proprio_ctxt=args.proprio_ctxt,
                                     ee_probe=ee_probe, lambda_app=args.lambda_app,
-                                    lambda_obj=args.lambda_obj, cost_arm=cost_arm,
+                                    lambda_obj=args.lambda_obj, gamma_l2=args.gamma_l2,
+                                    cost_arm=cost_arm,
                                     strict=args.strict_success,
-                                    inverse_head=inverse_head, seeded=seeded)
+                                    inverse_head=inverse_head, seeded=seeded,
+                                    metric=metric)
                 except Exception as e:  # noqa: BLE001 — keep the sweep alive
                     print(f"  [error] {task} ep{ep} {arm}: {e}", flush=True)
                     continue
