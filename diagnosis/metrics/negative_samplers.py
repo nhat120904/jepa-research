@@ -160,6 +160,7 @@ def hard_effect_negative(
     K: int = 16,
     similarity_radius: float = 0.5,
     action_penalty: float = 0.5,
+    return_indices: bool = False,
 ) -> torch.Tensor:
     """Pick negatives from the pool that, from a *similar state*, lead to a
     *different true outcome* than the factual transition — optionally preferring
@@ -180,8 +181,12 @@ def hard_effect_negative(
         a_t:         (B, A)
         pool_z, pool_z1: (N, ...) candidate current/next latents
         pool_a:      (N, A)
+        return_indices: also return the (B, K) pool indices, so a caller can gather
+            other pool-aligned tensors (e.g. ``pool_z1[idx]`` — the negative's true
+            next latent, used by ``models/heads/action_repr_adapter.py``'s
+            cf-contrastive loss) without re-deriving the same top-K selection.
 
-    Returns: (B, K, A).
+    Returns: (B, K, A), or ``((B, K, A), (B, K) LongTensor)`` if ``return_indices``.
     """
     B = z_t.shape[0]
     N = pool_z.shape[0]
@@ -217,7 +222,8 @@ def hard_effect_negative(
     scores = scores.masked_fill(~sim_mask, -float("inf"))
 
     topk_idx = scores.topk(K, dim=-1).indices              # (B, K)
-    return pool_a.to(a_t.device)[topk_idx]                 # (B, K, A)
+    out = pool_a.to(a_t.device)[topk_idx]                  # (B, K, A)
+    return (out, topk_idx) if return_indices else out
 
 
 # ---------- dispatch --------------------------------------------------------

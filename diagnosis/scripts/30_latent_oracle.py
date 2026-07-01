@@ -73,7 +73,7 @@ from stratification.metaworld_regimes import OBJECT_SLICE  # noqa: E402
 
 
 def build_oracle_cost(cost, z_goal, *, probe=None, metric=None, ee_probe=None,
-                      w_hand=0.5, s_g=0.1276, beta=0.1, gamma_l2=1.0):
+                      repr_adapter=None, w_hand=0.5, s_g=0.1276, beta=0.1, gamma_l2=1.0):
     """Build the latent-oracle scoring fn ``(z_fin (B,*frame)) -> cost (B,)``.
 
     The latent oracle gives PERFECT latent dynamics; the only thing swapped here
@@ -85,17 +85,33 @@ def build_oracle_cost(cost, z_goal, *, probe=None, metric=None, ee_probe=None,
                     ``scripts/18`` (γ·L2 + β·mean((Δg/s_g_dim)²)). Tests whether the
                     object READOUT is precise enough to plan with under perfect
                     dynamics. ``--gamma-l2 0`` = pure-readout (no L2 anchor).
-      * ``metric``— a learned latent metric ``d_θ(z_fin, z_goal)`` (scripts/33).
+      * ``metric``/``advmetric`` — a learned latent metric ``d_θ(z_fin, z_goal)``
+                    (scripts/33). ``advmetric`` is the same scoring function under a
+                    distinct arm name for CSV traceability — it is meant to be paired
+                    with a ``--metric-head`` checkpoint hardened against mined
+                    CEM-exploited negatives (Track 1 Phase B; see
+                    ``scripts/_cem_mining.py``), vs a plain ``metric`` checkpoint.
       * ``stateprobe`` — the EXACT state-oracle cost (scripts/29 ``roll_cost``:
                     ``‖obj−goal‖ + w_hand·‖hand−obj‖``) but with object AND hand read
                     from PROBES instead of sim truth. The fair probe-analogue of the
                     state-oracle (push 16/16): same structure incl. the hand-APPROACH
                     term plain ``gobj`` lacked, so a failure isolates the probe readout,
                     not the missing approach shaping.
+      * ``phi``   — Track 2 (heavy fix): ``models/heads/action_repr_adapter.py``'s
+                    learned φ = A(z), scored as ``‖φ_obj(z_fin)−φ_obj(z_goal)‖²/s_g²
+                    + β·‖φ_extra(z_fin)−φ_extra(z_goal)‖²/s_extra²`` (the two-term
+                    "squared norms over scale norms" pattern also used by ``gobj``/
+                    ``boundary_aware_cost`` — φ's grounded object subspace is in
+                    metres, its free "extra" subspace has its own learned scale
+                    stored in the checkpoint, so they must not be summed unscaled).
 
-    Decisive: if a non-L2 cost flips push/pick 0→>0 here, the cost is viable and the
-    closed-loop corrector program is licensed; if all stay 0, the wall is deeper
-    than the cost (readout/metric precision or the encoder)."""
+    Phase-0/3 verdict (2026-07, ``results/oracle_ladder_cost_report.md``): every
+    cost above through ``stateprobe`` — including an OFF-POLICY-ROBUST probe —
+    plateaus at push 0–2/16 vs the state-oracle's 16/16. CEM exploits whatever
+    residual-error pockets a post-hoc frozen-encoder cost has. ``advmetric``/``phi``
+    are the two follow-up tracks: harden the cost against its own exploited
+    negatives (Track 1), or reshape the representation so the pockets can't form
+    (Track 2, ``scripts/37_train_repr_adapter.py``)."""
     zg = z_goal.reshape(-1)
 
     if cost == "l2":
@@ -134,15 +150,33 @@ def build_oracle_cost(cost, z_goal, *, probe=None, metric=None, ee_probe=None,
             return d_obj + w_hand * d_app                          # exact scripts/29 form
         return fn
 
-    if cost == "metric":
+    if cost in ("metric", "advmetric"):
         if metric is None:
-            raise ValueError("--cost metric needs --metric-head")
+            raise ValueError(f"--cost {cost} needs --metric-head")
         zg_frame = z_goal.unsqueeze(0)                             # (1, *frame)
 
         @torch.no_grad()
         def fn(z_fin):
             B = z_fin.shape[0]
             return metric(z_fin, zg_frame.expand(B, *([-1] * (zg_frame.dim() - 1))))
+        return fn
+
+    if cost == "phi":
+        if repr_adapter is None:
+            raise ValueError("--cost phi needs --repr-adapter")
+        obj_dim = repr_adapter.obj_dim
+        s_extra = float(repr_adapter.extra_scale)
+        with torch.no_grad():
+            phi_goal = repr_adapter(z_goal.unsqueeze(0))            # (1, phi_dim)
+            obj_goal, extra_goal = phi_goal[:, :obj_dim], phi_goal[:, obj_dim:]
+
+        @torch.no_grad()
+        def fn(z_fin):
+            phi = repr_adapter(z_fin)
+            obj, extra = phi[:, :obj_dim], phi[:, obj_dim:]
+            sq_obj = ((obj - obj_goal) ** 2).sum(-1) / (s_g ** 2)
+            sq_extra = ((extra - extra_goal) ** 2).sum(-1) / (s_extra ** 2 + 1e-8)
+            return sq_obj + beta * sq_extra
         return fn
 
     raise ValueError(f"unknown --cost {cost}")
@@ -173,22 +207,33 @@ def roll_final_frame(env, snap, plan_raw):
 
 
 def cem_plan_latent(env, adapter, z_goal, device, *, plan_h, num_samples, iterations,
-                    elite_frac, var0, rng, cost_fn):
+                    elite_frac, var0, rng, cost_fn, on_elites=None):
+    """``on_elites(z_elite, raw_elite, cost_elite, iteration)``, if given, is called
+    once per CEM iteration with the surviving elite population: ``z_elite`` (n_elite,
+    *frame) TRUE latents, ``raw_elite`` a list of n_elite full sim obs (39-dim
+    Metaworld state — object/hand slices included), ``cost_elite`` (n_elite,) their
+    cost values, in cost-ascending order. This is what CEM actually TRUSTS and
+    converges its search around, as opposed to a random off-policy sample —
+    `scripts/_cem_mining.py` uses it to mine the frames a cost gets EXPLOITED on."""
     plan_raw_len = plan_h * FRAMESKIP
     dim = plan_raw_len * RAW_A
     mean = np.zeros(dim); var = np.full(dim, var0)
     n_elite = max(2, int(num_samples * elite_frac))
     snap = snapshot(env)
-    for _ in range(iterations):
+    for it in range(iterations):
         samples = np.clip(mean[None] + np.sqrt(var)[None] * rng.standard_normal((num_samples, dim)),
                           -1.0, 1.0)
-        frames, props = [], []
+        frames, props, raws = [], [], []
         for i in range(num_samples):
-            fr, pr, _ = roll_final_frame(env, snap, samples[i].reshape(plan_raw_len, RAW_A))
-            frames.append(fr); props.append(pr)
+            fr, pr, raw = roll_final_frame(env, snap, samples[i].reshape(plan_raw_len, RAW_A))
+            frames.append(fr); props.append(pr); raws.append(raw)
         z_fin = encode_batch(adapter, frames, props, device)        # (B,V,H,W,D) — TRUE latent
         costs = cost_fn(z_fin).detach().cpu().numpy()               # only the COST is swapped
-        elites = samples[np.argsort(costs)[:n_elite]]
+        order = np.argsort(costs)
+        elite_idx = order[:n_elite]
+        if on_elites is not None:
+            on_elites(z_fin[elite_idx], [raws[i] for i in elite_idx], costs[elite_idx], it)
+        elites = samples[elite_idx]
         mean = elites.mean(0); var = elites.var(0) + 1e-4
     restore(env, snap)
     return mean.reshape(plan_raw_len, RAW_A)
@@ -243,10 +288,12 @@ def main() -> int:
     ap.add_argument("--strict-success", action="store_true")
     # Phase-0 cost gate: only the COST is swapped vs the L2 null (the dynamics stay
     # perfect). See build_oracle_cost for the decision rule.
-    ap.add_argument("--cost", choices=["l2", "gobj", "stateprobe", "metric"], default="l2",
+    ap.add_argument("--cost", choices=["l2", "gobj", "stateprobe", "metric", "advmetric", "phi"],
+                    default="l2",
                     help="latent-oracle scoring: l2 (null) / gobj (object readout) / "
                          "stateprobe (state-oracle cost via probes: object + hand-approach) / "
-                         "metric (learned d_theta)")
+                         "metric (learned d_theta) / advmetric (metric, hardened checkpoint) / "
+                         "phi (learned action-repr-adapter, scripts/37)")
     ap.add_argument("--probe", default=None,
                     help="object-probe ckpt (scripts/22); --cost gobj/stateprobe")
     ap.add_argument("--ee-probe", default=None,
@@ -254,7 +301,9 @@ def main() -> int:
     ap.add_argument("--w-hand", type=float, default=0.5,
                     help="hand-approach weight for --cost stateprobe (matches scripts/29)")
     ap.add_argument("--metric-head", default=None,
-                    help="learned latent-metric ckpt (scripts/33); --cost metric")
+                    help="learned latent-metric ckpt (scripts/33); --cost metric/advmetric")
+    ap.add_argument("--repr-adapter", default=None,
+                    help="action-repr-adapter ckpt (scripts/37); --cost phi")
     ap.add_argument("--s-g", type=float, default=0.1276,
                     help="object scale for the gobj cost (matches scripts/18)")
     ap.add_argument("--beta", type=float, default=0.1, help="gobj object-term weight")
@@ -266,7 +315,7 @@ def main() -> int:
     cfg = yaml.safe_load(open(args.config))
     device = torch.device(cfg["eval"]["device"] if torch.cuda.is_available() else "cpu")
     adapter = build_adapter(args.model, device=str(device)).eval()
-    probe = metric = ee_probe = None
+    probe = metric = ee_probe = repr_adapter = None
     if args.cost in ("gobj", "stateprobe"):
         if not args.probe:
             raise SystemExit(f"--probe is required for --cost {args.cost}")
@@ -281,15 +330,24 @@ def main() -> int:
         ee_probe, emeta = load_probe(args.ee_probe, device)
         print(f"ee probe: {args.ee_probe} (out_dim={ee_probe.out_dim}, "
               f"v1_median={emeta.get('v1_median')}) w_hand={args.w_hand}", flush=True)
-    if args.cost == "metric":
+    if args.cost in ("metric", "advmetric"):
         if not args.metric_head:
-            raise SystemExit("--metric-head is required for --cost metric")
+            raise SystemExit(f"--metric-head is required for --cost {args.cost}")
         from models.heads.latent_metric import load_latent_metric
         metric, mmeta = load_latent_metric(args.metric_head, device)
-        print(f"latent metric: {args.metric_head} "
+        print(f"latent metric [{args.cost}]: {args.metric_head} "
               f"(spearman={mmeta.get('val_spearman')})", flush=True)
+    if args.cost == "phi":
+        if not args.repr_adapter:
+            raise SystemExit("--repr-adapter is required for --cost phi")
+        from models.heads.action_repr_adapter import load_repr_adapter
+        repr_adapter, rmeta = load_repr_adapter(args.repr_adapter, device)
+        print(f"repr adapter: {args.repr_adapter} (phi_dim={rmeta.get('phi_dim')} "
+              f"obj_dim={rmeta.get('obj_dim')} extra_scale={rmeta.get('extra_scale')})",
+              flush=True)
     cost_spec = dict(cost=args.cost, probe=probe, metric=metric, ee_probe=ee_probe,
-                     w_hand=args.w_hand, s_g=args.s_g, beta=args.beta, gamma_l2=args.gamma_l2)
+                     repr_adapter=repr_adapter, w_hand=args.w_hand, s_g=args.s_g,
+                     beta=args.beta, gamma_l2=args.gamma_l2)
     print(f"latent-oracle cost={args.cost} (s_g={args.s_g} beta={args.beta} "
           f"gamma_l2={args.gamma_l2} w_hand={args.w_hand})", flush=True)
     cem_kw = dict(num_samples=args.cem_num_samples, iterations=args.cem_iterations,

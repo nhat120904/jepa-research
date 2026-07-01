@@ -84,6 +84,13 @@ def main() -> int:
     ap.add_argument("--op-collect-every", type=int, default=4)
     ap.add_argument("--op-seed", type=int, default=20000)
     ap.add_argument("--op-tasks", nargs="+", default=["mw-push", "mw-pick-place"])
+    # Track-1 Phase B: mix a mined CEM-EXPLOITED buffer (scripts/35 --save-buffer)
+    # into training — hardens the probe against the specific pockets CEM converges
+    # on, not just the random off-policy distribution --offpolicy-frac covers.
+    ap.add_argument("--extra-buffer", default=None,
+                    help="mined CEM-exploited buffer (.pt, scripts/35 --save-buffer)")
+    ap.add_argument("--extra-frac", type=float, default=0.3,
+                    help="fraction of each TRAIN batch drawn from --extra-buffer")
     args = ap.parse_args()
 
     torch.set_num_threads(int(os.environ.get("CAI_JEPA_TORCH_THREADS", "2")))
@@ -114,6 +121,13 @@ def main() -> int:
         print(f"off-policy buffer: train={len(ti)} val={len(vi)} frac={args.offpolicy_frac}",
               flush=True)
 
+    extra_train_z = extra_train_obj = None
+    if args.extra_buffer:
+        eb = torch.load(args.extra_buffer, map_location="cpu", weights_only=False)
+        extra_train_z, extra_train_obj = eb["z"], eb["obj"]
+        print(f"extra (adversarial) buffer: n={extra_train_z.shape[0]} frac={args.extra_frac}",
+              flush=True)
+
     with LatentCache(cache_path, mode="r") as cache:
         records = helpers.build_transition_records(cache, regime_by_traj, step, per_task=True)
         train_recs, val_recs = split_by_trajectory(records, args.val_frac, args.seed)
@@ -140,6 +154,11 @@ def main() -> int:
                         oi = rng.integers(0, op_train_z.shape[0], size=k)
                         zb = torch.cat([zb, op_train_z[oi]], 0)
                         ob = torch.cat([ob, op_train_obj[oi]], 0)
+                    if train and extra_train_z is not None:
+                        k = max(1, int(round(args.extra_frac * len(idx))))
+                        ei = rng.integers(0, extra_train_z.shape[0], size=k)
+                        zb = torch.cat([zb, extra_train_z[ei]], 0)
+                        ob = torch.cat([ob, extra_train_obj[ei]], 0)
                     pred = probe(zb.to(device))
                     loss = ((pred - ob.to(device)) ** 2).mean()
                     if train:
@@ -199,6 +218,7 @@ def main() -> int:
 
     out_dir = ROOT / args.out_dir; out_dir.mkdir(parents=True, exist_ok=True)
     suffix = "_offpolicy" if args.offpolicy_frac > 0 else ""
+    suffix += "_adv" if args.extra_buffer else ""
     path = out_dir / f"spatial_object_probe_{args.model}{suffix}.pt"
     torch.save({"model": args.model, "probe_type": "spatial", "latent_dim": latent_dim,
                 "out_dim": 3, "hidden": args.hidden, "n_layers": args.n_layers, "n_heads": 6,
