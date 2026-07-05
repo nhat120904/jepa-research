@@ -103,6 +103,7 @@ def main(
     cem_num_samples: int | None = None,
     cem_iterations: int | None = None,
     out_csv_override: str | None = None,
+    predictor_lora: str | None = None,
 ) -> int:
     torch.set_num_threads(int(os.environ.get("CAI_JEPA_TORCH_THREADS", "2")))
     cfg = yaml.safe_load(open(config_path))
@@ -161,6 +162,17 @@ def main(
         print(f"\n=== Planning probe: {model_name} on {dataset_name} ===", flush=True)
         preflight_model_load(model_name, str(device))
         adapter = build_adapter(model_name, device=str(device)).eval()
+        if predictor_lora:
+            # Inject + enable the trained predictor-LoRA so cem_plan's predict_rollout
+            # runs the counterfactual-objective dynamics (scripts/40). Non-trivial
+            # only when this model matches the checkpoint's; a mismatch warns loudly.
+            from models.heads.lora_predictor import load_predictor_lora, set_lora_enabled
+            inj, lmeta = load_predictor_lora(adapter, predictor_lora, device)
+            set_lora_enabled(inj, True)
+            print(f"  predictor-LoRA: {predictor_lora} (r={lmeta['r']} "
+                  f"objective={lmeta.get('objective')} "
+                  f"cf_rank_acc={lmeta.get('frozen_cf_rank_acc')}->"
+                  f"{lmeta.get('corrected_cf_rank_acc')})", flush=True)
         step = adapter.frames_per_step
         raw_A = adapter.spec.action_dim
         model_A = adapter._model_action_dim
@@ -302,6 +314,9 @@ if __name__ == "__main__":
     ap.add_argument("--cem-num-samples", type=int)
     ap.add_argument("--cem-iterations", type=int)
     ap.add_argument("--out-csv")
+    ap.add_argument("--predictor-lora",
+                    help="predictor-LoRA ckpt (scripts/40): the counterfactual-objective "
+                         "dynamics used by CEM. Omit for the frozen baseline.")
     args = ap.parse_args()
     sys.exit(main(
         args.config,
@@ -310,4 +325,5 @@ if __name__ == "__main__":
         cem_num_samples=args.cem_num_samples,
         cem_iterations=args.cem_iterations,
         out_csv_override=args.out_csv,
+        predictor_lora=args.predictor_lora,
     ))

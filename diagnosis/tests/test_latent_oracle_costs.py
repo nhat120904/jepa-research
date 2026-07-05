@@ -102,3 +102,36 @@ def test_phi_cost_scales_by_extra_scale():
     # Same phi(z) values, but big's extra term is divided by a much larger scale^2
     # -> its total cost must be <= small's (equal only in the zero-extra-diff limit).
     assert (fn_big(z_fin) <= fn_small(z_fin) + 1e-6).all()
+
+
+def test_phil2_requires_repr_adapter():
+    lo = _load_latent_oracle()
+    z_goal = torch.randn(16)
+    try:
+        lo.build_oracle_cost("phil2", z_goal)
+        assert False, "phil2 should require --repr-adapter"
+    except ValueError:
+        pass
+
+
+def test_phil2_zero_at_goal_and_beta_adds_object_term():
+    """The hybrid cost must be (a) zero at the goal, (b) reduce to EXACTLY the plain
+    L2 cost when beta=0, and (c) be strictly larger than L2 for beta>0 off-goal —
+    i.e. 'L2 for reach (the beta=0 backbone) + φ_obj for push (the added term)'."""
+    lo = _load_latent_oracle()
+    torch.manual_seed(0)
+    adapter = ActionReprAdapter(latent_dim=16, phi_dim=12, obj_dim=3, n_layers=1,
+                                n_heads=2, hidden=32).eval()
+    z_goal = torch.randn(16)
+    z_fin = z_goal.unsqueeze(0) + 0.5 * torch.randn(4, 16)
+
+    fn = lo.build_oracle_cost("phil2", z_goal, repr_adapter=adapter, s_g=1.0,
+                              beta=1.0, gamma_l2=1.0)
+    c_goal = fn(z_goal.unsqueeze(0))
+    assert torch.allclose(c_goal, torch.zeros_like(c_goal), atol=1e-5)
+
+    fn_l2 = lo.build_oracle_cost("l2", z_goal)
+    fn_b0 = lo.build_oracle_cost("phil2", z_goal, repr_adapter=adapter, s_g=1.0,
+                                 beta=0.0, gamma_l2=1.0)
+    assert torch.allclose(fn_b0(z_fin), fn_l2(z_fin), atol=1e-6)
+    assert (fn(z_fin) > fn_l2(z_fin)).all()

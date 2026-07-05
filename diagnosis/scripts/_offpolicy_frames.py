@@ -35,13 +35,17 @@ def _load(modname: str, fname: str):
 @torch.no_grad()
 def collect_offpolicy_frames(adapter, device, *, tasks, episodes, max_steps=60,
                              collect_every=4, seed=20000, act_std=1.0, batch=64,
-                             verbose=True):
+                             verbose=True, return_frames=False):
     """Roll RANDOM actions in the sim and collect (z, obj, ee, task) at intervals.
 
     Returns a dict with CPU tensors ``z`` (N, *frame), ``obj`` (N,3), ``ee`` (N,3)
     and a list ``task`` (N,). Each frame is a state reached by a random action prefix
     — i.e. a sample from the CEM exploration distribution the probe is scored on but
-    was never trained on."""
+    was never trained on.
+
+    ``return_frames=True`` additionally returns ``frames`` (N, C, H, W uint8) and
+    ``prop`` (N, 4) — required by encoder-level training (scripts/38), where the
+    cached/pre-encoded ``z`` goes stale the moment the encoder moves."""
     cl = _load("closed_loop_eval", "18_closed_loop_eval.py")
     make_env, render, RAW_A = cl.make_env, cl.render, cl.RAW_A
     from stratification.metaworld_regimes import OBJECT_SLICE, EE_SLICE
@@ -79,5 +83,10 @@ def collect_offpolicy_frames(adapter, device, *, tasks, episodes, max_steps=60,
             print(f"  off-policy encode {min(lo + batch, len(frames))}/{len(frames)}",
                   flush=True)
 
-    return {"z": torch.cat(zs), "obj": torch.tensor(np.stack(objs)),
-            "ee": torch.tensor(np.stack(ees)), "task": tks}
+    out = {"z": torch.cat(zs), "obj": torch.tensor(np.stack(objs)),
+           "ee": torch.tensor(np.stack(ees)), "task": tks}
+    if return_frames:
+        out["frames"] = torch.stack(
+            [torch.from_numpy(f.copy()).permute(2, 0, 1) for f in frames]).to(torch.uint8)
+        out["prop"] = torch.stack([torch.from_numpy(p) for p in props])
+    return out

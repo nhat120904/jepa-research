@@ -158,3 +158,64 @@ def test_mine_cem_frames_accepts_full_cem_kw(monkeypatch):
                                       episodes=1, cem_kw=cem_kw, max_episode_steps=1,
                                       verbose=False)
     assert buf["z"].shape[0] == max(2, int(10 * 0.2))
+    # keep_frames=False: no raw-pixel keys leak into the buffer.
+    assert "frames" not in buf and "ep_goal_frames" not in buf
+
+
+def test_mine_cem_frames_keep_frames(monkeypatch):
+    """keep_frames=True must return the raw-pixel keys scripts/38 --adv-buffer needs,
+    with consistent shapes: frames (N,H,W,C), prop (N,4), ep_idx (N,) into
+    ep_goal_frames (n_ep,H,W,C) / ep_goal_prop (n_ep,4). H,W,C = 4,4,3 here."""
+    dim, H, W, C = 4, 4, 4, 3
+
+    class FakeEnv:
+        def reset(self):
+            return np.zeros(39, dtype=np.float32), {}
+
+        def step(self, a):
+            return np.zeros(39, dtype=np.float32), 0.0, False, False, {"success": 0.0}
+
+        def close(self):
+            pass
+
+    fake_lo = types.SimpleNamespace()
+    fake_lo.make_env = lambda task, seed: (FakeEnv(), np.zeros(39, dtype=np.float32))
+    fake_lo.rollout_expert = lambda env, init_state, task: (
+        np.zeros((H, W, C), dtype=np.uint8), np.zeros(39, dtype=np.float32), 0)
+    fake_lo.encode_frame = lambda adapter, frame, proprio, device: torch.zeros(dim)
+    fake_lo.FRAMESKIP, fake_lo.RAW_A = 1, 2
+    fake_lo.build_oracle_cost = lambda **kw: (lambda z: torch.zeros(z.shape[0]))
+
+    def fake_cem_plan_latent(env, adapter, z_goal, device, *, plan_h, num_samples,
+                             iterations, elite_frac, var0, rng, cost_fn, on_elites=None):
+        if on_elites is not None:
+            import inspect
+            n_elite = max(2, int(num_samples * elite_frac))
+            z_elite = torch.zeros(n_elite, dim)
+            raw_elite = [np.zeros(39, dtype=np.float32) for _ in range(n_elite)]
+            cost_elite = np.zeros(n_elite, dtype=np.float32)
+            if "frames_elite" in inspect.signature(on_elites).parameters:
+                fr = [np.zeros((H, W, C), dtype=np.uint8) for _ in range(n_elite)]
+                on_elites(z_elite, raw_elite, cost_elite, 0, frames_elite=fr)
+            else:
+                on_elites(z_elite, raw_elite, cost_elite, 0)
+        return np.zeros((plan_h * fake_lo.FRAMESKIP, fake_lo.RAW_A))
+    fake_lo.cem_plan_latent = fake_cem_plan_latent
+
+    monkeypatch.setattr(_cem_mining, "_load", lambda modname, fname: fake_lo)
+
+    buf = _cem_mining.mine_cem_frames(adapter=None, device=torch.device("cpu"),
+                                      cost_spec_kwargs=dict(cost="l2"),
+                                      tasks=["fake-task"], episodes=2,
+                                      cem_kw=dict(num_samples=10, iterations=1, elite_frac=0.2,
+                                                  var0=1.0),
+                                      max_episode_steps=1, verbose=False, keep_frames=True)
+    n_elite = max(2, int(10 * 0.2))
+    N = buf["frames"].shape[0]
+    assert N == 2 * n_elite                      # 2 episodes × 1 iter × n_elite
+    assert tuple(buf["frames"].shape) == (N, H, W, C)
+    assert tuple(buf["prop"].shape) == (N, 4)
+    assert tuple(buf["ep_idx"].shape) == (N,)
+    assert tuple(buf["ep_goal_frames"].shape) == (2, H, W, C)   # one goal frame per episode
+    assert tuple(buf["ep_goal_prop"].shape) == (2, 4)
+    assert int(buf["ep_idx"].max()) == 1 and int(buf["ep_idx"].min()) == 0

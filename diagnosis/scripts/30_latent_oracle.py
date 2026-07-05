@@ -179,6 +179,32 @@ def build_oracle_cost(cost, z_goal, *, probe=None, metric=None, ee_probe=None,
             return sq_obj + beta * sq_extra
         return fn
 
+    if cost == "phil2":
+        # HYBRID (Phase D follow-up): raw L2 + the φ_obj grounding term. Same
+        # γ·L2 + β·mean((Δ/s_g)²) structure as ``gobj``, but the object estimate
+        # comes from the reshaped-encoder φ head, not a frozen probe. Motivation
+        # (Phase D job 24128): L2+encLoRA already solves reach 16/16 but push 0/8,
+        # while φ+encLoRA gets push 5/16 but regresses reach to 2/16 (φ's object-
+        # centric cost is degenerate on the no-object reach task). This is ONE
+        # general cost — no task branching: L2 drives the hand (reach), φ_obj adds
+        # the grounded object signal (push), and on reach φ_obj≈const so it can't
+        # break the L2 solution. Needs BOTH --repr-adapter and (usually)
+        # --encoder-lora so φ reads the same reshaped latent L2 scores.
+        if repr_adapter is None:
+            raise ValueError("--cost phil2 needs --repr-adapter")
+        obj_dim = repr_adapter.obj_dim
+        s_g_dim = s_g / np.sqrt(obj_dim)
+        with torch.no_grad():
+            obj_goal = repr_adapter(z_goal.unsqueeze(0))[:, :obj_dim]   # (1, obj_dim)
+
+        @torch.no_grad()
+        def fn(z_fin):
+            B = z_fin.shape[0]
+            c = ((z_fin.reshape(B, -1) - zg[None]) ** 2).mean(-1)
+            obj_term = (((repr_adapter(z_fin)[:, :obj_dim] - obj_goal) / s_g_dim) ** 2).mean(-1)
+            return gamma_l2 * c + beta * obj_term
+        return fn
+
     raise ValueError(f"unknown --cost {cost}")
 
 
@@ -214,11 +240,20 @@ def cem_plan_latent(env, adapter, z_goal, device, *, plan_h, num_samples, iterat
     Metaworld state — object/hand slices included), ``cost_elite`` (n_elite,) their
     cost values, in cost-ascending order. This is what CEM actually TRUSTS and
     converges its search around, as opposed to a random off-policy sample —
-    `scripts/_cem_mining.py` uses it to mine the frames a cost gets EXPLOITED on."""
+    `scripts/_cem_mining.py` uses it to mine the frames a cost gets EXPLOITED on.
+
+    Hooks that additionally declare a ``frames_elite`` keyword receive the elites'
+    rendered RGB frames (list of (H,W,C) uint8) — needed by encoder-level training
+    (scripts/38), where a buffered latent goes stale the moment the encoder moves.
+    Detected by signature, so every existing 4-arg hook keeps working unchanged."""
     plan_raw_len = plan_h * FRAMESKIP
     dim = plan_raw_len * RAW_A
     mean = np.zeros(dim); var = np.full(dim, var0)
     n_elite = max(2, int(num_samples * elite_frac))
+    hook_wants_frames = False
+    if on_elites is not None:
+        import inspect
+        hook_wants_frames = "frames_elite" in inspect.signature(on_elites).parameters
     snap = snapshot(env)
     for it in range(iterations):
         samples = np.clip(mean[None] + np.sqrt(var)[None] * rng.standard_normal((num_samples, dim)),
@@ -232,7 +267,13 @@ def cem_plan_latent(env, adapter, z_goal, device, *, plan_h, num_samples, iterat
         order = np.argsort(costs)
         elite_idx = order[:n_elite]
         if on_elites is not None:
-            on_elites(z_fin[elite_idx], [raws[i] for i in elite_idx], costs[elite_idx], it)
+            if hook_wants_frames:
+                on_elites(z_fin[elite_idx], [raws[i] for i in elite_idx],
+                          costs[elite_idx], it,
+                          frames_elite=[frames[i] for i in elite_idx])
+            else:
+                on_elites(z_fin[elite_idx], [raws[i] for i in elite_idx],
+                          costs[elite_idx], it)
         elites = samples[elite_idx]
         mean = elites.mean(0); var = elites.var(0) + 1e-4
     restore(env, snap)
@@ -288,12 +329,14 @@ def main() -> int:
     ap.add_argument("--strict-success", action="store_true")
     # Phase-0 cost gate: only the COST is swapped vs the L2 null (the dynamics stay
     # perfect). See build_oracle_cost for the decision rule.
-    ap.add_argument("--cost", choices=["l2", "gobj", "stateprobe", "metric", "advmetric", "phi"],
+    ap.add_argument("--cost",
+                    choices=["l2", "gobj", "stateprobe", "metric", "advmetric", "phi", "phil2"],
                     default="l2",
                     help="latent-oracle scoring: l2 (null) / gobj (object readout) / "
                          "stateprobe (state-oracle cost via probes: object + hand-approach) / "
                          "metric (learned d_theta) / advmetric (metric, hardened checkpoint) / "
-                         "phi (learned action-repr-adapter, scripts/37)")
+                         "phi (learned action-repr-adapter, scripts/37/38) / "
+                         "phil2 (hybrid L2 + β·φ_obj — general cost: L2 for reach, φ_obj for push)")
     ap.add_argument("--probe", default=None,
                     help="object-probe ckpt (scripts/22); --cost gobj/stateprobe")
     ap.add_argument("--ee-probe", default=None,
@@ -303,7 +346,13 @@ def main() -> int:
     ap.add_argument("--metric-head", default=None,
                     help="learned latent-metric ckpt (scripts/33); --cost metric/advmetric")
     ap.add_argument("--repr-adapter", default=None,
-                    help="action-repr-adapter ckpt (scripts/37); --cost phi")
+                    help="action-repr-adapter ckpt (scripts/37 or scripts/38); --cost phi")
+    ap.add_argument("--encoder-lora", default=None,
+                    help="encoder-LoRA ckpt (scripts/38, Phase D): injected before any "
+                         "encoding, so the whole gate — goal encoding + every CEM "
+                         "candidate — runs in the reshaped representation. Composes "
+                         "with any --cost (phi = the Phase-D gate; l2 = the 'is plain "
+                         "L2 now plannable?' variant)")
     ap.add_argument("--s-g", type=float, default=0.1276,
                     help="object scale for the gobj cost (matches scripts/18)")
     ap.add_argument("--beta", type=float, default=0.1, help="gobj object-term weight")
@@ -315,6 +364,12 @@ def main() -> int:
     cfg = yaml.safe_load(open(args.config))
     device = torch.device(cfg["eval"]["device"] if torch.cuda.is_available() else "cpu")
     adapter = build_adapter(args.model, device=str(device)).eval()
+    if args.encoder_lora:
+        from models.heads.lora_encoder import load_encoder_lora
+        injected, lmeta = load_encoder_lora(adapter, args.encoder_lora, device)
+        print(f"encoder LoRA: {args.encoder_lora} (r={lmeta['r']}, "
+              f"{len(injected)} modules, val_obj_median_cm="
+              f"{lmeta.get('val_obj_median_cm')})", flush=True)
     probe = metric = ee_probe = repr_adapter = None
     if args.cost in ("gobj", "stateprobe"):
         if not args.probe:
@@ -337,9 +392,9 @@ def main() -> int:
         metric, mmeta = load_latent_metric(args.metric_head, device)
         print(f"latent metric [{args.cost}]: {args.metric_head} "
               f"(spearman={mmeta.get('val_spearman')})", flush=True)
-    if args.cost == "phi":
+    if args.cost in ("phi", "phil2"):
         if not args.repr_adapter:
-            raise SystemExit("--repr-adapter is required for --cost phi")
+            raise SystemExit(f"--repr-adapter is required for --cost {args.cost}")
         from models.heads.action_repr_adapter import load_repr_adapter
         repr_adapter, rmeta = load_repr_adapter(args.repr_adapter, device)
         print(f"repr adapter: {args.repr_adapter} (phi_dim={rmeta.get('phi_dim')} "
