@@ -53,8 +53,43 @@ Status legend: ✅ measured & in-repo · 🟡 measured, caveat carried.
 | R.2 | Three env-side reproduction bugs found+fixed (default-camera 480px renderer; training data = flipud(corner2+tweak), MSE 71.6 vs ≥3000 unflipped; goal = expert FINAL frame) | `results/closed_loop_report.md` §pitfalls; calibration artifacts `results/logs/camera_calib*`, probes committed | ✅ |
 | R.3 | Physics/world identical to data-gen (only visuals differed) | `_replay_check.py`: action replay ee err median 1.5 mm | ✅ |
 
+## C4 — Oracle ladder: the wall is the cost, not the predictor/planner/budget
+
+| # | Claim | Evidence | Status |
+|---|---|---|---|
+| 4.1 | Same CEM budget + perfect dynamics + true-state cost solves contact: push **16/16**, pick 11/16 | `results/oracle_ladder_cost_report.md` (scripts/29 state-oracle) | ✅ |
+| 4.2 | Every cost computed through the frozen encoder collapses under the SAME perfect dynamics: l2 0/16, gobj 0/8, learned metric 0/8, stateprobe 2/16 | same report (scripts/30 rungs) | ✅ |
+| 4.3 | Static readout precision is NOT the wall: spatial probe decodes object 92% <5cm (contact 90.7%) | same report, Test-1b (scripts/21) | ✅ |
+| 4.4 | Off-policy readout precision is NOT the wall: probes hardened on off-policy frames (obj 78→**91.5%** <5cm, median 2.0cm on the frames CEM scores) re-gate at push **1/16** — a real, measured readout repair transfers ZERO planning success | same report §Phase-3 (3a/3b, job 23553) | ✅ |
+
+## C5 — The planner is the adversary (cost overoptimization / Goodhart)
+
+| # | Claim | Evidence | Status |
+|---|---|---|---|
+| 5.1 | CEM converges its elite population onto the cost's residual-error pockets: elite decode **24.0% <5cm (final-iter 19.2%, push 15.3%; median 7.3cm)** vs **91.5% (median 2.0cm)** on random off-policy frames, same probes | `results/cem_exploit_precision.csv` (scripts/35, Phase A) | ✅ |
+| 5.2 | The exploited plans read "at goal" while the true object is 13–30cm away | `oracle_ladder_cost_report.md` §Verdict | ✅ |
+| 5.3 | Overoptimization curves: proxy cost improves monotonically with CEM iterations while true outcome stalls/degrades and elite decode error grows; reach×l2 = honest-cost control; push×l2 = no-signal mode | `results/overopt_{curves,episodes}_{mwpush,mwreach}.csv` (scripts/41, jobs 24740/24741) | 🔴 RUNNING — preliminary n=1 consistent (proxy 0.244→0.187, true bottoms iter 6 then rises, decode 5.2→10.8cm at budget 24); do not cite until n=8 lands |
+
+## C6 — Mitigation nulls: exploitation is irreducible for frozen-base costs
+
+| # | Claim | Evidence | Status |
+|---|---|---|---|
+| 6.1 | Relearned representation adapter φ (v2, rebalanced): held-out decode median 6.9cm, re-gate push **1/16**, pick 0/16 | phaseC_repr_v2 log (job 24018), `metaworld_latent_oracle_phi*.csv` | ✅ |
+| 6.2 | Encoder-LoRA + φ, 5 seeds: push-held **{5,0,2,1,1}/16, mean 1.8, CI [0, 3.7]** = inside frozen baseline 0–2/16; grounding 94–100% <5cm across seeds → grounding↑↛planning at the encoder level | phaseD/phaseF logs (jobs 24128, 24270/24276/24299 + r1), seed-sweep summary | ✅ |
+| 6.3 | Ensemble disagreement penalty (5 LoRA seeds, cost = mean_k d_k² + λ·Var_k): λ∈{0,0.5,1,2} → push {2,2,2,1}/16 (held {2,1,2,1}) = frozen noise; the standard MBRL pessimism fix fails because seeds share the frozen-base blind spot | phaseG logs (jobs 24340–24357) | ✅ |
+| 6.4 | phil2 hybrid (β=0.15) = minor generality win only (one cost: reach 16/16 + push 2/16), not a crossing | phaseD_phil2_gate log | ✅ |
+
+## C7 — The predictor axis: action-counterfactual objective (Phase H, DROID)
+
+| # | Claim | Evidence | Status |
+|---|---|---|---|
+| 7.1 | CF InfoNCE-over-actions predictor-LoRA (0.469M params, no object GT) on dino_wm_droid: cf_rank_acc 0.195→0.736, recon 0.695× (improved) | scripts/40 training log / ckpt meta (`predictor_cf_dino_wm_droid.pt`) | ✅ |
+| 7.2 | A/B planning probe (n=157): pooled Action-Error **1.468→1.086** (−26%), Action-Score 0.466→0.525, effect-CRA **0.061→0.605**; AE better in all 6 regime×horizon cells, AS in 5/6 | `results/droid_planning_cf_dino_wm_droid_{frozen,lora}.csv` (pooling n_planned-weighted, verified 2026-07-06) | ✅ |
+| 7.3 | Hardening: seed sweep s1–s3 + jepa_wm_droid + RoboCasa | `droid_planning_cf_*_s{1,2,3}.csv`, phaseH logs | 🟡 seeds run; CI aggregation + 2nd-model table not yet written up |
+
 ## Optional strengtheners
 
 | # | Item | Status |
 |---|---|---|
 | D.3 | Imagined-rollout object-error table (baseline vs +h, cache-only, ~2 h) | optional C3 strengthener: quantifies "hallucinated grasping" along full imagined rollouts |
+| E.1 | Amortized GC-IDM control (removes the search adversary; `inverse_proposal` ckpt exists) | queued behind E0 (C5.3) |
