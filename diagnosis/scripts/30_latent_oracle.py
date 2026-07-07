@@ -233,7 +233,7 @@ def roll_final_frame(env, snap, plan_raw):
 
 
 def cem_plan_latent(env, adapter, z_goal, device, *, plan_h, num_samples, iterations,
-                    elite_frac, var0, rng, cost_fn, on_elites=None):
+                    elite_frac, var0, rng, cost_fn, on_elites=None, init_mean=None):
     """``on_elites(z_elite, raw_elite, cost_elite, iteration)``, if given, is called
     once per CEM iteration with the surviving elite population: ``z_elite`` (n_elite,
     *frame) TRUE latents, ``raw_elite`` a list of n_elite full sim obs (39-dim
@@ -245,10 +245,21 @@ def cem_plan_latent(env, adapter, z_goal, device, *, plan_h, num_samples, iterat
     Hooks that additionally declare a ``frames_elite`` keyword receive the elites'
     rendered RGB frames (list of (H,W,C) uint8) — needed by encoder-level training
     (scripts/38), where a buffered latent goes stale the moment the encoder moves.
-    Detected by signature, so every existing 4-arg hook keeps working unchanged."""
+    Detected by signature, so every existing 4-arg hook keeps working unchanged.
+
+    ``init_mean``, if given, is a flat (plan_h*FRAMESKIP*RAW_A,) raw-action seed for
+    the CEM mean (e.g. the amortized inverse proposal, scripts/43). When seeded, the
+    mean is also injected into the population each iteration (upstream cem_plan's
+    mean-inclusion trick) so the elites can RETAIN the seed if the cost genuinely
+    prefers it — search then only replaces the seed when the cost approves the swap.
+    Default None preserves the original zero-mean behaviour exactly."""
     plan_raw_len = plan_h * FRAMESKIP
     dim = plan_raw_len * RAW_A
-    mean = np.zeros(dim); var = np.full(dim, var0)
+    if init_mean is None:
+        mean = np.zeros(dim)
+    else:
+        mean = np.clip(np.asarray(init_mean, dtype=float).reshape(dim).copy(), -1.0, 1.0)
+    var = np.full(dim, var0)
     n_elite = max(2, int(num_samples * elite_frac))
     hook_wants_frames = False
     if on_elites is not None:
@@ -258,6 +269,8 @@ def cem_plan_latent(env, adapter, z_goal, device, *, plan_h, num_samples, iterat
     for it in range(iterations):
         samples = np.clip(mean[None] + np.sqrt(var)[None] * rng.standard_normal((num_samples, dim)),
                           -1.0, 1.0)
+        if init_mean is not None:
+            samples[0] = mean                       # mean-inclusion (upstream trick)
         frames, props, raws = [], [], []
         for i in range(num_samples):
             fr, pr, raw = roll_final_frame(env, snap, samples[i].reshape(plan_raw_len, RAW_A))
