@@ -233,7 +233,8 @@ def roll_final_frame(env, snap, plan_raw):
 
 
 def cem_plan_latent(env, adapter, z_goal, device, *, plan_h, num_samples, iterations,
-                    elite_frac, var0, rng, cost_fn, on_elites=None, init_mean=None):
+                    elite_frac, var0, rng, cost_fn, on_elites=None, init_mean=None,
+                    planner="cem", mppi_beta=5.0):
     """``on_elites(z_elite, raw_elite, cost_elite, iteration)``, if given, is called
     once per CEM iteration with the surviving elite population: ``z_elite`` (n_elite,
     *frame) TRUE latents, ``raw_elite`` a list of n_elite full sim obs (39-dim
@@ -266,6 +267,7 @@ def cem_plan_latent(env, adapter, z_goal, device, *, plan_h, num_samples, iterat
         import inspect
         hook_wants_frames = "frames_elite" in inspect.signature(on_elites).parameters
     snap = snapshot(env)
+    best_cost, best_sample = None, None       # global-best sample (the plan `shooting` commits to)
     for it in range(iterations):
         samples = np.clip(mean[None] + np.sqrt(var)[None] * rng.standard_normal((num_samples, dim)),
                           -1.0, 1.0)
@@ -287,9 +289,32 @@ def cem_plan_latent(env, adapter, z_goal, device, *, plan_h, num_samples, iterat
             else:
                 on_elites(z_fin[elite_idx], [raws[i] for i in elite_idx],
                           costs[elite_idx], it)
-        elites = samples[elite_idx]
-        mean = elites.mean(0); var = elites.var(0) + 1e-4
+        # global-best sample across all iterations — the plan `shooting` returns,
+        # and a useful diagnostic for the others.
+        if best_cost is None or costs[order[0]] < best_cost:
+            best_cost = float(costs[order[0]]); best_sample = samples[order[0]].copy()
+        # The ONLY thing that differs across planners is the distribution update.
+        # All three minimise the SAME cost under perfect dynamics, so if all three
+        # fail (and their trusted frames decode worse than random), the exploitation
+        # is planner-general, not a CEM artefact.
+        if planner == "cem":
+            elites = samples[elite_idx]
+            mean = elites.mean(0); var = elites.var(0) + 1e-4
+        elif planner == "mppi":
+            # soft reweighting of the WHOLE population (no hard elite cutoff):
+            # standardise costs (cost is scale-dependent latent MSE), then
+            # w ∝ exp(-beta·z-score); larger beta ⇒ sharper concentration.
+            c = (costs - costs.mean()) / (costs.std() + 1e-8)
+            w = np.exp(-mppi_beta * c); w /= w.sum()
+            mean = (w[:, None] * samples).sum(0)
+            var = (w[:, None] * (samples - mean[None]) ** 2).sum(0) + 1e-4
+        elif planner == "shooting":
+            pass                                # fixed proposal (no refit); commit to global best
+        else:
+            raise ValueError(f"unknown planner {planner!r}")
     restore(env, snap)
+    if planner == "shooting":
+        return best_sample.reshape(plan_raw_len, RAW_A)
     return mean.reshape(plan_raw_len, RAW_A)
 
 
@@ -316,7 +341,9 @@ def run_episode(task, seed, env, goal_frame, goal_state, expert_succ, adapter, d
                 break
         if success and not strict:
             break
-    return {"task": task, "arm": f"latent_oracle_{cost_spec['cost']}", "seed": seed,
+    _pl = cem_kw.get("planner", "cem")
+    arm = f"latent_oracle_{cost_spec['cost']}" + ("" if _pl == "cem" else f"_{_pl}")
+    return {"task": task, "arm": arm, "seed": seed,
             "success": int(success),
             "success_end": int(last_success), "steps": steps,
             "final_state_dist": float(np.linalg.norm(obs - goal_state)),
@@ -339,6 +366,11 @@ def main() -> int:
     ap.add_argument("--cem-iterations", type=int, default=6)
     ap.add_argument("--elite-frac", type=float, default=0.1)
     ap.add_argument("--var0", type=float, default=1.0)
+    ap.add_argument("--planner", choices=["cem", "mppi", "shooting"], default="cem",
+                    help="test-time optimizer: cem (elite-refit), mppi (softmax-weighted), "
+                         "shooting (fixed proposal, argmin over samples x iters)")
+    ap.add_argument("--mppi-beta", type=float, default=5.0,
+                    help="MPPI temperature (concentration on standardized cost); higher = sharper")
     ap.add_argument("--strict-success", action="store_true")
     # Phase-0 cost gate: only the COST is swapped vs the L2 null (the dynamics stay
     # perfect). See build_oracle_cost for the decision rule.
@@ -419,7 +451,10 @@ def main() -> int:
     print(f"latent-oracle cost={args.cost} (s_g={args.s_g} beta={args.beta} "
           f"gamma_l2={args.gamma_l2} w_hand={args.w_hand})", flush=True)
     cem_kw = dict(num_samples=args.cem_num_samples, iterations=args.cem_iterations,
-                  elite_frac=args.elite_frac, var0=args.var0)
+                  elite_frac=args.elite_frac, var0=args.var0,
+                  planner=args.planner, mppi_beta=args.mppi_beta)
+    print(f"planner={args.planner}" + (f" (mppi_beta={args.mppi_beta})"
+          if args.planner == "mppi" else ""), flush=True)
     out = Path(args.out); out.parent.mkdir(parents=True, exist_ok=True)
     fields = ["task", "arm", "seed", "success", "success_end", "steps",
               "final_state_dist", "ee_dist", "obj_goal_dist", "expert_success_step"]
@@ -444,7 +479,7 @@ def main() -> int:
                       f"obj_goal={r['obj_goal_dist']:.3f} "
                       f"({(time.time()-t0)/60:.1f} min)", flush=True)
 
-    print(f"\n=== latent oracle [cost={args.cost}]: success by task ===")
+    print(f"\n=== latent oracle [cost={args.cost} planner={args.planner}]: success by task ===")
     for task in args.tasks:
         tr = [r for r in rows if r["task"] == task]
         s = sum(r["success"] for r in tr); se = sum(r["success_end"] for r in tr)

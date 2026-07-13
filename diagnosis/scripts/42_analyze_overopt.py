@@ -49,40 +49,54 @@ def _boot_ci(values_by_episode, stat=np.mean, n_boot=2000, seed=0, alpha=0.05):
 
 
 def across_budget(ep: pd.DataFrame) -> pd.DataFrame:
-    """Per (task, cost, iterations, samples): success_end fraction and median
-    obj_goal_dist, each with an episode-clustered bootstrap CI."""
+    """Per (task, cost, iterations, samples): success_end fraction, median
+    obj_goal_dist, and median ee_dist, each with an episode-clustered bootstrap
+    CI. ee_dist gets a CI too (not just a point median) so reach — which is
+    plotted via ee, not obj, in Fig.1 Panel A — gets a shaded band as well."""
     rows = []
     for (task, cost, it, n), g in ep.groupby(["task", "cost", "iterations", "samples"]):
         # each episode contributes one row here (one episode = one seed), so
         # episode-clustered == row-clustered; wrap each value as a 1-elt array.
         succ = [np.array([v]) for v in g.success_end.values]
         obj = [np.array([v]) for v in g.obj_goal_dist.values]
+        ee = [np.array([v]) for v in g.ee_dist.values]
         s_pt, s_lo, s_hi = _boot_ci(succ, stat=np.mean)
         o_pt, o_lo, o_hi = _boot_ci(obj, stat=np.median)
+        e_pt, e_lo, e_hi = _boot_ci(ee, stat=np.median)
         rows.append(dict(task=task, cost=cost, iterations=int(it), samples=int(n),
                          n_ep=len(g),
                          success_end=f"{int(g.success_end.sum())}/{len(g)}",
                          success_frac=s_pt, success_lo=s_lo, success_hi=s_hi,
                          obj_med=o_pt, obj_lo=o_lo, obj_hi=o_hi,
-                         ee_med=float(g.ee_dist.median())))
+                         ee_med=e_pt, ee_lo=e_lo, ee_hi=e_hi))
     return pd.DataFrame(rows).sort_values(["task", "cost", "samples", "iterations"])
 
 
 def within_search(cur: pd.DataFrame, iters_budget: int | None = None) -> pd.DataFrame:
     """Per (task, cost, CEM-iter) mean of proxy_min / true_sp / true_obj / decode_err
     at a fixed total budget (default: the largest iterations present), averaged over
-    episodes and replans."""
+    episodes and replans, with an episode(seed)-clustered bootstrap CI on each of
+    proxy_min / true_sp / decode_err — Panel B previously plotted bare means with no
+    measure of spread across the n=8 episodes."""
     out = []
     for (task, cost), g0 in cur.groupby(["task", "cost"]):
         budget = iters_budget or int(g0.iterations.max())
         g = g0[g0.iterations == budget]
         if not len(g):
             continue
-        agg = g.groupby("iter").agg(
-            proxy_min=("proxy_min", "mean"),
-            true_sp=("true_sp_min_believed", "mean"),
-            true_obj=("true_obj_min_believed", "mean"),
-            decode=("decode_err_med_cm", "mean")).reset_index()
+        rows = []
+        for it, gi in g.groupby("iter"):
+            def _per_seed(col):
+                return [gg[col].values for _, gg in gi.groupby("seed")]
+            p_pt, p_lo, p_hi = _boot_ci(_per_seed("proxy_min"), stat=np.mean)
+            t_pt, t_lo, t_hi = _boot_ci(_per_seed("true_sp_min_believed"), stat=np.mean)
+            d_pt, d_lo, d_hi = _boot_ci(_per_seed("decode_err_med_cm"), stat=np.mean)
+            rows.append(dict(iter=it,
+                              proxy_min=p_pt, proxy_lo=p_lo, proxy_hi=p_hi,
+                              true_sp=t_pt, true_sp_lo=t_lo, true_sp_hi=t_hi,
+                              true_obj=gi["true_obj_min_believed"].mean(),
+                              decode=d_pt, decode_lo=d_lo, decode_hi=d_hi))
+        agg = pd.DataFrame(rows)
         agg.insert(0, "cost", cost); agg.insert(0, "task", task); agg["budget"] = budget
         out.append(agg)
     return pd.concat(out, ignore_index=True) if out else pd.DataFrame()
@@ -101,14 +115,14 @@ def make_figure(ab: pd.DataFrame, ws: pd.DataFrame, outpath: Path):
     for (task, cost), g in a.groupby(["task", "cost"]):
         g = g.sort_values("iterations")
         # reach obj is trivially ~0 (no object) — use ee for reach so the panel is
-        # meaningful for both task families.
+        # meaningful for both task families. Both branches now carry their own CI.
         if task.startswith("mw-reach"):
-            y = g.ee_med.values; ylab = "true dist to goal (obj / ee)"
+            y, y_lo, y_hi = g.ee_med.values, g.ee_lo.values, g.ee_hi.values
         else:
-            y = g.obj_med.values; ylab = "true dist to goal (obj / ee)"
+            y, y_lo, y_hi = g.obj_med.values, g.obj_lo.values, g.obj_hi.values
+        ylab = "true dist to goal (obj / ee)"
         axA.plot(g.iterations, y, marker="o", label=f"{task}×{cost}")
-        axA.fill_between(g.iterations, g.obj_lo if not task.startswith("mw-reach") else y,
-                         g.obj_hi if not task.startswith("mw-reach") else y, alpha=0.12)
+        axA.fill_between(g.iterations, y_lo, y_hi, alpha=0.15)
     axA.set_xlabel("CEM iterations (optimization pressure)")
     axA.set_ylabel(ylab)
     axA.set_title(f"(A) Does more search help? (n={n_mode} samples)")
@@ -123,10 +137,13 @@ def make_figure(ab: pd.DataFrame, ws: pd.DataFrame, outpath: Path):
         p0, t0 = g.proxy_min.iloc[0], g.true_sp.iloc[0]
         ax.plot(g["iter"], g.proxy_min / p0, color=c_proxy, ls="-",
                 label=f"{label}: proxy (planner)")
+        ax.fill_between(g["iter"], g.proxy_lo / p0, g.proxy_hi / p0, color=c_proxy, alpha=0.15)
         ax.plot(g["iter"], g.true_sp / t0, color=c_true, ls="--",
                 label=f"{label}: TRUE cost")
+        ax.fill_between(g["iter"], g.true_sp_lo / t0, g.true_sp_hi / t0, color=c_true, alpha=0.15)
         twin.plot(g["iter"], g.decode, color=c_dec, ls=":",
                   label=f"{label}: decode err (cm)")
+        twin.fill_between(g["iter"], g.decode_lo, g.decode_hi, color=c_dec, alpha=0.12)
 
     axBt = axB.twinx()
     _plot_cell("mw-push", "stateprobe", axB, axBt, "#c1121f", "#780000", "#e07a00",
@@ -264,29 +281,38 @@ def main() -> int:
              "## Across-budget outcomes (does more search help?)", "",
              "Episode-clustered bootstrap 95% CI. `obj_med` = median true object→goal distance;",
              "for reach read `ee_med` (no object).", "",
-             "| task | cost | iters | n_samp | n_ep | success_end | success frac [CI] | obj_med [CI] | ee_med |",
+             "| task | cost | iters | n_samp | n_ep | success_end | success frac [CI] | obj_med [CI] | ee_med [CI] |",
              "|---|---|---|---|---|---|---|---|---|"]
     for _, r in ab.iterrows():
         lines.append(
             f"| {r.task} | {r.cost} | {r.iterations} | {r.samples} | {r.n_ep} | "
             f"{r.success_end} | {r.success_frac:.2f} [{r.success_lo:.2f},{r.success_hi:.2f}] | "
-            f"{r.obj_med:.3f} [{r.obj_lo:.3f},{r.obj_hi:.3f}] | {r.ee_med:.3f} |")
+            f"{r.obj_med:.3f} [{r.obj_lo:.3f},{r.obj_hi:.3f}] | "
+            f"{r.ee_med:.3f} [{r.ee_lo:.3f},{r.ee_hi:.3f}] |")
 
     if len(ws):
         lines += ["", "## Within-search Goodhart (first → last CEM iter, at max budget)", "",
                   "Proxy = the cost the planner minimizes; TRUE = the real state cost of the",
                   "candidate it most believes in; decode = object-probe error on the committed",
                   "elites (pocket depth).", "",
-                  "| task | cost | budget | proxy Δ% | true_sp Δ% | decode first→last (cm) |",
-                  "|---|---|---|---|---|---|"]
+                  "| task | cost | budget | proxy Δ% | true_sp Δ% | decode first → last (cm) [CI] | growth CI-clean? |",
+                  "|---|---|---|---|---|---|---|"]
         for (task, cost), g in ws.groupby(["task", "cost"]):
             g = g.sort_values("iter")
             f, l = g.iloc[0], g.iloc[-1]
             dp = 100 * (l.proxy_min - f.proxy_min) / f.proxy_min
             dt = 100 * (l.true_sp - f.true_sp) / f.true_sp
-            lines.append(f"| {task} | {cost} | {int(f.budget)} | {dp:+.0f}% | {dt:+.0f}% | "
-                         f"{f.decode:.1f}→{l.decode:.1f} ({100*(l.decode-f.decode)/f.decode:+.0f}%) |")
-        lines += ["", "**Reading:** an *exploitable* cost shows proxy Δ ≪ 0 (planner \"improves\"),",
+            clean = "yes" if l.decode_lo > f.decode_hi else ("no (CIs overlap)" if l.decode_hi > f.decode_lo else "reversed")
+            lines.append(
+                f"| {task} | {cost} | {int(f.budget)} | {dp:+.0f}% | {dt:+.0f}% | "
+                f"{f.decode:.1f} [{f.decode_lo:.1f},{f.decode_hi:.1f}] → "
+                f"{l.decode:.1f} [{l.decode_lo:.1f},{l.decode_hi:.1f}] "
+                f"({100*(l.decode-f.decode)/f.decode:+.0f}%) | {clean} |")
+        lines += ["", "`growth CI-clean?` = whether the first-iter and last-iter decode-error CIs",
+                  "(episode/seed-clustered bootstrap, n=8 episodes) are non-overlapping — i.e.",
+                  "whether the \"pocket deepens\" claim survives the small sample size, not just",
+                  "the point estimate.", "",
+                  "**Reading:** an *exploitable* cost shows proxy Δ ≪ 0 (planner \"improves\"),",
                   "true_sp Δ ≈ 0 (reality stalls), decode ↑ (search converges onto readout-error",
                   "pockets). An *honest* cost (reach×l2) shows proxy ↓ AND the across-budget",
                   "success climbing with iterations. A *no-signal* cost (push×l2) shows proxy ↓",

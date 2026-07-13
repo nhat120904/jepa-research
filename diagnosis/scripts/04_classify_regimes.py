@@ -33,6 +33,17 @@ from stratification import classify_metaworld_regime, classify_droid_regime  # n
 
 
 def classify_metaworld(cache: LatentCache) -> dict:
+    # Thresholds default to the calibrated baseline (stratification/metaworld_regimes.py).
+    # Env overrides let scripts/slurm_regime_robustness.sh sweep them without touching
+    # code (threshold-robustness check for the paper's regime split); unset = baseline.
+    from stratification.metaworld_regimes import (
+        GRIPPER_DELTA_THRESHOLD, OBJECT_MOVE_THRESHOLD, PRE_GRASP_DISTANCE,
+    )
+    gd = float(os.environ.get("CAI_JEPA_GRIP_DELTA", GRIPPER_DELTA_THRESHOLD))
+    om = float(os.environ.get("CAI_JEPA_OBJ_MOVE", OBJECT_MOVE_THRESHOLD))
+    pg = float(os.environ.get("CAI_JEPA_PRE_GRASP", PRE_GRASP_DISTANCE))
+    if (gd, om, pg) != (GRIPPER_DELTA_THRESHOLD, OBJECT_MOVE_THRESHOLD, PRE_GRASP_DISTANCE):
+        print(f"  [regime thresholds OVERRIDDEN] grip_delta={gd} obj_move={om} pre_grasp={pg}")
     out: dict = {}
     for tid in tqdm(cache.trajectory_ids(), desc="metaworld regimes"):
         traj = cache.read_trajectory(tid)
@@ -45,7 +56,10 @@ def classify_metaworld(cache: LatentCache) -> dict:
         state = np.asarray(traj["state"])
         ids = np.zeros(T, dtype=np.int8)
         for t in range(T):
-            ids[t] = REGIME_TO_ID[classify_metaworld_regime(state[t], state[t + 1])]
+            ids[t] = REGIME_TO_ID[classify_metaworld_regime(
+                state[t], state[t + 1],
+                gripper_delta_threshold=gd, object_move_threshold=om,
+                pre_grasp_distance=pg)]
         out[tid] = ids
     return out
 

@@ -9,26 +9,32 @@ Latent oracle (perfect dynamics, scripts/30) — any proxy/true divergence is th
 Episode-clustered bootstrap 95% CI. `obj_med` = median true object→goal distance;
 for reach read `ee_med` (no object).
 
-| task | cost | iters | n_samp | n_ep | success_end | success frac [CI] | obj_med [CI] | ee_med |
+| task | cost | iters | n_samp | n_ep | success_end | success frac [CI] | obj_med [CI] | ee_med [CI] |
 |---|---|---|---|---|---|---|---|---|
-| mw-push | l2 | 12 | 50 | 8 | 0/8 | 0.00 [0.00,0.00] | 0.252 [0.226,0.290] | 0.018 |
-| mw-push | l2 | 2 | 100 | 8 | 0/8 | 0.00 [0.00,0.00] | 0.252 [0.226,0.290] | 0.142 |
-| mw-push | l2 | 6 | 100 | 8 | 0/8 | 0.00 [0.00,0.00] | 0.252 [0.226,0.290] | 0.017 |
-| mw-push | l2 | 12 | 100 | 16 | 0/16 | 0.00 [0.00,0.00] | 0.252 [0.240,0.278] | 0.019 |
-| mw-push | l2 | 24 | 100 | 8 | 0/8 | 0.00 [0.00,0.00] | 0.252 [0.226,0.290] | 0.021 |
-| mw-push | l2 | 12 | 300 | 8 | 0/8 | 0.00 [0.00,0.00] | 0.252 [0.202,0.290] | 0.023 |
-| mw-push | stateprobe | 12 | 50 | 8 | 0/8 | 0.00 [0.00,0.00] | 0.233 [0.176,0.290] | 0.140 |
-| mw-push | stateprobe | 2 | 100 | 8 | 0/8 | 0.00 [0.00,0.00] | 0.236 [0.170,0.290] | 0.149 |
-| mw-push | stateprobe | 6 | 100 | 8 | 1/8 | 0.12 [0.00,0.38] | 0.252 [0.135,0.290] | 0.149 |
-| mw-push | stateprobe | 12 | 100 | 16 | 2/16 | 0.12 [0.00,0.31] | 0.207 [0.158,0.244] | 0.133 |
-| mw-push | stateprobe | 24 | 100 | 8 | 2/8 | 0.25 [0.00,0.62] | 0.252 [0.041,0.290] | 0.142 |
-| mw-push | stateprobe | 12 | 300 | 8 | 0/8 | 0.00 [0.00,0.00] | 0.252 [0.202,0.290] | 0.144 |
-| mw-reach | l2 | 2 | 100 | 8 | 2/8 | 0.25 [0.00,0.50] | 0.000 [0.000,0.000] | 0.093 |
-| mw-reach | l2 | 6 | 100 | 8 | 8/8 | 1.00 [1.00,1.00] | 0.000 [0.000,0.000] | 0.006 |
-| mw-reach | l2 | 24 | 100 | 8 | 8/8 | 1.00 [1.00,1.00] | 0.000 [0.000,0.000] | 0.006 |
-| mw-reach | stateprobe | 2 | 100 | 8 | 0/8 | 0.00 [0.00,0.00] | 0.000 [0.000,0.000] | 0.261 |
-| mw-reach | stateprobe | 6 | 100 | 8 | 0/8 | 0.00 [0.00,0.00] | 0.000 [0.000,0.011] | 0.264 |
-| mw-reach | stateprobe | 24 | 100 | 8 | 0/8 | 0.00 [0.00,0.00] | 0.000 [0.000,0.000] | 0.253 |
+| mw-pick-place | l2 | 2 | 100 | 16 | 0/16 | 0.00 [0.00,0.00] | 0.286 [0.251,0.301] | 0.093 [0.024,0.141] |
+| mw-pick-place | l2 | 6 | 100 | 16 | 0/16 | 0.00 [0.00,0.00] | 0.286 [0.251,0.301] | 0.011 [0.009,0.013] |
+| mw-pick-place | l2 | 12 | 100 | 16 | 0/16 | 0.00 [0.00,0.00] | 0.286 [0.251,0.301] | 0.016 [0.011,0.021] |
+| mw-pick-place | l2 | 24 | 100 | 16 | 0/16 | 0.00 [0.00,0.00] | 0.286 [0.251,0.301] | 0.014 [0.008,0.018] |
+| mw-pick-place | stateprobe | 2 | 100 | 16 | 0/16 | 0.00 [0.00,0.00] | 0.276 [0.246,0.301] | 0.210 [0.166,0.244] |
+| mw-pick-place | stateprobe | 6 | 100 | 16 | 0/16 | 0.00 [0.00,0.00] | 0.269 [0.235,0.298] | 0.196 [0.169,0.220] |
+| mw-pick-place | stateprobe | 12 | 100 | 16 | 0/16 | 0.00 [0.00,0.00] | 0.270 [0.251,0.297] | 0.204 [0.171,0.239] |
+| mw-pick-place | stateprobe | 24 | 100 | 16 | 1/16 | 0.06 [0.00,0.19] | 0.263 [0.249,0.294] | 0.210 [0.177,0.241] |
+| mw-push | l2 | 2 | 100 | 16 | 0/16 | 0.00 [0.00,0.00] | 0.239 [0.179,0.261] | 0.138 [0.099,0.144] |
+| mw-push | l2 | 6 | 100 | 16 | 0/16 | 0.00 [0.00,0.00] | 0.239 [0.164,0.261] | 0.015 [0.011,0.021] |
+| mw-push | l2 | 12 | 100 | 16 | 0/16 | 0.00 [0.00,0.00] | 0.239 [0.171,0.261] | 0.017 [0.010,0.028] |
+| mw-push | l2 | 24 | 100 | 16 | 1/16 | 0.06 [0.00,0.19] | 0.239 [0.171,0.261] | 0.018 [0.013,0.025] |
+| mw-push | stateprobe | 2 | 100 | 16 | 0/16 | 0.00 [0.00,0.00] | 0.177 [0.155,0.230] | 0.129 [0.086,0.149] |
+| mw-push | stateprobe | 6 | 100 | 16 | 1/16 | 0.06 [0.00,0.19] | 0.197 [0.166,0.261] | 0.104 [0.080,0.170] |
+| mw-push | stateprobe | 12 | 100 | 16 | 1/16 | 0.06 [0.00,0.19] | 0.183 [0.147,0.242] | 0.102 [0.068,0.154] |
+| mw-push | stateprobe | 24 | 100 | 16 | 2/16 | 0.12 [0.00,0.31] | 0.211 [0.164,0.261] | 0.104 [0.073,0.155] |
+| mw-reach | l2 | 2 | 100 | 16 | 5/16 | 0.31 [0.12,0.56] | 0.000 [0.000,0.000] | 0.036 [0.017,0.120] |
+| mw-reach | l2 | 6 | 100 | 16 | 16/16 | 1.00 [1.00,1.00] | 0.000 [0.000,0.000] | 0.006 [0.004,0.007] |
+| mw-reach | l2 | 12 | 100 | 16 | 16/16 | 1.00 [1.00,1.00] | 0.000 [0.000,0.000] | 0.005 [0.002,0.008] |
+| mw-reach | l2 | 24 | 100 | 16 | 16/16 | 1.00 [1.00,1.00] | 0.000 [0.000,0.000] | 0.005 [0.003,0.009] |
+| mw-reach | stateprobe | 2 | 100 | 16 | 0/16 | 0.00 [0.00,0.00] | 0.000 [0.000,0.003] | 0.262 [0.236,0.278] |
+| mw-reach | stateprobe | 6 | 100 | 16 | 0/16 | 0.00 [0.00,0.00] | 0.000 [0.000,0.006] | 0.256 [0.230,0.286] |
+| mw-reach | stateprobe | 12 | 100 | 16 | 0/16 | 0.00 [0.00,0.00] | 0.000 [0.000,0.003] | 0.257 [0.228,0.277] |
+| mw-reach | stateprobe | 24 | 100 | 16 | 0/16 | 0.00 [0.00,0.00] | 0.000 [0.000,0.000] | 0.250 [0.242,0.279] |
 
 ## Within-search Goodhart (first → last CEM iter, at max budget)
 
@@ -36,12 +42,19 @@ Proxy = the cost the planner minimizes; TRUE = the real state cost of the
 candidate it most believes in; decode = object-probe error on the committed
 elites (pocket depth).
 
-| task | cost | budget | proxy Δ% | true_sp Δ% | decode first→last (cm) |
-|---|---|---|---|---|---|
-| mw-push | l2 | 24 | -32% | +2% | 4.1→4.5 (+10%) |
-| mw-push | stateprobe | 24 | -17% | -2% | 6.6→8.2 (+24%) |
-| mw-reach | l2 | 24 | -45% | +7% | 3.4→3.6 (+5%) |
-| mw-reach | stateprobe | 24 | -30% | -8% | 3.2→3.1 (-4%) |
+| task | cost | budget | proxy Δ% | true_sp Δ% | decode first → last (cm) [CI] | growth CI-clean? |
+|---|---|---|---|---|---|---|
+| mw-pick-place | l2 | 24 | -29% | +2% | 3.5 [2.8,4.4] → 3.7 [2.9,4.8] (+6%) | no (CIs overlap) |
+| mw-pick-place | stateprobe | 24 | -13% | -2% | 6.7 [5.9,7.4] → 8.1 [7.0,9.1] (+21%) | no (CIs overlap) |
+| mw-push | l2 | 24 | -35% | +1% | 4.1 [3.5,4.8] → 4.5 [3.8,5.2] (+9%) | no (CIs overlap) |
+| mw-push | stateprobe | 24 | -18% | -2% | 6.6 [5.7,7.4] → 8.3 [7.1,9.3] (+25%) | no (CIs overlap) |
+| mw-reach | l2 | 24 | -48% | +7% | 3.3 [2.7,3.9] → 3.4 [2.7,4.1] (+1%) | no (CIs overlap) |
+| mw-reach | stateprobe | 24 | -31% | -7% | 3.5 [2.8,4.2] → 3.4 [2.6,4.1] (-3%) | no (CIs overlap) |
+
+`growth CI-clean?` = whether the first-iter and last-iter decode-error CIs
+(episode/seed-clustered bootstrap, n=8 episodes) are non-overlapping — i.e.
+whether the "pocket deepens" claim survives the small sample size, not just
+the point estimate.
 
 **Reading:** an *exploitable* cost shows proxy Δ ≪ 0 (planner "improves"),
 true_sp Δ ≈ 0 (reality stalls), decode ↑ (search converges onto readout-error

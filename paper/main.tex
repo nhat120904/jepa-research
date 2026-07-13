@@ -1,9 +1,15 @@
-% The Planner Is the Adversary — draft v0.2 (retargeted framing, 2026-07-06).
+% The Planner Is the Adversary — draft v0.3 (review-fix pass, 2026-07-12).
 % Idea-of-record: diagnosis/docs/PAPER_IDEA.md (update pending); every claim maps
-% to a row in diagnosis/docs/CLAIMS_EVIDENCE.md (C1–C7) — do not add claims
-% without a row there. E0 overoptimization numbers (C5.3) are RUNNING (SLURM
-% 24740/24741); their table/figure slots are marked \todo and must not ship
-% until n=8 lands. Previous Boundary-Blindness-led draft: git history (v0.1).
+% to a row in diagnosis/docs/CLAIMS_EVIDENCE.md (C1–C8) — do not add claims
+% without a row there. E0 overoptimization (C5.3): FINAL at n=16 (3 tasks incl.
+% pick-place, results/overopt_*_n16.csv, matches figures/figure_overopt.pdf);
+% the population-axis corroboration remains n=8 (overopt_*_nsamp.csv), stated
+% in-text. Within-search decode growth is a point-estimate trend (CIs overlap
+% at n=16) and is disclosed as such. Pending fold-ins: planner-generality
+% (MPPI/shooting, job 26400), 2nd-checkpoint ladder (job 26166), G(c,P) ladder
+% validation, encoder info upper-bound probe.
+% Previous Boundary-Blindness-led draft: git history (v0.1); n=8-era overopt
+% text: git history (v0.2).
 %
 % Build: pdflatex main && bibtex main && pdflatex main && pdflatex main
 \documentclass[10pt]{article}
@@ -23,10 +29,9 @@
 Latent World-Model Planning}
 
 \author{%
-  Anonymous\thanks{Draft v0.2, 2026-07-06 (retargeted). Sections 3--5 and 7
-  carry final numbers (see \texttt{diagnosis/results/} and
-  \texttt{diagnosis/docs/CLAIMS\_EVIDENCE.md}); Section 6.2 (overoptimization
-  curves) is running and marked TODO.}}
+  Anonymous\thanks{Draft v0.2, 2026-07-06 (retargeted). All sections carry final
+  numbers (see \texttt{diagnosis/results/} and
+  \texttt{diagnosis/docs/CLAIMS\_EVIDENCE.md}).}}
 \date{}
 
 \begin{document}
@@ -34,52 +39,37 @@ Latent World-Model Planning}
 
 % ======================================================================
 \begin{abstract}
-Action-conditioned JEPA world models plan by test-time search: at every control
-step, a sampling optimizer (CEM) scores hundreds of imagined futures with a
-learned cost and executes the best candidate. We show that on contact-rich
-manipulation this coupling --- an optimizer pitted against a learned proxy ---
-is where planning fails, and that the dominant and previously unmeasured failure
-mode is \emph{cost overoptimization} (Goodhart's law) rather than merely missing
-information. All experiments use frozen pretrained checkpoints. Two kinds of numbers recur: \emph{planning success}, counted as
-successful episodes out of 16 (written $k/16$), and \emph{readout accuracy}, the
-percentage of frames whose decoded object position falls within the 5\,cm
-task-success radius.
-\textbf{(1)~Diagnosis.} We measure action grounding with counterfactual ranking
-accuracy (CRA): given a real transition, does the predictor place the executed
-action's imagined future closer to the observed next state than the futures it
-imagines for 16 distractor actions? Chance is $1/17\approx 6\%$. Against
-distractors drawn from similar states, every model sits at the chance floor in
-contact regimes --- and the result is flat across a $45\times$ encoder scale-up
-(DINOv2 22M $\to$ V-JEPA-2-AC 1B).
-\textbf{(2)~Localization.} An \emph{oracle ladder} fixes the planner and its
-budget, gives it \emph{perfect dynamics} (every candidate action sequence is
-rolled in the simulator and encoded by the real frozen encoder), and varies only
-the cost. With the true simulator-state cost, the same planner solves push
-$16/16$; with every cost computed from the frozen representation it solves at
-most $2/16$. Even repairing the object readout on exactly the frames the planner
-scores (readout accuracy $78\%\to91.5\%$) adds \emph{zero} successful episodes.
-\textbf{(3)~Mechanism.} The planner is the adversary: on the elite candidates
-CEM converges to, the same readout that is $91.5\%$ accurate on random frames
-drops to $24\%$ --- the search seeks out precisely the frames the cost
-mis-scores, and executed plans read ``at goal'' while the true object sits
-$13$--$30$\,cm away. Sweeping the search budget makes this monotone in
-optimization pressure: proxy improving, true outcome flat, readout error on the
-elites growing --- a Goodhart curve with an honest-cost control that, in
-contrast, converts search into success. Mitigations from the
-reward-hacking playbook --- readout hardening, encoder-LoRA fine-tuning (5
-seeds), ensemble disagreement penalties --- all stay at $\leq 2/16$, even while
-readout accuracy reaches $94$--$100\%$: \emph{grounding does not buy planning}.
-Overoptimization curves confirm the mechanism is monotone in search budget, and
-a search-free amortized controller --- removing the optimizer entirely --- also
-fails ($0/8$), exposing a second, independent wall: the frozen representation.
-Grounding is necessary, not sufficient.
-\textbf{(4)~The predictor-side lever.} An action-counterfactual InfoNCE
-objective (a $0.5$M-parameter predictor-LoRA, no object labels) lifts CRA on
-real-robot DROID data from the $6\%$ chance floor to $61\%$ and cuts a
-planning-probe action error by $26\%$, while \emph{improving} reconstruction.
-The implication for evaluation: prediction accuracy and grounding metrics do not
-predict plannability; world models intended for planning should report the
-cost's \emph{exploitability under the planner's own optimization pressure}.
+Action-conditioned JEPA world models plan by test-time search: a sampling
+optimizer (CEM) scores imagined futures with a learned cost and executes the
+best candidate. Across the field's own evaluations this succeeds at reaching
+and pose control, and stalls at contact: pushing, grasping, and pick-and-place
+are omitted, shown only qualitatively, or scaffolded with hand-crafted
+sub-goals. We explain why. Action grounding in contact regimes sits at chance
+on real-robot data and stays there across a $45\times$ encoder scale-up (22M to
+1B parameters, two model families) --- scale is not the fix. An \emph{oracle ladder} that
+hands the planner perfect dynamics and varies only the cost isolates the
+failure: the true-state cost solves push $16/16$, while every cost built on
+the frozen encoder collapses to $0$--$2/16$, even one repaired to $91.5\%$
+object-decode accuracy on exactly the frames the planner queries. The reason
+the repair does not transfer is mechanistic: CEM's search converges
+specifically onto the cost's residual error, so the same readout scores
+$91.5\%$ off-policy but $24\%$ on the search's own elite candidates --- a
+Goodhart-style overoptimization we confirm with budget sweeps, and one that
+survives every standard mitigation we try (hardened readouts, encoder
+fine-tuning, disagreement ensembles). This diagnosis --- cost geometry, not the
+predictor, is the planning bottleneck --- has been proposed concurrently on
+small, non-robot toy world models; ours is the first to isolate it
+\emph{causally} (dynamics held oracle-perfect, only the cost varied) and to
+test it \emph{adversarially}: the grounding diagnostic spans real-robot data
+up to 1B parameters, and the exploitation mechanism is verified against
+simulator ground truth on contact manipulation, rather than inferred from
+aggregate gains on an already near-saturated benchmark.
+A predictor-side counterfactual training
+objective separately repairs action grounding on real-robot data and transfers
+across checkpoints, but tested directly in closed-loop planning it still does
+not cross the contact wall. Grounding is necessary, not sufficient: world
+models built for planning should be evaluated by how exploitable their cost
+is under the planner's own search, not by how accurately they predict.
 \end{abstract}
 
 % ======================================================================
@@ -114,6 +104,18 @@ in RLHF the optimizer is a training loop one can regularize; here the optimizer
 runs \emph{at every control step}, on frames the cost was never fit on, selected
 adversarially \emph{because} the cost mis-scores them.
 
+\paragraph{This diagnosis is not new; the isolation and the survival test are.}
+A concurrent cluster of work, built mostly on small, non-robot latent world
+models, converges on a compatible reading --- predictive accuracy does not
+imply a plannable cost. We do not claim first discovery that cost geometry, not
+the predictor, is the bottleneck (Sec.~\ref{sec:related} compares each account
+in detail). What we add is causal: an oracle ladder that pins the failure to
+the cost by holding dynamics perfect and varying only the cost, rather than
+inferring it from an aggregate success gain, and a mined-elite test for whether
+a repaired cost \emph{survives} being searched against by the same optimizer
+that broke it --- run on real-robot contact manipulation at up to 1B
+parameters, not a 2D/3D toy suite whose base planner already largely solves it.
+
 Three features distinguish our account from the classic ``model exploitation''
 concern in model-based RL~\citep{janner2019trust, lambert2020objective}, where a
 policy exploits errors in learned \emph{dynamics}. (i)~We give the planner
@@ -133,17 +135,21 @@ supervision and verification; DROID for real-robot transfer) is:
 
 \begin{itemize}
   \item \textbf{C1 (diagnosis at scale, Sec.~\ref{sec:diagnostic}).} On frozen
-  checkpoints, action grounding against \emph{nearest-neighbour} action
-  distractors sits at the chance floor ($\approx 0.059$) in every
-  contact-relevant regime,
-  and our Boundary-Blindness instrument shows the models smear exactly the
-  contact bifurcations that decide a grasp. Crucially this is
-  \emph{scale-invariant}: flat across a $45\times$ encoder scale-up and two
-  self-supervised families, up to and including V-JEPA-2-AC at 1B parameters.
+  DROID checkpoints, action grounding against \emph{nearest-neighbour}
+  distractors sits at or within noise of the chance floor ($\approx 0.059$) in every
+  contact-relevant regime and is \emph{scale-invariant}: flat across a
+  $45\times$ encoder scale-up and two self-supervised families, up to and
+  including V-JEPA-2-AC at 1B parameters. The same distractor family on
+  Metaworld shows the same pre-grasp-worst ordering, well above chance
+  ($0.47$--$0.54$; Table~\ref{tab:cra}). Our Boundary-Blindness instrument
+  shows the models smear exactly the contact bifurcations that decide a grasp.
   \item \textbf{C2 (the wall, at upstream parity, Sec.~\ref{sec:planning}).} Our
-  closed-loop harness reproduces the published Metaworld Reach baseline
+  closed-loop harness recovers a Metaworld Reach rate consistent with the
+  published baseline
   ($6/16 = 37.5\%$, CI $[18.5, 61.4]\%$, vs.\ the reported $44.8\pm8.9\%$), and
-  both the $L_2$ and grounded planners score $0/16$ on push and pick-and-place
+  both the $L_2$ and grounded planners (the latter augments the cost with a
+  learned object-dynamics channel; Sec.~\ref{sec:planning}) score $0/16$ on
+  push and pick-and-place
   with a diagnostic signature: the arm arrives ($2$--$4$\,cm from its goal
   pose), the object never moves.
   \item \textbf{C3 (localization: the oracle ladder, Sec.~\ref{sec:ladder}).}
@@ -158,10 +164,12 @@ supervision and verification; DROID for real-robot transfer) is:
   $24\%$ within $5$\,cm versus $91.5\%$ on random off-policy frames --- the
   search specifically finds and converges onto the cost's error pockets, driving
   the object to where the cost reads ``at goal'' while it is $13$--$30$\,cm
-  away. Sweeping the search budget makes this a Goodhart curve monotone in
-  optimization pressure --- proxy improving, true outcome flat, elite readout
-  error growing --- with an honest-cost control (reach) that instead turns search
-  into success ($2/8\to8/8$). Mitigations from the reward-hacking playbook ---
+  away. Sweeping the search budget turns this into a Goodhart curve: the proxy
+  improves with optimization pressure while the true outcome stays flat at
+  every budget, and the elite readout error trends upward (a consistent
+  point-estimate trend across exploitable arms; Sec.~\ref{sec:overopt}) ---
+  with an honest-cost control (reach) that instead turns search
+  into success ($5/16\to16/16$). Mitigations from the reward-hacking playbook ---
   hardened readouts, encoder-LoRA (5 seeds), ensemble disagreement penalties,
   relearned representation adapters --- all stay within the frozen baseline's
   $0$--$2/16$, even at $94$--$100\%$ grounding: \emph{grounding does not buy
@@ -179,7 +187,22 @@ supervision and verification; DROID for real-robot transfer) is:
   regime$\times$horizon cells (pooled $1.468\!\to\!1.086$, $-26\%$) and lifts
   effect-conditioned action grounding from chance ($0.061$) to $0.605$, while
   improving reconstruction --- the training-side counterpart of the analysis,
-  and the correct level at which to intervene on the \emph{predictor} axis.
+  and the correct level at which to intervene on the \emph{predictor} axis. A
+  direct closed-loop transfer to Metaworld (same objective, same CEM harness as
+  C2) improves Reach $6/16\to9/16$ but leaves push at $0/16$: the fix does not
+  by itself cross the contact wall, confirmed in closed loop rather than
+  inferred from the ladder.
+  \item \textbf{C7 (an evaluation axis: cost exploitability,
+  Sec.~\ref{sec:discussion}).} C1--C6 share a through-line: every quantity the
+  field currently reports --- prediction error, action grounding, readout
+  precision --- is satisfied while planning fails, and the one quantity that
+  tracks the failure is the cost's \emph{exploitation gap}: the discrepancy
+  between what the cost claims and what a ground-truth verifier reports \emph{on
+  the elite population the optimizer converges to} ($91.5\%\!\to\!24\%$ within
+  $5$\,cm here, Table~\ref{tab:exploit}). We formalize it as a first-class
+  evaluation protocol (Sec.~\ref{sec:discussion}), show it separates honest from
+  exploitable costs where every average-case metric rates them identically, and
+  note it is cheap --- one decode pass over frames the planner already produced.
 \end{itemize}
 
 \paragraph{Conventions (how to read our numbers).}
@@ -194,6 +217,16 @@ tables; with $16$ distractors, chance is $1/17 \approx 0.059$. \emph{AUG/ECS}
 are raw latent-space gaps (Sec.~\ref{sec:metrics}), meaningful only within a
 model. Distances in the workspace are in cm or in Metaworld state units where
 noted.
+
+\emph{Planner conventions.} We write a CEM budget as
+(samples)$\times$(iterations) evaluated per replan --- e.g.\ $100\times6$ is
+$100$ candidate action sequences refined over $6$ CEM iterations --- with the
+rollout horizon $H$ stated separately. At each iteration CEM keeps the
+top-scoring candidates, the \emph{elites}, and refits its sampling distribution
+to them; the converged elite population is the set of futures the planner
+``trusts''. Pools marked ``$n_{\mathrm{eff}}$-weighted'' average per-regime
+cells weighted by their effective (trajectory-clustered) sample count, so a few
+long trajectories do not dominate.
 
 The through-line is a reframing of what world-model evaluation must report.
 Prediction error is satisfied while planning fails (Sec.~\ref{sec:diagnostic});
@@ -223,21 +256,32 @@ precisely at contact and why it does not yield to scale.
 Optimizing against a learned proxy eventually decouples proxy from truth:
 formalized for RLHF reward models by~\citet{gao2023overopt}, characterized
 in general by~\citet{skalse2022defining} and~\citet{karwowski2024goodhart},
-and anticipated as ``reward hacking''~\citep{amodei2016concrete}. We port this
-lens to latent-space planning, where it has not been quantitatively
-established: the CEM inner loop is the optimizer, the latent cost is the proxy,
-and the elite population is the analogue of the over-optimized policy. Our
-oracle ladder gives this port an isolation the RLHF setting lacks --- we can
-hold dynamics \emph{perfect} and vary only the cost.
+and anticipated as ``reward hacking''~\citep{amodei2016concrete}. Its
+\emph{test-time} variant is now well documented for language models, where
+search or RL against a learned verifier converges onto the verifier's error
+pockets~\citep{rlvrhacking2026}. We port this lens to latent-space
+\emph{planning}, where it has not been quantitatively established: the CEM
+inner loop is the optimizer, the latent cost is the proxy, and the elite
+population is the analogue of the over-optimized policy --- with the
+aggravation that the optimizer re-runs at every control step. Our oracle
+ladder gives this port an isolation the RLHF setting lacks --- we can hold
+dynamics \emph{perfect} and vary only the cost.
 
 \paragraph{Model exploitation in model-based RL.}
 That policy optimization exploits errors in learned \emph{dynamics} is a classic
-MBRL concern~\citep{janner2019trust}, related to the objective mismatch between
-likelihood training and control performance~\citep{lambert2020objective}.
-Our finding is materially different: with dynamics oracle-controlled, the
-\emph{cost} is exploited at test time --- a failure that persists when the
-dynamics-error channel is closed entirely, and that standard dynamics-side
-remedies (ensembles, pessimism) do not touch (Sec.~\ref{sec:adversary}).
+MBRL concern~\citep{janner2019trust}, running through the sampling-MPC lineage
+our CEM planner inherits~\citep{chua2018pets, nagabandi2019pddm}, related to
+the objective mismatch between likelihood training and control
+performance~\citep{lambert2020objective}, and addressed offline with
+pessimism~\citep{yu2020mopo, kidambi2020morel}; learned agents more broadly
+admit adversarial exploitation of their blind spots~\citep{gleave2020adversarial}.
+Concurrently, \citet{parthasarathy2025traintest} show \emph{gradient-based}
+planners exploit a world model's input gradients and respond by smoothing the
+dynamics. Our finding is materially different from all of these: with dynamics
+oracle-controlled --- the channel every one of those works attacks or repairs
+closed entirely --- the \emph{cost} is exploited at test time, and the standard
+dynamics-side remedies (ensembles, pessimism) do not touch it
+(Sec.~\ref{sec:adversary}).
 
 \paragraph{Concurrent diagnostics and objectives.}
 Concurrently, ATM~\citep{atm2026} proposes a post-hoc action-identifiability
@@ -251,12 +295,85 @@ contributions beyond both are the planner-level exploitation analysis
 demonstration on pretrained robot world models at up to 1B parameters.
 IMWM~\citep{imwm2026} observes that finite-budget sampling planners can be the
 bottleneck even under an idealized world model and responds with demonstration
-priors; \citet{latentgeom2026} amortize planning into an inverse-dynamics
-controller, removing test-time search --- a direction our analysis independently
-motivates as \emph{removing the adversary} (Sec.~\ref{sec:discussion}).
+priors --- we instead show that even a perfect planner and perfect dynamics
+still fail on the cost (Sec.~\ref{sec:ladder}).
 Vision-tactile world models~\citep{contactworld2026} address what information
 contact planning needs; our results say that adding information without
 addressing exploitability is not sufficient (Sec.~\ref{sec:ladder}).
+
+\paragraph{The cost-geometry diagnosis is independently converged on; the
+survival test is not.} A cluster of concurrent work built on a small,
+non-robot latent world model~\citep{leworldmodel2026} reaches a compatible
+diagnosis by different routes. RC-aux~\citep{rcaux2026} makes the framing
+explicit --- ``predictive but not plannable'': accurate short-horizon
+prediction can still leave a latent whose Euclidean distance does not reflect
+finite-horizon reachability --- and repairs it with a training-time
+reachability objective that reshapes the representation (nearer to our
+relearned-representation arm, which also fails to cross contact, than to a
+purely post-hoc metric). Trajectory reachability metrics~\citep{trm2026}
+instead add a post-hoc terminal-ranking head on the frozen backbone, the same
+species of fix as our stateprobe and learned-metric arms
+(Sec.~\ref{sec:ladder}). ACID~\citep{acid2026} argues, in the same spirit,
+that a terminal-only latent cost cannot see whether intermediate transitions
+are realizable, and adds an inverse-dynamics cycle-consistency term to the
+planning cost. We therefore do not claim first discovery of ``cost geometry,
+not the predictor, is the bottleneck.'' Two things separate our account. First,
+\emph{isolation}: none of these hold dynamics oracle-perfect while varying only
+the cost --- our oracle ladder does, pinning the wall to the cost axis rather
+than inferring it. Second, \emph{survival under search}: all three report only
+aggregate success gains, and on benchmarks their base planner already largely
+solves (e.g.\ Push-T near-saturated); none tests whether the repaired cost
+\emph{survives being searched against by the same optimizer that broke it}. Our
+mined-elite test (Sec.~\ref{sec:adversary}) shows that even the strongest
+repair we could build --- an adversarially retrained representation trained
+explicitly against previously mined exploit pockets --- still collapses to
+$1/16$ once CEM searches against it again, on real-robot contact manipulation
+rather than a 2D/3D toy suite. The distinguishing claim is adversarial survival
+at scale, not the diagnosis itself.
+
+\paragraph{Amortizing away the search.} Closest to our ``remove the adversary''
+control (Sec.~\ref{sec:e1}), \citet{latentgeom2026} replace CEM entirely with a
+goal-conditioned inverse-dynamics map and argue the opposite thesis --- that a
+well-regularized latent has ``already encoded'' the structure search would
+recover, so the planner is not the bottleneck. Their evidence carries our
+wedge: the single contact-rich cell in their toy suite (Push-T) is the one
+place amortization stops dominating, which they attribute to ``delicate
+multi-step contact.'' Our E1 drives that seam through to a clean null on
+real-robot contact: removing the search does not move the object either ---
+contact planning faces the exploitable cost \emph{and} an insufficient frozen
+representation, not one or the other.
+
+\paragraph{Reconciling three diagnoses of the same planner.}
+Three concurrent accounts of why latent planners stall appear to conflict:
+IMWM~\citep{imwm2026} finds that even under oracle dynamics a finite-budget
+sampling planner is \emph{search-limited} and adds demonstration priors;
+\citet{latentgeom2026} argue the planner is \emph{not} the bottleneck --- a
+well-regularized latent has already encoded what search would recover, so
+amortization suffices; we argue the \emph{cost} is exploited by the very search
+that is supposed to help. These are not contradictory once conditioned on the
+regime, and the unifying variable is whether the cost has worst-case pockets
+\emph{in that regime}. Where the cost is honest (free space, pose control),
+more search converts to success (IMWM's lever; our reach control, $5/16\to16/16$,
+Fig.~\ref{fig:overopt}) and amortization can match it~\citep{latentgeom2026};
+where the cost is exploitable (contact), \emph{both} levers fail --- adding
+search digs into the pockets (Sec.~\ref{sec:overopt}) and removing it leaves a
+representation that never moves the object (our E1, Sec.~\ref{sec:e1}). The
+apparent disagreement is a regime confound: each prior account reads its
+benchmark's dominant regime as the whole story. Our oracle ladder makes the
+conditioning explicit --- same planner and budget throughout, only the cost's
+exploitability varies --- which is why we can locate the binding constraint at
+contact as neither search coverage (IMWM) nor search presence (latentgeom) but
+cost exploitability.
+
+\paragraph{Evaluating world models for decision-making.}
+A concurrent position paper argues world models should be evaluated by their
+decision-making utility rather than predictive accuracy, and proposes a broad
+utility taxonomy~\citep{yu2026wmeval}. We agree with the position; our
+contribution to it is a mechanism and an instrument the taxonomy lacks ---
+evidence that the prediction/planning gap is \emph{adversarial} (the planner
+manufactures the states on which the cost is wrong), and a concrete, cheap
+measurement of it (the exploitation gap, Sec.~\ref{sec:discussion}) computed
+from frames the planner already produced.
 
 \paragraph{Benchmarks.}
 We evaluate on Metaworld~\citep{yu2020metaworld}, whose simulator state lets us
@@ -333,12 +450,17 @@ same future for every nearby action. Because $\bb$ references ground-truth
 outcomes, a high value cannot be explained away by small one-step latent
 deltas.
 
-\textbf{Protocol.} Transitions are stratified into four regimes --- free
-space, pre-grasp, gripper actuation, contact manipulation --- via a proxy from
-the Metaworld simulator state (object displacement as the contact signal;
-DROID uses proprioception and latent-change heuristics). All confidence
-intervals are trajectory-clustered bootstrap. Every frame is encoded once and
-cached; nothing is trained for the diagnostic.
+\textbf{Protocol.} Each transition is assigned to one of four mutually
+exclusive regimes --- free space, pre-grasp, gripper actuation, contact
+manipulation --- by a fixed-threshold priority cascade on the simulator state:
+gripper actuation if the gripper aperture changes, else contact manipulation if
+the object moves ($>5$\,mm), else pre-grasp if the hand is within $10$\,cm of the
+object, else free space (full thresholds, and the DROID gripper-sensor and
+RoboCasa grasp-flag analogues, in App.~\ref{app:regimes}). This is an
+object-displacement \emph{proxy}, not a MuJoCo contact sensor --- the released
+data ships no contact flags --- and the caveat is carried on every figure. All
+confidence intervals are trajectory-clustered bootstrap. Every frame is encoded
+once and cached; nothing is trained for the diagnostic.
 
 \subsection{Frozen baselines fail on nearby actions, at the boundary}
 \begin{table}[h]
@@ -366,8 +488,9 @@ Boundary Blindness explains and localizes the collapse: pooled
 $\bb_{\mathrm{boundary}}$ concentrates at the pre-grasp boundary on both model
 families (DINO-WM $1.323$, JEPA-WM $1.280$, vs.\ free-space $0.28$--$0.30$;
 per-task CI-aware pairing elevated in 4/6 and 5/6 tasks with zero confident
-reversals) and transfers to real-robot DROID data ($1.975$ $[1.601, 2.350]$
-under the $\|\Delta z\|$ proxy). The predictor is a conditional-mean estimator
+reversals) and transfers to real-robot DROID data (DINO-WM $1.916$
+$[1.560, 2.279]$ under the $\|\Delta z\|$ proxy; Table~\ref{tab:scaling} gives
+the full four-model breakdown). The predictor is a conditional-mean estimator
 under full-latent $L_2$; where contact bifurcates the outcome fan, it predicts
 the fan's mean.
 
@@ -381,7 +504,8 @@ DINO-WM (DINOv2 ViT-S, 22M), JEPA-WM (DINOv3 ViT-L, 300M), V-JEPA-2-AC (ViT-G,
 \centering\small
 \caption{DROID action grounding does not scale. \emph{Top:} effect-conditioned
 CRA against nearest-neighbour distractors (chance $= 1/17 \approx 0.059$): all
-four models sit at the chance floor in every action-critical regime. \emph{Bottom:}
+four models sit at or within noise of the chance floor in every action-critical
+regime ($0.031$--$0.077$). \emph{Bottom:}
 $\bb_{\mathrm{boundary}}>0$ in every cell (boundary-blind), pre-grasp locus in
 3/4. A positive control rules out metric saturation: on toy fully-actuated
 datasets the same diagnostic returns $0.66$--$1.0$.}
@@ -407,7 +531,11 @@ contact manipulation & 0.421 & 0.897 & 0.390 & 0.595 \\
 
 The curve is flat across $45\times$ scale and across families. ``Just scale the
 encoder'' is ruled out; whatever fixes contact planning, it will not be free
-with the next checkpoint. Note what this section does \emph{not} yet establish:
+with the next checkpoint. This DROID chance floor is not a proxy artefact: CRA
+ranks the factual action against distractors at a \emph{fixed} state, so it is
+independent of how transitions are bucketed into regimes, and the $\|\Delta z\|$
+effect-condition only selects \emph{which} transitions are scored --- it never
+enters the ranking itself. Note what this section does \emph{not} yet establish:
 that this grounding failure is what breaks planning. Sections~\ref{sec:ladder}
 and~\ref{sec:adversary} show the relationship is more damning --- even
 \emph{repairing} grounding does not repair planning.
@@ -422,14 +550,19 @@ env steps; success = the simulator's flag at episode end. Reaching a faithful
 protocol required fixing three environment-side reproduction bugs, documented
 with verification probes in App.~\ref{app:repro} (after the fixes, rendered
 observations are on the training manifold: one-step prediction error $1.4\times$
-dataset level, latent NN ratio $0.97$; physics identical, $1.5$\,mm replay
-error).
+dataset level, latent nearest-neighbour ratio $0.97$ (a rendered frame's
+distance to its nearest dataset latent, relative to the dataset's own
+nearest-neighbour distance; $\approx\!1$ means indistinguishable from training
+frames); physics identical, $1.5$\,mm replay error).
 
 \begin{table}[h]
 \centering\small
 \caption{Closed-loop Metaworld, 16 paired episodes per task (paired env
-initialisation and CEM noise; episode-end judging). The harness reproduces the
-published Reach baseline; contact collapses with the diagnostic signature.}
+initialisation and CEM noise; episode-end judging). The harness recovers a
+Reach rate consistent with the published baseline; contact collapses with the
+diagnostic signature.
+``grounded'' $=$ the $L_2$ cost augmented with a $0.5$M object-dynamics channel
+$h(z,a)\!\to\!\Delta\mathrm{obj}$ (App.~\ref{app:fixladder}).}
 \label{tab:closedloop}
 \begin{tabular}{llccc}
 \toprule
@@ -448,9 +581,13 @@ task & arm & success & final state-dist & final ee-dist \\
 \end{table}
 
 Three readings. (i)~Where the diagnostic is clean (free space), the harness
-reproduces the published baseline (Reach $6/16$, i.e.\ $37.5\%$ with CI
-$[18.5, 61.4]\%$, vs.\ the reported $44.8\pm8.9\%$) --- the harness is healthy,
-the contact failure is real. (ii)~The failure signature is specific: final end-effector $2$--$4$\,cm
+is consistent with the published baseline: Reach $6/16$, i.e.\ $37.5\%$ with
+CI $[18.5, 61.4]\%$, against the reported $44.8\pm8.9\%$ --- the published
+value falls inside our interval, though our point estimate sits below its
+mean; we read this as compatibility from one released checkpoint over $16$
+episodes, not a seed-matched replication (cf.\ limitations,
+Sec.~\ref{sec:discussion}). The harness is healthy, the contact failure is
+real. (ii)~The failure signature is specific: final end-effector $2$--$4$\,cm
 from its goal pose while the object never moves --- the closed-loop face of the
 smeared contact bifurcation, matching the upstream reports (``hallucinates
 grasping''; sub-goal images required). (iii)~A grounded auxiliary cost (a
@@ -465,8 +602,13 @@ problem, why does repairing the model's outputs not repair planning?
 \section{The oracle ladder: the wall is the cost}\label{sec:ladder}
 
 We isolate which component breaks contact planning by swapping exactly one rung
-at a time, holding everything else at the upstream protocol (CEM $100\times 6$,
-$H{=}6$, strict episode-end success, 16 episodes, \texttt{dino\_wm\_metaworld}).
+at a time, holding the planner fixed (CEM $100\times 6$ per replan, $H{=}6$,
+strict episode-end success, 16 episodes, \texttt{dino\_wm\_metaworld}). This
+budget is smaller than the parity harness of Sec.~\ref{sec:planning}
+($300\times15$) for compute reasons, but it is \emph{not} the bottleneck:
+Sec.~\ref{sec:overopt} sweeps the CEM budget up to $24$ iterations and $300$
+samples and the contact rungs never improve, while the same budget solves the
+task the moment the cost is honest.
 The key device is the \emph{latent oracle}: every CEM candidate is rolled in the
 \emph{simulator}, rendered, and encoded by the real frozen encoder --- perfect
 dynamics through the true representation, learned predictor removed. Any rung
@@ -486,7 +628,7 @@ rung & dynamics & cost & readout & push & pick \\
 \midrule
 state oracle & perfect & true state ($\|\mathrm{obj}{-}g\| + 0.5\|\mathrm{hand}{-}\mathrm{obj}\|$) & sim & \textbf{16/16} & \textbf{11/16} \\
 latent oracle & perfect & latent $L_2$ & --- & 0/16 & 0/16 \\
-latent oracle & perfect & object readout ($\|g(z){-}g(z_g)\|$) & probe & 0/8 & 0/8 \\
+latent oracle & perfect & object readout ($\|\rho(z){-}\rho(z_g)\|$) & probe & 0/8 & 0/8 \\
 latent oracle & perfect & learned metric $d_\theta(z, z_g)$ & --- & 0/8 & 0/8 \\
 latent oracle & perfect & \emph{true-state cost form}, probe readouts & probe & 2/16 & 0/16 \\
 latent oracle & perfect & same, \emph{off-policy-hardened} probes & probe & 1/16 & 0/16 \\
@@ -500,9 +642,10 @@ Read from the bottom up, the ladder rules out, in order: the \textbf{predictor}
 budget} (the same CEM solves $16/16$ given the true-state cost); the \textbf{cost
 formula} (the probe-based rung copies the successful cost's exact functional
 form, including the hand-approach shaping term, and still collapses $16\!\to\!2$);
-and \textbf{static readout precision} (a spatial probe decodes the object to
-$92\%$ within $5$\,cm on held-out frames --- the encoder \emph{carries} the
-object position within the success radius).
+and \textbf{static readout precision} (a spatial object readout $\rho$
+(App.~\ref{app:impl}) decodes the object to $92\%$ within $5$\,cm on held-out
+frames --- the encoder \emph{carries} the object position within the success
+radius).
 
 \paragraph{The decisive rung: a real readout repair transfers nothing.}
 One hypothesis survives the ladder: CEM scores \emph{off-policy} frames (latents
@@ -557,6 +700,18 @@ $13$--$30$\,cm away. This is reward hacking in the strict
 sense~\citep{skalse2022defining}: the optimizer achieves a low proxy value by
 exploiting the proxy's misspecification, not by achieving the goal.
 
+\paragraph{The exploitation is on ground truth, not the probe.} Because $\rho$
+is itself OOD-sensitive, we verify the \emph{same} elites against simulator
+state, which never passes through the probe: on the committed (final-iteration)
+elites the \emph{true} object sits a median $24.9$\,cm from goal ($19.9$\,cm on
+push, $28.0$\,cm on pick), and only $1.7\%$ fall within the $5$\,cm success
+radius (push $3.4\%$, pick $0.0\%$). The planner's trusted candidates are
+genuinely far from the goal --- the probe collapse in Table~\ref{tab:exploit}
+reflects real exploitation, not readout noise, and the ground-truth elite
+quality ($1.7\%$ within $5$\,cm) is in fact \emph{worse} than the probe reports
+($19.2\%$), so the probe number understates the wall
+(\texttt{results/exploit\_simstate\_crosscheck.csv}).
+
 \subsection{Overoptimization curves}\label{sec:overopt}
 The framing makes a falsifiable prediction the previous sections do not test:
 exploitation should be \emph{monotone in optimization pressure}. Holding
@@ -566,44 +721,60 @@ into deeper pockets --- proxy improving, truth flat or worse, in direct analogy
 to the reward-model overoptimization curves of~\citet{gao2023overopt}. We test
 this on the latent oracle (perfect dynamics; only the cost is learned, so any
 proxy/truth divergence is attributable to the cost under optimization, not to
-predictor error), sweeping CEM iterations $\in\{2,6,12,24\}$ over $n{=}8$ paired
-episodes, with three cost$\times$task arms that isolate the three regimes.
+predictor error), sweeping CEM iterations $\in\{2,6,12,24\}$ over $n{=}16$
+paired episodes per cell, across cost$\times$task arms
+(\{push, pick-and-place, reach\}$\times$\{probe-based state cost, latent
+$L_2$\}) of which three isolate the three regimes of interest: exploitable,
+honest, and no-signal.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/figure_overopt.pdf}
-\caption{\textbf{Cost overoptimization in latent planning.}
+\caption{\textbf{Cost overoptimization in latent planning} ($n{=}16$ paired
+episodes per cell; shaded bands are episode-clustered bootstrap 95\% CIs).
 \emph{(A)}~True distance to goal vs.\ CEM iterations. reach$\times L_2$ (honest
-cost) converts more search into success ($2/8\to8/8$); push$\times$probe-cost
-(exploitable) and push$\times L_2$ (no-signal) do not improve with budget.
-\emph{(B)}~Within one search at the largest budget, normalized to the first CEM
-iteration: for push$\times$probe-cost the proxy the planner minimizes falls
-($-17\%$) while the true state cost stalls ($-2\%$) and the object-decode error
-on the committed elites \emph{grows} ($6.6\to8.2$\,cm, $+24\%$) --- the planner
-digs into deeper readout-error pockets. The honest cost (reach$\times L_2$)
-shows no such decode growth.}
+cost) converts more search into success ($5/16\to16/16$);
+push/pick$\times$probe-cost (exploitable) and push/pick$\times L_2$ (no-signal)
+do not improve with budget. \emph{(B)}~Within one search at the largest budget,
+normalized to the first CEM iteration: for push$\times$probe-cost the proxy the
+planner minimizes falls ($-18\%$) while the true state cost stalls ($-2\%$) and
+the object-decode error on the committed elites rises ($6.6\to8.3$\,cm,
+$+25\%$; pick $6.7\to8.1$\,cm, $+21\%$) --- the planner digs into deeper
+readout-error pockets. The decode rise is a point-estimate trend
+(first/last CIs overlap at this $n$); the honest cost (reach$\times L_2$)
+shows no such trend ($+1\%$).}
 \label{fig:overopt}
 \end{figure}
 
-The three predictions all hold (Fig.~\ref{fig:overopt}). \textbf{Exploitable
-cost} (push, probe-based state cost): within a single search at budget $24$, the
-believed-best candidate's proxy falls monotonically ($0.166\to0.138$, $-17\%$)
-while its true object$\to$goal distance is flat ($0.279\to0.273$, $-2\%$) and the
-probe's decode error on the elite population grows monotonically
-($6.6\to8.2$\,cm, $+24\%$): more optimization, deeper pockets. Across budgets the
-true object distance does not improve with search ($\mathrm{med}\approx0.25$\,m
-at all of $\{2,6,12,24\}$ iterations; episode success stays within the frozen
-band with CIs overlapping $0$). \textbf{Honest cost} (reach, $L_2$): the
-essential positive control --- here more search \emph{does} convert to success
-($2/8\to8/8\to8/8$ at $2/6/24$ iterations), confirming the sweep detects
-``search helps'' when the cost is aligned. \textbf{No-signal cost} (push, $L_2$):
-the proxy falls ($-32\%$) but the true object distance is \emph{exactly} flat
-($0.252$\,m at every budget) --- $L_2$-in-latent has no minimum at task success,
-so optimizing it is inert; this distinguishes an \emph{exploitable} cost (signal
-present, worst-case reachable) from a merely \emph{uninformative} one. A second
-pressure axis --- CEM population $\in\{50,100,300\}$ at fixed $12$ iterations ---
-corroborates: enlarging the candidate pool does not improve the true push outcome
-either (probe-cost median $0.233/0.207/0.252$\,m; $L_2$ flat).
+The three predictions hold (Fig.~\ref{fig:overopt}). \textbf{Exploitable
+cost} (push, probe-based state cost): within a single search at budget $24$,
+the believed-best candidate's proxy falls monotonically ($-18\%$) while its
+true object$\to$goal distance does not improve ($-2\%$), and the probe's
+decode error on the elite population rises $6.6$\,cm $[5.7,7.4]$ $\to$
+$8.3$\,cm $[7.1,9.3]$ ($+25\%$). We state the evidentiary status of that last
+quantity precisely: the first/last-iteration decode CIs \emph{overlap} at
+$n{=}16$, so the deepening pocket is a point-estimate trend, not a
+CI-separated effect --- but it is a trend that appears in \emph{both}
+exploitable arms (pick-and-place$\times$probe-cost: $6.7\to8.1$\,cm, $+21\%$)
+and in \emph{neither} honest arm (reach$\times L_2$: $+1\%$), and it sits on
+top of the CI-clean across-budget facts that follow. Across budgets the true
+push object distance does not improve with search
+($\mathrm{med}\approx0.18$--$0.21$\,m at all of $\{2,6,12,24\}$ iterations;
+episode success $0$--$2/16$, every CI containing the frozen band).
+\textbf{Honest cost} (reach, $L_2$): the essential positive control --- here
+more search \emph{does} convert to success ($5/16\to16/16\to16/16\to16/16$ at
+$2/6/12/24$ iterations), confirming the sweep detects ``search helps'' when
+the cost is aligned. \textbf{No-signal cost} (push, $L_2$): the proxy falls
+($-35\%$) but the true object distance is \emph{exactly} flat ($0.239$\,m
+median at every budget) --- $L_2$-in-latent has no minimum at task success,
+so optimizing it is inert; this distinguishes an \emph{exploitable} cost
+(signal present, worst-case reachable) from a merely \emph{uninformative}
+one. Pick-and-place corroborates all three modes (probe-cost $0$--$1/16$
+with the same rising-decode signature; $L_2$ flat at $0.286$\,m). A second
+pressure axis --- CEM population $\in\{50,100,300\}$ at fixed $12$ iterations
+($n{=}8$ episodes) --- corroborates: enlarging the candidate pool does not
+improve the true push outcome either (probe-cost median
+$0.233/0.207/0.252$\,m; $L_2$ flat at $0.252$\,m).
 
 \subsection{Mitigations from the playbook all fail}\label{sec:mitigations}
 If the diagnosis is right, repairs that improve the cost's \emph{average}
@@ -631,7 +802,7 @@ off-policy-hardened probes & off-policy 91.5\% $<$5\,cm & 1/16 \\
 learned latent metric $d_\theta$ & --- & 0/8 \\
 relearned repr.\ adapter $\varphi$ (v2) & held-out decode med.\ 6.9\,cm & 1/16 \\
 encoder-LoRA + $\varphi$ (5 seeds) & decode 94--100\% $<$5\,cm & \{5,0,2,1,1\}/16; mean 1.8, CI $[0,3.7]$ \\
-\;\;+ ensemble disagreement, $\lambda{\in}\{0,\tfrac12,1,2\}$ & --- & \{2,2,2,1\}/16 \\
+\;\;+ ensemble disagreement, $\lambda{\in}\{0,\tfrac12,1,2\}$ & --- & \{2,1,2,1\}/16 \\
 \midrule
 true-state cost (no pockets) & --- & \textbf{16/16} \\
 \bottomrule
@@ -642,16 +813,20 @@ Three of these deserve comment. \textbf{Encoder fine-tuning} (LoRA on the
 DINOv2 trunk, action-conditioned grounding objective, 5 seeds): grounding
 reaches $94$--$100\%$, the five-seed planning mean is $1.8/16$ with CI
 $[0,3.7]$ --- statistically inside the frozen band; the single $5/16$ seed is
-high-variance noise, not a crossing. This is the strongest form of the paper's
+high-variance noise, not a crossing (its own $95\%$ Wilson interval,
+$[14,56]\%$, overlaps every other arm's; and every frozen-base arm's Wilson
+upper bound is $\leq\!3.1/16$ for the $n{=}16$ rungs ---
+\texttt{results/ladder\_mitigation\_cis.csv}). This is the strongest form of the paper's
 recurring lesson: \emph{grounding does not buy planning}, now proven at the
 encoder level, not just the readout level. \textbf{Ensemble disagreement}
 (cost $= \mathrm{mean}_k d_k^2 + \lambda\,\mathrm{Var}_k[d_k]$ over 5
 independently fine-tuned seeds) is the standard pessimism remedy for model
-exploitation~\citep{janner2019trust}; it fails here ($\{2,2,2,1\}/16$ across
-$\lambda$) for an instructive reason: the seeds share the frozen pre-trained
-base, so they share the blind spot, and disagreement stays flat exactly on the
-exploited pockets --- the same failure mode reported for reward-model ensembles
-sharing a pre-trained trunk. \textbf{The state-oracle row} pins the counterfactual:
+exploitation~\citep{janner2019trust, coste2024ensembles}; it fails here
+($\{2,1,2,1\}/16$ across $\lambda$) for an instructive reason: the seeds share
+the frozen pre-trained base, so they share the blind spot, and disagreement
+stays flat exactly on the exploited pockets --- the same failure mode reported
+for reward-model ensembles sharing a pre-trained
+trunk~\citep{eisenstein2023herding}. \textbf{The state-oracle row} pins the counterfactual:
 nothing about the task, budget, or planner prevents success; only the pockets do.
 
 \paragraph{Summary of the mechanism section.}
@@ -662,8 +837,18 @@ optimizer samples from its worst case. Every repair that improves average-case
 metrics --- readout precision, grounding, disagreement --- leaves the worst
 case reachable. We were unable to produce a plannable post-hoc cost on a
 frozen action-conditioned JEPA encoder for contact manipulation, across every
-lever available to us; we conjecture, and our evidence supports, that
-\textbf{any post-hoc cost on such an encoder is planner-exploitable at contact}.
+lever available to us; we state as a falsifiable conjecture --- scoped to this
+checkpoint family, task class, and the post-hoc regime, not a theorem ---
+that \textbf{any post-hoc cost on such an encoder is planner-exploitable at
+contact}. Two caveats bound the strength of these nulls. First, statistical:
+at $n{=}16$ episodes a $0/16$ arm's Wilson interval reaches $19.4\%$, so each
+null rules out mitigations that would lift success above ${\sim}20\%$, not
+arbitrarily small gains --- the claim is ``no crossing,'' not ``exactly
+zero.'' Second, multiplicity: the mitigation grid spans many small-$n$ cells,
+which is precisely why we read the occasional $2/16$ (and the single $5/16$
+seed) as band noise rather than signal --- the same logic applies
+symmetrically and we do not interpret any individual $+2/16$ cell as a
+partial success.
 
 % ======================================================================
 \section{The axis that moves: counterfactual training of the predictor}
@@ -685,7 +870,26 @@ world model (\texttt{dino\_wm\_droid}): a predictor-LoRA of $0.469$M parameters
 (encoder untouched, no object ground truth), trained so that
 $F(z_t,a_t)$ scores higher against $z_{t+1}$ than $F(z_t,a^-_k)$ for
 executed-action distractors $a^-_k$, with a stop-gradient on the target.
-Counterfactual ranking accuracy rises $0.195\!\to\!0.736$ while reconstruction
+Concretely, writing $d(a) = \|F(z_t,a) - \mathrm{sg}(z_{t+1})\|^2$ for the
+predictor's latent error under action $a$ ($\mathrm{sg}$ the stop-gradient) and
+$\{a^-_k\}_{k=1}^{K}$ for in-batch permuted (executed) distractor actions, the
+objective is the action-softmax cross-entropy
+\begin{equation}
+  \mathcal{L}_{\mathrm{cf}} \;=\; -\log
+  \frac{\exp\!\big(\!-d(a_t)/\tau\big)}
+       {\exp\!\big(\!-d(a_t)/\tau\big) + \sum_{k=1}^{K}\exp\!\big(\!-d(a^-_k)/\tau\big)},
+\end{equation}
+with temperature $\tau = \mathrm{sg}\big(\overline{d(a_t)}\big)$ auto-scaled to the
+batch-mean factual distance, so the logits stay $O(1)$ regardless of the model's
+absolute latent scale (no per-model tuning). The stop-gradient on $z_{t+1}$ is
+essential: without it the objective is minimized by collapsing the \emph{target}
+rather than by grounding the \emph{prediction}.
+On the objective's own held-out ranking task (all transitions, in-distribution
+distractors), ranking accuracy rises $0.195\!\to\!0.736$; the stricter
+\emph{effect-conditioned} CRA of Sec.~\ref{sec:metrics}
+(effect-bearing transitions, nearest-neighbour distractors) --- the number
+reported in Table~\ref{tab:cf} and comparable to Sec.~\ref{sec:diagnostic} ---
+rises $0.061\!\to\!0.605$. Both rise together while reconstruction
 \emph{improves} ($0.695\times$ baseline error) --- the objective is not trading
 prediction quality for action sensitivity; it is removing a shortcut.
 
@@ -693,9 +897,14 @@ prediction quality for action sensitivity; it is removing a shortcut.
 \centering\small
 \caption{DROID planning probe, frozen vs.\ counterfactually-trained predictor
 (A/B, same protocol, $n{=}157$ planned transitions; CEM $64\times15$). Action
-Error = distance between the planned and the robot's executed action, in
-normalized action units (lower is better); Action Score is the upstream
-aggregate (higher is better); effect-CRA as in Sec.~\ref{sec:metrics} (chance
+Error = the upstream summed-delta $L_1$ distance between the planned and the
+robot's executed net action over the horizon, in normalized action units (lower
+is better); Action Score is the same quantity rescaled to a maximizable number,
+$\max(0,\,1-\text{Action Error}/d_{\mathrm{ref}})$ with $d_{\mathrm{ref}}$ a
+dataset-wide reference (the $95$th percentile of the Action Error; upstream
+convention; higher is better), so the two
+columns are the same signal read in opposite directions; effect-CRA as in
+Sec.~\ref{sec:metrics} (chance
 $\approx 0.059$). Action Error improves in all six regime$\times$horizon cells
 (Action Score in 5/6); effect-CRA leaves the chance floor for the first time in
 this paper.}
@@ -721,8 +930,9 @@ pooled    &   & 1.468 & \textbf{1.086} & 0.466 & \textbf{0.525} & 0.061 & \textb
 model.} Across four CF training seeds, the pooled improvement is tight and every
 seed beats the frozen baseline on every metric: Action Error
 $1.468\to1.076\pm0.012$, Action Score $0.466\to0.544\pm0.019$, effect-CRA
-$0.061\to0.610\pm0.034$ (mean\,$\pm$\,sd over seeds; the single-seed column above
-sits at the seed mean). On a second predictor family (\texttt{jepa\_wm\_droid}),
+$0.061\to0.610\pm0.034$ (mean\,$\pm$\,sd over seeds; the single-seed column
+above is the most conservative of the four on Action Score, and within one sd
+of the seed mean on the other two metrics). On a second predictor family (\texttt{jepa\_wm\_droid}),
 the objective lifts effect-CRA $0.076\to0.32$ and Action Score $0.476\to0.51$;
 Action Error also improves ($1.386\to1.27$) once the LoRA rank is raised to $16$,
 confirming the mechanism is not specific to one checkpoint.
@@ -738,22 +948,72 @@ better predictor (the ladder proved planning fails identically under
 conflating them is precisely the error the oracle ladder is designed to
 prevent.
 
+\paragraph{Direct closed-loop test.} The claim above follows from the ladder by
+inference (perfect prediction already fails, so a merely-improved predictor
+cannot help). We also test it directly, rather than resting on that inference:
+DROID has no simulator, so it cannot report a planning success rate, but
+Metaworld can. We retrain the identical InfoNCE-over-actions objective on
+\texttt{dino\_wm\_metaworld} and re-run it in the same closed-loop CEM harness
+as Sec.~\ref{sec:planning} (upstream $L_2$ cost, identical planner and paired
+episode seeds), as an A/B against the frozen predictor. Reach improves
+$6/16\to9/16$ --- the objective is not inert on this checkpoint --- but push
+stays at $0/16$ for both arms. (An initial attempt at this transfer used a
+training recipe that over-optimized the InfoNCE loss and inflated
+reconstruction error $3\times$, confounding predictor quality with training
+damage; the result reported here uses a gentler, reconstruction-preserving
+retune and reproduces the same push outcome, ruling out that confound.) The
+predictor fix transfers across checkpoint family and dataset and moves the
+metric it targets, and it still does not move the object --- closed-loop
+confirmation, not inference, that grounding is necessary but not sufficient.
+
 % ======================================================================
 \section{Discussion, scope, and limitations}\label{sec:discussion}
 
-\paragraph{What follows for evaluation.}
+\paragraph{An evaluation axis: the exploitation gap.}
 Every quantity the field currently reports was satisfied at some rung of this
 paper while planning failed: held-out prediction error (Sec.~\ref{sec:planning}
 harness on-manifold), action grounding ($94$--$100\%$ in
 Table~\ref{tab:mitigations}), readout precision ($91.5\%$ within $5$\,cm on the
-planner's own query distribution). The quantity that tracked the failure
-throughout is the \emph{exploitation gap}: the discrepancy between the cost's
-claim and the world's truth \emph{on the states the optimizer converges to}
-(Table~\ref{tab:exploit}, and the overoptimization curves of
-Fig.~\ref{fig:overopt}). We propose reporting it
-directly: mine the planner's elite population and decode it against ground
-truth (in sim), or against a held-out verifier (on real data). It is cheap ---
-one extra decode pass over frames the planner already produced.
+planner's own query distribution). We propose evaluating a planning cost by the
+one quantity that tracked the failure throughout --- how much it degrades on the
+states its own optimizer converges to. Concretely, let $c$ be the cost, $P$ the
+planner, and $v$ a ground-truth verifier (simulator state in sim; a held-out
+decoder on real data). Run $P$ against $c$, collect its converged elite
+population $\mathcal{E}$, and report the \emph{exploitation gap}
+\begin{equation}
+  G(c,P) \;=\; \mathbb{E}_{z\sim\mathcal{E}}\big[\,\mathrm{err}_v(z)\,\big]
+  \;-\; \mathbb{E}_{z\sim\mathcal{D}_{\mathrm{off}}}\big[\,\mathrm{err}_v(z)\,\big],
+\end{equation}
+the verifier's error inflation on the frames the planner \emph{trusts} relative
+to generic off-policy frames $\mathcal{D}_{\mathrm{off}}$ (equivalently, the
+proxy--truth divergence on $\mathcal{E}$). An honest cost has $G\approx 0$ --- its
+elites are genuinely good and search converts to success (reach:
+$5/16\to16/16$, Fig.~\ref{fig:overopt}); an exploitable cost has $G\gg 0$ --- here the same probe
+reads $2.0$\,cm off-policy but $7$--$8$\,cm on the elites ($91.5\%\to24\%$ within
+$5$\,cm, Table~\ref{tab:exploit}), and search converts to reward hacking.
+Crucially $G$ separates costs that every average-case metric rates identically:
+in Table~\ref{tab:mitigations}, readout precision, grounding, and disagreement
+are all near-ceiling on costs with $G\gg0$. Computed across every arm whose
+elite populations are recoverable from our runs
+(\texttt{results/exploitation\_gap\_ladder.csv}), $G$ reproduces the
+honest/no-signal/exploitable trichotomy of Sec.~\ref{sec:overopt} --- honest
+reach$\times L_2$: elite decode flat-low ($3.3\to3.4$\,cm, $G{\approx}{+}1.4$);
+no-signal $L_2$: flat-low ($G{\approx}{+}1.7$ to ${+}2.5$) with the true object
+$22$--$27$\,cm away; exploitable probe-costs: $G{\approx}{+}5.9$ to ${+}6.5$\,cm
+--- and it exposes an \emph{inversion} average-case evaluation cannot see: the
+cost with the \emph{best} off-policy readout in our ladder ($91.5\%$ within
+$5$\,cm) carries the \emph{largest} $G$ and fails, while the cost that solves
+the task has no readout head at all. Two scope notes, stated plainly: with the
+failing arms clustered at $0$--$2/16$, the ladder is too flat for a
+rank-correlation validation of $G$ as a graded success \emph{predictor} --- we
+offer it as an exploitation \emph{diagnostic} (is this cost being hacked by
+this planner?), demonstrated on one task family; and computing $G$ on the
+remaining mitigation arms requires re-running them with elite dumps enabled,
+which we release tooling for. Unlike prediction error or grounding,
+$G$ is measured under the optimizer's own pressure --- the only regime the
+deployed planner ever operates in --- and it is cheap: one decode pass over
+frames the planner already produced (Table~\ref{tab:exploit},
+Fig.~\ref{fig:overopt} are exactly this measurement).
 
 \paragraph{What follows for method design.}
 The results sort the design space into three responses. (i)~\emph{Harden the
@@ -787,15 +1047,15 @@ with no optimizer to exploit it still fails, because the frozen representation
 and its object readout do not carry a plan that moves the object. The honest
 synthesis across the oracle ladder, the mitigation table, and this experiment is
 that contact planning faces \emph{two} walls --- an exploitable cost/optimizer
-interface (E0, Secs.~\ref{sec:ladder}--\ref{sec:overopt}) and an insufficient
-frozen representation (E1) --- and that \emph{grounding is necessary but not
+interface (Secs.~\ref{sec:ladder}--\ref{sec:overopt}) and an insufficient
+frozen representation (this section) --- and that \emph{grounding is necessary but not
 sufficient}: neither hardening the cost, nor fine-tuning the encoder for
 grounding, nor removing the search adversary, crosses it alone.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/figure_e1.pdf}
-\caption{\textbf{Removing the search adversary does not cross contact (E1).}
+\caption{\textbf{Removing the search adversary does not cross contact.}
 \emph{(A)}~True object$\to$goal distance for the pure amortized controller
 (``gcidm'', no search) and for search re-added in doses; all sit at
 $\approx0.25$\,m, far above the $5$\,cm success radius. \emph{(B)}~Per-replan
@@ -843,6 +1103,82 @@ them: not by how well they predict, but by how little they can be exploited.
 \bibliography{refs}
 
 \appendix
+\section{Regime stratification}\label{app:regimes}
+Every per-regime table in the paper (Tables~\ref{tab:cra},~\ref{tab:scaling},
+\ref{tab:cf},~\ref{tab:augecs}) relies on assigning each transition
+$(s_t\!\to\!s_{t+1})$ to exactly one of four regimes. The assignment is a
+\emph{priority cascade}: the first matching rule wins, so the regimes are
+mutually exclusive by construction and the ordering encodes precedence (the
+gripper-actuation \emph{event} outranks the contact \emph{state} it may create).
+Thresholds are fixed constants (below), not fit to any outcome.
+
+\paragraph{Metaworld (simulator state).} The released HuggingFace dataset ships
+no MuJoCo contact flags but does ship the full 39-dim Metaworld-v2 observation,
+from which we recover the end-effector position (\texttt{state[0:3]}), gripper
+aperture (\texttt{state[3]}), and primary-object position
+(\texttt{state[4:7]}) exactly. For a transition:
+\begin{enumerate}\itemsep0pt
+  \item \textbf{gripper actuation} if $|\Delta\mathrm{grip}| > 0.10$ (the
+  gripper is opening/closing --- the grasp/release event itself);
+  \item else \textbf{contact manipulation} if
+  $\|\Delta\mathrm{obj}\| > 5$\,mm (the object measurably moved --- something
+  pushed it);
+  \item else \textbf{pre-grasp} if $\|\mathrm{ee}-\mathrm{obj}\| < 10$\,cm (the
+  hand is close to the object but has not yet moved it);
+  \item else \textbf{free space}.
+\end{enumerate}
+``Contact'' here therefore means \emph{the object displaced}, an
+object-displacement \emph{proxy} rather than a contact sensor; the caveat is
+carried on every Metaworld figure, and \texttt{mw-door-close} is excluded as a
+proxy anomaly (its hinge geometry violates the displacement assumption).
+
+\paragraph{DROID (real gripper sensor + latent-change proxy).} DROID-wrist has
+no object pose, so contact is read from the \emph{real gripper sensor}
+(primary) and the approach cue from the latent-change proxy (secondary):
+\begin{enumerate}\itemsep0pt
+  \item \textbf{gripper actuation} if $|\Delta\mathrm{grip}| > 0.2$;
+  \item else \textbf{contact manipulation} if the gripper is held \emph{closed}
+  ($\mathrm{grip}_t > 0.5$ on the $[0,1]$ open$\to$closed scale) --- holding or
+  contacting an object, a sensor signal that (deliberately) does \emph{not}
+  depend on visual motion, so a closed gripper resting on an object counts as
+  contact even when the scene is momentarily static;
+  \item else (gripper open) \textbf{pre-grasp} if the scene is actively
+  changing, $\|\Delta z\| > 1.0\times\mathrm{median}\|\Delta z\|$ (an object
+  entering/growing in the wrist view; the dataset-median baseline is the same
+  one used for effect-conditioning);
+  \item else \textbf{free space} (gripper open, scene static).
+\end{enumerate}
+Making contact gripper-primary rather than $\|\Delta z\|$-gated matters for the
+raw per-regime counts (the earlier motion-gated rule mislabeled ${\sim}54\%$ of
+closed-gripper \emph{static-holding} steps as free space); it leaves the
+\emph{headline} numbers unchanged, because those are effect-conditioned
+($\|\Delta z\|>\mathrm{median}$) and the relabeled steps are the low-$\|\Delta z\|$
+holding steps that effect-conditioning excludes either way.
+
+\paragraph{RoboCasa (grasp flags).} RoboCasa exposes an \texttt{object\_in\_hand}
+flag and proprioception, mapped to the same taxonomy: gripper actuation if
+$|\Delta\mathrm{grip}|>0.2$; else contact manipulation if \texttt{object\_in\_hand}
+at $t$ or $t{+}1$; else pre-grasp if $\|\mathrm{ee}-\mathrm{obj}\| < 12$\,cm
+(looser than Metaworld for the larger scene scale); else free space.
+
+The three datasets thus share one taxonomy and one cascade ordering, differing
+only in the contact signal available (object displacement / gripper sensor /
+grasp flag). Source: \texttt{diagnosis/stratification/\{metaworld,droid,robocasa\}\_regimes.py}.
+
+\paragraph{Robustness to the threshold choice.} Because the pre-grasp locus
+(Table~\ref{tab:cra}) is read off a fixed $5$\,mm/$10$\,cm/$0.10$ cut, we
+re-ran classification and the hard-nearest-neighbour diagnostic
+(Sec.~\ref{sec:metrics}) under six perturbations --- object-move
+$\in\{2.5,10\}$\,mm, pre-grasp distance $\in\{8,12\}$\,cm, gripper-delta
+$\in\{0.05,0.20\}$ --- against the baseline. Pooled effect-conditioned CRA at
+pre-grasp moves by at most $0.037$ (DINO-WM: $[0.450,0.488]$; JEPA-WM:
+$[0.529,0.558]$) across all seven configurations, and \textbf{pre-grasp remains
+the lowest-scoring regime, below both free space and contact manipulation, in
+every single configuration for both models}
+(\texttt{results/regime\_robustness\_summary.csv}, scripts/04+46). The locus
+of the collapse is a property of the transitions, not an artifact of the
+specific cut.
+
 \section{Boundary Blindness: definition}\label{app:bb}
 The instrument compares, on a neighbourhood of similar states, how much the
 \emph{world's} outcome fans out under nearby actions against how much the
@@ -862,7 +1198,7 @@ changes produce large true-outcome changes across its neighbourhood:
   \frac{\operatorname{std}_{j}\, o_j}
        {\operatorname{mean}_{j} \|a_j - a_i\| + \varepsilon},
 \end{equation}
-thresholded at a population percentile. Free-space drift has large $\|\Delta z\|$
+thresholded at the $75$th population percentile. Free-space drift has large $\|\Delta z\|$
 but smooth neighbourhoods and scores low.
 
 \paragraph{The two sensitivities and BB.} The world's local action-sensitivity
@@ -901,6 +1237,82 @@ successes, the observation Sec.~\ref{sec:ladder} explains. Honest negative: the
 recipe does not transfer to DROID's noisy whole-state proxy label at $2.1$k
 transitions (rank-corr $+0.708$ but spread magnitude collapsed; BB unchanged) —
 the principle needs a learnable grounding label.
+
+\section{Probe, verifier, and mitigation-arm implementations}\label{app:impl}
+Every learned rung of the oracle ladder (Table~\ref{tab:ladder}) and mitigation
+table (Table~\ref{tab:mitigations}) is small and trained on the cached latents
+with the encoder and predictor frozen. We give each arm's spec so the ``all
+repairs fail'' claim can be audited.
+
+\paragraph{Object probes (the readout $\rho$).} Two readouts decode object xyz
+from a single frozen latent, trained supervised on cached (latent, simulator
+object-position) pairs. The \emph{pooled} probe is a mean+max-pooled-token MLP
+($2D\!\to\!512\!\to\!256\!\to\!3$, SiLU). The \emph{spatial} probe prepends a
+learned CLS query to the patch tokens and routes it through a 2-layer, 6-head
+Transformer encoder before a linear head; being permutation-aware it can attend
+to \emph{which} patch lit up, so it upper-bounds the spatial information the
+latent carries --- it is the readout behind the $92\%$-within-$5$\,cm decode in
+Table~\ref{tab:ladder}. The \emph{expert} probe trains on expert-trajectory
+frames only; the \emph{off-policy-hardened} probe mixes in latents of arbitrary
+candidate rollouts, which restores $91.5\%$ within $5$\,cm on that off-policy
+distribution.
+
+\paragraph{On using $\rho$ as the verifier.} The exploitation evidence
+(Table~\ref{tab:exploit}) decodes $\rho$ on the CEM elites. Because $\rho$ is
+itself OOD-sensitive --- that sensitivity is precisely what is under test --- we
+do not rest the claim on $\rho$ alone: on the \emph{executed} Metaworld episodes
+the simulator's true object sits $13$--$30$\,cm from goal while the cost reads
+near its minimum (Sec.~\ref{sec:exploit}), a ground-truth corroboration that does
+not pass through $\rho$. On real-robot data $\rho$ (or a held-out verifier) is
+the only available instrument, which is why the evaluation protocol
+(Sec.~\ref{sec:discussion}) is stated for a generic verifier rather than
+privileged state. A tighter closed-loop version --- decoding elites against
+simulator state directly, not $\rho$ --- is the natural next confirmation and is
+left as future work.
+
+\paragraph{Grounded object-dynamics channel $h$ (Sec.~\ref{sec:planning},
+App.~\ref{app:fixladder}).} $h(z_t,a)\!\to\!\widehat{\Delta\mathrm{obj}}$ is a
+mean+max-pooled-token MLP with an action-embedding branch
+($2D{+}64\!\to\!512\!\to\!256\!\to\!3$); the grounded cost integrates it along the
+rollout, $\widehat{\mathrm{obj}}_H = \rho(z_0)+\sum_t h(\hat z_t,a_t)$, and scores
+$\mathrm{MSE}(z_H,z_g)/s_z^2 + \beta^2\|\widehat{\mathrm{obj}}_H-\rho(z_g)\|^2/s_g^2$,
+the two terms rescaled by dataset scales $s_z,s_g$ because they span ${\sim}98$k
+vs.\ $3$ dimensions (per-dim MSE would silently collapse the blend to
+object-only).
+
+\paragraph{Learned latent metric $d_\theta$ (Tables~\ref{tab:ladder},
+\ref{tab:mitigations}).} A goal-conditioned quasimetric over pooled tokens,
+$d_\theta(z,z_g)=\|u_s(z)-u_s(z_g)\|_2 + \sum_i \mathrm{relu}\big(u_a(z)_i-u_a(z_g)_i\big)$
+--- a symmetric part plus a directed residual (MRN-style), so $d_\theta(z_g,z_g)=0$
+is the unique minimum. Trained \emph{without} object labels on within-trajectory
+temporal order ($d_\theta(z_t,z_{t'})\approx t'{-}t$ for $t<t'$, cross-trajectory
+pairs pushed large), so the recipe is dataset-agnostic.
+
+\paragraph{Relearned representation adapter $\varphi$ (Table~\ref{tab:mitigations}).}
+$\varphi=A(z)$ is a small head over the frozen patch tokens, trained with four
+losses so that plain $L_2$ in $\varphi$-space is a harder-to-exploit cost:
+(i)~\emph{grounding} --- the first $\mathrm{obj\_dim}$ coordinates regress true
+object xyz; (ii)~\emph{counterfactual margin} --- on hard-effect negatives (same
+$z_t$, different action, genuinely different true outcome) the two object
+estimates must be separated by at least their true gap, a margin constraint that
+targets residual-error \emph{pockets} rather than average accuracy;
+(iii)~\emph{temporal ranking} confined to the non-object subspace;
+(iv)~\emph{adversarial} --- previously-mined CEM elite frames are margin-pushed
+from their episode goal in the object subspace. This is the strongest post-hoc
+cost we built, and it still gates push $1/16$.
+
+\paragraph{Encoder-LoRA (Table~\ref{tab:mitigations}).} Zero-initialized LoRA
+adapters ($B{=}0$, so the injected model starts \emph{exactly} at the frozen
+encoder) inserted into the encoder's transformer blocks and trained with the
+$\varphi$ losses; unlike $\varphi$ --- a function of the frozen $z$, so it can
+only read around entangled latents --- this can separate them at the source. The
+adapters are toggleable, so one injected model serves both the frozen-baseline
+and LoRA arms; we train five seeds.
+
+\paragraph{Ensemble disagreement (Table~\ref{tab:mitigations}).} Five
+independently fine-tuned encoder-LoRA seeds, with cost
+$\mathrm{mean}_k d_k^2 + \lambda\,\mathrm{Var}_k[d_k]$ --- the standard pessimism
+penalty --- swept over $\lambda\in\{0,\tfrac12,1,2\}$.
 
 \section{Reproduction integrity}\label{app:repro}
 Closed-loop sim evaluation is fragile, and getting the baseline wrong would
@@ -960,7 +1372,10 @@ Source: \texttt{results/\{droid,metaworld\}\_diagnostic.csv}, \texttt{hard\_nn}
 rows.
 
 \section{Full per-task tables}
-\todo{per-task BB CSV dumps; mitigation-arm episode tables (phaseC/D/F/G logs);
-E0 curve tables when jobs 24740/24741 land; Phase-H seed-sweep CIs.}
+Per-task Boundary-Blindness dumps, per-arm mitigation episode tables
+(phase C/D/F/G logs), the overoptimization-sweep curve tables, and the
+Phase-H seed-sweep confidence intervals are provided in machine-readable form
+under \texttt{diagnosis/results/} (see \texttt{diagnosis/docs/CLAIMS\_EVIDENCE.md}
+for the row-to-table mapping).
 
 \end{document}

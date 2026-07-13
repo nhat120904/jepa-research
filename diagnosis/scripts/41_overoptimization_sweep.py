@@ -66,7 +66,8 @@ FRAMESKIP, RAW_A = _lo.FRAMESKIP, _lo.RAW_A
 
 def run_episode(task, seed, env, goal_frame, goal_state, expert_succ, adapter, device, *,
                 cost, cost_spec, iterations, samples, elite_frac, var0, plan_h,
-                num_act_stepped, max_episode_steps, strict, w_hand, probe, curve_rows):
+                num_act_stepped, max_episode_steps, strict, w_hand, probe, curve_rows,
+                planner="cem", mppi_beta=5.0):
     """One closed-loop latent-oracle episode at a fixed CEM budget; the on_elites
     hook appends per-iteration Goodhart rows to ``curve_rows``."""
     goal_obj = goal_state[OBJECT_SLICE].astype(np.float32)
@@ -78,7 +79,8 @@ def run_episode(task, seed, env, goal_frame, goal_state, expert_succ, adapter, d
     success, last_success, steps = False, False, 0
     replan_i = 0
 
-    base_key = dict(task=task, seed=seed, cost=cost, iterations=iterations, samples=samples)
+    base_key = dict(task=task, seed=seed, cost=cost, iterations=iterations, samples=samples,
+                    planner=planner)
 
     def on_elites(z_elite, raw_elite, cost_elite, it):
         # elites arrive cost-ascending: index 0 = the candidate the planner most
@@ -105,7 +107,8 @@ def run_episode(task, seed, env, goal_frame, goal_state, expert_succ, adapter, d
         plan = cem_plan_latent(env, adapter, z_goal, device, plan_h=plan_h_eff,
                                num_samples=samples, iterations=iterations,
                                elite_frac=elite_frac, var0=var0, rng=rng,
-                               cost_fn=cost_fn, on_elites=on_elites)
+                               cost_fn=cost_fn, on_elites=on_elites,
+                               planner=planner, mppi_beta=mppi_beta)
         replan_i += 1
         for a in plan[: num_act_stepped * FRAMESKIP]:
             obs, _, _, _, info = env.step(np.clip(a, -1, 1))
@@ -143,6 +146,10 @@ def main() -> int:
     ap.add_argument("--max-episode-steps", type=int, default=100)
     ap.add_argument("--elite-frac", type=float, default=0.1)
     ap.add_argument("--var0", type=float, default=1.0)
+    ap.add_argument("--planner", choices=["cem", "mppi", "shooting"], default="cem",
+                    help="test-time optimizer whose overoptimization is swept")
+    ap.add_argument("--mppi-beta", type=float, default=5.0,
+                    help="MPPI temperature (concentration on standardized cost)")
     ap.add_argument("--strict-success", action="store_true")
     ap.add_argument("--probe", default=None,
                     help="object-probe ckpt — required for stateprobe/gobj; also used "
@@ -206,8 +213,8 @@ def main() -> int:
 
     Path(args.out_episodes).parent.mkdir(parents=True, exist_ok=True)
     print(f"grid: tasks={args.tasks} costs={args.costs} iters={args.iters_grid} "
-          f"samples={args.samples_grid} episodes={args.episodes} strict={args.strict_success}",
-          flush=True)
+          f"samples={args.samples_grid} episodes={args.episodes} strict={args.strict_success} "
+          f"planner={args.planner}", flush=True)
 
     for task in args.tasks:
         for ep in range(args.episodes):
@@ -234,7 +241,8 @@ def main() -> int:
                                     num_act_stepped=args.num_act_stepped,
                                     max_episode_steps=args.max_episode_steps,
                                     strict=args.strict_success, w_hand=args.w_hand,
-                                    probe=probe, curve_rows=pair_curves)
+                                    probe=probe, curve_rows=pair_curves,
+                                    planner=args.planner, mppi_beta=args.mppi_beta)
                 except Exception as e:  # noqa: BLE001 — keep the sweep alive
                     print(f"  [error] {task} ep{ep} {cost} it={iters} n={samples}: {e}",
                           flush=True)
