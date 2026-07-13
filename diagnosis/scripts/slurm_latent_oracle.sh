@@ -32,13 +32,21 @@ M=${LATORACLE_MODEL:-dino_wm_metaworld}
 OUT=${LATORACLE_OUT:-results/metaworld_latent_oracle.csv}
 EPISODES=${LATORACLE_EPISODES:-16}
 TASKS=${LATORACLE_TASKS:-"mw-reach mw-push mw-pick-place"}
+COST=${LATORACLE_COST:-l2}
+PROBE=${LATORACLE_PROBE:-}
+EEPROBE=${LATORACLE_EEPROBE:-}
+PLANNER=${LATORACLE_PLANNER:-cem}          # cem | mppi | shooting (planner-generality ablation)
+MPPI_BETA=${LATORACLE_MPPI_BETA:-5.0}
+EXTRA_ARGS=(--planner "$PLANNER" --mppi-beta "$MPPI_BETA")
+[ -n "$PROBE" ] && EXTRA_ARGS+=(--probe "$PROBE")
+[ -n "$EEPROBE" ] && EXTRA_ARGS+=(--ee-probe "$EEPROBE")
 
 echo "HOST $(hostname) GPU=${CUDA_VISIBLE_DEVICES:-NA} $(date)"
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>/dev/null
-echo "model=$M tasks=[$TASKS] episodes=$EPISODES out=$OUT"
+echo "model=$M cost=$COST planner=$PLANNER tasks=[$TASKS] episodes=$EPISODES out=$OUT probe=${PROBE:-<none>} ee=${EEPROBE:-<none>}"
 
 set -e
-$PY scripts/30_latent_oracle.py --config "$CFG" --model "$M" \
-    --tasks $TASKS --episodes "$EPISODES" --out "$OUT" --strict-success
+$PY scripts/30_latent_oracle.py --config "$CFG" --model "$M" --cost "$COST" \
+    --tasks $TASKS --episodes "$EPISODES" --out "$OUT" --strict-success "${EXTRA_ARGS[@]}"
 echo "===== LATENT_ORACLE_DONE ====="; date
 cat "$OUT"

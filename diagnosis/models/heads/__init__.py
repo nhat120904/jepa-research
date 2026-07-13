@@ -9,6 +9,8 @@ from .mixture_predictor import (
     MW_STATE_SLICE_DIM,
 )
 from .residual_predictor import ResidualPredictorHead, load_residual_head
+from .latent_metric import LatentMetric, load_latent_metric
+from .action_repr_adapter import ActionReprAdapter, load_repr_adapter, margin_loss
 
 __all__ = [
     "MixtureDensityHead",
@@ -21,4 +23,9 @@ __all__ = [
     "MW_STATE_SLICE_DIM",
     "ResidualPredictorHead",
     "load_residual_head",
+    "LatentMetric",
+    "load_latent_metric",
+    "ActionReprAdapter",
+    "load_repr_adapter",
+    "margin_loss",
 ]

@@ -74,6 +74,23 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out-dir", default="checkpoints")
     ap.add_argument("--out", default="results/representation_precision_spatial.csv")
+    # Phase-3 3b: mix off-policy random-action frames into training so the readout is
+    # robust on the distribution the planner actually scores (see _offpolicy_frames).
+    ap.add_argument("--offpolicy-frac", type=float, default=0.0,
+                    help="fraction of each TRAIN batch drawn from off-policy frames "
+                         "(0 = original expert-only probe; >0 saves a *_offpolicy.pt)")
+    ap.add_argument("--op-episodes", type=int, default=8)
+    ap.add_argument("--op-max-steps", type=int, default=60)
+    ap.add_argument("--op-collect-every", type=int, default=4)
+    ap.add_argument("--op-seed", type=int, default=20000)
+    ap.add_argument("--op-tasks", nargs="+", default=["mw-push", "mw-pick-place"])
+    # Track-1 Phase B: mix a mined CEM-EXPLOITED buffer (scripts/35 --save-buffer)
+    # into training — hardens the probe against the specific pockets CEM converges
+    # on, not just the random off-policy distribution --offpolicy-frac covers.
+    ap.add_argument("--extra-buffer", default=None,
+                    help="mined CEM-exploited buffer (.pt, scripts/35 --save-buffer)")
+    ap.add_argument("--extra-frac", type=float, default=0.3,
+                    help="fraction of each TRAIN batch drawn from --extra-buffer")
     args = ap.parse_args()
 
     torch.set_num_threads(int(os.environ.get("CAI_JEPA_TORCH_THREADS", "2")))
@@ -87,6 +104,29 @@ def main() -> int:
     step = adapter.frames_per_step
     regime_by_traj = read_regimes(cache_path)
     rng = np.random.default_rng(args.seed)
+
+    # Off-policy buffer (Phase-3 3b): random-action sim frames, encoded + obj-labelled.
+    op_train_z = op_train_obj = op_val_z = op_val_obj = None
+    if args.offpolicy_frac > 0:
+        from scripts._offpolicy_frames import collect_offpolicy_frames
+        buf = collect_offpolicy_frames(adapter, device, tasks=args.op_tasks,
+                                       episodes=args.op_episodes, max_steps=args.op_max_steps,
+                                       collect_every=args.op_collect_every, seed=args.op_seed)
+        zb, ob = buf["z"], buf["obj"]
+        perm = np.random.default_rng(args.op_seed).permutation(zb.shape[0])
+        nval = max(1, int(0.1 * zb.shape[0]))
+        vi, ti = perm[:nval], perm[nval:]
+        op_train_z, op_train_obj = zb[ti], ob[ti]
+        op_val_z, op_val_obj = zb[vi], ob[vi]
+        print(f"off-policy buffer: train={len(ti)} val={len(vi)} frac={args.offpolicy_frac}",
+              flush=True)
+
+    extra_train_z = extra_train_obj = None
+    if args.extra_buffer:
+        eb = torch.load(args.extra_buffer, map_location="cpu", weights_only=False)
+        extra_train_z, extra_train_obj = eb["z"], eb["obj"]
+        print(f"extra (adversarial) buffer: n={extra_train_z.shape[0]} frac={args.extra_frac}",
+              flush=True)
 
     with LatentCache(cache_path, mode="r") as cache:
         records = helpers.build_transition_records(cache, regime_by_traj, step, per_task=True)
@@ -108,11 +148,22 @@ def main() -> int:
                 if train: rng.shuffle(order)
                 for lo in range(0, m, args.batch_size):
                     idx = torch.as_tensor(order[lo: lo + args.batch_size], dtype=torch.long)
-                    pred = probe(d["z_t"][idx].to(device))
-                    loss = ((pred - obj[idx].to(device)) ** 2).mean()
+                    zb, ob = d["z_t"][idx], obj[idx]
+                    if train and op_train_z is not None:
+                        k = max(1, int(round(args.offpolicy_frac * len(idx))))
+                        oi = rng.integers(0, op_train_z.shape[0], size=k)
+                        zb = torch.cat([zb, op_train_z[oi]], 0)
+                        ob = torch.cat([ob, op_train_obj[oi]], 0)
+                    if train and extra_train_z is not None:
+                        k = max(1, int(round(args.extra_frac * len(idx))))
+                        ei = rng.integers(0, extra_train_z.shape[0], size=k)
+                        zb = torch.cat([zb, extra_train_z[ei]], 0)
+                        ob = torch.cat([ob, extra_train_obj[ei]], 0)
+                    pred = probe(zb.to(device))
+                    loss = ((pred - ob.to(device)) ** 2).mean()
                     if train:
                         opt.zero_grad(); loss.backward(); opt.step()
-                    se += loss.item() * len(idx); n += len(idx)
+                    se += loss.item() * len(zb); n += len(zb)
                 del d; gc.collect()
             return se / max(n, 1)
 
@@ -153,8 +204,22 @@ def main() -> int:
         print(f"{r['group']:16s} {r['median_cm']:6.2f} {r['frac_within_push_5cm']*100:5.1f}% "
               f"{r['frac_within_pick_7cm']*100:5.1f}%", flush=True)
 
+    # Off-policy held-out precision — the Phase-3 number that must improve vs the
+    # expert-only probe (Test-1b expert was 92% <5cm but off-policy collapsed).
+    if op_val_z is not None:
+        with torch.no_grad():
+            oe = [( probe(op_val_z[lo:lo+args.batch_size].to(device))
+                    - op_val_obj[lo:lo+args.batch_size].to(device)).norm(dim=-1).cpu().numpy()
+                  for lo in range(0, op_val_z.shape[0], args.batch_size)]
+        oe = np.concatenate(oe)
+        print(f"OFF-POLICY held-out: med={100*np.median(oe):.2f}cm "
+              f"<5cm={(oe < PUSH_RADIUS).mean()*100:.1f}% "
+              f"<7cm={(oe < PICK_RADIUS).mean()*100:.1f}%", flush=True)
+
     out_dir = ROOT / args.out_dir; out_dir.mkdir(parents=True, exist_ok=True)
-    path = out_dir / f"spatial_object_probe_{args.model}.pt"
+    suffix = "_offpolicy" if args.offpolicy_frac > 0 else ""
+    suffix += "_adv" if args.extra_buffer else ""
+    path = out_dir / f"spatial_object_probe_{args.model}{suffix}.pt"
     torch.save({"model": args.model, "probe_type": "spatial", "latent_dim": latent_dim,
                 "out_dim": 3, "hidden": args.hidden, "n_layers": args.n_layers, "n_heads": 6,
                 "state_dict": probe.state_dict(), "val_mse": va,

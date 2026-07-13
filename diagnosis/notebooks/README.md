@@ -1,4 +1,34 @@
-# `regime_visualization.ipynb` — how to run the full notebook
+# Notebooks
+
+## `planning_inference_visualization.ipynb`
+
+Visualizes the planning/inference path in two layers:
+
+- result summaries from `results/*planning*.csv` and `results/*planning*_pertrans.npz`;
+- one faithful CEM trace on a selected cached transition using the configured
+  adapter, latent cache, and planning hyperparameters.
+
+Run it interactively:
+```bash
+cd diagnosis
+.venv/bin/jupyter notebook notebooks/planning_inference_visualization.ipynb
+```
+
+Execute it non-interactively and write outputs back:
+```bash
+cd diagnosis
+BOTO_CONFIG=/dev/null HF_HUB_OFFLINE=1 \
+.venv/bin/jupyter nbconvert --to notebook --execute --inplace \
+  --ExecutePreprocessor.timeout=2400 --ExecutePreprocessor.kernel_name=python3 \
+  notebooks/planning_inference_visualization.ipynb
+```
+
+The first result-summary sections are frame-free and should run with the local
+result files. The CEM trace section loads the real model/cache and defaults to
+`configs/diagnostic_metaworld.yaml`, `dino_wm_metaworld`, `cuda`, and horizon 3;
+edit the top-level notebook variables to switch dataset/model/regime/device.
+
+## `regime_visualization.ipynb` — how to run the full notebook
 
 Three parts: **1** Metaworld (frame galleries + state-space + CRA/BB), **2** DROID
 (real wrist-camera frames + gripper-primary regimes), **3** cross-dataset regimes +
