@@ -1,5 +1,15 @@
 # Novel-methods survey for the action-grounding gap (2026-07-05)
 
+> **DATED LITERATURE SNAPSHOT, not a current novelty clearance.** The paper has
+> since retargeted to optimizer-induced latent-cost exploitation under oracle-
+> perfect dynamics. Concurrent work on action semantics, counterfactual JEPA
+> objectives, latent reachability/cost learning, oracle dynamics, and amortized
+> alternatives substantially narrows the novelty of a standalone CAI-JEPA
+> objective. Re-run a primary-source literature search before submission; see
+> `../CURRENT_STATUS.md` for current positioning. Phase-H is exploratory pending
+> a test-only rerun, so positive numbers below cannot yet justify a method
+> contribution.
+
 Literature sweep of 2025–2026 work relevant to our gap: JEPA world models are boundary-blind at
 contact; frozen post-hoc costs and encoder-LoRA are proven nulls; CEM reward-hacks any post-hoc
 readout; Phase-H counterfactual predictor objective is our one positive (DROID Action-Score

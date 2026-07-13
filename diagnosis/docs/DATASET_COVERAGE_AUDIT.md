@@ -1,5 +1,10 @@
 # Dataset Coverage Audit
 
+> **HISTORICAL COVERAGE SNAPSHOT (2026-06-08).** Several "current" and
+> "remaining" entries below were later completed. Preserve this file as the
+> audit at that date; use `CURRENT_STATUS.md` and result artifacts for present
+> coverage. Do not use it to schedule new heavy work.
+
 Current state as of 2026-06-08. "Covered" here means there is a diagnostic
 config, a loader path in `data/loaders.py`, latent caches for the configured
 models, regime sidecars, and a result CSV produced by `05_run_diagnostic.py`.

@@ -1,5 +1,12 @@
 # Handoff — Action-identifiability "fix" leg (contact-boundary reframing)
 
+> **HISTORICAL OPERATIONAL HANDOFF (2026-06-10).** The immediate tasks and
+> current-plan references below are superseded. Preserve them as the execution
+> record of the Boundary-Blindness phase; use `CURRENT_STATUS.md` for current
+> work. The 26166/26400 job references are historical; use
+> `JOB_LEDGER_2026-07-13.md` for live work, and do not execute heavy work on a
+> login node.
+
 **Updated:** 2026-06-10 (**STEP 2 — the gate — has been RUN: PASS**).
 **For:** the server agent (A5000) / local 12 GB box.
 **Read first:** `docs/plans/2026-06-09-action-identifiability-fix-design.md` (full

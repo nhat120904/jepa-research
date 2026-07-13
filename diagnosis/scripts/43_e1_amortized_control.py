@@ -47,6 +47,7 @@ sys.path.insert(0, str(ROOT))
 
 from models.adapters import build_adapter  # noqa: E402
 from stratification.metaworld_regimes import OBJECT_SLICE, EE_SLICE  # noqa: E402
+from scripts._exploitation_metrics import candidate_alignment  # noqa: E402
 
 
 def _load(modname: str, fname: str):
@@ -131,6 +132,7 @@ def run_seeded_episode(task, seed, env, goal_frame, goal_state, expert_succ, ada
     per-iteration Goodhart rows to ``curve_rows``."""
     arm = f"cemseed_it{iterations}"
     goal_obj = goal_state[OBJECT_SLICE].astype(np.float32)
+    goal_ee = goal_state[EE_SLICE].astype(np.float32)
     z_goal = encode_frame(adapter, goal_frame, goal_state[:4], device)
     cost_fn = build_oracle_cost(cost="stateprobe", z_goal=z_goal, probe=probe,
                                 ee_probe=ee_probe, w_hand=w_hand)
@@ -150,10 +152,29 @@ def run_seeded_episode(task, seed, env, goal_frame, goal_state, expert_succ, ada
         d_obj = np.linalg.norm(obj - goal_obj[None], axis=-1)
         d_app = np.linalg.norm(ee - obj, axis=-1)
         true_sp = d_obj + w_hand * d_app
+        true_task = (np.linalg.norm(ee - goal_ee[None], axis=-1)
+                     if task.startswith("mw-reach") else true_sp)
+        obj_align = candidate_alignment(cost_elite, d_obj)
+        sp_align = candidate_alignment(cost_elite, true_sp)
+        task_align = candidate_alignment(cost_elite, true_task)
         row = dict(base_key, replan=replan_i, iter=int(it), n_elite=len(raw_elite),
                    proxy_min=float(cost_elite[0]), proxy_med=float(np.median(cost_elite)),
                    true_obj_min_believed=float(d_obj[0]), true_obj_med=float(np.median(d_obj)),
-                   true_sp_min_believed=float(true_sp[0]), true_sp_med=float(np.median(true_sp)))
+                   true_sp_min_believed=float(true_sp[0]), true_sp_med=float(np.median(true_sp)),
+                   true_obj_best_elite=obj_align["true_best"],
+                   selected_true_obj_regret=obj_align["selected_true_regret"],
+                   true_sp_best_elite=sp_align["true_best"],
+                   selected_true_sp_regret=sp_align["selected_true_regret"],
+                   selected_true_sp_rank_frac=sp_align["selected_true_rank_frac"],
+                   proxy_truth_inversion_frac=sp_align["proxy_truth_inversion_frac"],
+                   proxy_truth_comparable_pairs=int(sp_align["n_comparable_pairs"]),
+                   true_task_definition=("ee_goal" if task.startswith("mw-reach")
+                                         else "state_oracle_obj_plus_approach"),
+                   true_task_min_believed=task_align["selected_true"],
+                   true_task_best_elite=task_align["true_best"],
+                   selected_true_task_regret=task_align["selected_true_regret"],
+                   selected_true_task_rank_frac=task_align["selected_true_rank_frac"],
+                   proxy_true_task_inversion_frac=task_align["proxy_truth_inversion_frac"])
         with torch.no_grad():
             dec = probe(z_elite).detach().cpu().numpy()
         derr = np.linalg.norm(dec - obj, axis=-1)

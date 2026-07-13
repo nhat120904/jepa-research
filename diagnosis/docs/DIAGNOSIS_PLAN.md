@@ -1,10 +1,18 @@
 # Diagnosis plan (plan-of-record, 2026-06-09)
 
-Current, consolidated plan for the go/no-go diagnostic. Complements
+> **HISTORICAL PLAN-OF-RECORD.** This plan governed the June 9
+> Boundary-Blindness gate and is preserved for provenance. It no longer wins
+> conflicts with other documents. The current source hierarchy and next work
+> are in `CURRENT_STATUS.md`; the paper of record is `../../paper/main.tex`.
+> Do not rerun old "immediate actions" from this file. Original jobs
+> 26166/26400 were cancelled and resumed as 26481/26482; consult
+> `JOB_LEDGER_2026-07-13.md` before submitting anything.
+
+Then-current, consolidated plan for the go/no-go diagnostic. Complements
 `docs/METHODOLOGY.md` (concepts + code map) and
 `docs/plans/2026-06-09-action-identifiability-fix-design.md` (fix design). Where the
-original `diagnostic_implementation_plan_v2.md` and this file disagree, **this file
-wins** for the boundary leg.
+original `diagnostic_implementation_plan_v2.md` and this file disagree, this
+file records what won **for the historical boundary leg only**.
 
 ---
 

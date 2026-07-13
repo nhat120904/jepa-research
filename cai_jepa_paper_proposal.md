@@ -1,6 +1,74 @@
 # Counterfactual Action-Identifiable JEPA World Models for Robot Planning
 
-## Detailed Research Proposal
+> **HISTORICAL PROPOSAL — superseded as of 2026-07-13.** This document is
+> preserved to record the original CounterfactualBench/CAI-JEPA hypothesis and
+> should not be used as the current paper outline or novelty claim. The paper of
+> record is `paper/main.tex`; the current status and validity caveats are in
+> `diagnosis/docs/CURRENT_STATUS.md`.
+>
+> The evidence now supports a different, narrower center: **test-time search can
+> exploit residual errors in learned latent costs on contact manipulation, even
+> when dynamics are oracle-perfect**. The oracle ladder and simulator-state
+> verification are the primary contribution. The CRA/BB work below remains a
+> useful observational diagnostic precursor, but `hard_nn` actions come from
+> other observed states and therefore do not constitute exact-same-state causal
+> counterfactuals. The proposed CAI-JEPA objective is not a validated planning
+> solution; the old Phase-H predictor-LoRA numbers are invalid as held-out
+> evidence. A strict immutable 70/15/15 implementation now exists, but its
+> reruns must finish before any method claim is restored.
+>
+> Current pending strengtheners: resumed second-checkpoint pipeline **26481**,
+> planner generality **26482**, encoder-information upper bound **26485**,
+> held-out Phase-H **26493--26495**, locked confirmatory ladder **26491--26492**,
+> exact-same-state intervention **26497**, and shared physical scaling **26498**.
+> Do not read any of these as successful before their final artifacts land.
+
+## Current successor proposal (2026-07-13)
+
+**Working title:** *When Test-Time Search Exploits Latent Costs in Robot
+World-Model Planning*.
+
+**Research question.** When action-conditioned latent world models fail on
+contact-rich robot planning, is the dominant error in learned dynamics, in the
+representation/cost used to score goals, or in the optimizer's interaction with
+that learned proxy? Can a cost that looks accurate on ordinary held-out frames
+remain reliable on the elite states deliberately selected by test-time search?
+
+**Current hypotheses.** (H1) Under oracle-perfect dynamics, contact planning can
+still fail when the planner scores candidates through a frozen visual
+representation. (H2) Test-time optimizers preferentially select residual cost
+errors, producing a measurable proxy--truth divergence on their elite
+population. (H3) Standard average-case diagnostics—prediction error, linear
+readout precision, and observational action discriminability—are insufficient
+to predict this search-time failure. H1–H2 have direct simulator-backed evidence
+on the current DINO-WM/Metaworld pipeline; checkpoint and planner generality are
+pending confirmatory runs.
+
+**Proposed contributions.** First, an oracle ladder holds dynamics perfect and
+changes only the planning cost, localizing the failure to the optimizer--cost
+interface. Second, an elite survival test evaluates learned costs on the states
+the optimizer actually selects and verifies proxy error against simulator truth,
+distinguishing honest, no-signal, and exploitable costs. Third, a contact-rich
+robot manipulation study connects frozen JEPA representations, real-robot
+diagnostics, and closed-loop simulator verification. Counterfactual predictor
+training is optional supporting evidence only if its gain survives a strict
+trajectory-held-out rerun.
+
+**ICLR evidence gates.** The central result should replicate on the second
+Metaworld checkpoint and another optimizer family; headline arms need a locked,
+paired, unseen-seed evaluation with substantially more than 8–16 episodes; CRA/
+BB should be calibrated against action fans executed from identical simulator
+states; and scaling comparisons should share a physical effect mask and fixed
+distractors across models. Null results should narrow the title/scope rather
+than be converted into universal claims.
+
+**Claim boundary.** The paper may conclude that grounding and good off-policy
+readout accuracy are insufficient for robust contact planning under the tested
+search procedures. It should not yet claim that grounding is necessary, that
+all learned latent costs are exploitable, that scale cannot help, or that
+cross-state nearest-neighbour negatives identify causal action effects.
+
+## Historical detailed research proposal
 
 ---
 

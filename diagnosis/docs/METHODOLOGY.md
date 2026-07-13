@@ -1,10 +1,19 @@
 # Methodology & Code Guide — how the CAI-JEPA diagnostic proves the action-grounding gap
 
+> **SCOPE NOTE (2026-07-13):** this is a reference for the original frozen-model
+> observational diagnostic, not the current paper methodology and not a causal
+> identification protocol. `hard_nn` pairs actions/outcomes across nearby but
+> different states; factual and negative candidates are not guaranteed
+> exchangeable, so CRA does not by itself estimate an exact-same-state action
+> effect or guarantee a nominal `1/(K+1)` chance law. For current framing,
+> validity caveats, and running confirmatory jobs, read `CURRENT_STATUS.md`.
+
 This is the **conceptual + code map** for the diagnostic. Read it before touching the
 pipeline; it explains *what* we measure, *why* each dataset / task / regime / negative
-strategy exists, and *how* the numbers add up to a GO / NO-GO decision. For the *operational*
-"how do I run it on this machine" steps, see `HANDOFF.md` (Metaworld) and `HANDOFF_DROID.md`
-(DROID). For the upstream-API ground truth, see `plans/2026-06-01-real-api-rewrite-design.md`.
+strategy exists, and *how* the numbers were used for the June GO / NO-GO
+decision. The `HANDOFF*.md` files are historical run records; use `../RUNBOOK.md`
+and current Slurm scripts for new server work. For the upstream-API ground
+truth, see `plans/2026-06-01-real-api-rewrite-design.md`.
 
 ---
 

@@ -38,6 +38,7 @@ IDX=${SLURM_ARRAY_TASK_ID:-0}
 LCF=${P4HJ_LAMBDA:-${LAMBDAS[$IDX]}}
 TAG=$(echo "$LCF" | tr '.' 'p')
 CK=checkpoints/predictor_cf_${M}_r${RANK}_l${TAG}.pt
+SPLIT=checkpoints/splits/phaseH_${M}_split0.json
 OUT=results/droid_planning_cf_${M}_r${RANK}_l${TAG}.csv
 FROZEN=results/droid_planning_cf_${M}_frozen.csv
 
@@ -48,11 +49,13 @@ set -e
 
 echo "### jepa retry lambda=$LCF (1/2) — train predictor-CF (rank $RANK, $EPOCHS ep) ###"
 $PY scripts/40_train_predictor_cf.py --config "$CFG" --model "$M" \
+    --split-seed 0 --split-manifest "$SPLIT" --val-frac 0.15 --test-frac 0.15 \
     --rank "$RANK" --alpha "$ALPHA" --epochs "$EPOCHS" \
     --lambda-cf "$LCF" --num-neg 4 --out "$CK"
 
 echo "### jepa retry lambda=$LCF (2/2) — Action-Score with cf-LoRA ###"
 $PY scripts/08_planning_probe.py --config "$CFG" --only-model "$M" \
+    --eval-split test --split-manifest "$SPLIT" \
     --cem-num-samples "$NS" --cem-iterations "$IT" --max-planning-transitions "$MP" \
     --predictor-lora "$CK" --out-csv "$OUT"
 

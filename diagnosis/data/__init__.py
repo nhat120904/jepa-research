@@ -15,6 +15,14 @@ from .loaders import (
     iterate_wall_trajectories,
     TransitionBatch,
 )
+from .trajectory_splits import (
+    build_trajectory_manifest,
+    filter_records,
+    load_manifest,
+    manifest_sha256,
+    validate_manifest,
+    write_manifest_once,
+)
 
 __all__ = [
     "LatentCache",
@@ -30,4 +38,10 @@ __all__ = [
     "iterate_point_maze_trajectories",
     "iterate_wall_trajectories",
     "TransitionBatch",
+    "build_trajectory_manifest",
+    "filter_records",
+    "load_manifest",
+    "manifest_sha256",
+    "validate_manifest",
+    "write_manifest_once",
 ]

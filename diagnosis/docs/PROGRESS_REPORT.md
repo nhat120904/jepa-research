@@ -1,5 +1,12 @@
 # Progress Report — CAI-JEPA: Diagnosing Action-Grounding Failures in JEPA World Models
 
+> **HISTORICAL PROGRESS REPORT (2026-06-10).** Preserved as a record of the
+> diagnostic/Boundary-Blindness phase. It is not the current status, paper
+> framing, or next-action list. See `CURRENT_STATUS.md`. In current terminology,
+> `hard_nn` CRA/BB is observational action discriminability rather than an
+> exact-same-state causal counterfactual; the later oracle ladder and elite-state
+> verification form the paper's empirical core.
+
 **Author:** Nhat
 **Date:** 2026-06-10
 **Status:** Diagnostic complete (CONDITIONAL_GO) · Mechanism identified · Working fix demonstrated on Metaworld

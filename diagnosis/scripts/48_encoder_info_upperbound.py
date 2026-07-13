@@ -381,7 +381,12 @@ def main() -> int:
     # rollout latents — the distribution the CEM planner actually scores.
     # ------------------------------------------------------------------ #
     if args.offpolicy:
-        off_rows = run_offpolicy(args, cfg, device, head_g, head_rel, latent_dim)
+        try:
+            off_rows = run_offpolicy(args, cfg, device, head_g, head_rel, latent_dim)
+        except Exception as exc:  # noqa: BLE001 — never lose the on-policy table
+            print(f"WARNING: off-policy pass failed ({exc!r}); writing on-policy-only results",
+                  flush=True)
+            off_rows = {}
 
     # ---------------------------- write ------------------------------- #
     _write_outputs(args, rows, off_rows, N, len(val_idx))

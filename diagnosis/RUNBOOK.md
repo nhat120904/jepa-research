@@ -1,5 +1,20 @@
 # Server Runbook — running the CAI-JEPA diagnostic end-to-end
 
+> **SLURM-ONLY HEAVY EXECUTION (2026-07-13):** use the login node only for
+> lightweight inspection, editing, job submission, and monitoring. Every GPU,
+> model-loading, simulator, dataset-processing, or CPU-heavy command below must
+> run inside a Slurm allocation on a compute node. Treat bare `python` examples
+> as commands to place in an `sbatch` script, not commands to paste at the login
+> prompt. See `docs/CURRENT_STATUS.md` and
+> `docs/JOB_LEDGER_2026-07-13.md` before launching work; original jobs
+> **26166/26400** were cancelled and resumed as **26481/26482**, and the other
+> queued hardening jobs in the ledger must not be duplicated.
+>
+> This runbook primarily reproduces the original diagnostic. It is not the
+> current paper experiment plan. Historical Phase-H planning gains are not
+> held-out evidence; the leak is fixed in code, but replacement results remain
+> pending.
+
 This repo is correct against the real `facebookresearch/jepa-wms` API and fully
 unit-tested for the parts that don't need a GPU. The steps below run the heavy
 path (real checkpoints + datasets + GPU) on a server.

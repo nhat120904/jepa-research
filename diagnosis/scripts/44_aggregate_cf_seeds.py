@@ -44,6 +44,8 @@ def main() -> int:
     ap.add_argument("--model", default="dino_wm_droid")
     ap.add_argument("--seeds", nargs="+", default=["lora", "s1", "s2", "s3"],
                     help="CF-run tags to pool as seeds (the main run is tagged 'lora')")
+    ap.add_argument("--frozen-tag", default="frozen",
+                    help="frozen-run tag (use heldout_frozen for the corrected Phase-H rerun)")
     ap.add_argument("--results-dir", default="results")
     ap.add_argument("--extra-models", nargs="*", default=[],
                     help="additional models to report single-seed (e.g. jepa_wm_droid "
@@ -63,9 +65,9 @@ def main() -> int:
 
     lines = ["# Phase-H hardening: counterfactual predictor A/B, seed sweep", "",
              f"Model **{args.model}**, CF seeds `{args.seeds}` vs frozen baseline.",
-             "Pooled over 157 planned DROID transitions (weighted by `n_planned`).", ""]
+             "Pooled across reported DROID cells (weighted by `n_planned`).", ""]
 
-    fz = load(args.model, "frozen")
+    fz = load(args.model, args.frozen_tag)
     if fz is None:
         raise SystemExit(f"missing frozen baseline for {args.model}")
     seed_vals = {abbr: [] for _, abbr, _ in METRICS}

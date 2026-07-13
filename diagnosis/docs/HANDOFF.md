@@ -1,5 +1,12 @@
 # Handoff — running the Metaworld diagnostic against the real checkpoints
 
+> **HISTORICAL OPERATIONAL HANDOFF.** Environment details and commands below
+> document the original diagnostic run and may be stale. For new work, follow
+> `../RUNBOOK.md`, current Slurm scripts, and the login-node policy in
+> `CURRENT_STATUS.md`. Never launch GPU/simulator/model/data-heavy commands on
+> the login node. The old 26166/26400 references were superseded by resumed jobs
+> 26481/26482; consult `JOB_LEDGER_2026-07-13.md` before new submissions.
+
 **Status:** All code fixes needed to run the diagnostic against the real frozen `jepa-wms`
 checkpoints on a GPU are **done and committed**. Both Metaworld checkpoints
 (`jepa_wm_metaworld`, `dino_wm_metaworld`) load + `encode` + `predict` correctly. What

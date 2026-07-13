@@ -47,6 +47,7 @@ NS=${P4H_CEM_SAMPLES:-64}
 IT=${P4H_CEM_ITERS:-15}
 MP=${P4H_MAX_PLAN:-40}
 CK=checkpoints/predictor_cf_${M}.pt
+SPLIT=checkpoints/splits/phaseH_${M}_split0.json
 # Model-tagged outputs so a 2nd model (jepa_wm_droid) does NOT clobber dino's results.
 FROZEN_CSV=results/droid_planning_cf_${M}_frozen.csv
 LORA_CSV=results/droid_planning_cf_${M}_lora.csv
@@ -57,16 +58,19 @@ set -e
 
 echo "### Phase H (1/3) — train predictor-CF (latent InfoNCE-over-actions) ###"
 $PY scripts/40_train_predictor_cf.py --config "$CFG" --model "$M" \
+    --split-seed 0 --split-manifest "$SPLIT" --val-frac 0.15 --test-frac 0.15 \
     --epochs "$EPOCHS" --rank "$RANK" --alpha "$ALPHA" \
     --lambda-cf "$LCF" --num-neg "$NNEG" --out "$CK"
 
 echo "### Phase H (2/3) — Action-Score: FROZEN baseline (no LoRA) ###"
 $PY scripts/08_planning_probe.py --config "$CFG" --only-model "$M" \
+    --eval-split test --split-manifest "$SPLIT" \
     --cem-num-samples "$NS" --cem-iterations "$IT" --max-planning-transitions "$MP" \
     --out-csv "$FROZEN_CSV"
 
 echo "### Phase H (3/3) — Action-Score: cf-LoRA predictor ###"
 $PY scripts/08_planning_probe.py --config "$CFG" --only-model "$M" \
+    --eval-split test --split-manifest "$SPLIT" \
     --cem-num-samples "$NS" --cem-iterations "$IT" --max-planning-transitions "$MP" \
     --predictor-lora "$CK" \
     --out-csv "$LORA_CSV"

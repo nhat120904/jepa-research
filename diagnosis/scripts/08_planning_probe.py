@@ -32,7 +32,8 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from data import LatentCache, latent_cache_path, read_regimes  # noqa: E402
+from data import (LatentCache, filter_records, latent_cache_path, load_manifest,  # noqa: E402
+                  read_regimes, validate_manifest)
 from data.latent_cache import REGIME_TO_ID  # noqa: E402
 from metrics import (  # noqa: E402
     cra_per_transition,
@@ -95,6 +96,40 @@ def _pertrans_path(out_csv: Path) -> Path:
     return out_csv.with_name(f"{out_csv.stem}_pertrans.npz")
 
 
+def resolve_eval_manifest(*, eval_split: str, split_manifest: str | None,
+                          predictor_lora: str | None, model: str, dataset: str):
+    """Resolve an external or checkpoint-embedded manifest for held-out evaluation.
+
+    If both are present they must have the same digest.  This prevents accidentally
+    evaluating a checkpoint on another training run's test trajectories.
+    """
+    if eval_split == "all":
+        return None
+    external = load_manifest(split_manifest) if split_manifest else None
+    embedded = None
+    if predictor_lora:
+        ckpt = torch.load(predictor_lora, map_location="cpu", weights_only=False)
+        data_split = ckpt.get("data_split")
+        if data_split and data_split.get("manifest"):
+            embedded = validate_manifest(data_split["manifest"])
+    if external is None and embedded is None:
+        raise ValueError(
+            f"--eval-split {eval_split} requires --split-manifest or a predictor checkpoint "
+            "with embedded data_split metadata"
+        )
+    if external is not None and embedded is not None:
+        if external["manifest_sha256"] != embedded["manifest_sha256"]:
+            raise ValueError("external split manifest does not match predictor checkpoint")
+    manifest = external if external is not None else embedded
+    if manifest.get("model") != model or manifest.get("dataset") != dataset:
+        raise ValueError(
+            "split manifest identity mismatch: "
+            f"manifest=({manifest.get('dataset')}, {manifest.get('model')}) "
+            f"evaluation=({dataset}, {model})"
+        )
+    return manifest
+
+
 def main(
     config_path: str,
     *,
@@ -104,6 +139,8 @@ def main(
     cem_iterations: int | None = None,
     out_csv_override: str | None = None,
     predictor_lora: str | None = None,
+    eval_split: str = "all",
+    split_manifest: str | None = None,
 ) -> int:
     torch.set_num_threads(int(os.environ.get("CAI_JEPA_TORCH_THREADS", "2")))
     cfg = yaml.safe_load(open(config_path))
@@ -155,6 +192,10 @@ def main(
             raise ValueError(f"Unknown model {only_model!r}; configured models: {model_names}")
         model_names = [only_model]
     for model_name in model_names:
+        eval_manifest = resolve_eval_manifest(
+            eval_split=eval_split, split_manifest=split_manifest,
+            predictor_lora=predictor_lora, model=model_name, dataset=dataset_name,
+        )
         cache_path = latent_cache_path(cache_root, model_name, dataset_name)
         if not cache_path.exists():
             print(f"[skip] {cache_path} missing")
@@ -181,6 +222,14 @@ def main(
 
         with LatentCache(cache_path, mode="r") as cache:
             records = helpers.build_transition_records(cache, regime_by_traj, step=step, per_task=False)
+            if eval_manifest is not None:
+                records = filter_records(records, eval_manifest, eval_split)
+                print(f"  HELD-OUT FILTER: split={eval_split} "
+                      f"trajectories={len(eval_manifest['splits'][eval_split])} "
+                      f"transitions={len(records)} manifest="
+                      f"{eval_manifest['manifest_sha256']}", flush=True)
+            if not records:
+                raise ValueError(f"no transitions remain after eval split filter {eval_split!r}")
             threshold = helpers.calibrate_effect_threshold_streaming(cache, records, step=step)
             print(f"  step={step} raw_A={raw_A} model_A={model_A} ECS_thr={threshold:.4f} "
                   f"goal_H={goal_H} max_plan={max_plan}", flush=True)
@@ -257,7 +306,9 @@ def main(
                             pertrans.append({
                                 "model": model_name, "regime": regime_name, "horizon": horizon,
                                 "tid": data["traj_tag"][i], "cra_eff_correct": float(cra_correct[i]),
-                                "action_error": float(errs[i]),
+                                "action_error": float(errs[i]), "eval_split": eval_split,
+                                "split_manifest_sha256": (eval_manifest["manifest_sha256"]
+                                                          if eval_manifest else ""),
                             })
                     if keep.sum() >= 1:
                         err_ci = bootstrap_ci(errs[keep], n_resamples=n_resamples, ci=ci, seed=1,
@@ -267,6 +318,11 @@ def main(
                         rows.append({
                             "dataset": dataset_name, "model": model_name, "regime": regime_name,
                             "horizon": horizon, "n_planned": int(keep.sum()),
+                            "eval_split": eval_split,
+                            "n_eval_trajectories": (len(eval_manifest["splits"][eval_split])
+                                                    if eval_manifest else len({r["tid"] for r in records})),
+                            "split_manifest_sha256": (eval_manifest["manifest_sha256"]
+                                                      if eval_manifest else ""),
                             "max_planning_transitions": max_plan,
                             "cem_num_samples": cem_kw["num_samples"],
                             "cem_iterations": cem_kw["iterations"],
@@ -317,6 +373,11 @@ if __name__ == "__main__":
     ap.add_argument("--predictor-lora",
                     help="predictor-LoRA ckpt (scripts/40): the counterfactual-objective "
                          "dynamics used by CEM. Omit for the frozen baseline.")
+    ap.add_argument("--eval-split", choices=("all", "train", "val", "test"), default="all",
+                    help="trajectory split to evaluate; held-out reports must use 'test'")
+    ap.add_argument("--split-manifest",
+                    help="immutable split JSON (required for frozen held-out evaluation; "
+                         "LoRA checkpoints can supply an embedded copy)")
     args = ap.parse_args()
     sys.exit(main(
         args.config,
@@ -326,4 +387,6 @@ if __name__ == "__main__":
         cem_iterations=args.cem_iterations,
         out_csv_override=args.out_csv,
         predictor_lora=args.predictor_lora,
+        eval_split=args.eval_split,
+        split_manifest=args.split_manifest,
     ))

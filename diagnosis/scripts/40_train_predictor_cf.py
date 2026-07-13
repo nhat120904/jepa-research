@@ -54,7 +54,8 @@ from tensordict.tensordict import TensorDict
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from data import LatentCache, latent_cache_path, read_regimes  # noqa: E402
+from data import (LatentCache, build_trajectory_manifest, filter_records,  # noqa: E402
+                  latent_cache_path, read_regimes, write_manifest_once)
 from models.adapters import build_adapter  # noqa: E402
 from models.heads.lora_predictor import (inject_lora, set_lora_enabled,  # noqa: E402
                                          lora_state_dict)
@@ -103,13 +104,18 @@ def cf_infonce_loss(d_fac: torch.Tensor, d_neg: torch.Tensor, temp: float | None
     return loss, rank_acc, temp
 
 
-def split_by_trajectory(records, val_frac, seed):
-    tids = sorted({r["tid"] for r in records})
-    rng = np.random.default_rng(seed)
-    rng.shuffle(tids)
-    val_tids = set(tids[: max(1, int(len(tids) * val_frac))])
-    return ([r for r in records if r["tid"] not in val_tids],
-            [r for r in records if r["tid"] in val_tids])
+def split_by_trajectory(records, val_frac, test_frac, seed, *, dataset, model):
+    """Return train/val/test records plus their immutable manifest payload."""
+    manifest = build_trajectory_manifest(
+        (r["tid"] for r in records), seed=seed, dataset=dataset, model=model,
+        val_frac=val_frac, test_frac=test_frac,
+    )
+    return (
+        filter_records(records, manifest, "train"),
+        filter_records(records, manifest, "val"),
+        filter_records(records, manifest, "test"),
+        manifest,
+    )
 
 
 def main() -> int:
@@ -128,8 +134,13 @@ def main() -> int:
                     help="counterfactual actions per anchor (in-batch permutations)")
     ap.add_argument("--temp", type=float, default=None,
                     help="softmax temperature; default = auto (mean factual distance)")
-    ap.add_argument("--val-frac", type=float, default=0.1)
+    ap.add_argument("--val-frac", type=float, default=0.15)
+    ap.add_argument("--test-frac", type=float, default=0.15)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--split-seed", type=int, default=0,
+                    help="trajectory split seed, intentionally independent of training seed")
+    ap.add_argument("--split-manifest", default=None,
+                    help="immutable JSON manifest path; default is <checkpoint>.split.json")
     ap.add_argument("--out-dir", default="checkpoints")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
@@ -143,6 +154,11 @@ def main() -> int:
 
     cache_path = latent_cache_path(cfg["latent_cache"]["root"], args.model,
                                    cfg["dataset"]["name"])
+    out_dir = ROOT / args.out_dir
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = Path(args.out) if args.out else out_dir / f"predictor_cf_{args.model}.pt"
+    manifest_path = (Path(args.split_manifest) if args.split_manifest
+                     else path.with_suffix(path.suffix + ".split.json"))
     adapter = build_adapter(args.model, device=str(device)).eval()
     step = adapter.frames_per_step
     for p in adapter.encpred.parameters():
@@ -157,8 +173,21 @@ def main() -> int:
 
     with LatentCache(cache_path, mode="r") as cache:
         records = helpers.build_transition_records(cache, regime_by_traj, step, per_task=False)
-        train_recs, val_recs = split_by_trajectory(records, args.val_frac, args.seed)
+        train_recs, val_recs, test_recs, split_manifest = split_by_trajectory(
+            records, args.val_frac, args.test_frac, args.split_seed,
+            dataset=cfg["dataset"]["name"], model=args.model,
+        )
+        write_manifest_once(manifest_path, split_manifest)
+        split_counts = {
+            "trajectories": {name: len(split_manifest["splits"][name])
+                             for name in ("train", "val", "test")},
+            "transitions": {"train": len(train_recs), "val": len(val_recs),
+                            "test": len(test_recs)},
+        }
+        print(f"split manifest: {manifest_path} sha256="
+              f"{split_manifest['manifest_sha256']}", flush=True)
         print(f"transitions: train={len(train_recs)} val={len(val_recs)} "
+              f"test(UNTOUCHED)={len(test_recs)} trajectories={split_counts['trajectories']} "
               f"(uses_proprio={uses_prop})", flush=True)
 
         def load_all(recs):
@@ -205,9 +234,11 @@ def main() -> int:
         loss = recon + args.lambda_cf * l_cf
         return loss, float(recon), float(l_cf), rank_acc
 
+    train_order_rng = np.random.default_rng(args.seed)
+
     def run_split(z, z1, a, prop, train):
         N = z.shape[0]
-        order = np.random.default_rng(0 if not train else None).permutation(N)
+        order = (train_order_rng if train else np.random.default_rng(0)).permutation(N)
         sr = sc = sa = n = 0.0
         for lo in range(0, N, args.batch_size):
             idx = torch.as_tensor(order[lo: lo + args.batch_size], dtype=torch.long)
@@ -228,11 +259,7 @@ def main() -> int:
     print(f"frozen baseline (LoRA off): val recon={b_r:.6f} cf_ce={b_c:.4f} "
           f"cf_rank_acc={b_a:.3f} (chance={1.0/(1+args.num_neg):.3f})", flush=True)
 
-    out_dir = ROOT / args.out_dir
-    out_dir.mkdir(parents=True, exist_ok=True)
-    path = Path(args.out) if args.out else out_dir / f"predictor_cf_{args.model}.pt"
-
-    def save(vr, vc, va):
+    def save(vr, vc, va, *, epoch, val_objective):
         torch.save({
             "model": args.model, "r": args.rank, "alpha": args.alpha,
             "target_substrs": ["layers", "blocks"], "lora": lora_state_dict(injected, adapter),
@@ -241,6 +268,16 @@ def main() -> int:
             "frozen_recon": b_r, "corrected_recon": vr,
             "frozen_cf_ce": b_c, "corrected_cf_ce": vc,
             "frozen_cf_rank_acc": b_a, "corrected_cf_rank_acc": va,
+            "selection": {"criterion": "val_objective", "mode": "min",
+                          "best_epoch": int(epoch), "best_value": float(val_objective)},
+            "data_split": {
+                "manifest": split_manifest,
+                "manifest_path": str(manifest_path),
+                "manifest_sha256": split_manifest["manifest_sha256"],
+                "counts": split_counts,
+                "train_split": "train", "tuning_split": "val",
+                "reserved_evaluation_split": "test",
+            },
         }, path)
 
     # fail-fast grad-flow guard (post-mortem of 22378: a silent zero-grad gives a fake
@@ -257,21 +294,32 @@ def main() -> int:
     opt.zero_grad()
 
     vr = vc = va = float("nan")
+    best = None
+    best_val_objective = float("inf")
     for ep in range(args.epochs):
         tr, tc, ta = run_split(z_tr, z1_tr, a_tr, p_tr, True)
         with torch.no_grad():
             vr, vc, va = run_split(z_va, z1_va, a_va, p_va, False)
-        save(vr, vc, va)        # timeout-safe
+        val_objective = vr + args.lambda_cf * vc
+        if val_objective < best_val_objective:
+            best_val_objective = val_objective
+            best = (vr, vc, va, ep + 1)
+            save(vr, vc, va, epoch=ep + 1, val_objective=val_objective)
         print(f"epoch {ep+1}/{args.epochs}: train recon={tr:.6f} cf_ce={tc:.4f} rank={ta:.3f} | "
               f"val recon={vr:.6f} cf_ce={vc:.4f} rank_acc={va:.3f} "
-              f"(recon {vr/max(b_r,1e-9):.3f}x)", flush=True)
+              f"objective={val_objective:.5f} (recon {vr/max(b_r,1e-9):.3f}x)"
+              f"{' [BEST]' if best and best[3] == ep + 1 else ''}", flush=True)
 
-    print(f"\nwrote {path}\n"
+    assert best is not None
+    vr, vc, va, best_epoch = best
+    print(f"\nwrote best validation-selected checkpoint {path} (epoch {best_epoch})\n"
+          f"  immutable split: {manifest_path} (test trajectories untouched during training)\n"
           f"  cf-rank accuracy frozen->corrected = {b_a:.3f} -> {va:.3f} "
           f"(chance {1.0/(1+args.num_neg):.3f})\n"
           f"  factual recon corrected/frozen = {vr/max(b_r,1e-9):.3f}x ({b_r:.6f}->{vr:.6f})\n"
           f"  -> GATE: cf_rank_acc must rise well above frozen/chance AND recon must not\n"
-          f"     blow up, THEN run scripts/08 --predictor-lora {path.name} for Action-Score.",
+          f"     blow up, THEN run scripts/08 --predictor-lora {path.name} "
+          f"--eval-split test for held-out Action-Score.",
           flush=True)
     return 0
 

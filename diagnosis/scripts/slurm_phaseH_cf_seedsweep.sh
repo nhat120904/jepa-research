@@ -35,6 +35,7 @@ SEED=${SLURM_ARRAY_TASK_ID:-1}
 EPOCHS=${P4H_EPOCHS:-8}
 NS=${P4H_CEM_SAMPLES:-64}; IT=${P4H_CEM_ITERS:-15}; MP=${P4H_MAX_PLAN:-40}
 CK=checkpoints/predictor_cf_${M}_s${SEED}.pt
+SPLIT=checkpoints/splits/phaseH_${M}_split0.json
 OUT=results/droid_planning_cf_${M}_s${SEED}.csv
 
 echo "HOST $(hostname) GPU=${CUDA_VISIBLE_DEVICES:-NA} $(date) M=$M seed=$SEED"
@@ -43,18 +44,20 @@ set -e
 
 echo "### seed $SEED (1/2) — train predictor-CF ###"
 $PY scripts/40_train_predictor_cf.py --config "$CFG" --model "$M" \
+    --split-seed 0 --split-manifest "$SPLIT" --val-frac 0.15 --test-frac 0.15 \
     --seed "$SEED" --epochs "$EPOCHS" --lambda-cf 1.0 --num-neg 4 --out "$CK"
 
 echo "### seed $SEED (2/2) — Action-Score with cf-LoRA ###"
 $PY scripts/08_planning_probe.py --config "$CFG" --only-model "$M" \
+    --eval-split test --split-manifest "$SPLIT" \
     --cem-num-samples "$NS" --cem-iterations "$IT" --max-planning-transitions "$MP" \
     --predictor-lora "$CK" --out-csv "$OUT"
 
 echo "===== PHASEH_CFSEED_${SEED}_DONE ====="; date
-$PY - "$SEED" "$OUT" <<'PYEOF'
+$PY - "$SEED" "$M" "$OUT" <<'PYEOF'
 import sys, pandas as pd
-seed, out = sys.argv[1], sys.argv[2]
-f = pd.read_csv("results/droid_planning_cf_frozen.csv")
+seed, model, out = sys.argv[1], sys.argv[2], sys.argv[3]
+f = pd.read_csv(f"results/droid_planning_cf_{model}_frozen.csv")
 l = pd.read_csv(out)
 print(f"seed={seed}  mean Action-Error frozen={f['action_error'].mean():.4f} "
       f"cf-LoRA={l['action_error'].mean():.4f}  "

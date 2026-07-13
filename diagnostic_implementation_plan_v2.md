@@ -1,5 +1,21 @@
 # Diagnostic Implementation Plan v2 — CAI-JEPA Idea Validation
 
+> **HISTORICAL IMPLEMENTATION SPECIFICATION (2026-06 snapshot).** The original
+> go/no-go diagnostic was implemented and then followed by a larger planning
+> study. This file is retained for provenance, especially the real-upstream-API
+> corrections in §12; it is not the current research plan or paper framing.
+> Start from `diagnosis/docs/CURRENT_STATUS.md`, then consult `paper/main.tex`
+> and `diagnosis/docs/CLAIMS_EVIDENCE.md`.
+>
+> In particular, CRA/BB with cross-sample `hard_nn` negatives is observational,
+> not an exact-same-state causal intervention. The current paper centers on an
+> oracle-dynamics ladder and optimizer-induced latent-cost exploitation.
+> Historical Phase-H results are invalid as held-out evidence; the persisted
+> 70/15/15 implementation is now queued for rerun. Original jobs **26166** and
+> **26400** were cancelled and resumed as **26481/26482**; encoder upper-bound
+> job is **26485**. See `diagnosis/docs/JOB_LEDGER_2026-07-13.md` for the full
+> current dependency chain; do not resubmit from this plan.
+
 ## Purpose
 
 Determine whether the CAI-JEPA paper idea is worth pursuing by quantitatively measuring action grounding pathology in state-of-the-art JEPA world models on Franka manipulation tasks. The diagnostic answers one core question:

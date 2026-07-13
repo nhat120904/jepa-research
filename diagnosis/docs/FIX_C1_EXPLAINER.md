@@ -1,5 +1,11 @@
 # The C1 fix, explained — why a mixture head un-blinds a boundary-blind world model
 
+> **HISTORICAL MECHANISM NOTE.** This document explains a June hypothesis and
+> its subsequent ablations; its title is not the current empirical conclusion.
+> The mixture-head fix was null, and the grounded channel improved BB without
+> crossing the closed-loop contact wall. See `CURRENT_STATUS.md` for the present
+> optimizer--cost framing and observational-vs-causal limits.
+
 **Audience:** anyone who read `PAPER_IDEA.md` / `PROJECT_OVERVIEW_VI.md` and wants to
 understand *why* this particular fix follows from the diagnosis, not just what the
 code does. Code: `models/heads/mixture_predictor.py`, `scripts/train_predictor_head.py`,

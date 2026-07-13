@@ -1,5 +1,12 @@
 # Handoff — DROID secondary diagnostic (real Franka)
 
+> **HISTORICAL OPERATIONAL HANDOFF.** The two-command TL;DR below is not a
+> current request to run work, and several stated pending items have since been
+> completed. Use `CURRENT_STATUS.md`, `../RUNBOOK.md`, and current Slurm scripts.
+> GPU/model/data-heavy work belongs on allocated compute nodes, never the login
+> node. Phase-H DROID gains are exploratory until a persisted test-only split is
+> rerun.
+
 ---
 
 ## 0. TL;DR — finish in 2 commands
@@ -261,4 +268,3 @@ negative**, with contact/gripper regimes showing *both* high Action Error and lo
 > `planning.max_planning_transitions: 30` and `planning.num_samples: 100`, then restore the
 > config values (1100 / 300) for the real number. On the A5000 the full run is affordable, so
 > this is only to fail fast on a wiring bug.
-

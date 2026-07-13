@@ -222,18 +222,26 @@ def encode_batch(adapter, frames, proprios, device):
     return z[:, 0]                                                  # (B,V,H,W,D)
 
 
-def roll_final_frame(env, snap, plan_raw):
+def roll_final_frame(env, snap, plan_raw, *, return_success=False):
     """Roll one candidate raw-action sequence on the sim from `snap`; return the
     FINAL rendered frame + its proprio (obs[:4]). Sim is rewound by the caller."""
     restore(env, snap)
     last = None
+    success_any = False
+    success_end = False
     for a in plan_raw:
-        last, _, _, _, _ = env.step(np.clip(a, -1, 1))
-    return render(env), last[:4].astype(np.float32), last
+        last, _, _, _, info = env.step(np.clip(a, -1, 1))
+        success_end = bool(info.get("success", 0) > 0.5)
+        success_any = success_any or success_end
+    result = (render(env), last[:4].astype(np.float32), last)
+    if return_success:
+        return (*result, success_any, success_end)
+    return result
 
 
 def cem_plan_latent(env, adapter, z_goal, device, *, plan_h, num_samples, iterations,
-                    elite_frac, var0, rng, cost_fn, on_elites=None, init_mean=None,
+                    elite_frac, var0, rng, cost_fn, on_elites=None,
+                    on_candidates=None, init_mean=None,
                     planner="cem", mppi_beta=5.0):
     """``on_elites(z_elite, raw_elite, cost_elite, iteration)``, if given, is called
     once per CEM iteration with the surviving elite population: ``z_elite`` (n_elite,
@@ -253,6 +261,17 @@ def cem_plan_latent(env, adapter, z_goal, device, *, plan_h, num_samples, iterat
     mean is also injected into the population each iteration (upstream cem_plan's
     mean-inclusion trick) so the elites can RETAIN the seed if the cost genuinely
     prefers it — search then only replaces the seed when the cost approves the swap.
+    ``on_candidates``, if provided, is an opt-in diagnostic hook called before
+    selection on every iteration with the *full, aligned* candidate population::
+
+        on_candidates(z_fin, raw_final, proxy_cost, action_sequences, iteration,
+                      success_any=..., success_end=...)
+
+    ``success_any`` and ``success_end`` are exact MetaWorld flags observed while
+    simulator-rolling each candidate.  The hook makes coverage-vs-selection
+    analyses possible on identical candidates; it is deliberately off by default
+    because collecting success flags and candidate dumps adds bookkeeping.
+
     Default None preserves the original zero-mean behaviour exactly."""
     plan_raw_len = plan_h * FRAMESKIP
     dim = plan_raw_len * RAW_A
@@ -274,11 +293,24 @@ def cem_plan_latent(env, adapter, z_goal, device, *, plan_h, num_samples, iterat
         if init_mean is not None:
             samples[0] = mean                       # mean-inclusion (upstream trick)
         frames, props, raws = [], [], []
+        successes_any, successes_end = [], []
         for i in range(num_samples):
-            fr, pr, raw = roll_final_frame(env, snap, samples[i].reshape(plan_raw_len, RAW_A))
+            plan_i = samples[i].reshape(plan_raw_len, RAW_A)
+            if on_candidates is None:
+                fr, pr, raw = roll_final_frame(env, snap, plan_i)
+            else:
+                fr, pr, raw, succ_any, succ_end = roll_final_frame(
+                    env, snap, plan_i, return_success=True)
+                successes_any.append(succ_any); successes_end.append(succ_end)
             frames.append(fr); props.append(pr); raws.append(raw)
         z_fin = encode_batch(adapter, frames, props, device)        # (B,V,H,W,D) — TRUE latent
         costs = cost_fn(z_fin).detach().cpu().numpy()               # only the COST is swapped
+        if on_candidates is not None:
+            on_candidates(
+                z_fin, raws, costs, samples.reshape(num_samples, plan_raw_len, RAW_A), it,
+                success_any=np.asarray(successes_any, dtype=bool),
+                success_end=np.asarray(successes_end, dtype=bool),
+            )
         order = np.argsort(costs)
         elite_idx = order[:n_elite]
         if on_elites is not None:

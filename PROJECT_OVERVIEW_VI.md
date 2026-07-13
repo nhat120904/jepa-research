@@ -1,5 +1,28 @@
 # CAI-JEPA — Tài liệu giải thích toàn bộ dự án (cho người mới hoàn toàn)
 
+> **TRẠNG THÁI TÀI LIỆU (2026-07-13):** Phần lớn nội dung bên dưới là snapshot
+> lịch sử của giai đoạn CAI-JEPA / Boundary Blindness tháng 6. Nó vẫn hữu ích để
+> hiểu quá trình nghiên cứu và implementation của diagnostic, nhưng không còn là
+> framing của paper hiện tại. Paper-of-record là `paper/main.tex`; status/caveat
+> chuẩn nằm ở `diagnosis/docs/CURRENT_STATUS.md`.
+>
+> **Kết luận hiện tại:** hướng nghiên cứu đáng tiếp tục (**GO**), nhưng bằng chứng
+> chưa đủ an toàn để submit ICLR ngay. Empirical core mạnh nhất là oracle ladder:
+> giữ dynamics hoàn hảo bằng simulator nhưng thay cost, true-state cost giải
+> push `16/16`, còn các frozen-encoder cost đã thử chỉ đạt `0–2/16`. Kiểm tra
+> simulator state trên elites cho thấy search hội tụ vào các vùng cost chấm sai —
+> một failure ở giao diện optimizer–cost, không còn là câu chuyện đơn giản “model
+> không dùng action”.
+>
+> CRA/BB với `hard_nn` chỉ nên gọi là **observational action discriminability**:
+> negative action lấy từ state khác, chưa phải intervention từ chính xác cùng một
+> simulator state. Các số Phase-H cũ không phải held-out evidence; code đã được
+> sửa bằng manifest 70/15/15 bất biến nhưng phải chờ jobs **26493--26495**. Hai
+> job gốc **26166/26400** đã bị cancel và được resume thành **26481/26482**;
+> encoder upper bound là **26485**, confirmatory ladder **26491--26492**,
+> same-state **26497**, shared scaling **26498**. Không submit trùng; xem job
+> ledger trong `diagnosis/docs/JOB_LEDGER_2026-07-13.md`.
+
 > Mục tiêu của tài liệu này: một người **chưa biết gì** về dự án (thậm chí chưa rành về world model)
 > đọc xong sẽ hiểu được: (1) bài toán là gì, (2) ý tưởng nghiên cứu, (3) dữ liệu, (4) phương pháp đo,
 > (5) từng metric nghĩa là gì, (6) cách chạy code, (7) kết quả hiện tại và kết luận.
@@ -22,8 +45,10 @@ gần như y hệt. Nếu vậy thì robot lập kế hoạch sẽ thất bại 
 **tập trung ở những tình huống tiếp xúc/grasp tinh vi** đúng như lý thuyết dự đoán không. Đây là một nghiên cứu
 **go/no-go**: nếu lỗi có thật → viết paper đầy đủ; nếu không → bỏ ý tưởng.
 
-**Kết quả hiện tại:** lỗi **có thật và đo được**. Quyết định: **CONDITIONAL_GO** (đủ tự tin để viết paper, nhưng
-phần dữ liệu DROID còn cần chạy hoàn chỉnh thêm).
+**Kết quả của giai đoạn diagnostic tháng 6:** lỗi quan sát được và quyết định lúc
+đó là **CONDITIONAL_GO**. Đây là mốc lịch sử, không phải verdict submission hiện
+tại; DROID scaling đã chạy sau đó, còn paper đã pivot sang cost exploitation
+dưới test-time search như ghi ở banner trên.
 
 > ⚠️ **CẬP NHẬT QUAN TRỌNG (2026-06-09) — đọc Phần 3.5 trước khi tin phần "phương pháp sửa lỗi".**
 > Hướng nghiên cứu đã **xoay (pivot)** sang khung **"Boundary-Blind World Models"**. Phần *chẩn đoán* (CRA/AUG/ECS)

@@ -1,6 +1,15 @@
 # Paper idea — Boundary-Blind JEPA World Models (contact-boundary reframing)
 
-**Status:** 2026-06-12. Current idea-of-record. **All experimental legs are
+> **HISTORICAL IDEA SNAPSHOT (2026-06-12), superseded.** This was the
+> idea-of-record during the Boundary-Blindness phase. The current paper centers
+> on optimizer-induced cost exploitation under oracle-perfect dynamics; see
+> `CURRENT_STATUS.md` and `../../paper/main.tex`. Claims below about BB being
+> causal/necessary, the grounded channel being the paper's fix, or "remaining
+> work is writing" are not current. CRA/BB is observational unless calibrated
+> by exact-same-state interventions, and Phase-H results remain exploratory
+> pending a leak-free held-out rerun.
+
+**Status at the time:** 2026-06-12. Then-current idea-of-record. **The experimental legs described at that date were
 measured.** Supersedes the *fix* framing of
 `cai_jepa_paper_proposal.md` §6 (the one-step counterfactual margin loss); the
 diagnostic framing (§4–§5 of the proposal) stands and is extended here with the

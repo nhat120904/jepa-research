@@ -1,5 +1,13 @@
 # CAI-JEPA Diagnostic
 
+> **Repository orientation (2026-07-13):** this README documents the original
+> frozen-checkpoint diagnostic pipeline. The repository now also contains
+> planning, probing, and training experiments. Start with
+> [`docs/CURRENT_STATUS.md`](docs/CURRENT_STATUS.md) for the current paper
+> framing, validity blockers, and active jobs. All GPU/model/simulator/data-heavy
+> commands shown here must be submitted with Slurm and run on a compute node;
+> they are not login-node commands.
+
 Action-grounding diagnostic for pretrained JEPA world models. Implements the
 go/no-go validation study described in `../diagnostic_implementation_plan_v2.md`.
 
@@ -7,15 +15,18 @@ go/no-go validation study described in `../diagnostic_implementation_plan_v2.md`
 > JEPA-WM) produce measurably different latent rollouts under different actions
 > from the same state — especially in contact-rich Franka regimes?
 
-Nothing in this directory trains anything. The diagnostic operates entirely on
-**pretrained, frozen** checkpoints.
+The numbered `03`--`07` diagnostic path described below operates on
+**pretrained, frozen** checkpoints. Later scripts in this repository do train
+small heads/adapters and run closed-loop planning; the statement does not apply
+to the whole `diagnosis/` directory.
 
 > **Running on a server?** Follow [`RUNBOOK.md`](RUNBOOK.md) for the exact
 > GPU/data steps. The integration is written against the **real**
 > `facebookresearch/jepa-wms` API (see
 > [`docs/plans/2026-06-01-real-api-rewrite-design.md`](docs/plans/2026-06-01-real-api-rewrite-design.md)
 > for what the API actually is and why the first draft was wrong). The metric
-> code is unit-tested offline: `pytest tests/` (23 tests, no GPU/data needed).
+> and protocol code has offline unit tests under `tests/`; run the full suite on
+> a compute allocation under the repository execution policy.
 
 ## Pipeline
 
