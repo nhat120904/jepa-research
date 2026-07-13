@@ -76,14 +76,14 @@ Do not duplicate or overwrite the following running jobs/agent work:
 | Work | Current owner / job | Purpose |
 |---|---|---|
 | Second-checkpoint oracle/planning pipeline | Original `26166` cancelled; resumed as **26481** (`jepa_wm_metaworld`) | Test checkpoint generality |
-| Planner generality | Original `26400` cancelled; resumed as **26482** (MPPI / shooting) | Test whether cost exploitation is CEM-specific |
+| Planner generality | Original `26400` cancelled; resumed as **26482**, completed | Push success: CEM `1/16`, MPPI `0/16`, shooting `2/16`; reach L2 controls `16/16`, `13/16`, `6/16`; interpret with control-strength caveat |
 | Encoder-information upper bound | Agent PROBE / **26485** | Test whether task-relevant state is recoverable from the frozen encoder |
-| Held-out Phase-H | **26493** DINO-WM, **26494** JEPA-WM; aggregation **26495** | Replace leaked exploratory tables with test-only evaluation |
+| Held-out Phase-H | **26493** DINO-WM, **26494** JEPA-WM; aggregation **26495**, completed | DINO: all four seeds improve AE/AS/CRA; JEPA: CRA improves but AE/AS do not; no closed-loop success claim |
 | Locked confirmatory ladder | **26491** array; paired analysis **26492** | Increase headline cells to 64 unseen paired seeds |
 | Exact same-state intervention | **26497**, completed | Snapshot/restore causal action fan; summary artifacts available, aggregate analysis still required |
 | Shared physical scaling | `26498` OOM; retry **26610** | Compare four checkpoints with one effect mask and fixed negative IDs |
 | Paper compile/LaTeX check | **26499** completed; post-literature rebuild **26504** | Hardened draft builds on compute; generic article layout remains over ICLR budget |
-| Instrumented exploitation audit | **26502** array; component analysis **26503** | Separate elite readout shift, true outcome/opportunity regret, and proxy--truth corruption |
+| Instrumented exploitation audit | **26502** completed; replacement analysis **26746** after `26503` failed on missing optional `tabulate` | Separate elite readout shift, true outcome/opportunity regret, and proxy--truth corruption |
 | Coverage vs selection | **26505** array; analysis **26506** | Test whether good physical candidates are absent or present-but-misranked |
 | TRM-style closest baseline | train **26507**; eval **26508**; analysis **26509** | Replacement/hybrid horizon-matched metric on two checkpoints and held-out oracle seeds |
 | ACID-style closest baseline | train **26510**; learned/oracle eval **26511**; paired analysis **26512** | Test inverse-dynamics consistency; MLP verifier approximation because official code/checkpoint is unavailable |
