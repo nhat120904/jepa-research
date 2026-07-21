@@ -282,9 +282,15 @@ def cem_plan_latent(env, adapter, z_goal, device, *, plan_h, num_samples, iterat
     var = np.full(dim, var0)
     n_elite = max(2, int(num_samples * elite_frac))
     hook_wants_frames = False
+    candidate_hook_wants_frames = False
     if on_elites is not None:
         import inspect
         hook_wants_frames = "frames_elite" in inspect.signature(on_elites).parameters
+    if on_candidates is not None:
+        import inspect
+        candidate_parameters = inspect.signature(on_candidates).parameters
+        candidate_hook_wants_frames = (
+            "frames" in candidate_parameters or "props" in candidate_parameters)
     snap = snapshot(env)
     best_cost, best_sample = None, None       # global-best sample (the plan `shooting` commits to)
     for it in range(iterations):
@@ -306,11 +312,15 @@ def cem_plan_latent(env, adapter, z_goal, device, *, plan_h, num_samples, iterat
         z_fin = encode_batch(adapter, frames, props, device)        # (B,V,H,W,D) — TRUE latent
         costs = cost_fn(z_fin).detach().cpu().numpy()               # only the COST is swapped
         if on_candidates is not None:
+            candidate_kwargs = {
+                "success_any": np.asarray(successes_any, dtype=bool),
+                "success_end": np.asarray(successes_end, dtype=bool),
+            }
+            if candidate_hook_wants_frames:
+                candidate_kwargs.update(frames=frames, props=props)
             on_candidates(
                 z_fin, raws, costs, samples.reshape(num_samples, plan_raw_len, RAW_A), it,
-                success_any=np.asarray(successes_any, dtype=bool),
-                success_end=np.asarray(successes_end, dtype=bool),
-            )
+                **candidate_kwargs)
         order = np.argsort(costs)
         elite_idx = order[:n_elite]
         if on_elites is not None:
