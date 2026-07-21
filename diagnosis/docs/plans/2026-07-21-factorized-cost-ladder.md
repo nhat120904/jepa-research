@@ -1,6 +1,6 @@
 # Factorized object/hand cost ladder
 
-Date: 2026-07-21. Status: implementation complete; awaiting Slurm execution.
+Date: 2026-07-21. Status: submitted; awaiting Slurm execution.
 
 ## Question
 
@@ -46,8 +46,14 @@ encoder from information inaccessible to the probes.
 
 ## Execution record
 
-- Code commit: pending.
-- GPU array: pending.
-- Analysis dependency: pending.
+- Code commit: `3ecd529` (`Add factorized object-hand oracle cost ladder`).
+- GPU array: `28901`, submitted from `diagnosis/` with
+  `sbatch scripts/slurm_factorized_cost_ladder.sh`.
+- Analysis dependency: `28904`, submitted with
+  `sbatch --dependency=afterok:28901 scripts/slurm_factorized_cost_analysis.sh`.
+- Array configuration: tasks `0-15%2`, one GPU, 8 CPUs, 48 GB RAM, 24-hour
+  limit per cell. Default pilot configuration is 16 episodes from seed 61000.
+- Logs: `/mnt/data/nhatnc129/jepa_runs/logs/factorized_cost_28901_<task>.out`
+  and `factorized_cost_analysis_28904.out`.
 - Outputs: `diagnosis/results/factorized_cost_*_seed61000_n16.csv` and
   `diagnosis/results/factorized_cost_ladder_pilot.md`.
