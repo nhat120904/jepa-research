@@ -82,3 +82,27 @@ exist separately in prior work.  The candidate contribution, if the gate passes,
 is their intersection here: adaptive CEM populations as training groups, direct
 selection-regret optimization, encoder updates, and contact-rich JEPA planning.
 The paper must not claim novelty for ranking or differentiable planning alone.
+
+## Execution ledger
+
+Submitted from commit `dad529a` on 2026-07-21.  All jobs use the commands and
+fixed arguments in the named Slurm wrappers; logs are under
+`/mnt/data/nhatnc129/jepa_runs/logs/`.
+
+| Job | Wrapper / exact role | Dependency | Outputs | State at submission |
+|---|---|---|---|---|
+| 28923 | `scripts/slurm_selection_mining_smoke.sh`: tiny mine -> one-update last-tail train -> two-task eval | none | `results/selection_populations_smoke.pt`, `checkpoints/selection_smoke.pt`, `results/selection_eval_smoke.csv` | pending |
+| 28924 | `scripts/slurm_selection_mining.sh`: DINO push, seeds 62000--62007, 8 episodes, registered 10/10/10 subsets | `afterok:28923` | `results/selection_populations_dino_push.pt` and `.json` | pending |
+| 28925[0-11] | `scripts/slurm_selection_train.sh`: four arms x training seeds 0/1/2 | `afterok:28924` | `checkpoints/selection_{lora_tail,last_regression,last_pairwise,last_tail}_s{0,1,2}.pt` | pending |
+| 28926[0-11] | `scripts/slurm_selection_eval.sh`: push selection cost + reach L2 preservation, seeds 63000--63015 | `afterok:28925` | `results/selection_eval_{arm}_s{0,1,2}.csv` | pending |
+| 28927 | `scripts/slurm_selection_analysis.sh`: locked gate aggregation | `afterok:28926` | `results/selection_sprint_report.{json,md}` | pending |
+
+Submission commands were, in order:
+
+```bash
+sbatch --parsable scripts/slurm_selection_mining_smoke.sh
+sbatch --parsable --dependency=afterok:28923 scripts/slurm_selection_mining.sh
+sbatch --parsable --dependency=afterok:28924 scripts/slurm_selection_train.sh
+sbatch --parsable --dependency=afterok:28925 scripts/slurm_selection_eval.sh
+sbatch --parsable --dependency=afterok:28926 scripts/slurm_selection_analysis.sh
+```
