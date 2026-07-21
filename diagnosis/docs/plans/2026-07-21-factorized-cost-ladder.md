@@ -1,6 +1,13 @@
 # Factorized object/hand cost ladder
 
-Date: 2026-07-21. Status: submitted; awaiting Slurm execution.
+Date: 2026-07-21. Status: **cancelled after a five-seed smoke audit**.
+
+The run was stopped before the remaining array cells launched. A review against
+the repository's existing Phase 3/C/G evidence showed that privileged channel
+substitution would add only thin localization, while the proposed frozen-latent
+ranker follow-on repeated a research direction already strongly predicted to
+fail by robust-readout, adversarial-$\phi$, encoder-LoRA, and ensemble nulls. The
+partial outputs are retained only as provenance and are not paper evidence.
 
 ## Question
 
@@ -55,5 +62,11 @@ encoder from information inaccessible to the probes.
   limit per cell. Default pilot configuration is 16 episodes from seed 61000.
 - Logs: `/mnt/data/nhatnc129/jepa_runs/logs/factorized_cost_28901_<task>.out`
   and `factorized_cost_analysis_28904.out`.
+- Final state checked with both `squeue` and `sacct`: array tasks 0--1 were
+  cancelled after about 29 minutes; tasks 2--15 never started; analysis `28904`
+  was cancelled before execution.
+- Partial smoke rows: seeds 61000--61004 only. DINO push `decoded_both` was 0/5;
+  `true_object` was 2/5. These incomplete, adaptively inspected rows must not be
+  interpreted inferentially or promoted into the paper.
 - Outputs: `diagnosis/results/factorized_cost_*_seed61000_n16.csv` and
   `diagnosis/results/factorized_cost_ladder_pilot.md`.
