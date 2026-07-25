@@ -1,0 +1,36 @@
+{
+  "config": "configs/diagnostic_metaworld.yaml",
+  "model": "dino_wm_metaworld",
+  "task": "mw-push",
+  "episodes": 8,
+  "seed0": 62000,
+  "horizon": 6,
+  "num_act_stepped": 3,
+  "max_episode_steps": 100,
+  "cem_num_samples": 100,
+  "cem_iterations": 6,
+  "elite_frac": 0.1,
+  "var0": 1.0,
+  "top_proxy": 10,
+  "top_true": 10,
+  "random_count": 10,
+  "w_hand": 0.5,
+  "probe": "checkpoints/spatial_object_probe_dino_wm_metaworld_offpolicy.pt",
+  "ee_probe": "checkpoints/ee_probe_dino_wm_metaworld_offpolicy.pt",
+  "out": "results/selection_populations_dino_push.pt",
+  "format_version": 1,
+  "n_rows": 8899,
+  "n_groups": 336,
+  "train_seeds": [
+    62000,
+    62001,
+    62002,
+    62003,
+    62004,
+    62005
+  ],
+  "val_seeds": [
+    62006,
+    62007
+  ]
+}

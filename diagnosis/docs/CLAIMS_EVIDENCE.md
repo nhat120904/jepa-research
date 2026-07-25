@@ -1,15 +1,14 @@
 # Claim → evidence map (paper assembly checklist)
 
-> **Current validity note (2026-07-13):** use together with
+> **Current validity note (2026-07-16):** use together with
 > `CURRENT_STATUS.md`. Rows record artifacts, but an artifact is not automatically
 > a defensible causal or held-out claim. In particular, C1 CRA/BB is
 > observational (`hard_nn` negatives are cross-state), model-scaling cells are
 > not yet evaluated on a shared physical effect mask/fixed distractor set, and
 > the historical C7 Phase-H planning results may overlap predictor-LoRA training
-> trajectories. The split leak is fixed in code, but C7 remains blocked until
-> held-out jobs `26493`--`26495` finish. Resumed generality jobs `26481/26482`,
-> encoder probe `26485`, same-state job `26497`, and shared-scaling job `26498`
-> must not be recorded as successful before their final artifacts land.
+> trajectories. Strict held-out replacements are now complete and recorded in
+> C7, but remain offline supporting evidence. Shared physical scaling, TRM, and
+> ACID comparisons remain pending; do not infer outcomes from partial logs.
 
 **Purpose:** every sentence the paper claims, with the exact artifact that backs
 it. If a claim has no row here, it does not go in the paper. Companion to
@@ -66,25 +65,28 @@ from paper use pending a validity fix.
 | R.2 | Three env-side reproduction bugs found+fixed (default-camera 480px renderer; training data = flipud(corner2+tweak), MSE 71.6 vs ≥3000 unflipped; goal = expert FINAL frame) | `results/closed_loop_report.md` §pitfalls (narrative + numbers). ⚠️ 2026-07-12 audit: the previously-cited `results/logs/camera_calib*` artifacts and `_baseline_probe/_camera_calib/_replay_check` probe scripts are NOT on disk — evidence rests on the report; regenerate probes before claiming committed artifacts | 🟡 report-backed only |
 | R.3 | Physics/world identical to data-gen (only visuals differed) | `_replay_check.py`: action replay ee err median 1.5 mm | ✅ |
 
-## C4 — Oracle ladder: the wall is the cost, not the predictor/planner/budget
+## C4 — Oracle ladder: learned-dynamics error is not necessary for failure
 
 | # | Claim | Evidence | Status |
 |---|---|---|---|
-| 4.1 | Same CEM budget + perfect dynamics + true-state cost solves contact: push **16/16**, pick 11/16 | `results/oracle_ladder_cost_report.md` (scripts/29 state-oracle) | ✅ |
-| 4.2 | Every cost computed through the frozen encoder collapses under the SAME perfect dynamics: l2 0/16, gobj 0/8, learned metric 0/8, stateprobe 2/16 | same report (scripts/30 rungs) | ✅ |
-| 4.3 | Static readout precision is NOT the wall: spatial probe decodes object 92% <5cm (contact 90.7%) | same report, Test-1b (scripts/21) | ✅ |
-| 4.4 | Off-policy readout precision is NOT the wall: probes hardened on off-policy frames (obj 78→**91.5%** <5cm, median 2.0cm on the frames CEM scores) re-gate at push **1/16** — a real, measured readout repair transfers ZERO planning success | same report §Phase-3 (3a/3b, job 23553) | ✅ |
+| 4.1 | Locked 64-seed ladder: same CEM budget + perfect dynamics + privileged true-state cost solves push **63/64** and pick-place **41/64** | `results/confirmatory_report.md`, `confirmatory_summary.csv`, jobs `26491/26492` | ✅ headline |
+| 4.2 | Under the same simulator rollouts, latent L2 solves **0/64** in all four checkpoint×task cells; stateprobe solves DINO push/pick **4/64, 0/64** and JEPA **1/64, 0/64** | same locked report and per-arm CSVs | ✅ headline |
+| 4.3 | Object-only decoding is stronger than other cost components, not a certificate of full cost accuracy: off-policy object median **2.01cm, 91.5% <5cm**; end-effector median **5.14cm, 45.8% <5cm**; hand−object relative median **11.18cm, 3.7% <5cm** | `results/encoder_info_upperbound.md`, job `26485` | ✅ scoped; no encoder-only attribution |
+| 4.4 | Off-policy hardening improves the object-only metric (78.3→**91.5%** <5cm) but the historical n=16 planning gate remains **1/16**; use only as an insufficiency result, superseded for headline success by row 4.2 | `results/oracle_ladder_cost_report.md` §Phase-3 | 🟡 supporting |
 
-## C5 — The planner is the adversary (cost overoptimization / Goodhart)
+## C5 — Optimizer-conditioned cost misranking
 
 | # | Claim | Evidence | Status |
 |---|---|---|---|
-| 5.1 | CEM converges its elite population onto the cost's residual-error pockets: elite decode **24.0% <5cm (final-iter 19.2%, push 15.3%; median 7.3cm)** vs **91.5% (median 2.0cm)** on random off-policy frames, same probes | `results/cem_exploit_precision.csv` (scripts/35, Phase A) | ✅ |
-| 5.2 | The exploited plans read "at goal" while the true object is 13–30cm away | `oracle_ladder_cost_report.md` §Verdict | ✅ |
+| 5.1 | Random off-policy→elite comparison shows distribution shift: elite decode **24.0% <5cm** (final 19.2%; median 7.3cm) vs random off-policy **91.5%** (median 2.0cm). Because populations are unmatched, this is supporting evidence, not the primary selection test | `results/cem_exploit_precision.csv` | 🟡 supporting |
+| 5.2 | Probe-minimized plans read "at goal" while the true object is 13–30cm away | `oracle_ladder_cost_report.md` §Verdict | ✅ |
 | 5.3 | Overoptimization curves (n=16, 3 tasks): honest cost (reach×l2) converts search→success **5/16→16/16→16/16→16/16** at iters {2,6,12,24}; exploitable (push×stateprobe) proxy −18% / true −2% / decode **6.6 [5.7,7.4]→8.3 [7.1,9.3] cm (+25%)** with pick corroborating (+21%); no-signal (push×l2) proxy −35%, obj_med **exactly flat 0.239m** every budget. **Decode growth is a point-estimate trend — first/last CIs OVERLAP at n=16** (all 6 arms), disclosed as such in the paper. Population axis {50,100,300}@12it is a separate **n=8** run (0.233/0.207/0.252m; l2 flat 0.252) | `results/overopt_{curves,episodes}_mwpush_mwreach_n16.csv`, `_mwpickplace_n16.csv`, `_mwpush_nsamp.csv` + `results/overopt_analysis.md` (scripts/41+42); figure `paper/figures/figure_overopt.pdf` regenerated from these | ✅ n=16 final; CI-overlap caveat carried in text+caption (v0.3) |
 | 5.4 | Exploitation confirmed on SIM STATE (probe-independent): final-iter elites' TRUE object→goal median **24.9cm** (push 19.9, pick 28.0), only **1.7% <5cm** — worse than the probe's 19.2%, so the probe number understates the wall. Closes the "probe-OOD vs object-really-far" confound | `results/exploit_simstate_crosscheck.csv` (scripts/45, offline re-analysis of `cem_exploit_lite.npz`; no GPU) | ✅ |
+| 5.5 | On the identical first CEM population, proxy elites have **1.24–1.40cm** more object error than population, **0.91–1.06cm** more than true-cost elites, optimism enrichment **2.16–2.33cm**, and selected physical regret **2.05–2.47cm**; all relevant seed-clustered CIs exclude zero | `results/cem_preselection_audit.md`, candidate dumps, script 53 | ✅ primary same-population evidence |
+| 5.6 | Matched-residual permutation null preserves the exact within-population residual multiset but breaks candidate association: actual argmin regret **2.05–2.48cm** vs null **1.07–1.15cm**; excess **0.91–1.36cm**, all four CIs exclude zero | `results/cem_residual_permutation_null.md`, script 56, job `28322` | ✅ structured alignment beyond generic noisy-score winner's curse |
+| 5.7 | Shared-population branch changes only the refitting cost after identical initial candidates; after five refits, proxy branch best physical candidate is **1.51–2.01cm** worse in all four checkpoint×task cells, all CIs exclude zero | shared-branch candidate/metadata files and script 55 analysis | ✅ adaptive intervention |
 
-## C6 — Mitigation nulls: exploitation is irreducible for frozen-base costs
+## C6 — Mitigation nulls: tested post-hoc repairs do not cross contact
 
 | # | Claim | Evidence | Status |
 |---|---|---|---|
@@ -99,8 +101,8 @@ from paper use pending a validity fix.
 | # | Claim | Evidence | Status |
 |---|---|---|---|
 | 7.1 | Historical CF InfoNCE-over-actions predictor-LoRA training metric on dino_wm_droid; not a held-out planning claim | old scripts/40 log / ckpt meta (`predictor_cf_dino_wm_droid.pt`) | 🟡 historical only; replacement protocol now persists immutable 70/15/15 manifest |
-| 7.2 | Exploratory A/B planning probe (n=157): pooled Action-Error **1.468→1.086** (−26%), Action-Score 0.466→0.525, effect-CRA **0.061→0.605**; AE better in all 6 regime×horizon cells, AS in 5/6 | `results/droid_planning_cf_dino_wm_droid_{frozen,lora}.csv`; current probe can read the full cache, including possible train trajectories | ⛔ blocked from paper until test-only rerun |
-| 7.3 | Exploratory seed/model hardening: 4 CF seeds and a second DROID model. Repetition did not remove the shared train/eval overlap. | historical `results/cf_seed_summary.md`, `droid_planning_cf_*_s{1,2,3}.csv`, `droid_planning_cf_jepa_wm_droid_*.csv` | ⛔ blocked; replacement jobs `26493/26494`, aggregation `26495` |
+| 7.2 | Strict held-out DINO-WM four-seed result: AE **1.492→1.085**, AS **0.471→0.545**, CRA **0.036→0.233**; every seed improves all three pooled metrics | `results/cf_heldout_dino_wm_droid_summary.md`, jobs `26493/26495` | 🟡 offline supporting only; no task-success claim |
+| 7.3 | Strict held-out JEPA-WM result is mixed: CRA **0.030→0.085**, AE **1.337→1.344**, AS **0.501→0.501** | `results/cf_heldout_jepa_wm_droid_summary.md`, jobs `26494/26495` | 🟡 blocks a general method contribution |
 
 ## C8 — Elite-conditioned audit components
 
@@ -113,9 +115,9 @@ did not persist the best true candidate.
 | # | Claim | Evidence | Status |
 |---|---|---|---|
 | 8.1 | Elite readout shift is measured separately from task truth; $91.5\%\to24\%$ within 5cm remains evidence of selection-induced probe degradation, not task regret | `results/cem_exploit_precision.csv`, script 35 | 🟡 measured on existing elite dumps |
-| 8.2 | Simulator outcome and opportunity regret: true selected cost minus best true cost among candidates actually present | new instrumentation in scripts 41/43; analyzer 50; protocol `plans/2026-07-13-exploitation-components-protocol.md` | ⛔ pending jobs `26502/26503` |
-| 8.3 | Within-search corruption: proxy improves while simulator truth worsens, plus candidate-order inversion | same instrumented jobs and seed-clustered analyzer | ⛔ pending jobs `26502/26503` |
-| 8.4 | IMWM discriminator: successful/physically better candidate coverage versus present-but-misranked selection error on identical oracle populations | scripts 51/52 and protocol `plans/2026-07-13-coverage-selection-protocol.md` | ⛔ pending jobs `26505/26506` |
+| 8.2 | Simulator outcome and opportunity regret are measured as true selected cost minus best true cost among candidates actually present | preselection row 5.5 and `results/exploitation_components.md`; jobs `26502/26746` | ✅ |
+| 8.3 | Within-search corruption and candidate-order inversion are measured, but same-population preselection regret and the branch intervention are the cleaner headline estimands | same artifacts plus rows 5.5–5.7 | ✅ supporting |
+| 8.4 | Exact-success candidate coverage at final iteration: DINO stateprobe push **8.0%**, pick **3.6%**; JEPA stateprobe contact cells **0%**. Positive physical regret persists, supporting a joint coverage-and-ranking bottleneck | `results/oracle_coverage_selection.md`, candidates from job `26505`; corrected analysis artifact dated 2026-07-14 | ✅ |
 | 8.5 | Direct TRM-style replacement/hybrid comparison on held-out contact seeds, two checkpoints and three head seeds | TRM protocol and jobs `26507--26509`; documented pooling approximation means this is not an exact reproduction | ⛔ pending |
 | 8.6 | ACID-style adaptive inverse-consistency cost under learned versus oracle dynamics | ACID protocol and jobs `26510--26512`; deterministic pooled-IDM approximation because no official verifier is released | ⛔ pending |
 

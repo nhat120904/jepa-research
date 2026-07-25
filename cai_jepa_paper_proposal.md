@@ -17,11 +17,12 @@
 > evidence. A strict immutable 70/15/15 implementation now exists, but its
 > reruns must finish before any method claim is restored.
 >
-> Current pending strengtheners: resumed second-checkpoint pipeline **26481**,
-> planner generality **26482**, encoder-information upper bound **26485**,
-> held-out Phase-H **26493--26495**, locked confirmatory ladder **26491--26492**,
-> exact-same-state intervention **26497**, and shared physical scaling **26498**.
-> Do not read any of these as successful before their final artifacts land.
+> Completed strengtheners: second-checkpoint pipeline **26481**, planner
+> generality **26482**, encoder-information audit **26485**, held-out Phase-H
+> **26493--26495**, locked confirmatory ladder **26491--26492**, and the raw
+> exact-same-state action fan **26497**. Shared physical scaling retry **26610**,
+> TRM, and ACID remain pending. Current values belong in
+> `diagnosis/docs/CLAIMS_EVIDENCE.md`, not in the historical sections below.
 
 ## Current successor proposal (2026-07-13)
 
@@ -29,44 +30,41 @@
 World-Model Planning*.
 
 **Research question.** When action-conditioned latent world models fail on
-contact-rich robot planning, is the dominant error in learned dynamics, in the
-representation/cost used to score goals, or in the optimizer's interaction with
-that learned proxy? Can a cost that looks accurate on ordinary held-out frames
-remain reliable on the elite states deliberately selected by test-time search?
+contact-rich robot planning, can learned-dynamics error be excluded as a
+necessary cause, and can the remaining failure be separated into proposal
+coverage versus cost ranking on candidates actually considered by search?
 
-**Current hypotheses.** (H1) Under oracle-perfect dynamics, contact planning can
-still fail when the planner scores candidates through a frozen visual
-representation. (H2) Test-time optimizers preferentially select residual cost
-errors, producing a measurable proxy--truth divergence on their elite
-population. (H3) Standard average-case diagnostics—prediction error, linear
-readout precision, and observational action discriminability—are insufficient
-to predict this search-time failure. H1–H2 have direct simulator-backed evidence
-on the current DINO-WM/Metaworld pipeline; checkpoint and planner generality are
-pending confirmatory runs.
+**Current findings.** (H1) is supported on two checkpoints: under
+oracle-perfect dynamics, representation-derived costs remain near failure while
+privileged state cost succeeds. (H2) is supported at the cost-composition level:
+same-population proxy selection has positive physical regret beyond a
+matched-residual shuffled-noise null, and changing only the refitting cost
+changes later physical candidate quality. (H3) is supported in a scoped sense:
+object-only decoding does not certify hand--object cost ranking. Exact-success
+coverage is also sparse, so the diagnosis is joint coverage plus ranking, not a
+selection-only explanation and not an encoder-only attribution.
 
-**Proposed contributions.** First, an oracle ladder holds dynamics perfect and
-changes only the planning cost, localizing the failure to the optimizer--cost
-interface. Second, an elite survival test evaluates learned costs on the states
-the optimizer actually selects and verifies proxy error against simulator truth,
-distinguishing honest, no-signal, and exploitable costs. Third, a contact-rich
-robot manipulation study connects frozen JEPA representations, real-robot
-diagnostics, and closed-loop simulator verification. Counterfactual predictor
-training is optional supporting evidence only if its gain survives a strict
-trajectory-held-out rerun.
+**Current contributions.** First, a locked 64-seed oracle ladder holds dynamics
+perfect and changes only the cost. Second, a same-population audit reports
+ranking, optimism, opportunity regret, a matched-residual permutation null, and
+success coverage against simulator truth. Third, a shared-population branch
+changes only the CEM refitting cost and measures its physical consequence.
+DROID and counterfactual predictor training are supporting offline evidence,
+not the mechanistic contribution.
 
-**ICLR evidence gates.** The central result should replicate on the second
-Metaworld checkpoint and another optimizer family; headline arms need a locked,
-paired, unseen-seed evaluation with substantially more than 8–16 episodes; CRA/
-BB should be calibrated against action fans executed from identical simulator
-states; and scaling comparisons should share a physical effect mask and fixed
-distractors across models. Null results should narrow the title/scope rather
-than be converted into universal claims.
+**Remaining ICLR gates.** Finish and interpret the TRM/ACID closest baselines,
+finish the shared-mask scaling retry, aggregate the exact-same-state action fan,
+and convert the draft to the official ICLR template/page budget. A learned
+non-privileged positive control would materially strengthen the method story;
+without one, the paper should remain a mechanistic diagnosis with a privileged
+positive control.
 
-**Claim boundary.** The paper may conclude that grounding and good off-policy
-readout accuracy are insufficient for robust contact planning under the tested
-search procedures. It should not yet claim that grounding is necessary, that
-all learned latent costs are exploitable, that scale cannot help, or that
-cross-state nearest-neighbour negatives identify causal action effects.
+**Claim boundary.** The paper may conclude that learned-dynamics error is not
+necessary for failure in this controlled harness and that the tested
+representation--readout cost exhibits optimizer-conditioned physical
+misranking. It should not claim that the encoder alone is defective, that
+grounding is necessary, that all learned latent costs fail, that scale cannot
+help, or that cross-state nearest-neighbour negatives identify causal effects.
 
 ## Historical detailed research proposal
 

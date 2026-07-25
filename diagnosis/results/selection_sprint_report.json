@@ -1,0 +1,132 @@
+{
+  "verdict": "STOP_METHOD_DIRECTION",
+  "checks": {
+    "tail_beats_regression_push": false,
+    "tail_beats_regression_regret": true,
+    "all_tail_seeds_cross_prior_envelope": false,
+    "reach_preserved_every_tail_seed": true
+  },
+  "summary": {
+    "lora_tail": {
+      "train_seeds": [
+        0,
+        1,
+        2
+      ],
+      "push_success_end_per_seed": [
+        0,
+        0,
+        0
+      ],
+      "push_success_end_mean": 0.0,
+      "push_success_end_seed_bootstrap_ci": [
+        0.0,
+        0.0
+      ],
+      "reach_success_end_per_seed": [
+        16,
+        14,
+        15
+      ],
+      "reach_success_end_mean": 15.0,
+      "val_selected_regret_per_seed": [
+        0.0060116380807899,
+        0.0054997501983529,
+        0.0058394635007494
+      ],
+      "val_selected_regret_mean": 0.005783617259964066,
+      "val_mae_mean": 7.130114945154342
+    },
+    "last_blocks_regression": {
+      "train_seeds": [
+        0,
+        1,
+        2
+      ],
+      "push_success_end_per_seed": [
+        1,
+        0,
+        2
+      ],
+      "push_success_end_mean": 1.0,
+      "push_success_end_seed_bootstrap_ci": [
+        0.0,
+        2.0
+      ],
+      "reach_success_end_per_seed": [
+        15,
+        16,
+        15
+      ],
+      "reach_success_end_mean": 15.333333333333334,
+      "val_selected_regret_per_seed": [
+        0.0080467584942068,
+        0.0064157634263946,
+        0.006332519863333
+      ],
+      "val_selected_regret_mean": 0.0069316805946448,
+      "val_mae_mean": 0.03200848788089513
+    },
+    "last_blocks_pairwise": {
+      "train_seeds": [
+        0,
+        1,
+        2
+      ],
+      "push_success_end_per_seed": [
+        5,
+        0,
+        0
+      ],
+      "push_success_end_mean": 1.6666666666666667,
+      "push_success_end_seed_bootstrap_ci": [
+        0.0,
+        5.0
+      ],
+      "reach_success_end_per_seed": [
+        14,
+        14,
+        14
+      ],
+      "reach_success_end_mean": 14.0,
+      "val_selected_regret_per_seed": [
+        0.0014859899168922,
+        0.0018022296329339,
+        0.0028072797826358
+      ],
+      "val_selected_regret_mean": 0.0020318331108206333,
+      "val_mae_mean": 68.06271595992739
+    },
+    "last_blocks_tail": {
+      "train_seeds": [
+        0,
+        1,
+        2
+      ],
+      "push_success_end_per_seed": [
+        0,
+        0,
+        0
+      ],
+      "push_success_end_mean": 0.0,
+      "push_success_end_seed_bootstrap_ci": [
+        0.0,
+        0.0
+      ],
+      "reach_success_end_per_seed": [
+        15,
+        15,
+        15
+      ],
+      "reach_success_end_mean": 15.0,
+      "val_selected_regret_per_seed": [
+        0.0061632570411477,
+        0.0035952042256082,
+        0.0061816204161871
+      ],
+      "val_selected_regret_mean": 0.005313360560981,
+      "val_mae_mean": 18.379017451925886
+    }
+  },
+  "protocol": "docs/plans/2026-07-21-selection-aware-encoder-sprint.md"
+}

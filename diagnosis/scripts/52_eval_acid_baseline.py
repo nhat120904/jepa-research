@@ -52,6 +52,44 @@ FRAMESKIP, RAW_A = _cl.FRAMESKIP, _cl.RAW_A
 snapshot, restore = _or.snapshot, _or.restore
 
 
+def render_frame(env) -> np.ndarray:
+    """Render one planning frame, rebuilding a lost EGL context once.
+
+    MetaWorld's offscreen renderer can return an all-zero frame after a long
+    sequence of reset / snapshot / restore calls on some Slurm workers.  This
+    is a renderer-lifecycle failure, not an environment or planning outcome.
+    Recreate only that renderer and retry once so the paired terminal and ACID
+    arms keep the same MuJoCo state, RNG, camera, and evaluation seed.
+    """
+    try:
+        return render(env)
+    except RuntimeError as exc:
+        if "render returned an empty frame" not in str(exc):
+            raise
+
+    from gymnasium.envs.mujoco.mujoco_rendering import MujocoRenderer
+
+    previous = getattr(env, "mujoco_renderer", None)
+    default_cam_config = getattr(previous, "default_cam_config", None)
+    if previous is not None:
+        try:
+            previous.close()
+        except Exception as close_exc:  # EGL teardown may already be invalid.
+            print(f"ACID renderer recovery: ignoring close error: {close_exc}", flush=True)
+    env.mujoco_renderer = MujocoRenderer(
+        env.model,
+        env.data,
+        default_cam_config,
+        width=env.width,
+        height=env.height,
+        max_geom=getattr(previous, "max_geom", 1000),
+        camera_id=None,
+        camera_name=env.camera_name,
+    )
+    print("ACID renderer recovery: rebuilt offscreen renderer after empty frame", flush=True)
+    return render(env)
+
+
 class ACIDPoolCost:
     """Stateful trajectory cost; records adaptive-scale diagnostics per CEM pool."""
 
@@ -134,7 +172,7 @@ def run_learned(task, seed, env, goal_frame, goal_state, expert_succ, adapter,
     success = success_end = False
     steps = 0
     while steps < max_episode_steps:
-        z_t = encode_frame(adapter, render(env), obs[:4], device)
+        z_t = encode_frame(adapter, render_frame(env), obs[:4], device)
         prop = torch.from_numpy(obs[:4].astype(np.float32)).to(device)
         plan_h = min(horizon, max(1, -(-(max_episode_steps - steps) // FRAMESKIP)))
         plan = cem_plan(
@@ -173,7 +211,7 @@ def oracle_population_trajectory(env, snap, adapter, z_init, samples, device):
             obs = None
             for action in samples[i, t].reshape(FRAMESKIP, RAW_A):
                 obs, _, _, _, _ = env.step(np.clip(action, -1, 1))
-            frames_by_step[t].append(render(env))
+            frames_by_step[t].append(render_frame(env))
             props_by_step[t].append(obs[:4].astype(np.float32))
     encoded = [
         encode_batch(adapter, frames_by_step[t], props_by_step[t], device)
@@ -220,7 +258,7 @@ def run_oracle(task, seed, env, goal_frame, goal_state, expert_succ, adapter,
     success = success_end = False
     steps = 0
     while steps < max_episode_steps:
-        z_t = encode_frame(adapter, render(env), obs[:4], device)
+        z_t = encode_frame(adapter, render_frame(env), obs[:4], device)
         plan_h = min(horizon, max(1, -(-(max_episode_steps - steps) // FRAMESKIP)))
         plan = cem_plan_oracle_acid(
             env, adapter, z_t, z_goal, device, recorder,

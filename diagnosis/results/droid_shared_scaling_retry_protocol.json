@@ -1,0 +1,55 @@
+{
+  "name": "shared_physical_effect_fixed_negative_v1",
+  "reference_model_raw_arrays": "dino_wm_droid",
+  "models": [
+    "dino_wm_droid",
+    "jepa_wm_droid",
+    "vjepa2_ac_droid",
+    "vjepa2_ac_oss"
+  ],
+  "n_common_trajectories": 333,
+  "n_common_transitions": 2331,
+  "K": 16,
+  "pool_size": 1024,
+  "pool_seed": 0,
+  "effect_quantile": 0.5,
+  "effect_threshold": 3.194373495211531,
+  "effect_scales": [
+    0.027180576413869856,
+    0.032122019389271735,
+    0.05199522140845656,
+    0.07271495132446289,
+    0.08561299434006213,
+    0.12228698869943617,
+    0.2280297438441848
+  ],
+  "state_median": [
+    0.551788866519928,
+    0.01942582055926323,
+    0.1559506207704544,
+    -0.007540305524441131,
+    0.04381482895972842,
+    -0.18105028588165478,
+    -0.9954588631684949,
+    0.9915140948307045,
+    0.8807705787796812,
+    0.2599119246006012
+  ],
+  "state_scales": [
+    0.11691251138448715,
+    0.1728094934798777,
+    0.11786902660131454,
+    0.13916833621398322,
+    0.1894926756714437,
+    0.667260361060933,
+    0.0064480920384201645,
+    0.01206202342437453,
+    0.16156249332160605,
+    0.38534541941285133
+  ],
+  "negative_rule": "K nearest states by robust-standardized raw proprio with sin/cos Euler embedding; no latent/action reranking",
+  "effect_rule": "L2 norm of robust-standardized raw proprio delta with wrapped Euler deltas, shared quantile threshold",
+  "regime_rule": "raw gripper sensor first; open-gripper pre_grasp_proxy uses shared physical-motion score",
+  "raw_common_manifest_sha256": "28fc20d7236fb8ddb2d6d5c11c61a0a0dee16058550cec789bafb7bae429befe",
+  "causal_scope": "observational matched-state diagnostic; not exact same-state intervention"
+}

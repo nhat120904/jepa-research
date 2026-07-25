@@ -1,0 +1,29 @@
+{
+  "protocol": "exact_same_mujoco_integration_state_local_action_fan",
+  "models": [
+    "dino_wm_metaworld",
+    "jepa_wm_metaworld"
+  ],
+  "tasks": [
+    "mw-push",
+    "mw-pick-place"
+  ],
+  "episodes": 12,
+  "seed0": 30000,
+  "horizons_model_steps": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "frameskip_raw_steps_per_model_step": 5,
+  "n_candidates_including_factual": 17,
+  "xyz_delta": 0.25,
+  "noise_std": 0.12,
+  "fan_seed": 9173,
+  "pregrasp_radius_m": 0.12,
+  "n_unique_anchors": 144,
+  "n_model_anchor_evaluations": 288,
+  "contact_impulse_note": "sampled force multiplied by env.dt at each returned env.step; MetaWorld does not expose substep-integrated contact impulse, so this is an approximation",
+  "causal_scope_note": "all candidates within an anchor start from the identical mjSTATE_INTEGRATION snapshot; claims remain local to the scripted-expert anchor distribution and finite action fan"
+}

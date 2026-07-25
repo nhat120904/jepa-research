@@ -9,12 +9,13 @@
 >
 > In particular, CRA/BB with cross-sample `hard_nn` negatives is observational,
 > not an exact-same-state causal intervention. The current paper centers on an
-> oracle-dynamics ladder and optimizer-induced latent-cost exploitation.
-> Historical Phase-H results are invalid as held-out evidence; the persisted
-> 70/15/15 implementation is now queued for rerun. Original jobs **26166** and
-> **26400** were cancelled and resumed as **26481/26482**; encoder upper-bound
-> job is **26485**. See `diagnosis/docs/JOB_LEDGER_2026-07-13.md` for the full
-> current dependency chain; do not resubmit from this plan.
+> oracle-dynamics ladder and optimizer-conditioned cost misranking. The locked
+> 64-seed ladder, two-checkpoint replication, strict held-out Phase-H rerun,
+> encoder-information audit, same-population selection audit, matched-residual
+> null, and shared-branch intervention are complete. Phase H is mixed and
+> supporting only; proposal coverage and cost ranking are both bottlenecks.
+> See `diagnosis/docs/JOB_LEDGER_2026-07-13.md` for the live workflow; do not
+> resubmit from this historical plan.
 
 ## Purpose
 

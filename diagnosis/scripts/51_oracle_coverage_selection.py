@@ -62,6 +62,10 @@ CANDIDATE_FIELDS = [
     "task", "cost", "seed", "replan", "iter", "candidate", "action_hash",
     "action_l2", "action_linf", "proxy_cost", "true_progress_cost",
     "true_shaped_cost", "obj_goal_dist", "ee_goal_dist", "hand_obj_dist",
+    "obj_decode_error_cm", "ee_decode_error_cm",
+    "decoded_obj_to_probe_goal", "decoded_obj_to_true_goal",
+    "decoded_hand_obj_dist", "decoded_stateprobe_cost",
+    "stateprobe_optimism_m",
     "success_any", "success_end", "proxy_selected", "true_progress_best",
 ]
 
@@ -74,11 +78,16 @@ def _action_hash(action_sequence: np.ndarray) -> str:
 def run_episode(task, cost_name, seed, env, goal_frame, goal_state, expert_succ,
                 adapter, device, *, cost_spec, plan_h, num_act_stepped,
                 max_episode_steps, cem_kw, strict, w_hand, topk_frac,
-                iteration_writer, candidate_writer):
+                iteration_writer, candidate_writer, audit_probe=None,
+                audit_ee_probe=None):
     goal_obj = goal_state[OBJECT_SLICE].astype(np.float32)
     goal_ee = goal_state[EE_SLICE].astype(np.float32)
     z_goal = encode_frame(adapter, goal_frame, goal_state[:4], device)
     cost_fn = build_oracle_cost(z_goal=z_goal, **cost_spec)
+    decoded_goal_obj = None
+    if audit_probe is not None:
+        with torch.no_grad():
+            decoded_goal_obj = audit_probe(z_goal.unsqueeze(0)).detach().cpu().numpy()[0]
     obs, _ = env.reset()
     obs, _, _, _, _ = env.step(np.zeros(RAW_A))
     rng = np.random.default_rng(seed)
@@ -86,7 +95,6 @@ def run_episode(task, cost_name, seed, env, goal_frame, goal_state, expert_succ,
 
     def on_candidates(z_fin, raw_final, proxy_cost, action_sequences, iteration,
                       *, success_any, success_end):
-        del z_fin
         raw = np.asarray(raw_final, dtype=np.float32)
         proxy = np.asarray(proxy_cost, dtype=float)
         obj = raw[:, OBJECT_SLICE]
@@ -97,6 +105,27 @@ def run_episode(task, cost_name, seed, env, goal_frame, goal_state, expert_succ,
         progress = ee_dist if task.startswith("mw-reach") else obj_dist
         shaped = (ee_dist if task.startswith("mw-reach")
                   else obj_dist + w_hand * hand_obj)
+        obj_decode_cm = np.full(len(proxy), np.nan, dtype=float)
+        ee_decode_cm = np.full(len(proxy), np.nan, dtype=float)
+        decoded_obj_probe_goal = np.full(len(proxy), np.nan, dtype=float)
+        decoded_obj_true_goal = np.full(len(proxy), np.nan, dtype=float)
+        decoded_hand_obj = np.full(len(proxy), np.nan, dtype=float)
+        decoded_stateprobe = np.full(len(proxy), np.nan, dtype=float)
+        if audit_probe is not None:
+            with torch.no_grad():
+                decoded_obj = audit_probe(z_fin).detach().cpu().numpy()
+            obj_decode_cm = 100.0 * np.linalg.norm(decoded_obj - obj, axis=-1)
+            decoded_obj_probe_goal = np.linalg.norm(
+                decoded_obj - decoded_goal_obj[None], axis=-1)
+            decoded_obj_true_goal = np.linalg.norm(
+                decoded_obj - goal_obj[None], axis=-1)
+            if audit_ee_probe is not None:
+                with torch.no_grad():
+                    decoded_ee = audit_ee_probe(z_fin).detach().cpu().numpy()
+                ee_decode_cm = 100.0 * np.linalg.norm(decoded_ee - ee, axis=-1)
+                decoded_hand_obj = np.linalg.norm(decoded_ee - decoded_obj, axis=-1)
+                decoded_stateprobe = (
+                    decoded_obj_probe_goal + w_hand * decoded_hand_obj)
         summary = coverage_selection_summary(
             proxy, progress, success_any, success_end, topk_frac=topk_frac)
         k = int(summary["topk"])
@@ -136,6 +165,14 @@ def run_episode(task, cost_name, seed, env, goal_frame, goal_state, expert_succ,
                     "obj_goal_dist": float(obj_dist[i]),
                     "ee_goal_dist": float(ee_dist[i]),
                     "hand_obj_dist": float(hand_obj[i]),
+                    "obj_decode_error_cm": float(obj_decode_cm[i]),
+                    "ee_decode_error_cm": float(ee_decode_cm[i]),
+                    "decoded_obj_to_probe_goal": float(decoded_obj_probe_goal[i]),
+                    "decoded_obj_to_true_goal": float(decoded_obj_true_goal[i]),
+                    "decoded_hand_obj_dist": float(decoded_hand_obj[i]),
+                    "decoded_stateprobe_cost": float(decoded_stateprobe[i]),
+                    "stateprobe_optimism_m": float(
+                        shaped[i] - decoded_stateprobe[i]),
                     "success_any": int(success_any[i]),
                     "success_end": int(success_end[i]),
                     "proxy_selected": int(i == selected),
@@ -267,7 +304,8 @@ def main() -> int:
                             max_episode_steps=args.max_episode_steps, cem_kw=cem_kw,
                             strict=args.strict_success, w_hand=args.w_hand,
                             topk_frac=args.topk_frac, iteration_writer=it_writer,
-                            candidate_writer=cand_writer,
+                            candidate_writer=cand_writer, audit_probe=probe,
+                            audit_ee_probe=ee_probe,
                         )
                     finally:
                         env.close()

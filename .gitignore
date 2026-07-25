@@ -59,3 +59,5 @@ robocasa/
 *.pptx
 *.pt
 *.npz
+*.csv.gz
+*.csv.tmp

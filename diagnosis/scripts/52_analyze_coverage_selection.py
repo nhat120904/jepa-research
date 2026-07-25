@@ -177,7 +177,14 @@ def write_report(path: Path, final: pd.DataFrame, validation: pd.DataFrame | Non
         "selected_physical_regret_ci_lo", "selected_physical_regret_ci_hi",
         "proxy_true_spearman", "proxy_true_topk_overlap",
     ]
-    lines.append(final[display].to_markdown(index=False) if len(final) else "_No rows._")
+    if len(final):
+        try:
+            lines.append(final[display].to_markdown(index=False))
+        except ImportError:
+            # `tabulate` is optional; preserve report generation in minimal envs.
+            lines.extend(["```text", final[display].to_string(index=False), "```"])
+    else:
+        lines.append("_No rows._")
     lines.extend(["", "## Raw-dump validation", ""])
     if validation is None:
         lines.append("Raw candidate validation was not requested.")
