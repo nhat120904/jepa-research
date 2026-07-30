@@ -6,6 +6,12 @@ Decision-Equivalent Belief Compression + amortized decision-regret VOI, validate
 
 Reproduce: `diagnosis/.venv/bin/python -m belief_compression.run` (from repo root).
 
+### Default mode representative changed (disclosed)
+
+Gate C0 §S7 showed that the original `maxweight` representative rule (the mode's highest-weight member, which under a flat prior ties across the whole mode and resolves to an arbitrary mode-EDGE particle) costs up to 44.74% closed-loop regret at byte-identical compute. **`centroid` — the member nearest the mode's belief-weighted mean parameter — is now the default `rep_rule`** for `compress()`, `collapse_modes` and both compression planners; `maxweight` stays selectable so the C0 failure remains reproducible.
+
+**Nothing in this document moved.** Re-running Gate B after the change reproduces every number byte-for-byte: every return, regret, expected probe count, compute total and both gate verdicts are identical. That is not a no-op being disclosed for nothing — the representative really does change here (on `occluder_push` the two mode representatives move from locations {0, 4} to {1, 5}, which is what `amortized_voi` plans over) — it is that Gate B's two tasks cannot see the difference: `mass_sort` has no metric on its hidden space (`param_embedding()` is `None`), so `centroid` falls back to `maxweight` by construction, and on `occluder_push` measurement (i) is commit-only (budget 0), where the collapse is lossless for either rule, while measurement (ii)'s probe decision comes out the same under both. The representative only bites where a *value* comparison is close, which is exactly the regime Gate C0 §S6/§S7 sweeps and this gate does not.
+
 ## Measurement (i): compression vs goal-richness
 
 `richness` = amount of the hidden parameter made decision-relevant by the goal family. `M/K` = surviving decision modes / hypotheses. `regret_in` = mean planning regret vs full-belief when executing goals INSIDE the family; `regret_out` = executing a goal that needs the full parameter (out of family). Returns are exact expectations. NOTE: `regret_out` is ~0 in both tasks because this measurement isolates the terminal commit (budget=0), and the commit in these tasks decomposes over the hidden parameter, so mode representatives preserve the per-dimension MAP even out of family. The out-of-family cost of over-compression shows up in PROBE valuation (a narrow-family compression misjudges the value of probing an object it merged away), not in the commit; measurement (ii) exercises that probing axis directly.

@@ -35,7 +35,7 @@ from typing import List, Optional
 
 import numpy as np
 
-from .compression import compress
+from .compression import ParticleTables, compress
 from .core import Belief, ComputeCounter
 from .evaluate import exact_return
 from .planners import (
@@ -44,6 +44,7 @@ from .planners import (
     DecisionRegretVOI,
     FullBeliefPlanner,
     PrecomputedCompressionPlanner,
+    mode_belief,
 )
 from .tasks import GridParam, MassSort, OccluderPush
 
@@ -473,26 +474,31 @@ def s5_table(grid, K_values, G_values) -> str:
 # --------------------------------------------------------------------------- #
 # S6 — decision fidelity vs VALUE fidelity  (the limitation this study found)
 # --------------------------------------------------------------------------- #
-def _rep_belief(task, comp, prior, mode: str) -> Belief:
-    """Collapse modes onto a representative particle, two ways."""
-    w = np.zeros(task.n_states())
-    for m in comp.modes:
-        if mode == "maxweight":
-            rep = m.rep
-        else:  # mode-conditional mean of the hidden parameter
-            wt = np.array([prior.weights[k] for k in m.members], dtype=float)
-            wt = wt / wt.sum()
-            mean_th = float((wt * task.theta[list(m.members)]).sum())
-            rep = int(np.argmin(np.abs(task.theta - mean_th)))
-        w[rep] += m.weight
-    return Belief(task, w / w.sum())
+# The four ways a decision mode can be carried into the planner.  The first two
+# collapse the mode onto one representative particle; the last two carry the
+# value-consistent ModeSummary (frozen / refreshed within-mode conditional).
+MODE_RULES = ("maxweight", "centroid", "summary", "summary_exact")
+
+
+def _mode_view(task, groups, prior, rule):
+    """The planner's view of a compressed belief under one mode rule."""
+    tables = ParticleTables(task) if rule.startswith("summary") else None
+    return mode_belief(task, groups, prior.weights, rule, tables=tables)
 
 
 def s6_value_fidelity(K_values, A_values, H=1, n_goals=1):
     """Exact commit regret is zero, but is the compressed planner's VALUE
     estimate right?  Probe/VOI decisions depend on values, not just argmaxes,
     so a decision-equivalent-but-value-wrong collapse can skip a probe it
-    should take.  Measured against both representative choices."""
+    should take.
+
+    Measured for all four mode rules, at BOTH budgets: `V0` is the commit-only
+    value (budget 0, no probing allowed) and `V` is the planning value at budget
+    H.  The residual `V - V_full` is the value-consistency error; the question a
+    value-consistent summary has to answer is whether that residual is 0 at H=0
+    (easy) AND stays 0 once probing is allowed (not automatic -- an observation
+    reweights the particles WITHIN a mode, which a frozen summary does not see).
+    """
     from .planners import expectimax
 
     rows = []
@@ -503,60 +509,98 @@ def s6_value_fidelity(K_values, A_values, H=1, n_goals=1):
             goal = family[0]
             prior = Belief.prior(task)
             comp = compress(prior, family, tol=0.0)
+            groups = [m.members for m in comp.modes]
             v_full, a_full = expectimax(prior, goal, H, ComputeCounter())
+            v_full0, _ = expectimax(prior, goal, 0, ComputeCounter())
             out = {}
-            for repmode in ("maxweight", "centroid"):
-                rb = _rep_belief(task, comp, prior, repmode)
-                v, a = expectimax(rb, goal, H, ComputeCounter())
-                out[repmode] = (v, a)
-            reg = None
+            for rule in MODE_RULES:
+                v, a = expectimax(_mode_view(task, groups, prior, rule), goal, H,
+                                  ComputeCounter())
+                v0, _ = expectimax(_mode_view(task, groups, prior, rule), goal, 0,
+                                   ComputeCounter())
+                out[rule] = (v, a, v0)
+            reg = {}
             if K <= MAX_K_EXACT_REGRET and H <= MAX_H_EXACT_REGRET:
                 r_full = exact_return(task, FullBeliefPlanner(), goal, budget=H).ret
-                r_pol = exact_return(
-                    task, PrecomputedCompressionPlanner(task, family), goal, budget=H
-                ).ret
-                reg = (r_full - r_pol, r_full)
+                for rule in MODE_RULES:
+                    r_pol = exact_return(
+                        task,
+                        PrecomputedCompressionPlanner(task, family, rep_rule=rule),
+                        goal, budget=H,
+                    ).ret
+                    reg[rule] = (r_full - r_pol, r_full)
             rows.append(dict(
-                A=A, K=K, M=comp.M, v_full=v_full, a_full=a_full,
-                v_max=out["maxweight"][0], a_max=out["maxweight"][1],
-                v_cen=out["centroid"][0], a_cen=out["centroid"][1],
+                A=A, K=K, M=comp.M, v_full=v_full, v_full0=v_full0, a_full=a_full,
+                v={k: out[k][0] for k in MODE_RULES},
+                a={k: out[k][1] for k in MODE_RULES},
+                v0={k: out[k][2] for k in MODE_RULES},
                 regret=reg,
             ))
     return rows
 
 
 def s6_table(rows) -> str:
-    hdr = ["|A|", "K", "M", "V_full", "V_maxweight", "V_centroid",
-           "root_full", "root_maxw", "same_root", "regret_H1", "rel"]
+    """Values and root actions."""
+    hdr = (["|A|", "K", "M", "V_full"]
+           + [f"V_{r}" for r in MODE_RULES]
+           + ["root_full", "root_maxweight", "root_centroid", "root_summary"])
     body = []
     for r in rows:
-        reg, rel = ("n/a", "n/a")
-        if r["regret"] is not None:
-            reg = f"{r['regret'][0]:.2e}"
-            rel = f"{abs(r['regret'][0]) / abs(r['regret'][1]):.1%}" if r["regret"][1] else "n/a"
-        body.append([
-            r["A"], r["K"], r["M"],
-            f4(r["v_full"]), f4(r["v_max"]), f4(r["v_cen"]),
-            f"{r['a_full'][0]}:{r['a_full'][1]}",
-            f"{r['a_max'][0]}:{r['a_max'][1]}",
-            str(r["a_max"] == r["a_full"]),
-            reg, rel,
-        ])
+        body.append(
+            [r["A"], r["K"], r["M"], f4(r["v_full"])]
+            + [f4(r["v"][k]) for k in MODE_RULES]
+            + [f"{r['a_full'][0]}:{r['a_full'][1]}"]
+            + [f"{r['a'][k][0]}:{r['a'][k][1]}"
+               for k in ("maxweight", "centroid", "summary")]
+        )
+    return table(hdr, body)
+
+
+def s6_residual_table(rows) -> str:
+    """The value-consistency residual itself, at budget 0 and at budget H."""
+    hdr = (["|A|", "K", "M"]
+           + [f"dV0_{r}" for r in MODE_RULES]
+           + [f"dV_{r}" for r in MODE_RULES])
+    body = []
+    for r in rows:
+        body.append(
+            [r["A"], r["K"], r["M"]]
+            + [f"{r['v0'][k] - r['v_full0']:.2e}" for k in MODE_RULES]
+            + [f"{r['v'][k] - r['v_full']:.2e}" for k in MODE_RULES]
+        )
+    return table(hdr, body)
+
+
+def s6_regret_table(rows) -> str:
+    """Exact closed-loop regret at budget H, per mode rule."""
+    hdr = ["|A|", "K", "M", "ret_full"] + [f"rel_{r}" for r in MODE_RULES]
+    body = []
+    for r in rows:
+        if not r["regret"]:
+            body.append([r["A"], r["K"], r["M"], "n/a"] + ["n/a"] * len(MODE_RULES))
+            continue
+        ret_full = r["regret"][MODE_RULES[0]][1]
+        body.append(
+            [r["A"], r["K"], r["M"], f4(ret_full)]
+            + [f"{abs(r['regret'][k][0]) / abs(ret_full):.2%}" if ret_full else "n/a"
+               for k in MODE_RULES]
+        )
     return table(hdr, body)
 
 
 # --------------------------------------------------------------------------- #
 # S7 — is the fidelity failure intrinsic, or an artefact of the representative?
 # --------------------------------------------------------------------------- #
-def s7_representative(A_values, K_values, G_values=(1, 2), H=1):
+def s7_representative(A_values, K_values, G_values=(1, 2), H=1, rules=MODE_RULES):
     """S6 shows the collapsed belief mis-values, and that a probing planner can
     therefore pick the wrong root action.  S7 asks the follow-up that decides
-    how damaging that is: does the failure survive a better representative?
+    how damaging that is: does the failure survive a better way of carrying a
+    mode?
 
-    The mode PARTITION (and hence M, and hence all the compute numbers) is
-    identical under both rules -- only which particle carries a mode's weight
-    changes.  So any regret difference here is purely the cost of collapsing
-    onto the wrong point, and any fix is FREE in compute.
+    The mode PARTITION (and hence M) is identical under every rule -- only what
+    the planner carries per mode changes.  For the two REPRESENTATIVE rules the
+    compute is byte-identical too, so any improvement there is free; the two
+    SUMMARY rules carry more per mode, and the `C_*` columns are what that costs.
     """
     rows = []
     for A in A_values:
@@ -565,12 +609,14 @@ def s7_representative(A_values, K_values, G_values=(1, 2), H=1):
                 task = GridParam(resolution=K, n_controllers=A, n_goals=G, max_budget=H)
                 family = task.goal_family(G)
                 M = compress(Belief.prior(task), family, tol=0.0).M
+                ret_full = {g: exact_return(task, FullBeliefPlanner(), g, budget=H).ret
+                            for g in family}
                 cell = dict(A=A, G=G, K=K, M=M, worst={}, compute={})
-                for rule in ("maxweight", "centroid"):
+                for rule in rules:
+                    pol = PrecomputedCompressionPlanner(task, family, rep_rule=rule)
                     worst, comp_ops = 0.0, None
                     for g in family:
-                        pol = PrecomputedCompressionPlanner(task, family, rep_rule=rule)
-                        rf = exact_return(task, FullBeliefPlanner(), g, budget=H).ret
+                        rf = ret_full[g]
                         rp = exact_return(task, pol, g, budget=H).ret
                         if rf:
                             worst = max(worst, abs(rf - rp) / abs(rf))
@@ -582,17 +628,75 @@ def s7_representative(A_values, K_values, G_values=(1, 2), H=1):
     return rows
 
 
-def s7_table(rows) -> str:
-    hdr = ["|A|", "|G|", "K", "M", "rel_regret_maxweight", "rel_regret_centroid",
-           "C_maxweight", "C_centroid", "same_compute"]
+def s7_table(rows, rules=MODE_RULES) -> str:
+    hdr = (["|A|", "|G|", "K", "M"]
+           + [f"rel_regret_{r}" for r in rules]
+           + [f"C_{r}" for r in rules])
     body = []
     for r in rows:
-        body.append([
-            r["A"], r["G"], r["K"], r["M"],
-            f"{r['worst']['maxweight']:.2%}", f"{r['worst']['centroid']:.2%}",
-            r["compute"]["maxweight"], r["compute"]["centroid"],
-            str(r["compute"]["maxweight"] == r["compute"]["centroid"]),
-        ])
+        body.append(
+            [r["A"], r["G"], r["K"], r["M"]]
+            + [f"{r['worst'][k]:.2%}" for k in rules]
+            + [r["compute"][k] for k in rules]
+        )
+    return table(hdr, body)
+
+
+# --------------------------------------------------------------------------- #
+# S8 — what the value-consistent summary COSTS
+# --------------------------------------------------------------------------- #
+def s8_summary_cost(K_values, H_values, n_controllers=3, n_goals=1,
+                    rules=MODE_RULES, max_ops=4e7):
+    """Root-decision compute of every mode rule against full belief, over (K, H).
+
+    The representative rules pay `O(K)` once (bucket the belief) and then `O(M)`
+    per expectimax node.  A summary additionally has to turn the K particles into
+    per-mode Q-vectors and likelihoods, which is `O(K(|A| + sum_u |O_u|))` -- a
+    much larger `O(K)` constant, still paid once per decision.  Whether that
+    erodes the compression advantage therefore depends entirely on how much tree
+    it is amortized over, which is what this sweep measures.  Same affordability
+    cap as S3b: cells whose full-belief cost would exceed `max_ops` are `n/a`.
+    """
+    out = {}
+    for K in K_values:
+        for H in H_values:
+            task = GridParam(resolution=K, n_controllers=n_controllers,
+                             n_goals=n_goals, max_budget=H)
+            family = task.goal_family(n_goals)
+            goal = family[0]
+            comp = compress(Belief.prior(task), family, tol=0.0)
+            branch = sum(task.sensor_bins)
+            nodes = sum(branch ** d for d in range(H + 1))
+            if nodes * K * (n_controllers + 2) > max_ops:
+                out[(K, H)] = None
+                continue
+            c_full, _, a_full = root_compute(task, FullBeliefPlanner(), goal, H)
+            cell = dict(M=comp.M, K_over_M=K / comp.M, C_full=c_full["total"],
+                        C={}, same_root={})
+            for rule in rules:
+                c, _, a = root_compute(
+                    task, PrecomputedCompressionPlanner(task, family, rep_rule=rule),
+                    goal, H)
+                cell["C"][rule] = c["total"]
+                cell["same_root"][rule] = (a == a_full)
+            out[(K, H)] = cell
+    return out
+
+
+def s8_table(grid, K_values, H_values, rules=MODE_RULES) -> str:
+    hdr = (["K", "H", "M", "K/M", "C_full"]
+           + [f"C_{r}" for r in rules] + [f"x_{r}" for r in rules])
+    body = []
+    for K in K_values:
+        for H in H_values:
+            c = grid.get((K, H))
+            if c is None:
+                continue
+            body.append(
+                [K, H, c["M"], f4(c["K_over_M"]), c["C_full"]]
+                + [c["C"][r] for r in rules]
+                + [f4(c["C_full"] / max(1, c["C"][r])) for r in rules]
+            )
     return table(hdr, body)
 
 
@@ -698,6 +802,7 @@ G_VALUES = [1, 2, 4, 8]
 K_S5 = [24, 96, 384, 1536]
 K_S7 = [24, 48, 96, 192]
 A_S7 = [2, 3, 4, 6, 8, 12]
+S8_CONTROLLERS = 3            # |A| used by the S8 cost sweep (matches S2/S3/S3b)
 
 
 def main():
@@ -727,6 +832,19 @@ def main():
             "every return, regret and verdict identical (still GO); only two compute "
             "numbers move, both for `amortized_voi` (mass_sort 222 -> 198, occluder_push "
             "110 -> 74). Full-belief numbers are unchanged because its support is all of K.")
+
+    doc.add("### Default mode representative changed (disclosed)\n\n"
+            "S7 (below) showed that the original `maxweight` representative rule is a "
+            "degenerate choice under a flat prior and costs up to 44.74% closed-loop regret at "
+            "byte-identical compute. **`centroid` is now the default `rep_rule`** for "
+            "`collapse_modes`, `compress()` and both compression planners; `maxweight` remains "
+            "selectable so the S6/S7 failure stays reproducible. Every table below that says "
+            "`compression` / `compression_cached` (S2, S3, S3b, S4) is therefore now the "
+            "`centroid` planner. The mode PARTITION is unchanged by the rule, so M and every "
+            "compute number are identical to the previous run; the closed-loop regret columns "
+            "improve. Two further rules — `summary` and `summary_exact` — carry a "
+            "value-consistent per-mode summary instead of a representative particle; they are "
+            "measured in S6, S7 and S8.")
 
     # ---------------- S1 ---------------- #
     print("[S1] mode saturation ...")
@@ -854,45 +972,77 @@ def main():
     # ---------------- S6 ---------------- #
     print("[S6] value fidelity ...")
     s6 = s6_value_fidelity([96, 384], A_VALUES, H=1)
-    doc.add("## S6 — the limitation this study found: decision fidelity != VALUE fidelity\n\n"
+    doc.add("## S6 — decision fidelity != VALUE fidelity, and how to get value fidelity back\n\n"
             "S1/S2 show the collapse is **exactly lossless for the terminal commit** (regret "
             "0.00e+00 at budget 0, every K). But a planner that can PROBE compares the value "
             "of committing now against the expected value of committing after an observation, "
             "and decision-mode compression preserves the *argmax* of the commit, not its "
             "*value*. Collapsing a mode onto one representative particle therefore biases the "
-            "value estimate, and the bias direction depends on which particle you pick:\n\n"
-            "`V_maxweight` uses the current implementation (max-weight member, which under a "
-            "flat prior is an arbitrary mode-edge particle) and systematically UNDER-values; "
-            "the mode-conditional-mean particle systematically OVER-values. Neither is "
-            "value-consistent, so this is structural, not a bad choice of representative. "
-            "`root_full` / `root_maxw` are the root actions; where they disagree the "
-            "compressed planner skipped a probe the oracle took.")
+            "value estimate, and the bias direction depends on which particle you pick: "
+            "`maxweight` (the mode's highest-weight member, which under a flat prior is an "
+            "arbitrary mode-EDGE particle) systematically UNDER-values; `centroid` (the "
+            "particle nearest the mode-conditional mean parameter) systematically OVER-values. "
+            "Neither is value-consistent, so for a representative particle this is structural, "
+            "not a bad choice of representative.\n\n"
+            "The fix is to stop collapsing onto a particle at all. `summary` carries, per mode, "
+            "the belief-weighted Q-vector `Q_m(a,g) = E[reward(z,a,g) | mode m]` and the "
+            "within-mode observation likelihood `L_m(o|u) = E[P(o|z,u) | mode m]`; then the "
+            "commit value `sum_m w_m Q_m`, the observation marginal `sum_m w_m L_m` and the "
+            "posterior mode weights `w_m L_m(o) / P(o)` all equal their full-belief values "
+            "identically. What that does NOT carry is the within-mode conditional AFTER an "
+            "observation (an observation reweights particles inside a mode too), so `summary` "
+            "is exact at the root and stale below it. `summary_exact` additionally refreshes "
+            "the within-mode weights at every observation — exact at every depth, at a cost "
+            "measured in S8.")
     doc.code(s6_table(s6))
+    doc.add("The residual itself, which is the actual question: `dV0_*` is the value error at "
+            "budget 0 (commit only) and `dV_*` at budget 1 (probing allowed). A "
+            "value-consistent summary must be 0 in both columns; a representative rule is 0 in "
+            "neither.")
+    doc.code(s6_residual_table(s6))
+    doc.add("Exact closed-loop regret at H=1 for each rule (relative to the full-belief return; "
+            f"exact enumeration is only affordable for K <= {MAX_K_EXACT_REGRET}):")
+    doc.code(s6_regret_table(s6))
     print(s6_table(s6))
+    print(s6_residual_table(s6))
 
     # ---------------- S7 ---------------- #
     print("[S7] mode representative ...")
     s7 = s7_representative(A_S7, K_S7)
-    doc.add("## S7 — is the S6 failure intrinsic, or an artefact of the representative?\n\n"
+    doc.add("## S7 — is the S6 failure intrinsic, or an artefact of how a mode is carried?\n\n"
             "S6 established that the collapsed belief mis-values and can therefore pick the "
-            "wrong root action. That is only damning if it survives a better choice of "
-            "representative particle. It largely does not. The mode PARTITION is identical "
-            "under both rules — same modes, same M, and (verified in the last column) "
-            "byte-identical compute — so the only thing that changes is which particle "
-            "carries a mode's weight, and any improvement here is FREE.\n\n"
-            "`maxweight` is the original rule: the mode's highest-weight member, which under "
-            "a flat prior ties across the whole mode and resolves to the FIRST index — an "
-            "arbitrary particle at the mode's EDGE. `centroid` instead picks the particle "
-            "nearest the mode's belief-weighted mean parameter.")
+            "wrong root action. That is only damning if it survives a better way of carrying a "
+            "mode. It does not. The mode PARTITION is identical under all four rules — same "
+            "modes, same M — so this table isolates exactly the cost of what each rule carries "
+            "per mode. For the two representative rules the compute is byte-identical, so the "
+            "`maxweight -> centroid` improvement is FREE; the summary rules carry more and the "
+            "`C_*` columns are the price (S8 measures it as a function of K and H).")
     doc.code(s7_table(s7))
     print(s7_table(s7))
+
+    # ---------------- S8 ---------------- #
+    print("[S8] cost of the value-consistent summary ...")
+    s8 = s8_summary_cost(K_S3B, H_S3B, n_controllers=S8_CONTROLLERS)
+    doc.add("## S8 — what the value-consistent summary COSTS\n\n"
+            "S7 shows the summary's regret; this shows its compute, against the same "
+            "`C_full / C_compressed` ratio S2/S3b report. The representative rules pay `O(K)` "
+            "once to bucket the belief and then `O(M)` per expectimax node. A summary must "
+            "additionally turn the K particles into per-mode Q-vectors and likelihoods, which "
+            "is `O(K(|A| + sum_u |O_u|))` — the same `O(K)` order, but with a much larger "
+            "constant (here 3 controllers + 11 sensor bins = 14x the bucketing pass). That "
+            "cost is paid ONCE PER DECISION, so whether it matters is entirely a question of "
+            "how much tree it is amortized over — hence the (K, H) sweep. `summary_exact` "
+            "instead pays `O(K)` at EVERY node, which is full-belief cost by construction. "
+            "Same affordability cap as S3b (4e7 primitive ops).")
+    doc.code(s8_table(s8, K_S3B, H_S3B))
+    print(s8_table(s8, K_S3B, H_S3B))
 
     figs = save_plots(s1_g1, s1_occ, s1_mass, s2, s3)
 
     # ---------------- verdict ---------------- #
     print("[verdict] ...")
-    verdict, reasoning = make_verdict(sat, s2, s3, s4, s5, s3b, s6, s7)
-    doc.add("## Verdict\n\n" + f"**{verdict}**\n\n" + reasoning)
+    verdict, reasoning = make_verdict(sat, s2, s3, s4, s5, s3b, s6, s7, s8)
+    doc.add("## Verdict\n\n" + f"**{verdict}** " + reasoning)
     if figs:
         doc.add("## Figures\n\n" + "\n".join(f"- `{os.path.relpath(p, DOCS)}`" for p in figs))
     doc.add(f"_Total runtime: {time.perf_counter() - t_start:.1f}s._")
@@ -906,14 +1056,16 @@ PLAN_REGRET_REL_TOL = 0.02    # closed-loop (probe-valuation) regret, relative t
 RATIO_FLOOR = 0.05            # M/K must fall at least this far to count as "-> 0"
 
 
-def make_verdict(sat, s2, s3, s4, s5, s3b, s6, s7=()):
+def make_verdict(sat, s2, s3, s4, s5, s3b, s6, s7=(), s8=None):
     """STRONG / WEAK / DEAD, decided from the measured numbers.
 
-    Gate C0 turned out to answer two separable questions, so the verdict is
-    reported as two audited components rather than one word that hides half the
-    evidence:
+    Gate C0 turned out to answer three separable questions, so the verdict is
+    reported as three audited components rather than one word that hides most of
+    the evidence:
       (1) SCALING  -- does M stay bounded and does the compute win widen?
       (2) FIDELITY -- is the preserved decision the one the planner needs?
+      (3) CAVEAT   -- how surprising is the finding, and does its enabling
+                      regime exist outside this toy?
     """
     grid_sat = all(sat[k]["saturated"] for k in ("grid|G|=1", "grid|G|=2", "grid|G|=4"))
     occ_sat = sat["occluder"]["saturated"]
@@ -955,22 +1107,67 @@ def make_verdict(sat, s2, s3, s4, s5, s3b, s6, s7=()):
     ceiling_grows = len(deep) >= 2 and deep[-1][1] > deep[0][1]
 
     # --- S6: does the collapse preserve the decision the PLANNER needs? --- #
-    s6_disagree = [r for r in s6 if r["a_max"] != r["a_full"]]
+    s6_disagree = [r for r in s6 if r["a"]["maxweight"] != r["a_full"]]
     s6_worst_rel = 0.0
     for r in s6:
-        if r["regret"] is not None and r["regret"][1]:
-            s6_worst_rel = max(s6_worst_rel, abs(r["regret"][0]) / abs(r["regret"][1]))
+        if r["regret"] and r["regret"]["maxweight"][1]:
+            reg, rf = r["regret"]["maxweight"]
+            s6_worst_rel = max(s6_worst_rel, abs(reg) / abs(rf))
     fidelity_ok = (not s6_disagree) and s6_worst_rel <= PLAN_REGRET_REL_TOL
 
-    # --- S7: does that failure survive a better mode representative? --- #
-    s7_maxw = max((r["worst"]["maxweight"] for r in s7), default=0.0)
-    s7_cent = max((r["worst"]["centroid"] for r in s7), default=0.0)
+    # S6 value-consistency residuals, per rule: budget 0 (commit only) and
+    # budget H (probing allowed).  A value-consistent summary must be 0 in both.
+    VC_TOL = 1e-9
+    resid0 = {k: max(abs(r["v0"][k] - r["v_full0"]) for r in s6) for k in MODE_RULES}
+    residH = {k: max(abs(r["v"][k] - r["v_full"]) for r in s6) for k in MODE_RULES}
+
+    # --- S7: does that failure survive a better way of carrying a mode? --- #
+    s7_worst = {k: max((r["worst"][k] for r in s7), default=0.0) for k in MODE_RULES}
     s7_free = all(r["compute"]["maxweight"] == r["compute"]["centroid"] for r in s7)
-    s7_cent_ok = bool(s7) and s7_cent <= PLAN_REGRET_REL_TOL
-    s7_cells_bad = sum(1 for r in s7 if r["worst"]["centroid"] > 1e-12)
+    s7_cent_ok = bool(s7) and s7_worst["centroid"] <= PLAN_REGRET_REL_TOL
+    s7_bad = {k: sum(1 for r in s7 if r["worst"][k] > 1e-12) for k in MODE_RULES}
     # fidelity is recoverable if a compute-free change of representative brings
     # the closed-loop regret inside tolerance everywhere we measured
     fidelity_recoverable = s7_cent_ok and s7_free
+    # ... and it is EXACTLY recoverable if the value-consistent summary is both
+    # value-consistent (residual 0 at every budget) and regret-free on the grid
+    summary_exact_vc = (resid0["summary_exact"] <= VC_TOL
+                        and residH["summary_exact"] <= VC_TOL)
+    summary_exact_regret_free = bool(s7) and s7_bad["summary_exact"] == 0
+    fidelity_exact = summary_exact_vc and summary_exact_regret_free
+
+    # --- S8: what does that exactness cost? --- #
+    s8_lines = []
+    s8_erosion = {}
+    if s8:
+        for K in K_S3B:
+            cells = [(h, s8[(K, h)]) for h in H_S3B if s8.get((K, h))]
+            if not cells:
+                continue
+            h_lo, c_lo = cells[0]
+            h_hi, c_hi = cells[-1]
+            s8_erosion[K] = dict(
+                h_lo=h_lo, h_hi=h_hi,
+                cent_lo=c_lo["C_full"] / c_lo["C"]["centroid"],
+                cent_hi=c_hi["C_full"] / c_hi["C"]["centroid"],
+                sum_lo=c_lo["C_full"] / c_lo["C"]["summary"],
+                sum_hi=c_hi["C_full"] / c_hi["C"]["summary"],
+                sumx_hi=c_hi["C_full"] / c_hi["C"]["summary_exact"],
+            )
+        for K, e in s8_erosion.items():
+            s8_lines.append(
+                f"  K={K}: centroid {e['cent_lo']:.1f}x -> {e['cent_hi']:.1f}x, "
+                f"summary {e['sum_lo']:.1f}x -> {e['sum_hi']:.1f}x, "
+                f"summary_exact {e['sumx_hi']:.1f}x  (H={e['h_lo']} -> H={e['h_hi']})"
+            )
+    # the summary keeps a real advantage iff, at the deepest affordable horizon,
+    # it still beats full belief by a wide margin; summary_exact does not
+    summary_keeps_win = bool(s8_erosion) and all(
+        e["sum_hi"] > 0.5 * e["cent_hi"] for e in s8_erosion.values()
+    )
+    summary_exact_kills_win = bool(s8_erosion) and all(
+        e["sumx_hi"] < 2.0 for e in s8_erosion.values()
+    )
 
     # (1) the scaling question Gate C0 was chartered to answer
     scaling = (grid_sat and occ_sat and ratio_falls and commit_ok
@@ -981,20 +1178,48 @@ def make_verdict(sat, s2, s3, s4, s5, s3b, s6, s7=()):
     # (2) the fidelity question the study surfaced on its own
     if fidelity_ok:
         v_fidelity = "LOSSLESS"
+    elif fidelity_exact and summary_keeps_win:
+        v_fidelity = ("LOSSY for any representative particle; EXACTLY RECOVERABLE by a "
+                      "value-consistent mode summary (at a compute cost, §S8)")
+    elif fidelity_exact:
+        v_fidelity = ("LOSSY for any representative particle; EXACTLY RECOVERABLE only by "
+                      "giving back the compute advantage (§S8)")
     elif fidelity_recoverable:
         v_fidelity = "LOSSY-ON-PROBING (recoverable: fixed by the mode representative)"
     else:
         v_fidelity = "LOSSY-ON-PROBING"
 
-    if v_scaling == "STRONG" and (fidelity_ok or fidelity_recoverable):
+    if v_scaling == "STRONG" and (fidelity_ok or fidelity_exact or fidelity_recoverable):
         v = "STRONG"
     elif v_scaling == "STRONG":
         v = "WEAK"
     else:
         v = v_scaling
 
+    headline = v
+    if v == "STRONG":
+        headline = "STRONG-BUT-NARROW"
+
+    if fidelity_exact and not summary_keeps_win:
+        fid_clause = ("the fidelity component is value-inconsistent for every representative "
+                      "particle and is exactly recoverable only by giving back the compute "
+                      "advantage (§2)")
+    elif fidelity_exact:
+        fid_clause = ("the fidelity component is value-inconsistent for every representative "
+                      "particle and needs a value-consistent mode summary to be exact (§2)")
+    elif fidelity_recoverable:
+        fid_clause = "the fidelity component is lossy-on-probing and only empirically patched (§2)"
+    elif fidelity_ok:
+        fid_clause = "the fidelity component is lossless (§2)"
+    else:
+        fid_clause = "the fidelity component is lossy-on-probing and unpatched (§2)"
+
     lines = [
-        f"Two separable questions, reported separately rather than averaged into one word.",
+        f"— the scaling measurement passes cleanly (§1); {fid_clause}; and the finding "
+        "itself follows from an elementary bound whose enabling regime may not exist at "
+        "visual scale (§3). Read all three before quoting the headline.",
+        "",
+        "Three separable questions, reported separately rather than averaged into one word.",
         "",
         f"### (1) Scaling: **{v_scaling}**",
         "",
@@ -1023,51 +1248,170 @@ def make_verdict(sat, s2, s3, s4, s5, s3b, s6, s7=()):
         f"- Exact CLOSED-LOOP regret (H=1, planner may probe) vs full belief, worst cell in "
         f"the S2 sweep: **{worst_rel:.2%}** of the full-belief return "
         f"(within {PLAN_REGRET_REL_TOL:.0%}: **{plan_ok}**; grows with K: **{regret_grows}**)",
-        f"- Worst closed-loop regret across the S6 |A| sweep: **{s6_worst_rel:.2%}** of return",
-        f"- Root-action disagreements with the full-belief oracle in S6: "
+        f"- Worst closed-loop regret across the S6 |A| sweep, `maxweight` (the pre-2026-07-30 "
+        f"default): **{s6_worst_rel:.2%}** of return",
+        f"- Root-action disagreements with the full-belief oracle in S6 under `maxweight`: "
         f"**{len(s6_disagree)} / {len(s6)}** cells"
         + (" (" + ", ".join(f"|A|={r['A']},K={r['K']}" for r in s6_disagree) + ")"
            if s6_disagree else ""),
-        f"- Compressed planner matched the oracle root action in every measured cell "
-        f"across S2+S3+S3b+S4 (the False below is exactly the |A|=2 cell above): "
-        f"**{roots_ok}**",
+        f"- Compressed planner (now `centroid` by default) matched the oracle root action in "
+        f"every measured cell across S2+S3+S3b+S4: **{roots_ok}**",
+        "",
+        "**Value-consistency residual** (S6), worst over the sweep — `dV0` is the commit-only "
+        f"value error (budget 0), `dV` the planning value error (budget 1). Anything at or "
+        f"below {VC_TOL:.0e} is floating-point zero (the summaries land at ~1e-16 to ~1e-14, "
+        "i.e. exactly 0 up to accumulation error, not approximately 0):",
+        "",
+    ] + [
+        f"  - `{k}`: dV0 = **{resid0[k]:.2e}**, dV = **{residH[k]:.2e}**"
+        + ("  <- exactly value-consistent at every budget" if
+           (resid0[k] <= VC_TOL and residH[k] <= VC_TOL) else
+           ("  <- exactly value-consistent for the commit, drifts once probing is allowed"
+            if resid0[k] <= VC_TOL else "  <- value-inconsistent everywhere"))
+        for k in MODE_RULES
     ]
     if s7:
         lines += [
             "",
-            f"- Swapping the mode representative from `maxweight` to `centroid` "
-            f"(same partition, same M, **identical compute**: {s7_free}) moves the worst "
-            f"closed-loop regret over the whole {len(s7)}-cell (|A|, |G|, K) grid from "
-            f"**{s7_maxw:.2%}** to **{s7_cent:.2%}**, nonzero in only "
-            f"{s7_cells_bad}/{len(s7)} cells: recoverable = **{fidelity_recoverable}**",
+            f"**Worst closed-loop regret over the whole {len(s7)}-cell (|A|, |G|, K) grid** "
+            f"(S7), by how the mode is carried:",
+            "",
+        ] + [
+            f"  - `{k}`: **{s7_worst[k]:.2%}**, nonzero in {s7_bad[k]}/{len(s7)} cells"
+            for k in MODE_RULES
+        ] + [
+            "",
+            f"- `maxweight -> centroid` is a pure win: same partition, same M, "
+            f"**identical compute** ({s7_free}), worst regret "
+            f"{s7_worst['maxweight']:.2%} -> {s7_worst['centroid']:.2%}. `centroid` is "
+            f"therefore now the DEFAULT `rep_rule`; `maxweight` stays selectable so the "
+            f"failure above remains reproducible.",
+        ]
+    if s8_lines:
+        lines += [
+            "",
+            "**What the value-consistent summary costs** (S8), `C_full / C_compressed` at the "
+            "shallowest and deepest affordable horizon:",
+            "",
+            "```",
+        ] + s8_lines + [
+            "```",
+            "",
+            f"- The frozen `summary` keeps a wide compute advantage once the tree is deep "
+            f"enough to amortize its `O(K(|A|+sum_u|O_u|))` build: **{summary_keeps_win}**",
+            f"- `summary_exact` pays `O(K)` at every node and lands on full-belief cost "
+            f"(≈1x at every measured cell): **{summary_exact_kills_win}**",
         ]
     if not fidelity_ok:
         lines += [
             "",
             "The compression is exactly lossless for the terminal commit at every "
-            "resolution, but it is NOT value-preserving, and probe decisions are made on "
-            "values. Collapsing a mode onto a representative particle biases the value "
-            "estimate in a direction set by which particle is chosen (S6: max-weight "
-            "under-values, mode-mean over-values), so the compressed planner can decline a "
-            "probe the oracle takes. Crucially this error is CONSTANT in K, not growing — it "
-            "does not erode the scaling result.",
+            "resolution, but collapsing a mode onto a representative PARTICLE is not "
+            "value-preserving, and probe decisions are made on values. The bias direction is "
+            "set by which particle is chosen (S6: max-weight under-values, mode-mean "
+            "over-values), so the compressed planner can decline a probe the oracle takes. "
+            "Crucially this error is CONSTANT in K, not growing — it does not erode the "
+            "scaling result.",
             "",
-            "S7 then shows most of that error was an ARTEFACT rather than a property of "
-            "decision-mode compression: the original `maxweight` rule degenerates under a "
-            "flat prior (all members tie, the tie-break returns the first index, i.e. a "
-            "mode-EDGE particle), and simply collapsing onto the mode-conditional mean "
-            "instead removes the catastrophic |A|=2 root flip and brings the worst regret "
-            "across the whole grid to "
-            f"{s7_cent:.2%} at exactly the same compute. The residual is not zero "
-            f"({s7_cells_bad}/{len(s7)} cells), and neither rule is value-CONSISTENT (S6: "
-            "max-weight under-values, centroid over-values the same belief), so the clean "
-            "guarantee still needs a value-consistent mode summary — e.g. carrying each "
-            "mode's belief-weighted Q-vector and its within-mode observation likelihood "
-            "instead of any single representative particle. What S7 establishes is that "
-            "the fidelity gap is a fixable implementation detail that costs no compute, "
-            "not a wall in front of the scaling result.",
+            "Most of that error is an ARTEFACT rather than a property of decision-mode "
+            "compression: the old `maxweight` rule degenerates under a flat prior (all members "
+            "tie, the tie-break returns the first index, i.e. a mode-EDGE particle). Switching "
+            "the default to the mode-conditional-mean particle removes the catastrophic |A|=2 "
+            f"root flip and brings the worst regret across the grid to {s7_worst['centroid']:.2%} "
+            "at exactly the same compute.",
+            "",
+            "The residual is not zero, and no representative particle can be value-consistent, "
+            "so the clean guarantee needs a value-consistent mode SUMMARY: per mode, the "
+            "belief-weighted Q-vector and the within-mode observation likelihood instead of a "
+            "particle. Measured (S6/S7/S8), that summary does exactly what the theory says and "
+            "no more:",
+            "",
+            f"  1. It is exactly value-consistent for the COMMIT at every measured cell "
+            f"(dV0 = {resid0['summary']:.2e}, floating-point zero), which no representative "
+            f"rule is anywhere.",
+            f"  2. Frozen, it is NOT value-consistent once probing is allowed "
+            f"(dV = {residH['summary']:.2e}): an observation reweights the particles WITHIN a "
+            f"mode, and a summary built from the prior does not see that. That residual is "
+            f"still smaller than either representative rule's "
+            f"({residH['summary']:.2e} vs {residH['centroid']:.2e} for `centroid`), and on "
+            f"this grid it never flips an argmax: worst closed-loop regret "
+            f"{s7_worst['summary']:.2%} in {s7_bad['summary']}/{len(s7)} cells. The value "
+            f"error is real; the DECISION error it causes is not, here.",
+            f"  3. Refreshing the within-mode conditional at every observation "
+            f"(`summary_exact`) IS exactly value-consistent at every budget "
+            f"(dV0 = {resid0['summary_exact']:.2e}, dV = {residH['summary_exact']:.2e}) and "
+            f"exactly regret-free on the whole grid "
+            f"({s7_bad['summary_exact']}/{len(s7)} nonzero cells) — and costs `O(K)` per node, "
+            "i.e. it gives back the entire compute advantage (S8: ≈1x vs full belief).",
+            "",
+            "So value-consistency and the compute win trade off, and where the trade sits "
+            "depends on the horizon, not on the method:",
+            "",
+            f"  - At `H <= 1` the summary's `O(K)` build is not amortized over enough tree and "
+            f"costs more than the compression saves (S8 at H=0: "
+            + "/".join(f"{e['sum_lo']:.1f}x" for e in s8_erosion.values())
+            + f" for K={'/'.join(str(K) for K in s8_erosion)}, i.e. WORSE than planning the "
+              f"full belief). Use `centroid`: free, and worst-case "
+              f"{s7_worst['centroid']:.2%} over the grid."
+            if s8_erosion else "",
+            f"  - At `H >= 2` the build is amortized away and the frozen `summary` is close to "
+            f"free (S8, deepest affordable cell: "
+            + ", ".join(f"K={K}: {e['sum_hi']:.0f}x vs {e['cent_hi']:.0f}x"
+                        for K, e in s8_erosion.items())
+            + f"), for {s7_worst['summary']:.2%} regret and exact commit values. That is the "
+              f"configuration to prefer when the planner searches at all deeply."
+            if s8_erosion else "",
+            "  - `summary_exact` is the auditable zero-regret reference, not a production "
+            "planner: it is the only rule proven value-consistent under probing, and it costs "
+            "exactly what full-belief planning costs.",
         ]
-    return v, "\n".join(lines)
+
+    # ------------------------------------------------------------------ #
+    # (3) how surprising is this, and does its enabling regime exist?
+    # ------------------------------------------------------------------ #
+    A_ref = S8_CONTROLLERS
+    lines += [
+        "",
+        "### (3) Interpretation caveat: **the bound is elementary, and its regime is not "
+        "guaranteed**",
+        "",
+        "Three qualifications that the §1 numbers do not by themselves convey. They are the",
+        "reason this document's headline is STRONG-BUT-NARROW rather than STRONG, and they",
+        "reconcile it with `gateC1_design.md`, which reads the same data pessimistically.",
+        "",
+        "1. **The saturation is a two-line counting argument, not a discovery.** The analytic",
+        "   bound used throughout S1 is `M <= min(K, |G|*(|A|-1)+1)`: the number of cells in",
+        "   the arrangement of all goals' decision boundaries. For a 1-D hidden parameter each",
+        "   goal contributes at most `|A|-1` cut points, so `|G|` goals cut the line into at",
+        "   most `|G|*(|A|-1)+1` intervals -- independent of how finely the belief discretizes",
+        "   it. Measured `M` matches this bound exactly at every cell. The empirical study",
+        "   confirms the bound and rules out tautology via the control axis; it does not",
+        "   discover a surprising law.",
+        "",
+        "2. **Compression helps iff `K >> |G|*(|A|-1)+1`.** That is the operative regime",
+        "   condition, and it is a statement about the *filter's resolution* relative to the",
+        "   *decision structure*, not about the task being hard. It is satisfied trivially here",
+        f"   (oracle particle filters at `K` up to {K_GRID[-1]}). Whether it holds for a *learned*",
+        "   belief model -- which typically carries a handful of mixture components or particles",
+        "   -- is unknown and is the load-bearing open question for Gate C1. If a learned filter",
+        "   carries `K ~ 10-20` while `|G|*(|A|-1)+1` is comparable, then `M = K` and the entire",
+        "   compute advantage measured here vanishes. Gate C1 front-loads this as its P0 gate.",
+        "",
+        "3. **The win is in the planning tree, not in belief maintenance -- and the",
+        "   value-consistent summary makes that sharper, not softer.** The compressed planner",
+        "   still reads the `K`-particle belief once per decision (unavoidable `O(K)`), which is",
+        "   why the ratio *flattens* along the fixed-`H` axis in S2 and only climbs toward the",
+        "   `K/M` ceiling as `H` grows. Honest characterization: tree cost drops from",
+        "   `O(K * tree)` to `O(M * tree)`; belief cost stays `O(K)`. S8 shows how much that",
+        "   `O(K)` constant matters: making the mode summary value-consistent for the commit",
+        f"   multiplies it by roughly `|A| + sum_u |O_u|` (here {A_ref} controllers + 11 sensor",
+        "   bins), which at `H=0..1` costs more than the whole compression win and only pays for",
+        "   itself at `H>=2`; making it value-consistent under probing costs `O(K)` per node and",
+        "   erases the win entirely. At visual scale, where a per-particle encoder pass is the",
+        "   dominant cost, this cap binds far earlier than it does on this toy -- Gate C1 STOP S3",
+        "   (belief-model cost >= 80% of total) exists precisely for that failure mode.",
+    ]
+    return headline, "\n".join(lines)
 
 
 if __name__ == "__main__":

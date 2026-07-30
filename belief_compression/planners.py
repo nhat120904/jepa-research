@@ -12,6 +12,11 @@ Planners
     CompressionPlanner       expectimax over M<=K decision modes
     (fully-observed upper bound is handled directly in evaluate.py)
 
+Both compression planners take a `rep_rule` saying how a mode is carried:
+`"centroid"` (default) / `"maxweight"` collapse onto a representative particle;
+`"summary"` / `"summary_exact"` carry the value-consistent `ModeSummary`.  The
+mode PARTITION -- and therefore M -- is the same for all four.
+
 Probe selectors
     EntropySeeking           probe maximising expected belief-entropy reduction
     DecisionRegretVOI        probe maximising myopic value-of-information
@@ -22,7 +27,14 @@ from __future__ import annotations
 
 import numpy as np
 
-from .compression import compress
+from .compression import (
+    DEFAULT_REP_RULE,
+    SUMMARY_RULES,
+    ModeSummary,
+    ParticleTables,
+    compress,
+    pick_rep,
+)
 from .core import Belief, ComputeCounter, Task
 from .core import Belief as _B  # alias
 
@@ -56,40 +68,44 @@ def expectimax(belief: Belief, goal, budget: int, counter: ComputeCounter):
 
 
 # --------------------------------------------------------------------------- #
-# Mode collapse: which particle represents a mode
+# Mode collapse: how a mode is carried into the planner
 # --------------------------------------------------------------------------- #
-def collapse_modes(task, groups, weights, rep_rule: str = "maxweight"):
+def collapse_modes(task, groups, weights, rep_rule: str = DEFAULT_REP_RULE):
     """Collapse decision modes onto one representative particle each.
 
     `rep_rule` does NOT change the mode partition -- M, and therefore the
     planning compute, are identical either way.  It only changes WHICH particle
-    carries a mode's weight, and hence the value the collapsed belief reports:
-
-      "maxweight" : the mode's highest-weight member.  Under a flat prior every
-                    member ties and the tie-break returns the FIRST index, i.e.
-                    an arbitrary particle at the EDGE of the mode -- which
-                    systematically under-values the mode.
-      "centroid"  : the particle nearest the mode's belief-weighted mean
-                    parameter (requires `task.param_embedding()`; falls back to
-                    "maxweight" when the hidden space has no metric).
+    carries a mode's weight, and hence the value the collapsed belief reports.
+    See `compression.pick_rep` for the two rules; "centroid" is the default.
     """
-    emb = task.param_embedding() if rep_rule == "centroid" else None
     w = np.zeros(task.n_states())
     for members in groups:
         wsum = float(sum(weights[k] for k in members))
-        if emb is not None:
-            wt = np.array([weights[k] for k in members], dtype=float)
-            tot = wt.sum()
-            if tot > 0:
-                mean = float((wt / tot * emb[list(members)]).sum())
-                rep = min(members, key=lambda k: abs(emb[k] - mean))
-            else:
-                rep = max(members, key=lambda k: weights[k])
-        else:
-            rep = max(members, key=lambda k: weights[k])
-        w[rep] += wsum
+        w[pick_rep(task, members, weights, rep_rule)] += wsum
     s = w.sum()
     return w / s if s > 0 else w
+
+
+def mode_belief(task, groups, weights, rep_rule: str = DEFAULT_REP_RULE,
+                tables: ParticleTables | None = None):
+    """The object the planner actually searches over, for any `rep_rule`.
+
+    A representative rule yields a `Belief` supported on M particles; a summary
+    rule yields a `ModeSummary` carrying per-mode Q-vectors and within-mode
+    observation likelihoods.  Both duck-type the same interface, so `expectimax`
+    is unchanged.
+    """
+    if rep_rule in SUMMARY_RULES:
+        return ModeSummary.build(
+            task, groups, weights,
+            refresh=(rep_rule == "summary_exact"), tables=tables,
+        )
+    return _B(task, collapse_modes(task, groups, weights, rep_rule))
+
+
+def _planner_name(base: str, rep_rule: str) -> str:
+    """The DEFAULT rule keeps the bare planner name; every other rule is tagged."""
+    return base if rep_rule == DEFAULT_REP_RULE else f"{base}_{rep_rule}"
 
 
 # --------------------------------------------------------------------------- #
@@ -115,18 +131,19 @@ class CertaintyEquivalent:
 class CompressionPlanner:
     """Plan over M decision modes instead of K hypotheses."""
 
-    def __init__(self, goal_family, tol: float = 0.0, rep_rule: str = "maxweight"):
+    def __init__(self, goal_family, tol: float = 0.0,
+                 rep_rule: str = DEFAULT_REP_RULE):
         self.goal_family = goal_family
         self.tol = tol
         self.rep_rule = rep_rule
-        self.name = "compression" if rep_rule == "maxweight" else f"compression_{rep_rule}"
+        self.name = _planner_name("compression", rep_rule)
 
     def act(self, belief, budget, goal, counter):
         comp = compress(belief, self.goal_family, tol=self.tol, counter=counter)
-        w = collapse_modes(
+        mb = mode_belief(
             belief.task, [m.members for m in comp.modes], belief.weights, self.rep_rule
         )
-        return expectimax(_B(belief.task, w), goal, budget, counter)[1]
+        return expectimax(mb, goal, budget, counter)[1]
 
 
 class PrecomputedCompressionPlanner:
@@ -141,20 +158,25 @@ class PrecomputedCompressionPlanner:
     This separates the two compression costs that the scaling study must not
     conflate: the one-off O(K*|G|*|A|) signature build (amortized away here)
     and the per-decision O(K) bucketing + O(M * tree) planning.
+
+    Under a summary `rep_rule` the same amortization applies to the per-particle
+    reward / observation tables (`ParticleTables`): they depend only on the task,
+    so they are built once and the per-decision charge is the O(K) weighted sums
+    that turn them into per-mode Q-vectors and likelihoods.
     """
 
     def __init__(self, task, goal_family, tol: float = 0.0,
-                 rep_rule: str = "maxweight"):
+                 rep_rule: str = DEFAULT_REP_RULE):
         self.goal_family = goal_family
         self.tol = tol
         self.rep_rule = rep_rule
-        self.name = ("compression_cached" if rep_rule == "maxweight"
-                     else f"compression_cached_{rep_rule}")
+        self.name = _planner_name("compression_cached", rep_rule)
         self.task = task
         self._sig = [
             tuple(task.preferred_action(z, g) for g in goal_family)
             for z in task.hidden_states
         ]
+        self._tables = ParticleTables(task) if rep_rule in SUMMARY_RULES else None
 
     def act(self, belief, budget, goal, counter):
         task = belief.task
@@ -163,8 +185,9 @@ class PrecomputedCompressionPlanner:
         counter.touch(len(support))  # one cached-signature lookup per particle
         for k in support:
             buckets.setdefault(self._sig[k], []).append(k)
-        w = collapse_modes(task, list(buckets.values()), belief.weights, self.rep_rule)
-        return expectimax(_B(task, w), goal, budget, counter)[1]
+        mb = mode_belief(task, list(buckets.values()), belief.weights,
+                         self.rep_rule, tables=self._tables)
+        return expectimax(mb, goal, budget, counter)[1]
 
 
 # --------------------------------------------------------------------------- #

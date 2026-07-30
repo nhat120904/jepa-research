@@ -228,6 +228,29 @@ def write_doc(m1, m2, ga, gb, figs):
     lines.append("Reproduce: `diagnosis/.venv/bin/python -m belief_compression.run` "
                  "(from repo root).\n")
 
+    lines.append("### Default mode representative changed (disclosed)\n")
+    lines.append("Gate C0 §S7 showed that the original `maxweight` representative rule (the "
+                 "mode's highest-weight member, which under a flat prior ties across the whole "
+                 "mode and resolves to an arbitrary mode-EDGE particle) costs up to 44.74% "
+                 "closed-loop regret at byte-identical compute. **`centroid` — the member "
+                 "nearest the mode's belief-weighted mean parameter — is now the default "
+                 "`rep_rule`** for `compress()`, `collapse_modes` and both compression "
+                 "planners; `maxweight` stays selectable so the C0 failure remains "
+                 "reproducible.\n")
+    lines.append("**Nothing in this document moved.** Re-running Gate B after the change "
+                 "reproduces every number byte-for-byte: every return, regret, expected probe "
+                 "count, compute total and both gate verdicts are identical. That is not a "
+                 "no-op being disclosed for nothing — the representative really does change "
+                 "here (on `occluder_push` the two mode representatives move from locations "
+                 "{0, 4} to {1, 5}, which is what `amortized_voi` plans over) — it is that "
+                 "Gate B's two tasks cannot see the difference: `mass_sort` has no metric on "
+                 "its hidden space (`param_embedding()` is `None`), so `centroid` falls back "
+                 "to `maxweight` by construction, and on `occluder_push` measurement (i) is "
+                 "commit-only (budget 0), where the collapse is lossless for either rule, "
+                 "while measurement (ii)'s probe decision comes out the same under both. The "
+                 "representative only bites where a *value* comparison is close, which is "
+                 "exactly the regime Gate C0 §S6/§S7 sweeps and this gate does not.\n")
+
     lines.append("## Measurement (i): compression vs goal-richness\n")
     lines.append("`richness` = amount of the hidden parameter made decision-relevant by the "
                  "goal family. `M/K` = surviving decision modes / hypotheses. `regret_in` = "

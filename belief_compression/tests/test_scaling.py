@@ -292,3 +292,63 @@ def test_s7_sweep_runs_and_reports_the_improvement():
     a2 = [r for r in rows if r["A"] == 2]
     assert a2 and max(r["worst"]["maxweight"] for r in a2) > 0.4
     assert max(r["worst"]["centroid"] for r in a2) < 1e-9
+
+
+# --------------------------------------------------------------------------- #
+# S6/S8: the value-consistent summary is exact, and it is not free
+# --------------------------------------------------------------------------- #
+def test_s6_reports_a_zero_residual_only_for_the_summary_rules():
+    rows = S.s6_value_fidelity([96], [2, 3], H=1)
+    assert rows
+    for r in rows:
+        # commit-only (budget 0): summaries exact, representatives not
+        assert abs(r["v0"]["summary"] - r["v_full0"]) < 1e-12
+        assert abs(r["v0"]["summary_exact"] - r["v_full0"]) < 1e-12
+        assert max(abs(r["v0"][k] - r["v_full0"]) for k in ("maxweight", "centroid")) > 1e-3
+        # probing (budget 1): only the refreshed summary stays exact
+        assert abs(r["v"]["summary_exact"] - r["v_full"]) < 1e-12
+
+
+def test_summary_exact_is_regret_free_where_centroid_is_not():
+    """The cell test_centroid_is_not_a_free_lunch_somewhere_it_still_loses pins
+    down as a centroid failure must be exactly zero for the summary."""
+    task = GridParam(resolution=24, n_controllers=8, n_goals=2, max_budget=1)
+    family = task.goal_family(2)
+    worst = {"centroid": 0.0, "summary_exact": 0.0}
+    for g in family:
+        rf = exact_return(task, FullBeliefPlanner(), g, budget=1).ret
+        for rule in worst:
+            rp = exact_return(
+                task, PrecomputedCompressionPlanner(task, family, rep_rule=rule),
+                g, budget=1).ret
+            worst[rule] = max(worst[rule], abs(rf - rp))
+    assert worst["centroid"] > 1e-9
+    assert worst["summary_exact"] < 1e-12
+
+
+def test_value_consistency_is_not_free_compute():
+    """The honest cost statement: a summary is strictly more expensive than a
+    representative collapse, and the exact one gives the whole win back."""
+    K, H = 96, 1
+    task = GridParam(resolution=K, n_controllers=3, n_goals=1, max_budget=H)
+    family = task.goal_family(1)
+    g = family[0]
+    c = {}
+    for rule in ("centroid", "summary", "summary_exact"):
+        c[rule] = S.root_compute(
+            task, PrecomputedCompressionPlanner(task, family, rep_rule=rule), g, H
+        )[0]["total"]
+    c_full = S.root_compute(task, FullBeliefPlanner(), g, H)[0]["total"]
+    assert c["centroid"] < c["summary"] < c["summary_exact"]
+    # summary_exact is O(K) per node -> full-belief cost, no advantage left
+    assert c["summary_exact"] > 0.5 * c_full
+    # the frozen summary still beats full belief, just by much less
+    assert c["summary"] < c_full
+
+
+def test_s8_sweep_shows_the_summary_advantage_recovering_with_horizon():
+    grid = S.s8_summary_cost([96], [0, 1, 2], max_ops=1e7)
+    ratios = [grid[(96, h)]["C_full"] / grid[(96, h)]["C"]["summary"] for h in (0, 1, 2)]
+    assert all(b > a for a, b in zip(ratios, ratios[1:])), ratios
+    assert ratios[0] < 1.0    # at H=0 the O(K) summary build costs more than it saves
+    assert ratios[-1] > 5.0   # by H=2 it is amortized over the tree again
