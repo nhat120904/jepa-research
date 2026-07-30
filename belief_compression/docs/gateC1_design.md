@@ -161,6 +161,26 @@ A second load-bearing warning from Gate C0. `BatteriesChecker`'s hidden state is
 
 ## 2.1 Substrate: primary, secondary, fallback
 
+> **CORRECTIONS FROM GATE P0 (measured, not argued — see `gateP0_design.md`).**
+> Two claims below were checked against a real install and did not survive.
+>
+> 1. **Env-family error.** `BatteriesChecker*` and `ShellGameColorLampTouch` exist
+>    only in the **VLA** family (164 envs). They are **not** in `rl.memory_envs`
+>    (15 envs, no BatteriesChecker). Any plan that assumed the RL env ids must be
+>    rewritten against the VLA ids.
+> 2. **MIKASA-Robo installs and registers but does NOT step in this environment.**
+>    `uv` needs `--prerelease=allow` and then resolves `mani_skill 3.0.0b14`
+>    against a `==3.0.0b15` pin; stepping is additionally blocked by an
+>    interactive asset-download prompt and a missing Vulkan ICD. The login node
+>    has **no GPU** (`nvidia-smi` returns nothing), so nothing Vulkan-dependent is
+>    verifiable on the submit host at all. Standing it up is real work on a
+>    compute node and must be budgeted, not assumed.
+>
+> P0 therefore runs on **POPGym Arcade** instead, which installs clean and steps
+> (verified: 2.77e5 steps/s CPU-only). The MIKASA-Robo choice below is retained
+> for Gate C1 proper but is **no longer a verified-working substrate** — treat it
+> as pending until someone steps it on a compute node.
+
 **PRIMARY — MIKASA-Robo (ManiSkill3): `BatteriesChecker{Easy,Hard}-{3,6}` + `ShellGameColorLampTouch` + `ShellGameShuffleColorLampTouch`.**
 
 Justification, strictly from 1.2 evidence: it is the only *established, fully released, peer-reviewed (ICLR 2026)* pixel manipulation suite that contains a genuine probe-then-commit task (BatteriesChecker) **and**, separately, a genuine shared-hidden-state goal family (ShellGame-ColorLamp: same cup contents, goal = whichever colour the lamp shows). It runs on ManiSkill3, which is GPU-parallel — mandatory, because the primary metric is a compute frontier requiring ~1e7 env steps. It ships oracle trajectories, so the belief/world model can be trained from released data rather than from-scratch RL. MIT + Apache-2.0.
