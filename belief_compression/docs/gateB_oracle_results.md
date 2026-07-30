@@ -63,7 +63,7 @@ Exact expected return (net of probe cost), decision regret vs the full-belief or
 certainty_equiv  0.0000       1.3000      2.0000     0.0000          4          0        4
    entropy_seek  0.6000       0.7000      1.4000     2.0000         32          0      128
             voi  1.3000       0.0000      0.7000     2.0000        224          6      326
-  amortized_voi  1.3000       0.0000      0.7000     2.0000        144          6      222
+  amortized_voi  1.3000       0.0000      0.7000     2.0000        144          6      198
     full_belief  1.3000       0.0000      0.7000     2.0000       1376          0     2091
  fully_observed  2.0000      -0.7000      0.0000     0.0000          0          0        0
 
@@ -74,7 +74,7 @@ certainty_equiv  0.0000       1.3000      2.0000     0.0000          4          
 certainty_equiv   0.0000       0.7000      1.0000     0.0000          2          0        2
    entropy_seek  -0.1000       0.8000      1.1000     1.0000         16          0      112
             voi   0.7000       0.0000      0.3000     1.0000        112          6      214
-  amortized_voi   0.7000       0.0000      0.3000     1.0000         44          6      110
+  amortized_voi   0.7000       0.0000      0.3000     1.0000         44          6       74
     full_belief   0.7000       0.0000      0.3000     1.0000        112          0      215
  fully_observed   1.0000      -0.3000      0.0000     0.0000          0          0        0
 
@@ -91,8 +91,8 @@ PASS. Regimes with M/K <= 0.5 and regret <= 1e-06 (non-trivial goal family, >= 2
 
 ## Gate B — decision-regret VOI beats entropy-seeking at lower compute
 
-**mass_sort**: VOI return=1.3000 vs entropy=0.6000 (beats_return=True, beats_regret=True); VOI compute=326 < full-belief compute=2091 (True); amortized compute=222 (cheaper_than_VOI=True, matches_VOI_return=True).
-**occluder_push**: VOI return=0.7000 vs entropy=-0.1000 (beats_return=True, beats_regret=True); VOI compute=214 < full-belief compute=215 (True); amortized compute=110 (cheaper_than_VOI=True, matches_VOI_return=True).
+**mass_sort**: VOI return=1.3000 vs entropy=0.6000 (beats_return=True, beats_regret=True); VOI compute=326 < full-belief compute=2091 (True); amortized compute=198 (cheaper_than_VOI=True, matches_VOI_return=True).
+**occluder_push**: VOI return=0.7000 vs entropy=-0.1000 (beats_return=True, beats_regret=True); VOI compute=214 < full-belief compute=215 (True); amortized compute=74 (cheaper_than_VOI=True, matches_VOI_return=True).
 
 Gate B overall: PASS.
 

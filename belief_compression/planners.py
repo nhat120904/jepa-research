@@ -56,6 +56,43 @@ def expectimax(belief: Belief, goal, budget: int, counter: ComputeCounter):
 
 
 # --------------------------------------------------------------------------- #
+# Mode collapse: which particle represents a mode
+# --------------------------------------------------------------------------- #
+def collapse_modes(task, groups, weights, rep_rule: str = "maxweight"):
+    """Collapse decision modes onto one representative particle each.
+
+    `rep_rule` does NOT change the mode partition -- M, and therefore the
+    planning compute, are identical either way.  It only changes WHICH particle
+    carries a mode's weight, and hence the value the collapsed belief reports:
+
+      "maxweight" : the mode's highest-weight member.  Under a flat prior every
+                    member ties and the tie-break returns the FIRST index, i.e.
+                    an arbitrary particle at the EDGE of the mode -- which
+                    systematically under-values the mode.
+      "centroid"  : the particle nearest the mode's belief-weighted mean
+                    parameter (requires `task.param_embedding()`; falls back to
+                    "maxweight" when the hidden space has no metric).
+    """
+    emb = task.param_embedding() if rep_rule == "centroid" else None
+    w = np.zeros(task.n_states())
+    for members in groups:
+        wsum = float(sum(weights[k] for k in members))
+        if emb is not None:
+            wt = np.array([weights[k] for k in members], dtype=float)
+            tot = wt.sum()
+            if tot > 0:
+                mean = float((wt / tot * emb[list(members)]).sum())
+                rep = min(members, key=lambda k: abs(emb[k] - mean))
+            else:
+                rep = max(members, key=lambda k: weights[k])
+        else:
+            rep = max(members, key=lambda k: weights[k])
+        w[rep] += wsum
+    s = w.sum()
+    return w / s if s > 0 else w
+
+
+# --------------------------------------------------------------------------- #
 # Planners
 # --------------------------------------------------------------------------- #
 class FullBeliefPlanner:
@@ -78,15 +115,56 @@ class CertaintyEquivalent:
 class CompressionPlanner:
     """Plan over M decision modes instead of K hypotheses."""
 
-    def __init__(self, goal_family, tol: float = 0.0):
+    def __init__(self, goal_family, tol: float = 0.0, rep_rule: str = "maxweight"):
         self.goal_family = goal_family
         self.tol = tol
-        self.name = "compression"
+        self.rep_rule = rep_rule
+        self.name = "compression" if rep_rule == "maxweight" else f"compression_{rep_rule}"
 
     def act(self, belief, budget, goal, counter):
         comp = compress(belief, self.goal_family, tol=self.tol, counter=counter)
-        rep_belief = comp.as_belief_over_reps()
-        return expectimax(rep_belief, goal, budget, counter)[1]
+        w = collapse_modes(
+            belief.task, [m.members for m in comp.modes], belief.weights, self.rep_rule
+        )
+        return expectimax(_B(belief.task, w), goal, budget, counter)[1]
+
+
+class PrecomputedCompressionPlanner:
+    """CompressionPlanner with the decision signatures cached offline.
+
+    A hypothesis' decision signature depends only on (hypothesis, goal family),
+    NOT on the belief weights, so it can be computed once per task/goal-family
+    and reused at every decision.  At decision time the planner then only has
+    to bucket the belief support by its cached signature -- O(K) table lookups,
+    no reward evaluations -- and run expectimax over the M representatives.
+
+    This separates the two compression costs that the scaling study must not
+    conflate: the one-off O(K*|G|*|A|) signature build (amortized away here)
+    and the per-decision O(K) bucketing + O(M * tree) planning.
+    """
+
+    def __init__(self, task, goal_family, tol: float = 0.0,
+                 rep_rule: str = "maxweight"):
+        self.goal_family = goal_family
+        self.tol = tol
+        self.rep_rule = rep_rule
+        self.name = ("compression_cached" if rep_rule == "maxweight"
+                     else f"compression_cached_{rep_rule}")
+        self.task = task
+        self._sig = [
+            tuple(task.preferred_action(z, g) for g in goal_family)
+            for z in task.hidden_states
+        ]
+
+    def act(self, belief, budget, goal, counter):
+        task = belief.task
+        buckets: dict = {}
+        support = [k for k in range(task.n_states()) if belief.weights[k] > 0]
+        counter.touch(len(support))  # one cached-signature lookup per particle
+        for k in support:
+            buckets.setdefault(self._sig[k], []).append(k)
+        w = collapse_modes(task, list(buckets.values()), belief.weights, self.rep_rule)
+        return expectimax(_B(task, w), goal, budget, counter)[1]
 
 
 # --------------------------------------------------------------------------- #

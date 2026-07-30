@@ -114,6 +114,22 @@ class Task:
         with `richness`."""
         raise NotImplementedError
 
+    # --- geometry of the hidden space ------------------------------------- #
+    def param_embedding(self):
+        """Optional 1-D coordinate for each hidden state, or None.
+
+        Decision-mode compression collapses each mode onto ONE representative
+        particle.  Which particle you pick does not change the mode partition
+        (and therefore does not change M or the compute), but it does change
+        the VALUE the collapsed belief reports, and probe decisions are made on
+        values.  Tasks whose hidden parameter is an ordered physical quantity
+        (mass, friction, position) can expose it here so a planner can collapse
+        onto the mode-conditional MEAN instead of an arbitrary member.  Tasks
+        with no natural metric return None and fall back to the max-weight
+        member.
+        """
+        return None
+
     # --- convenience ------------------------------------------------------ #
     def n_states(self) -> int:
         return len(self.hidden_states)
@@ -179,13 +195,25 @@ class Belief:
         return p
 
     def updated(self, probe, o, counter: ComputeCounter | None = None) -> "Belief":
-        """Exact posterior after observing o from probe."""
-        like = np.array(
-            [self.task.obs_prob(z, probe, o) for z in self.task.hidden_states]
-        )
+        """Exact posterior after observing o from probe.
+
+        Only the SUPPORT (particles with non-zero weight) is propagated, and
+        only the support is charged to the compute counter: a particle filter
+        carrying M particles does not evaluate the likelihood of the K-M
+        particles it does not carry.  Zero-weight particles stay zero under
+        Bayes anyway, so this is exact.  (For a full-support belief, support
+        size == K and the charge is unchanged; the accounting only differs for
+        a compressed / collapsed belief, which is precisely the quantity the
+        scaling study measures.)
+        """
+        support = np.nonzero(self.weights)[0]
         if counter is not None:
-            counter.touch(len(like))
-        new = self.weights * like
+            counter.touch(len(support))
+        new = np.zeros_like(self.weights)
+        for k in support:
+            new[k] = self.weights[k] * self.task.obs_prob(
+                self.task.hidden_states[k], probe, o
+            )
         s = new.sum()
         if s <= 0:
             # Impossible observation under this belief: keep prior shape.

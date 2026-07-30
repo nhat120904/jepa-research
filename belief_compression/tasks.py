@@ -158,6 +158,10 @@ class OccluderPush(Task):
 
         self.probes = ["look_coarse", "look_fine"]
 
+    def param_embedding(self):
+        # locations are an ordered 1-D axis
+        return np.arange(self.n_locations, dtype=float)
+
     def bin_of(self, loc: int) -> int:
         return loc // self.fine
 
@@ -218,6 +222,116 @@ class OccluderPush(Task):
 
 
 # --------------------------------------------------------------------------- #
+# grid_param  (Gate C0: belief resolution is a first-class knob)
+# --------------------------------------------------------------------------- #
+class GridParam(Task):
+    """A hidden CONTINUOUS parameter theta in [0,1) discretized on a uniform
+    grid of `resolution` cells, so K = resolution is a free knob.
+
+    The point of this task is that **belief resolution and decision structure
+    are decoupled by construction**:
+
+      * The hidden parameter is continuous (think: object mass, friction
+        coefficient, contact-point offset).  `resolution` only controls how
+        finely the belief discretizes it -> K = resolution.
+      * The DECISION structure lives in continuous theta-space and never sees
+        the grid: a goal is a fixed tuple of `n_controllers` controller
+        centres c_a, reward(theta, a) = 1 - 2|theta - c_a|, so the optimal
+        controller is the nearest centre.  Refining the grid cannot create new
+        optimal controllers.
+
+    Consequence (the Gate-C0 hypothesis, provable here): for a goal family of
+    G goals with A controllers each, the preferred-action signature is constant
+    on every cell of the arrangement of all goals' decision boundaries.  There
+    are at most G*(A-1) distinct boundaries, hence
+
+        M  <=  min(K,  G*(A-1) + 1)                      [`decision_bound()`]
+
+    which is INDEPENDENT of K.  If the empirical M tracks this bound while K
+    grows, M/K -> 0 and the compression win grows without bound.
+
+    Probes are quantized sensors with a FIXED number of readout bins (the
+    sensor does not get better when the belief grid gets finer), so the
+    observation space is held constant as K grows.
+    """
+
+    name = "grid_param"
+
+    def __init__(
+        self,
+        resolution: int = 16,
+        n_controllers: int = 3,
+        n_goals: int = 1,
+        sensor_bins: tuple = (3, 8),
+        sensor_noise: tuple = (0.15, 0.05),
+        probe_cost: float = 0.05,
+        max_budget: int = 1,
+    ):
+        assert resolution >= 1 and n_controllers >= 2 and n_goals >= 1
+        self.resolution = int(resolution)
+        self.n_controllers = int(n_controllers)
+        self.n_goals = int(n_goals)
+        self.probe_cost = probe_cost
+        self.max_budget = max_budget
+
+        # hidden states are grid-cell indices; theta[i] is the cell centre
+        self.hidden_states = list(range(self.resolution))
+        self.theta = (np.arange(self.resolution) + 0.5) / self.resolution
+        self.prior = np.full(self.resolution, 1.0 / self.resolution)
+
+        # quantized sensors: bin count fixed, independent of the belief grid
+        self.sensor_bins = tuple(int(b) for b in sensor_bins)
+        self.sensor_noise = tuple(float(v) for v in sensor_noise)
+        assert len(self.sensor_bins) == len(self.sensor_noise)
+        self.probes = [f"sense{b}" for b in self.sensor_bins]
+        self._noise_of = dict(zip(self.probes, self.sensor_noise))
+        self._bins_of = dict(zip(self.probes, self.sensor_bins))
+
+    def param_embedding(self):
+        return self.theta
+
+    # goals ----------------------------------------------------------------- #
+    def _goal(self, j: int) -> tuple:
+        """Goal j = a tuple of controller centres, offset so that different
+        goals put their decision boundaries in different places (this is what
+        makes a richer goal family carve theta into more cells)."""
+        A = self.n_controllers
+        off = j / (self.n_goals * A) if self.n_goals > 1 else 0.0
+        return tuple(float((a + 0.5) / A + off) for a in range(A))
+
+    def goal_family(self, richness: int) -> List[tuple]:
+        """richness = number of goals in the family (each adds A-1 boundaries)."""
+        richness = max(1, min(int(richness), self.n_goals))
+        return [self._goal(j) for j in range(richness)]
+
+    def decision_bound(self, richness: int | None = None) -> int:
+        """Analytic upper bound on M: cells in the boundary arrangement."""
+        G = self.n_goals if richness is None else max(1, min(int(richness), self.n_goals))
+        return min(self.resolution, G * (self.n_controllers - 1) + 1)
+
+    # terminal decision ------------------------------------------------------ #
+    def terminal_actions(self, goal) -> List[int]:
+        return list(range(len(goal)))
+
+    def reward(self, z, a, goal, counter: ComputeCounter | None = None) -> float:
+        if counter is not None:
+            counter.rewards()
+        return 1.0 - 2.0 * abs(self.theta[z] - goal[a])
+
+    # probes ----------------------------------------------------------------- #
+    def obs_space(self, probe) -> List[int]:
+        return list(range(self._bins_of[probe]))
+
+    def obs_prob(self, z, probe, o) -> float:
+        b = self._bins_of[probe]
+        if b == 1:
+            return 1.0
+        noise = self._noise_of[probe]
+        true = min(int(self.theta[z] * b), b - 1)
+        return (1.0 - noise) if o == true else noise / (b - 1)
+
+
+# --------------------------------------------------------------------------- #
 # Factory
 # --------------------------------------------------------------------------- #
 def build_task(name: str, **kw) -> Task:
@@ -225,4 +339,6 @@ def build_task(name: str, **kw) -> Task:
         return MassSort(**kw)
     if name == "occluder_push":
         return OccluderPush(**kw)
+    if name == "grid_param":
+        return GridParam(**kw)
     raise ValueError(f"unknown task {name!r}")

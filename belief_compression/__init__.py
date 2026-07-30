@@ -15,4 +15,5 @@ __all__ = [
     "planners",
     "evaluate",
     "experiments",
+    "scaling",
 ]
