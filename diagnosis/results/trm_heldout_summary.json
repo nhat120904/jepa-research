@@ -383,7 +383,7 @@
     {
       "control": "stateprobe",
       "discordant_improve": 0,
-      "discordant_regress": 1,
+      "discordant_regress": 0,
       "exact_mcnemar_p": 1.0,
       "head_seed": 0,
       "model": "dino_wm_metaworld",
@@ -393,10 +393,10 @@
         0.04070771332437187
       ],
       "success_delta_bootstrap95": [
-        -0.046875,
+        0.0,
         0.0
       ],
-      "success_rate_delta": -0.015625,
+      "success_rate_delta": 0.0,
       "task": "mw-pick-place",
       "trm_arm": "replacement"
     },
@@ -443,7 +443,7 @@
     {
       "control": "stateprobe",
       "discordant_improve": 0,
-      "discordant_regress": 1,
+      "discordant_regress": 0,
       "exact_mcnemar_p": 1.0,
       "head_seed": 1,
       "model": "dino_wm_metaworld",
@@ -453,10 +453,10 @@
         0.04029077740537052
       ],
       "success_delta_bootstrap95": [
-        -0.046875,
+        0.0,
         0.0
       ],
-      "success_rate_delta": -0.015625,
+      "success_rate_delta": 0.0,
       "task": "mw-pick-place",
       "trm_arm": "replacement"
     },
@@ -503,7 +503,7 @@
     {
       "control": "stateprobe",
       "discordant_improve": 0,
-      "discordant_regress": 1,
+      "discordant_regress": 0,
       "exact_mcnemar_p": 1.0,
       "head_seed": 2,
       "model": "dino_wm_metaworld",
@@ -513,10 +513,10 @@
         0.04043723468109221
       ],
       "success_delta_bootstrap95": [
-        -0.046875,
+        0.0,
         0.0
       ],
-      "success_rate_delta": -0.015625,
+      "success_rate_delta": 0.0,
       "task": "mw-pick-place",
       "trm_arm": "replacement"
     },
@@ -563,7 +563,7 @@
     {
       "control": "stateprobe",
       "discordant_improve": 0,
-      "discordant_regress": 1,
+      "discordant_regress": 0,
       "exact_mcnemar_p": 1.0,
       "head_seed": 0,
       "model": "dino_wm_metaworld",
@@ -573,10 +573,10 @@
         0.03990660049411383
       ],
       "success_delta_bootstrap95": [
-        -0.046875,
+        0.0,
         0.0
       ],
-      "success_rate_delta": -0.015625,
+      "success_rate_delta": 0.0,
       "task": "mw-pick-place",
       "trm_arm": "hybrid"
     },
@@ -623,7 +623,7 @@
     {
       "control": "stateprobe",
       "discordant_improve": 0,
-      "discordant_regress": 1,
+      "discordant_regress": 0,
       "exact_mcnemar_p": 1.0,
       "head_seed": 1,
       "model": "dino_wm_metaworld",
@@ -633,10 +633,10 @@
         0.04020398432274517
       ],
       "success_delta_bootstrap95": [
-        -0.046875,
+        0.0,
         0.0
       ],
-      "success_rate_delta": -0.015625,
+      "success_rate_delta": 0.0,
       "task": "mw-pick-place",
       "trm_arm": "hybrid"
     },
@@ -683,7 +683,7 @@
     {
       "control": "stateprobe",
       "discordant_improve": 0,
-      "discordant_regress": 1,
+      "discordant_regress": 0,
       "exact_mcnemar_p": 1.0,
       "head_seed": 2,
       "model": "dino_wm_metaworld",
@@ -693,10 +693,10 @@
         0.040303106398680615
       ],
       "success_delta_bootstrap95": [
-        -0.046875,
+        0.0,
         0.0
       ],
-      "success_rate_delta": -0.015625,
+      "success_rate_delta": 0.0,
       "task": "mw-pick-place",
       "trm_arm": "hybrid"
     },
@@ -1485,7 +1485,9 @@
       2
     ],
     "paired_by_simulator_seed": true,
-    "seed0": 30000
+    "seed0": 30000,
+    "success_definition": "simulator flag at episode end",
+    "success_field": "success_end"
   },
   "summary": [
     {
@@ -1705,12 +1707,12 @@
       "model": "dino_wm_metaworld",
       "obj_goal_dist_mean": 0.23665029187269215,
       "obj_goal_dist_median": 0.25254889405144626,
-      "success_rate": 0.015625,
-      "successes": 1,
+      "success_rate": 0.0,
+      "successes": 0,
       "task": "mw-pick-place",
       "wilson95": [
-        0.002763541923337505,
-        0.08334101600094265
+        0.0,
+        0.05662405979280534
       ]
     },
     {

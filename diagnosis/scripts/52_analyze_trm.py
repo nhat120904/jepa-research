@@ -1,4 +1,9 @@
-"""Paired summary for the locked TRM oracle-dynamics comparison."""
+"""Paired endpoint-success summary for the held-out TRM comparison.
+
+The evaluation CSVs persist both an any-step latch (``success``) and the strict
+episode-end flag used by the paper (``success_end``).  This analyzer must use
+``success_end`` throughout.
+"""
 
 from __future__ import annotations
 
@@ -24,6 +29,7 @@ ORACLE_RE = re.compile(
     r"trm_heldout_oracle_(?P<task>mw-push|mw-pick-place)_"
     r"seed(?P<seed0>\d+)_n(?P<n>\d+)\.csv$"
 )
+SUCCESS_FIELD = "success_end"
 
 
 def wilson(k: int, n: int, z: float = 1.959963984540054) -> tuple[float, float]:
@@ -59,7 +65,20 @@ def load_cell(path: Path, *, seed0: int, n: int) -> dict[int, dict]:
     expected = set(range(seed0, seed0 + n))
     if set(by_seed) != expected or len(rows) != n:
         raise ValueError(f"{path}: expected exactly seeds {seed0}..{seed0+n-1}")
+    for seed, row in by_seed.items():
+        if SUCCESS_FIELD not in row:
+            raise ValueError(f"{path}: seed {seed} missing {SUCCESS_FIELD!r}")
+        if row[SUCCESS_FIELD] not in {"0", "1"}:
+            raise ValueError(
+                f"{path}: seed {seed} has non-binary {SUCCESS_FIELD}="
+                f"{row[SUCCESS_FIELD]!r}"
+            )
     return by_seed
+
+
+def success_vector(rows: dict[int, dict]) -> np.ndarray:
+    """Return strict episode-end success in deterministic seed order."""
+    return np.asarray([int(rows[s][SUCCESS_FIELD]) for s in sorted(rows)])
 
 
 def main() -> int:
@@ -111,7 +130,7 @@ def main() -> int:
     summary = []
     for key in sorted(cells, key=str):
         rows = cells[key]
-        success = np.asarray([int(rows[s]["success"]) for s in sorted(rows)])
+        success = success_vector(rows)
         distance = np.asarray([float(rows[s]["obj_goal_dist"]) for s in sorted(rows)])
         lo, hi = wilson(int(success.sum()), len(success))
         summary.append({
@@ -130,13 +149,13 @@ def main() -> int:
                 for head in range(3):
                     trm_rows = cells[(model, arm, task, head)]
                     seeds = sorted(trm_rows)
-                    trm_success = np.asarray([int(trm_rows[s]["success"]) for s in seeds])
+                    trm_success = success_vector(trm_rows)
                     trm_dist = np.asarray([float(trm_rows[s]["obj_goal_dist"]) for s in seeds])
                     for control in ("l2", "stateprobe", "oracle"):
                         control_key = (("oracle", "oracle", task, None) if control == "oracle"
                                        else (model, control, task, None))
                         control_rows = cells[control_key]
-                        base_success = np.asarray([int(control_rows[s]["success"]) for s in seeds])
+                        base_success = success_vector(control_rows)
                         base_dist = np.asarray([float(control_rows[s]["obj_goal_dist"]) for s in seeds])
                         delta, dlo, dhi = paired_bootstrap(trm_success, base_success, rng)
                         improve, regress, pvalue = exact_mcnemar(trm_success, base_success)
@@ -155,7 +174,9 @@ def main() -> int:
 
     payload = {
         "protocol": {"seed0": args.seed0, "episodes": args.episodes,
-                     "head_seeds": [0, 1, 2], "paired_by_simulator_seed": True},
+                     "head_seeds": [0, 1, 2], "paired_by_simulator_seed": True,
+                     "success_field": SUCCESS_FIELD,
+                     "success_definition": "simulator flag at episode end"},
         "summary": summary, "contrasts": contrasts, "files": provenance,
     }
     out_json = Path(args.out_json); out_json.parent.mkdir(parents=True, exist_ok=True)
@@ -167,8 +188,9 @@ def main() -> int:
         f"Fresh simulator seeds `{args.seed0}`--`{args.seed0+args.episodes-1}`; "
         f"n={args.episodes} paired episodes per cell. Three independently trained "
         "heads use the same immutable trajectory split. Test trajectories were not used "
-        "for checkpoint selection.", "",
-        "## Success summary", "",
+        "for checkpoint selection. Success is the strict simulator flag at episode end "
+        "(`success_end`), not the any-step latch.", "",
+        "## Strict episode-end success summary", "",
         "| Model | Task | Arm | Head seed | Success | Wilson 95% | Mean object distance |",
         "|---|---|---|---:|---:|---:|---:|",
     ]

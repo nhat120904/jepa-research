@@ -1,135 +1,147 @@
-# Current research status (2026-07-16)
+# Current research status (2026-07-30)
 
 This is the documentation entry point for the current project. The paper of
 record is `../../paper/main.tex`; the claim-to-artifact ledger is
-`CLAIMS_EVIDENCE.md`; the current Slurm submission record is
-`JOB_LEDGER_2026-07-13.md`; the venue-level review is
-`ICLR_READINESS_REVIEW_2026-07-13.md`; the current primary-source novelty audit
-is `plans/2026-07-13-iclr-literature-positioning-audit.md`. Dated plans,
-handoffs, and the original CAI-JEPA proposal
-are retained as research provenance, not as current claims or execution plans.
+`CLAIMS_EVIDENCE.md`; and the Slurm record is
+`JOB_LEDGER_2026-07-13.md`. Older ICLR reviews, dated plans, handoffs, and the
+CAI-JEPA proposal are retained as provenance, not as the current submission
+framing.
 
-## Current thesis
+## Submission target and current thesis
 
-The strongest defensible result is about the **optimizer--cost interface** in
-latent world-model planning:
+The active target is **TMLR**. The paper is a mechanistic audit, not a new
+planning method:
 
-> Under oracle-perfect dynamics, true simulator-state cost solves contact tasks
-> while every tested representation-derived cost remains near failure. On
-> identical candidate populations, the learned state cost misranks physical
-> progress beyond a matched noisy-score null, and changing only the refitting
-> cost changes the physical quality of later populations. Proposal coverage is
-> also sparse, so the supported mechanism is a joint coverage-and-ranking
-> bottleneck rather than a single encoder defect.
+> Under exact simulator candidate dynamics, representation-derived terminal
+> costs can remain near failure even when the same finite CEM budget succeeds
+> with a simulator-state reference cost. For stateprobe, identical-population,
+> matched-null, and cost-only refitting interventions establish harmful
+> optimizer-conditioned misranking. Exact-success candidates are also sparse in
+> final proxy-guided populations, but that observation does not independently
+> identify a proposal-generation failure.
 
-The locked oracle ladder uses 64 unseen paired seeds: privileged state cost
-solves push **63/64** and pick-place **41/64**; DINO-WM stateprobe solves
-**4/64, 0/64**, JEPA-WM stateprobe **1/64, 0/64**, and latent L2 **0/64** in all
-four contact cells. On the first identical population, proxy selection incurs
-**2.05--2.47 cm** physical regret. Its matched-residual permutation null incurs
-only **1.07--1.15 cm**; actual-minus-null is **0.91--1.36 cm**, with all four
-seed-clustered CIs above zero. The shared-population branch then shows
-**1.51--2.01 cm** worse best physical cost after five proxy-based refits. These
-simulator-state results are the paper's current empirical core.
+The claim is scoped to two released MetaWorld checkpoints, push and pick-place,
+the tested costs, and the reported planner protocol.
 
-The earlier **CAI-JEPA / action-identifiability / Boundary Blindness** program
-was productive as a diagnostic precursor, but it is no longer the primary
-novelty claim. CRA with `hard_nn` negatives is an **observational action-
-discriminability diagnostic**: negatives come from other observed states, not
-from interventions executed from the exact same simulator state. It therefore
-does not by itself identify a causal action effect, and its nominal `1/17`
-chance interpretation requires care because factual and negative candidates are
-not exchangeable.
+## Submission evidence
+
+### Terminal-cost comparison under oracle dynamics
+
+Fresh paired environment seeds `30000--30063`, strict episode-end success:
+
+| cost | DINO push | DINO pick | JEPA push | JEPA pick |
+|---|---:|---:|---:|---:|
+| simulator-state reference | 64/64 | 49/64 | 64/64 | 49/64 |
+| latent L2 | 0/64 | 0/64 | 0/64 | 0/64 |
+| stateprobe | 5/64 | 0/64 | 1/64 | 1/64 |
+
+The reference row is shared across representations. It is a privileged
+positive control for the search budget, not a deployable method. This
+comparison shows that learned-dynamics error is not necessary for failure in
+this harness; it does not isolate an encoder defect.
+
+### Stateprobe mechanism
+
+- On identical iteration-0 populations, stateprobe selection incurs
+  **2.05--2.48 cm** within-population reference-cost regret.
+- A residual-permutation null with the same marginal errors incurs
+  **1.07--1.15 cm**; actual-minus-null is **0.91--1.36 cm**, with all four
+  seed-clustered confidence intervals above zero.
+- Changing only the CEM refitting cost makes the stateprobe branch's best
+  available reference cost **1.51--2.01 cm** worse after five refits.
+  The seed-level mean direction is positive in **8/8** seeds in every cell
+  (two-sided exact sign test `p=0.0078` per cell).
+
+These detailed selection and refitting claims apply to **stateprobe only**.
+Latent L2 is supported by the end-to-end terminal-cost comparison, not by the
+same-population or branch causal audit.
+
+### Stateprobe validation
+
+The exact probe checkpoints used by planning have held-out expert-trajectory
+object coordinate RMSE **1.64--1.71 cm** and hand coordinate RMSE
+**3.75--4.31 cm**. On the optimizer-induced candidate populations, the initial
+stateprobe/reference shaped-cost Spearman is **0.43--0.55** with reference
+top-10 recall **0.19--0.26**. In final proxy-guided populations, Spearman is
+**0.11--0.16** and recall **0.07--0.10**. Each cell/stage contains 112
+populations and 11,200 candidates clustered over 16 episode seeds. See
+`results/stateprobe_cem_validation.md` and script 63.
+
+This validates and characterizes the fixed probe rather than claiming it is an
+optimal decoder. The hand readout is weaker than the object readout, and no
+architecture or probe-training-seed sensitivity has been established.
+
+### Candidate availability
+
+In final stateprobe-guided CEM populations, exact-success availability is
+**8.0%** for DINO push, **3.6%** for DINO pick, and **0%** in both JEPA cells.
+Positive physical selection regret remains on the same populations.
+
+Call this **sparse exact-success candidate availability under proxy-guided
+search**, not “proposal-coverage failure.” The metric is measured after prior
+proxy refits, with horizon `H=6`, and at encountered simulator snapshots.
+Therefore it cannot separately assign the absence to snapshot feasibility,
+horizon, initial proposals, or earlier proxy selection.
 
 ## Claim discipline
 
-- Say **"grounding alone is insufficient"**, not "grounding is necessary and
-  insufficient." No current intervention establishes necessity.
-- Say **"every frozen-encoder cost tested"**, not every possible latent cost.
-- Say **"no scale trend under the current model-native diagnostic"**, not
-  "scale is not the fix." Current scaling cells use model-specific latent
-  effect masks and nearest neighbours.
-- Treat the same-population regret, permutation null, and shared-branch
-  intervention as the primary evidence. Treat the Goodhart budget curve as
-  supporting evidence of proxy/true-objective
-  decoupling. Within-search decode-error growth is a point-estimate trend with
-  overlapping confidence intervals, not a monotonic law already established.
-- Keep Push-T and PointMaze as sanity checks only. Metaworld provides simulator
-  verification; DROID is external-scale/real-robot diagnostic evidence, not
-  causal ground truth.
-- Separate an **informative privileged control** (tracks truth and supports
-  optimization), a **no-signal** cost (small proxy--truth gap can still be
-  useless), and a **misranking** cost (selects worse physical candidates than
-  available alternatives). Do not use “encoder exploitation” as a unique
-  causal attribution: the measured object is the representation--readout--cost
-  composition under search.
+- Say **“grounding alone is insufficient,”** not “grounding is necessary.”
+- Say **“the tested representation-derived costs,”** not all latent costs.
+- Say **“learned-dynamics error is not necessary for failure in this
+  harness,”** not that the planner or model is an adversary.
+- Do not claim that CEM “exploits model error”: candidate dynamics are exact in
+  the headline audit. The supported mechanism is stateprobe cost misranking
+  under selection and adaptive refitting.
+- Do not use “encoder exploitation” as a unique attribution. Stateprobe
+  measures the representation--readout--cost composition.
+- Do not call final-population availability an independent proposal failure.
+- Do not generalize across planners from endpoint controls: the
+  identical-population and refitting mechanisms were tested only for CEM.
+- Uncertainty over environment seeds is not uncertainty over checkpoint
+  training seeds.
 
-## Phase H: held-out result completed, supporting only
+## TRM-style adaptation
 
-The previously reported predictor-LoRA / counterfactual-objective numbers were
-not a held-out planning result: the planning probe could read the complete
-latent cache. They remain exploratory and are excluded from current claims.
+The TRM-style replacement and hybrid artifacts remain in `results/` for
+research provenance. `scripts/52_analyze_trm.py` summarizes strict endpoint
+field `success_end`; the prior report used the any-step `success` latch and was
+inconsistent for DINO stateprobe pick (`1/64` any-step versus `0/64` endpoint).
 
-The corrected implementation uses an immutable 70/15/15 trajectory manifest,
-validation-only checkpoint selection, and test-only planning anchors and hard
-negatives. Jobs `26493--26495` completed. Across four seeds, DINO-WM improves
-offline AE **1.492→1.085**, AS **0.471→0.545**, and CRA **0.036→0.233**.
-JEPA-WM improves CRA **0.030→0.085** but not AE (**1.337→1.344**) or AS
-(**0.501→0.501**). This mixed offline result is supporting evidence only, not
-task success and not a paper method contribution.
+The empirical TRM adaptation is **excluded from the TMLR paper**. The current
+artifacts do not include enough adaptation-specific ranking/training and
+positive-control validation to interpret a null planning result as a method
+boundary rather than an implementation/adaptation failure. TRM remains in
+Related Work.
 
-## Active confirmatory work
+## Historical and supporting work
 
-Do not duplicate or overwrite the following running jobs/agent work:
+The earlier CAI-JEPA/action-identifiability/Boundary-Blindness program remains
+useful provenance but is not the submission spine. `hard_nn` CRA uses nearby
+cross-state actions and is observational unless validated by exact same-state
+interventions. DROID scaling, Phase-H, mitigation grids, ACID-style
+approximations, and selection-aware method experiments remain supporting or
+historical artifacts and are excluded from the TMLR empirical narrative.
 
-| Work | Current owner / job | Purpose |
-|---|---|---|
-| Second-checkpoint oracle/planning pipeline | **26481 completed** (`jepa_wm_metaworld`) | Incorporated in locked two-checkpoint oracle ladder |
-| Planner generality | Original `26400` cancelled; resumed as **26482**, completed | Push success: CEM `1/16`, MPPI `0/16`, shooting `2/16`; reach L2 controls `16/16`, `13/16`, `6/16`; interpret with control-strength caveat |
-| Encoder-information upper bound | **26485 completed** | Object is decodable off-policy, but end-effector and relative geometry degrade strongly; does not isolate encoder vs readout |
-| Held-out Phase-H | **26493** DINO-WM, **26494** JEPA-WM; aggregation **26495**, completed | DINO: all four seeds improve AE/AS/CRA; JEPA: CRA improves but AE/AS do not; no closed-loop success claim |
-| Locked confirmatory ladder | **26491/26492 completed** | Headline 64-seed results incorporated in the paper |
-| Exact same-state intervention | **26497**, completed | Snapshot/restore causal action fan; summary artifacts available, aggregate analysis still required |
-| Shared physical scaling | `26498` OOM; retry **26610** | Compare four checkpoints with one effect mask and fixed negative IDs |
-| Paper compile/LaTeX check | **26499** completed; post-literature rebuild **26504** | Hardened draft builds on compute; generic article layout remains over ICLR budget |
-| Instrumented exploitation audit | **26502/26746 completed** | Replaced by clearer same-population preselection audit for headline use |
-| Coverage vs selection | **26505 completed**; `26506` failed but corrected artifacts are present | Final exact-success coverage: DINO push 8.0%, pick 3.6%; JEPA contact 0% |
-| Same-population preselection + branch | audits complete; permutation-null **28322 completed** | Immediate regret, matched-noise null, and adaptive refitting consequence |
-| TRM-style closest baseline | train **26507**; eval **26508**; analysis **26509** | Replacement/hybrid horizon-matched metric on two checkpoints and held-out oracle seeds |
-| ACID-style closest baseline | train **26510**; learned/oracle eval **26511**; paired analysis **26512** | Test inverse-dynamics consistency; MLP verifier approximation because official code/checkpoint is unavailable |
+The planner endpoint control remains in the appendix: on DINO push under exact
+dynamics, stateprobe succeeds with CEM `1/16`, MPPI `0/16`, and random shooting
+`2/16`; their Reach controls are `16/16`, `13/16`, and `6/16`. This shows the
+contact outcome is not observed only with CEM, but does not establish
+mechanism generality.
 
-TRM, ACID, and shared scaling remain pending. Do not infer their outcomes from
-partial logs. Completed rows above may be cited only through their final
-artifacts.
+## Submission readiness
 
-## Highest-priority remaining experiments
+Review-driven source fixes are complete. Job `33069` regenerated the TRM
+report/JSON with strict endpoint success. Job `33071` built the revised
+TMLR PDF: 9 US-Letter pages, embedded fonts, no undefined citation/reference,
+and no overfull box. The audit figure and protocol table were visually checked.
 
-1. Complete the TRM-style comparison (`26508/26509`) and the repaired ACID
-   smoke/full workflow (`27982`, then replacement full eval if the smoke passes).
-2. Aggregate and interpret the completed exact-same-state action fan (`26497`)
-   before using it to upgrade the observational CRA/BB claim.
-3. Complete DROID shared-scaling retry `26610` with a physical/proprioceptive
-   effect mask and fixed negative indices across models.
-4. Convert the current generic article into the official ICLR template and cut
-   the main paper to the venue page budget; move historical Boundary Blindness,
-   mitigation, and DROID details to the appendix.
-5. Add a learned non-privileged positive control if TRM/ACID supplies one;
-   otherwise state plainly that the current positive control is privileged.
+Remaining author-side submission checks:
 
-All GPU, simulator, model, or data-heavy work must run through Slurm on a
-compute node. The login node is only for lightweight inspection, editing,
-small text/CSV aggregation, and job submission/monitoring.
+1. Verify metadata for the 2025--2026 citations and the current TMLR LLM-use
+   wording.
+2. Package an anonymized supplement containing the relevant analysis scripts,
+   manifests, per-seed summaries, and exact commands.
 
-## Document status
-
-| Document | Role now |
-|---|---|
-| `../../paper/main.tex` | Paper of record; still a draft and subject to the caveats above |
-| `../../paper/ICLR_CUT_PLAN.md` | Provisional nine-page contraction map; apply after pending evidence gates |
-| `CLAIMS_EVIDENCE.md` | Claim/artifact ledger; rows marked blocked must not enter the paper |
-| `../../cai_jepa_paper_proposal.md` | Historical March/June proposal; superseded framing |
-| `../../diagnostic_implementation_plan_v2.md` | Historical implementation specification; useful for provenance/API decisions |
-| `PAPER_IDEA.md`, `PROGRESS_REPORT.md`, `DIAGNOSIS_PLAN.md` | Historical snapshots of the Boundary-Blindness phase |
-| `METHODOLOGY.md` | Reference for the original observational diagnostic implementation, not a causal-identification protocol |
-| `HANDOFF*.md` | Historical operational records; use `../RUNBOOK.md` and current Slurm scripts for new runs |
-| `plans/YYYY-MM-DD-*.md` | Dated design/result records; status is local to their date |
+All GPU, simulator, model, large-data analysis, and paper builds must run
+through Slurm. The login node is limited to lightweight inspection, editing,
+syntax checks, and job monitoring.

@@ -1,14 +1,16 @@
 # Claim → evidence map (paper assembly checklist)
 
-> **Current validity note (2026-07-16):** use together with
+> **Current validity note (2026-07-30):** use together with
 > `CURRENT_STATUS.md`. Rows record artifacts, but an artifact is not automatically
 > a defensible causal or held-out claim. In particular, C1 CRA/BB is
 > observational (`hard_nn` negatives are cross-state), model-scaling cells are
 > not yet evaluated on a shared physical effect mask/fixed distractor set, and
 > the historical C7 Phase-H planning results may overlap predictor-LoRA training
 > trajectories. Strict held-out replacements are now complete and recorded in
-> C7, but remain offline supporting evidence. Shared physical scaling, TRM, and
-> ACID comparisons remain pending; do not infer outcomes from partial logs.
+> C7, but remain offline supporting evidence. The TMLR submission uses the
+> terminal-cost comparison and C5/C8 mechanism artifacts as its empirical spine.
+> The TRM-style adaptation is excluded from the paper because its null result
+> lacks sufficient adaptation-specific ranking and positive-control validation.
 
 **Purpose:** every sentence the paper claims, with the exact artifact that backs
 it. If a claim has no row here, it does not go in the paper. Companion to
@@ -17,18 +19,23 @@ it. If a claim has no row here, it does not go in the paper. Companion to
 Status legend: ✅ measured & in-repo · 🟡 measured, caveat carried · ⛔ blocked
 from paper use pending a validity fix.
 
+Sections C1--C3, C6, and C7 are historical/supporting ledgers and are excluded
+from the current TMLR narrative unless `../../paper/main.tex` cites them
+explicitly. In particular, old “in paper” annotations from the
+Boundary-Blindness draft are superseded.
+
 ## C1 — The observational boundary diagnostic is localized and transfers
 
 | # | Claim | Evidence | Status |
 |---|---|---|---|
 | 1.1 | Frozen JEPA WMs show elevated cross-neighbourhood BB proxy at the pre-grasp boundary; this is not yet an exact-same-state bifurcation test | `results/metaworld_boundary.csv`: pooled bb_boundary pre_grasp **1.323 (dino) / 1.280 (jepa)** vs free_space 0.282/0.299 (~4.5×), contact 0.481/0.441; per-task CI-aware: elevated in 4/6 (dino), 5/6 (jepa), zero confident reversals | 🟡 observational proxy |
 | 1.2 | The locus replicates across two model families | same CSV, both `dino_wm_metaworld` and `jepa_wm_metaworld` columns | ✅ |
-| 1.3 | The phenomenon transfers to real-robot data | `results/droid_boundary.csv` (current): pre_grasp **1.916 [1.560, 2.279]** vs free_space 0.963 [0.793, 1.153] — CI-confident (the 1.975/0.721 figures were from a superseded run; paper uses current CSV) | 🟡 ‖Δz‖ proxy, transfer-only (no object GT on DROID) |
-| 1.4 | CounterfactualBench precursor: models rank factual vs *opposite* actions near-perfectly everywhere (CRA 0.96–0.99) but score much lower vs cross-state *nearest-neighbour* distractors, worst at pre-grasp (CRA 0.47–0.57) → motivates an observational follow-up. **In paper Table 2 (Sec 3.1).** | `results/metaworld_diagnostic.csv` pooled CRA_top1_eff: DINO opp free/pre/contact 0.990/0.961/0.975 vs nn 0.566/**0.467**/0.481; JEPA opp 0.993/0.972/0.984 vs nn 0.635/**0.541**/0.571; `droid_diagnostic.csv` hard_nn near `1/17` | 🟡 observational; nominal chance is not a calibrated causal null |
+| 1.3 | The phenomenon transfers to real-robot data | `results/droid_boundary.csv` (current): pre_grasp **1.916 [1.560, 2.279]** vs free_space 0.963 [0.793, 1.153] — CI-confident (the 1.975/0.721 figures were from a superseded run) | 🟡 ‖Δz‖ proxy, transfer-only (no object GT on DROID) |
+| 1.4 | CounterfactualBench precursor: models rank factual vs *opposite* actions near-perfectly everywhere (CRA 0.96–0.99) but score much lower vs cross-state *nearest-neighbour* distractors, worst at pre-grasp (CRA 0.47–0.57) → motivates an observational follow-up | `results/metaworld_diagnostic.csv` pooled CRA_top1_eff: DINO opp free/pre/contact 0.990/0.961/0.975 vs nn 0.566/**0.467**/0.481; JEPA opp 0.993/0.972/0.984 vs nn 0.635/**0.541**/0.571; `droid_diagnostic.csv` hard_nn near `1/17` | 🟡 observational; nominal chance is not a calibrated causal null |
 | 1.5 | Boundary label is an object-displacement proxy, not contact GT | stated in `boundary_gate_report.md`; mw-door-close excluded as proxy anomaly | 🟡 carried on figure |
-| 1.6 | No favorable scale trend is observed under the current model-native DROID diagnostic across a 45× encoder scale-up and two families, including V-JEPA2-AC. This does **not** rule out scale because each model currently defines its own latent effect mask and neighbour set. **In paper Sec 3.6 (Table `tab:scaling`).** | `results/droid_scaling_curve.md`, `results/vjepa2_ac_droid_completion.md` (+ `droid_diagnostic.csv`, `droid_boundary.csv`): hard_nn effect-CRA near 0.0625 for all 4 models (22M/300M/1B/1B-OSS) in pre_grasp/gripper/contact; `bb_boundary` >0 every cell, pre_grasp locus 3/4 (+1.2 to +1.9) | 🟡 DROID transfer only; requires shared physical mask and fixed distractors for an apples-to-apples scaling claim |
+| 1.6 | No favorable scale trend is observed under the current model-native DROID diagnostic across a 45× encoder scale-up and two families, including V-JEPA2-AC. This does **not** rule out scale because each model currently defines its own latent effect mask and neighbour set | `results/droid_scaling_curve.md`, `results/vjepa2_ac_droid_completion.md` (+ `droid_diagnostic.csv`, `droid_boundary.csv`): hard_nn effect-CRA near 0.0625 for all 4 models (22M/300M/1B/1B-OSS) in pre_grasp/gripper/contact; `bb_boundary` >0 every cell, pre_grasp locus 3/4 (+1.2 to +1.9) | 🟡 DROID transfer only; requires shared physical mask and fixed distractors for an apples-to-apples scaling claim |
 | 1.7 | The metric is not saturated-low by construction (positive control) | `results/{pusht,point_maze,wall}_diagnostic.csv`: toy fully-actuated datasets score eff-CRA **0.66–1.0** → near-chance contact scores are real failures | ✅ |
-| 1.8 | The pre-grasp locus is robust to the regime-threshold cut (not an artifact of 5mm/10cm/0.10): swept object-move∈{2.5,10}mm, pre-grasp-dist∈{8,12}cm, gripper-delta∈{0.05,0.20} × baseline (7 configs); pre-grasp effect-CRA moves ≤0.037 (DINO [0.450,0.488], JEPA [0.529,0.558]) and stays the lowest-scoring regime in all 7/7 configs, both models | `results/regime_robust_{base,objmove2p5,objmove10,pregrasp8,pregrasp12,gripdelta05,gripdelta20}.csv` + `results/regime_robustness_summary.csv` (scripts/04 env-override + scripts/46, job 26110, completed 3h33m); baseline config reproduces the paper table exactly (DINO 0.466≈0.467, JEPA 0.541=0.541) | ✅ |
+| 1.8 | The pre-grasp locus is robust to the regime-threshold cut (not an artifact of 5mm/10cm/0.10): swept object-move∈{2.5,10}mm, pre-grasp-dist∈{8,12}cm, gripper-delta∈{0.05,0.20} × baseline (7 configs); pre-grasp effect-CRA moves ≤0.037 (DINO [0.450,0.488], JEPA [0.529,0.558]) and stays the lowest-scoring regime in all 7/7 configs, both models | `results/regime_robust_{base,objmove2p5,objmove10,pregrasp8,pregrasp12,gripdelta05,gripdelta20}.csv` + `results/regime_robustness_summary.csv` (scripts/04 env-override + scripts/46, job 26110, completed 3h33m); baseline config reproduces the historical draft table exactly (DINO 0.466≈0.467, JEPA 0.541=0.541) | ✅ |
 
 ## C2 — BB is associated with planning failure (regime-level, not causal)
 
@@ -55,7 +62,7 @@ from paper use pending a validity fix.
 | 3.7 | …and halves BB at the boundary, on both models | `metaworld_boundary_dynamics.csv` (dino): pre_grasp 1.323→**0.660** (−50%), gap 1.04→0.32; `_dynamics_jepa.csv`: 1.280→**0.620** (−52%), gap 0.98→0.27 | ✅ |
 | 3.8 | The comparison supports the interpretation that explicit object-displacement supervision exposes signal hidden by full-latent L2; it does not prove that data coverage is generally sufficient | 3.6 succeeded on the same cached expert data that 3.1/3.3 failed on | 🟡 interpretation, not unique causal mechanism |
 | 3.9 | The recipe does NOT transfer to DROID's noisy whole-state proxy label at 2.1k transitions | `droid_boundary_dynamics.csv`: val MSE 0.865, rank-corr +0.708 but spread magnitude collapsed (0.0038 vs 115), BB not reduced (pre_grasp 1.85 vs 1.98 base, free_space worse) | ✅ honest negative; scope: the *label*, not the principle |
-| 3.10 | Open-loop Action Error: grounded cost no-harm/no-gain (metric rewards arm mimicry) | `metaworld_planning_metric.csv`; scale-bug run preserved `_buggy_scale.csv` | ✅ disclosed |
+| 3.10 | Open-loop Action Error: grounded cost no-harm/no-gain (metric rewards arm mimicry) | `metaworld_planning_metric.csv`; scale-bug run preserved `_buggy_scale.csv` | ✅ historical artifact |
 
 ## Reproduction integrity (the credibility section)
 
@@ -65,12 +72,12 @@ from paper use pending a validity fix.
 | R.2 | Three env-side reproduction bugs found+fixed (default-camera 480px renderer; training data = flipud(corner2+tweak), MSE 71.6 vs ≥3000 unflipped; goal = expert FINAL frame) | `results/closed_loop_report.md` §pitfalls (narrative + numbers). ⚠️ 2026-07-12 audit: the previously-cited `results/logs/camera_calib*` artifacts and `_baseline_probe/_camera_calib/_replay_check` probe scripts are NOT on disk — evidence rests on the report; regenerate probes before claiming committed artifacts | 🟡 report-backed only |
 | R.3 | Physics/world identical to data-gen (only visuals differed) | `_replay_check.py`: action replay ee err median 1.5 mm | ✅ |
 
-## C4 — Oracle ladder: learned-dynamics error is not necessary for failure
+## C4 — Terminal-cost comparison: learned-dynamics error is not necessary for failure
 
 | # | Claim | Evidence | Status |
 |---|---|---|---|
-| 4.1 | Locked 64-seed ladder: same CEM budget + perfect dynamics + privileged true-state cost solves push **63/64** and pick-place **41/64** | `results/confirmatory_report.md`, `confirmatory_summary.csv`, jobs `26491/26492` | ✅ headline |
-| 4.2 | Under the same simulator rollouts, latent L2 solves **0/64** in all four checkpoint×task cells; stateprobe solves DINO push/pick **4/64, 0/64** and JEPA **1/64, 0/64** | same locked report and per-arm CSVs | ✅ headline |
+| 4.1 | Fresh paired 64-seed terminal-cost comparison: same CEM budget + exact simulator candidate dynamics + privileged state-reference cost solves push **64/64** and pick-place **49/64** | `results/trm_heldout_oracle_*_seed30000_n64.csv`; `../../paper/main.tex`, Table 1 | ✅ headline; strict `success_end` |
+| 4.2 | With exact simulator candidate rollouts and the same CEM budget, latent L2 solves **0/64** in all four checkpoint×task cells; stateprobe solves DINO push/pick **5/64, 0/64** and JEPA **1/64, 1/64** | `results/trm_heldout_{dino,jepa}_wm_metaworld_{l2,stateprobe}_*_seed30000_n64.csv`; raw endpoint counts cross-checked against Table 1 | ✅ headline; detailed mechanism below applies only to stateprobe |
 | 4.3 | Object-only decoding is stronger than other cost components, not a certificate of full cost accuracy: off-policy object median **2.01cm, 91.5% <5cm**; end-effector median **5.14cm, 45.8% <5cm**; hand−object relative median **11.18cm, 3.7% <5cm** | `results/encoder_info_upperbound.md`, job `26485` | ✅ scoped; no encoder-only attribution |
 | 4.4 | Off-policy hardening improves the object-only metric (78.3→**91.5%** <5cm) but the historical n=16 planning gate remains **1/16**; use only as an insufficiency result, superseded for headline success by row 4.2 | `results/oracle_ladder_cost_report.md` §Phase-3 | 🟡 supporting |
 
@@ -80,11 +87,12 @@ from paper use pending a validity fix.
 |---|---|---|---|
 | 5.1 | Random off-policy→elite comparison shows distribution shift: elite decode **24.0% <5cm** (final 19.2%; median 7.3cm) vs random off-policy **91.5%** (median 2.0cm). Because populations are unmatched, this is supporting evidence, not the primary selection test | `results/cem_exploit_precision.csv` | 🟡 supporting |
 | 5.2 | Probe-minimized plans read "at goal" while the true object is 13–30cm away | `oracle_ladder_cost_report.md` §Verdict | ✅ |
-| 5.3 | Overoptimization curves (n=16, 3 tasks): honest cost (reach×l2) converts search→success **5/16→16/16→16/16→16/16** at iters {2,6,12,24}; exploitable (push×stateprobe) proxy −18% / true −2% / decode **6.6 [5.7,7.4]→8.3 [7.1,9.3] cm (+25%)** with pick corroborating (+21%); no-signal (push×l2) proxy −35%, obj_med **exactly flat 0.239m** every budget. **Decode growth is a point-estimate trend — first/last CIs OVERLAP at n=16** (all 6 arms), disclosed as such in the paper. Population axis {50,100,300}@12it is a separate **n=8** run (0.233/0.207/0.252m; l2 flat 0.252) | `results/overopt_{curves,episodes}_mwpush_mwreach_n16.csv`, `_mwpickplace_n16.csv`, `_mwpush_nsamp.csv` + `results/overopt_analysis.md` (scripts/41+42); figure `paper/figures/figure_overopt.pdf` regenerated from these | ✅ n=16 final; CI-overlap caveat carried in text+caption (v0.3) |
-| 5.4 | Exploitation confirmed on SIM STATE (probe-independent): final-iter elites' TRUE object→goal median **24.9cm** (push 19.9, pick 28.0), only **1.7% <5cm** — worse than the probe's 19.2%, so the probe number understates the wall. Closes the "probe-OOD vs object-really-far" confound | `results/exploit_simstate_crosscheck.csv` (scripts/45, offline re-analysis of `cem_exploit_lite.npz`; no GPU) | ✅ |
+| 5.3 | Historical search-budget sensitivity (n=16, 3 tasks): reference-aligned reach cost converts search→success **5/16→16/16→16/16→16/16** at iterations {2,6,12,24}; contact success stays at most 2/16. The separate population axis {50,100,300}@12it is n=8 and stays at most 1/8. Within-search point-estimate curves are weaker: push×stateprobe proxy falls 18% while the reference outcome falls 2% and decode error rises **6.6 [5.7,7.4]→8.3 [7.1,9.3] cm**, but the decode CIs overlap | `results/overopt_{curves,episodes}_mwpush_mwreach_n16.csv`, `_mwpickplace_n16.csv`, `_mwpush_nsamp.csv`, and `results/overopt_analysis.md` | 🟡 endpoint sensitivity included in paper Appendix C; within-search trend remains excluded from the causal headline |
+| 5.4 | Probe-independent simulator-state cross-check: final-iteration stateprobe-selected elites' true object-to-goal median is **24.9cm** (push 19.9, pick 28.0), with **1.7% <5cm** | `results/exploit_simstate_crosscheck.csv` (scripts/45, offline re-analysis of `cem_exploit_lite.npz`; no GPU) | 🟡 supporting; excluded from current paper |
 | 5.5 | On the identical first CEM population, proxy elites have **1.24–1.40cm** more object error than population, **0.91–1.06cm** more than true-cost elites, optimism enrichment **2.16–2.33cm**, and selected physical regret **2.05–2.47cm**; all relevant seed-clustered CIs exclude zero | `results/cem_preselection_audit.md`, candidate dumps, script 53 | ✅ primary same-population evidence |
 | 5.6 | Matched-residual permutation null preserves the exact within-population residual multiset but breaks candidate association: actual argmin regret **2.05–2.48cm** vs null **1.07–1.15cm**; excess **0.91–1.36cm**, all four CIs exclude zero | `results/cem_residual_permutation_null.md`, script 56, job `28322` | ✅ structured alignment beyond generic noisy-score winner's curse |
-| 5.7 | Shared-population branch changes only the refitting cost after identical initial candidates; after five refits, proxy branch best physical candidate is **1.51–2.01cm** worse in all four checkpoint×task cells, all CIs exclude zero | shared-branch candidate/metadata files and script 55 analysis | ✅ adaptive intervention |
+| 5.7 | Shared-population branch changes only the refitting cost after identical initial candidates; after five refits, proxy branch best physical candidate is **1.51–2.01cm** worse in all four checkpoint×task cells, all CIs exclude zero; the seed-level mean contrast is positive in **8/8** seeds in every cell (two-sided exact sign test **p=0.0078** per cell) | shared-branch candidate/metadata files and script 55 analysis | ✅ adaptive intervention |
+| 5.8 | Exact stateprobe checkpoints have held-out expert object coordinate RMSE **1.64–1.71cm** and hand RMSE **3.75–4.31cm**. On optimizer-induced candidates, initial stateprobe/reference cost Spearman is **0.43–0.55** with reference top-10 recall **0.19–0.26**; final-population Spearman is **0.11–0.16** with recall **0.07–0.10**. Each cell/stage uses 112 populations, 11,200 candidates, and 16 seed clusters | `results/stateprobe_cem_validation{,_expert_validation,_summary}.csv`, report, script 63, job `33076` | ✅ fixed-probe validation; no architecture/training-seed sensitivity claim |
 
 ## C6 — Mitigation nulls: tested post-hoc repairs do not cross contact
 
@@ -92,7 +100,7 @@ from paper use pending a validity fix.
 |---|---|---|---|
 | 6.1 | Relearned representation adapter φ (v2, rebalanced): held-out decode median 6.9cm, re-gate push **1/16**, pick 0/16 | phaseC_repr_v2 log (job 24018), `metaworld_latent_oracle_phi*.csv` | ✅ |
 | 6.2 | Encoder-LoRA + φ, 5 seeds: push-held **{5,0,2,1,1}/16, mean 1.8, CI [0, 3.7]** = inside frozen baseline 0–2/16; grounding 94–100% <5cm across seeds → grounding↑↛planning at the encoder level | phaseD/phaseF logs (jobs 24128, 24270/24276/24299 + r1), seed-sweep summary | ✅ |
-| 6.3 | Ensemble disagreement penalty (5 LoRA seeds, cost = mean_k d_k² + λ·Var_k): λ∈{0,0.5,1,2} → push-held **{2,1,2,1}/16** = frozen noise (this is the number in `ladder_mitigation_cis.csv` and in paper Table tab:mitigations since v0.3; the {2,2,2,1} variant was the non-held eval — do not reintroduce); the standard MBRL pessimism fix fails because seeds share the frozen-base blind spot | phaseG logs (jobs 24340–24357), `results/ladder_mitigation_cis.csv` | ✅ |
+| 6.3 | Ensemble disagreement penalty (5 LoRA seeds, cost = mean_k d_k² + λ·Var_k): λ∈{0,0.5,1,2} → push-held **{2,1,2,1}/16** = frozen noise (the {2,2,2,1} variant was the non-held eval — do not reintroduce); the standard MBRL pessimism fix fails because seeds share the frozen-base blind spot | phaseG logs (jobs 24340–24357), `results/ladder_mitigation_cis.csv` | ✅ historical artifact |
 | 6.4 | phil2 hybrid (β=0.15) = minor generality win only (one cost: reach 16/16 + push 2/16), not a crossing | phaseD_phil2_gate log | ✅ |
 | 6.5 | Per-arm Wilson 95% CIs (mw-push, success_end): every frozen-base arm upper bound ≤3.1/16 for n=16 rungs (l2/phi/stateprobe_robust [0,19.4%]); the 5/16 LoRA seed's CI [14,56%] overlaps every other arm → "inside the band" stated with intervals, not point estimates | `results/ladder_mitigation_cis.csv` (scripts/45, offline; no GPU) | ✅ |
 
@@ -117,8 +125,8 @@ did not persist the best true candidate.
 | 8.1 | Elite readout shift is measured separately from task truth; $91.5\%\to24\%$ within 5cm remains evidence of selection-induced probe degradation, not task regret | `results/cem_exploit_precision.csv`, script 35 | 🟡 measured on existing elite dumps |
 | 8.2 | Simulator outcome and opportunity regret are measured as true selected cost minus best true cost among candidates actually present | preselection row 5.5 and `results/exploitation_components.md`; jobs `26502/26746` | ✅ |
 | 8.3 | Within-search corruption and candidate-order inversion are measured, but same-population preselection regret and the branch intervention are the cleaner headline estimands | same artifacts plus rows 5.5–5.7 | ✅ supporting |
-| 8.4 | Exact-success candidate coverage at final iteration: DINO stateprobe push **8.0%**, pick **3.6%**; JEPA stateprobe contact cells **0%**. Positive physical regret persists, supporting a joint coverage-and-ranking bottleneck | `results/oracle_coverage_selection.md`, candidates from job `26505`; corrected analysis artifact dated 2026-07-14 | ✅ |
-| 8.5 | Direct TRM-style replacement/hybrid comparison on held-out contact seeds, two checkpoints and three head seeds | TRM protocol and jobs `26507--26509`; documented pooling approximation means this is not an exact reproduction | ⛔ pending |
+| 8.4 | Exact-success candidate availability in the final proxy-guided population: DINO stateprobe push **8.0%**, pick **3.6%**; JEPA stateprobe contact cells **0%**. Positive physical regret persists. This does **not** independently identify proposal failure because earlier proxy refits, the six-step horizon, and encountered snapshots jointly determine the population | `results/oracle_coverage_selection.md`, candidates from job `26505`; corrected analysis artifact dated 2026-07-14 | ✅ scoped availability result |
+| 8.5 | TRM-style replacement/hybrid comparison was executed on held-out contact seeds, two checkpoints, and three head seeds. Analyzer summaries use strict endpoint field `success_end`. The empirical result is excluded from the TMLR paper because adaptation-specific ranking/training and positive-control checks are insufficient to distinguish a method failure from an implementation/adaptation failure | `scripts/52_analyze_trm.py`, `results/trm_heldout_*`, jobs `26507--26509`; pooling approximation means this is not an exact reproduction | 🟡 artifact only; excluded from paper |
 | 8.6 | ACID-style adaptive inverse-consistency cost under learned versus oracle dynamics | ACID protocol and jobs `26510--26512`; deterministic pooled-IDM approximation because no official verifier is released | ⛔ pending |
 
 ## Optional strengtheners
@@ -126,4 +134,4 @@ did not persist the best true candidate.
 | # | Item | Status |
 |---|---|---|
 | D.3 | Imagined-rollout object-error table (baseline vs +h, cache-only, ~2 h) | optional C3 strengthener: quantifies "hallucinated grasping" along full imagined rollouts |
-| E.1 | Amortized GC-IDM control (removes the search adversary; `inverse_proposal` ckpt exists) | queued behind E0 (C5.3) |
+| E.1 | Amortized GC-IDM control (removes test-time search; `inverse_proposal` ckpt exists) | historical optional experiment |
