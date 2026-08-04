@@ -1,0 +1,1287 @@
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,tabularx,longtable,array}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage[round]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+
+% Deliberately NOT loaded: graphicx, tikz, pgfplots.
+% This document contains no figures and must compile with zero image
+% dependencies. Please keep it that way.
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\captionsetup{font=small,labelfont=bf}
+\setlist{itemsep=2pt,parsep=0pt,topsep=3pt}
+\titleformat{\paragraph}[runin]{\normalfont\bfseries}{}{0pt}{}[.]
+
+% ---------------------------------------------------------------
+% Claim-discipline macros. These exist so that the guarded phrasings
+% survive editing. See Section 8 and diagnosis/docs/CURRENT_STATUS.md.
+% Do not inline these strings by hand.
+% ---------------------------------------------------------------
+\newcommand{\testedcosts}{the tested representation-derived costs}
+\newcommand{\pocketsel}{selection into residual cost-error pockets}
+\newcommand{\groundinsuff}{grounding alone is insufficient}
+\newcommand{\scopedscale}{no favourable trend among these released checkpoints
+under this diagnostic}
+
+\newcommand{\dfield}[1]{\smallskip\noindent\textbf{#1}}
+
+\title{\textbf{Cost Geometry and Selection Failure in\\
+Latent World-Model Planning}\\[4pt]
+\large A Literature Review and Research Programme}
+
+\author{Research proposal\\ \small VAR Meta}
+\date{August 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+Latent world models are increasingly used for visual robot planning: an encoder
+maps observations to a latent, an action-conditioned predictor rolls that latent
+forward, and a sampling optimiser searches for the action sequence minimising a
+terminal cost against a goal latent. This proposal reviews the literature that a
+newcomer must read to work in this area, and reports what a completed
+diagnostic programme has established within it. The central empirical finding
+is negative and specific: on two released MetaWorld checkpoints, when every
+candidate future is made \emph{exact} by executing it in the simulator, a
+privileged simulator-state cost solves push in $64/64$ episodes while the
+released latent $L_2$ cost solves $0/64$, and a supervised state-decoding cost
+reaches at most $5/64$ despite $1.64$--$1.71$\,cm held-out decoding error. The
+defect is therefore not the predictor. Its mechanism appears only under search:
+agreement between the decoding cost and the physical reference falls from
+Spearman $0.43$--$0.55$ on initial candidate populations to $0.11$--$0.16$ after
+the optimiser refits. A ladder of repairs---better readouts, relearned adapters,
+encoder fine-tuning, ensemble pessimism, search-free control, and a
+selection-aware encoder objective---each improved its own metric and moved
+contact planning not at all.
+
+This document is written to be argued with. Section~\ref{sec:lit} is the bulk:
+it organises roughly fifty papers along four failure surfaces, tags each by the
+evidentiary weight it can bear, and marks where the literature has and has not
+settled a question. Section~\ref{sec:open} converts the surviving gaps into six
+falsifiable directions, each stated with the evidence that keeps it alive, the
+evidence that already constrains it, and the result that would end it.
+\end{abstract}
+
+\tableofcontents
+
+% ===============================================================
+\section{Introduction and problem statement}\label{sec:intro}
+% ===============================================================
+
+A visual world-model planner is a composition of four blocks. An encoder
+$E$ maps an observation to a latent $z$. An action-conditioned predictor
+$f$ maps $(z_t, a_t)$ to $z_{t+1}$. A proposal mechanism generates candidate
+action sequences. A terminal cost $c(z_H, z_g)$ scores each candidate against a
+goal, and the optimiser returns the minimiser. Success requires all four to
+work; failure of any one produces the same observable, a task that does not get
+solved.
+
+This creates at least three distinct failure sites, and aggregate metrics cannot
+separate them. The predictor may produce the wrong future. The proposal
+mechanism may never generate a good candidate. The cost may prefer a physically
+worse sequence over a better one that is present in the population. Reporting
+prediction error, or decoding accuracy, or episode success rate, leaves the
+attribution undetermined. Worse, a planner does not consume average error at
+all: it consumes an \emph{ordering} over its own candidates, and by the time it
+has refit its sampling distribution several times, those candidates are no
+longer drawn from the distribution on which the representation or the readout
+was validated.
+
+The research programme reviewed here asks a narrow version of the question:
+\emph{if every candidate future is exact, when does a representation-derived
+cost still fail to support contact-rich planning?} It answers that question for
+two released MetaWorld checkpoints by replacing the learned predictor with
+literal simulator rollout, holding the encoder, the cost family, the optimiser
+and the budget fixed. Section~\ref{sec:evidence} reports the result.
+
+\paragraph{Purpose of this document}
+This is a literature-weighted proposal with three jobs, in descending order of
+page budget. First, to be the reading map for the area: what to read, in what
+order, and---the part usually left implicit---\emph{with how much trust}.
+Second, to report what the completed work established, only to the depth needed
+to say which doors it closes. Third, to expose the remaining seams precisely
+enough that a reader can propose a method against them. Section~\ref{sec:open}
+is written as an invitation, not a commitment; every direction there carries an
+explicit kill criterion so that a reader can judge whether it is worth pursuing.
+
+\paragraph{Scope stated up front}
+The empirical claims below are scoped to two released checkpoints
+(\texttt{dino\_wm\_metaworld}, \texttt{jepa\_wm\_metaworld}), two contact tasks
+(\texttt{mw-push}, \texttt{mw-pick-place}) with \texttt{mw-reach} as a
+free-space control, one simulator, and the reported planner protocol. They are
+not claims about joint-embedding architectures in general, about all latent
+costs, or about what a differently trained encoder would do. Where the review in
+Section~\ref{sec:lit} ranges wider than the evidence, it is labelled as review.
+
+% ===============================================================
+\section{Background and formal setup}\label{sec:background}
+% ===============================================================
+
+\paragraph{Joint-embedding prediction}
+A joint-embedding predictive architecture trains a predictor to match the
+representation of a target view rather than to reconstruct
+it~\citep{lecun2022path,assran2023ijepa}. There is no decoder. This is a
+deliberate design choice---it frees the model from spending capacity on
+pixel-level detail---but it has a consequence that matters here: the latent is
+not directly inspectable, so one cannot read off what a distance in that space
+measures. Every statement in this document about ``what the cost is doing''
+therefore required building a probe and validating it separately.
+
+\paragraph{Action-conditioned prediction and planning}
+Given a frozen encoder, an action-conditioned predictor is trained so that
+$\hat{z}_{t+1} = f(z_t, a_t)$ matches the encoded next observation. Planning
+minimises a terminal cost over an action horizon $H$,
+\[
+  a_{1:H}^\star \;=\; \arg\min_{a_{1:H}} \; c\!\left(f^{H}(z_t, a_{1:H}),\; z_g\right),
+\]
+where $z_g$ is the encoding of a goal image and $c$ is Euclidean distance for
+every released baseline considered here.
+
+\paragraph{The optimiser is not a passive sampler}
+The cross-entropy method~\citep{rubinstein1997cem} and its practical descendants
+\citep{pinneri2020icem} do not draw candidates i.i.d. They sample a population,
+keep an elite fraction, \emph{refit} the sampling distribution to those elites,
+and repeat. This refitting loop is load-bearing for everything that follows.
+After several iterations the population is concentrated wherever the cost reads
+low. If the region where the cost reads low is a region where the cost is
+\emph{wrong}, the optimiser will move its own candidates into that region and
+keep them there. This is why an average error measured on a fixed held-out set
+does not bound the error the planner actually experiences, and why the phrase
+``optimizer-conditioned'' is used throughout.
+
+\paragraph{Three cost families}
+Distinguishing these three is necessary to read any table below.
+A \emph{proxy cost} is computable from the representation at deployment: latent
+$L_2$, or a supervised readout of object and hand position from frozen tokens
+(``stateprobe''). A \emph{reference cost} is computed from privileged simulator
+state; it is a positive control for the search budget, never a deployable
+method. \emph{Physical outcome} is the simulator's own task flag at the final
+environment step.
+
+\begin{table}[t]
+\centering\small
+\caption{Notation.}\label{tab:notation}
+\begin{tabularx}{\textwidth}{lY}
+\toprule
+Symbol & Meaning \\
+\midrule
+$E, f$ & Frozen encoder; action-conditioned predictor \\
+$z_t, z_g$ & Latent at time $t$; latent of the goal image \\
+$a_{1:H}$ & Candidate action sequence over planning horizon $H$ \\
+$\hat{c}(a)$ & Proxy cost: latent $L_2$, or the stateprobe readout cost \\
+$c^\star(a)$ & Reference cost from simulator state (privileged control) \\
+$\mathcal{A}$ & One candidate population at one replanning step \\
+$R_{\mathrm{sel}}$ & Within-population selection regret: $c^\star$ of the proxy's
+choice minus $\min_{a \in \mathcal{A}} c^\star(a)$ \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ===============================================================
+\section{How to read this literature: three roles, three bars}\label{sec:roles}
+% ===============================================================
+
+A large fraction of the work closest to this problem consists of 2026 arXiv
+preprints that have not been refereed. Treating them all at one level of trust
+would be a mistake in either direction: dismissing them would ignore genuine
+priority, and leaning on them would build arguments on unreviewed claims. The
+review below therefore triages every paper by \emph{why it is being read}, and
+holds each role to a different evidentiary bar.
+
+\begin{description}[leftmargin=1.4em,style=nextline]
+\item[Role (A): systems we run.] Credibility comes from the released checkpoint
+and code that we reproduce ourselves, not from the venue. A model release may be
+an unrefereed technical report and still be perfectly usable as an object of
+study. The obligation is the reverse of citation: every number such a paper
+reports must be independently verified before use.
+\item[Role (B): foundations we stand on.] These carry arguments the programme
+relies on, so they must be peer reviewed at a strong venue. They may be cited as
+established. A conceptual source that is influential but unrefereed is marked
+(B\,$\dagger$) and read as a set of assumptions rather than as evidence.
+\item[Role (C): concurrent work we delimit against.] Venue is irrelevant. These
+are read because a reviewer will ask what distinguishes this work from them, and
+because they establish priority that no later claim may ignore. They are
+\emph{never} cited as evidence for a claim of our own.
+\end{description}
+
+Of the twenty core papers in Table~\ref{tab:core}, twelve are peer reviewed at
+ICML, ICLR, NeurIPS, CVPR, TMLR, CoRL, L4DC or \emph{Management Science}; eight
+are preprints, and seven of those eight sit in role (C). The load-bearing
+conceptual arguments are therefore carried almost entirely by refereed work,
+which is the property this triage exists to make checkable.
+
+\begin{table}[p]
+\centering\footnotesize
+\caption{Core reading list, in reading order. Role per Section~\ref{sec:roles}.
+The full ledger of about fifty papers is Table~\ref{tab:ledger}.}\label{tab:core}
+\begin{tabularx}{\textwidth}{@{}c L{4.3cm} l c Y@{}}
+\toprule
+\# & Paper & Venue & Role & Why it is on the list \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{Week 1 --- foundations and the systems under audit}}\\
+1 & LeCun, Path to Autonomous MI & pos.\ paper & B\,$\dagger$ & Source of the assumption under test \\
+2 & I-JEPA & CVPR 2023 & B & Why the latent has no decoder \\
+3 & DINO-WM & ICML 2025 & A & The canonical audited stack \\
+4 & Terver et al., What Drives Success & TMLR 2026 & A & Releases the exact checkpoints used \\
+5 & V-JEPA 2 / 2-AC & tech report & A & Only action-conditioned JEPA on real robots \\
+6 & Meta-World & CoRL 2020 & B & Exact success definitions and radii \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{Week 2 --- the optimiser and why proxies break}}\\
+7 & iCEM & CoRL 2020 & B & The refitting loop is the audited object \\
+8 & TD-MPC2 & ICLR 2024 & B & Counterexample: latents trained \emph{for} control \\
+9 & Objective Mismatch in MBRL & L4DC 2020 & B & The original predictive$\neq$controllable result \\
+10 & MBPO, When to Trust Your Model & NeurIPS 2019 & B & Classical dynamics-error exploitation \\
+11 & The Optimizer's Curse & Mgmt.\ Sci.\ 2006 & B & The null hypothesis of the whole audit \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{Week 3 --- proxies under optimisation pressure}}\\
+12 & Defining Reward Hacking & NeurIPS 2022 & B & Formal vocabulary \\
+13 & Scaling Laws for RM Overoptimization & ICML 2023 & B & The curve that licenses the word \\
+14 & Goodhart's Law in RL & ICLR 2024 & B & Measurable optimisation pressure \\
+15 & Train--Test Gap for Gradient Planning & preprint & B\,$\dagger$ & A second, distinct exploitation channel \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{Week 4 --- concurrent work; read to delimit, not to trust}}\\
+16 & TRM, Beyond Euclidean Proximity & preprint & C & Closest work; same-candidate audits \\
+17 & IMWM & preprint & C & Oracle dynamics; coverage explanation \\
+18 & ACID & preprint & C & Inverse-consistency cost repair \\
+19 & RC-aux, Predictive but Not Plannable & preprint & C & Finite-horizon reachability \\
+20 & Latent Geometry Beyond Search & preprint & C & Amortisation; multi-optimiser sweep \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ===============================================================
+\section{Literature review}\label{sec:lit}
+% ===============================================================
+
+The review is organised by \emph{what is being blamed for failure}, because that
+is where a gap becomes visible to someone looking for a method. The four failure
+surfaces are defined in Table~\ref{tab:surfaces}; the role tag from
+Section~\ref{sec:roles} travels with each paper as an attribute rather than
+determining which subsection it lands in. Within each subsection, paragraphs run
+foundations (B), then systems (A), then concurrent work (C), and each subsection
+closes with a paragraph stating what the cited work does and does not license.
+
+\begin{table}[t]
+\centering\small
+\caption{The four failure surfaces. The third column is what makes the taxonomy
+usable: it states what evidence would refute attributing a failure to that
+surface.}\label{tab:surfaces}
+\begin{tabularx}{\textwidth}{@{}L{2.6cm} L{4.0cm} Y@{}}
+\toprule
+Surface & Observable signature & What refutes an attribution to it \\
+\midrule
+1. Prediction error & A physically good action is rolled out incorrectly &
+Failure persists when candidate dynamics are made exact \\
+2. Proposal / coverage & No physically good candidate ever enters the population &
+Good candidates are demonstrably present and are not chosen \\
+3. Transition realizability & Predicted intermediate transitions are inconsistent
+with their conditioning actions & Failure persists when transitions are exact by
+construction \\
+4. Cost geometry / selection & Candidates with low proxy cost have poor physical
+outcome; the gap persists or grows under search & Proxy and physical rankings
+agree on the optimiser's own realised populations \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ---------------------------------------------------------------
+\subsection{Foundations: joint-embedding prediction}\label{sec:lit-found}
+% ---------------------------------------------------------------
+
+\citet{lecun2022path} (B\,$\dagger$) is the origin of the programme's
+architecture and of the assumption it tests. The document proposes prediction in
+representation space and a planning module that minimises a learned cost through
+a world model. Read it as a set of assumptions, not as evidence: it is a position
+paper and was never refereed. The specific assumption under test in
+Section~\ref{sec:evidence} is the implicit inference from ``good for
+prediction'' to ``good for optimisation''.
+
+\citet{assran2023ijepa} (B) makes the architecture concrete: predict the
+representations of masked target blocks from a context block, with an
+exponential-moving-average target encoder and no pixel reconstruction. The
+mechanism worth carrying forward is the \emph{teacher-forced target}---the target
+encoder sees the real future---and the collapse-avoidance machinery that
+constrains what the latent geometry can be. \citet{bardes2022vicreg} (B) gives
+the explicit variance--invariance--covariance form of that constraint. Neither
+objective has a planner anywhere in the loop, which is the structural
+observation this subsection exists to establish. \citet{lejepa2025} (C) continues
+this formalisation on the training side.
+
+On the systems side, \citet{assran2025vjepa2} (A) scales video JEPA and
+post-trains an action-conditioned predictor for robot planning; it is the only
+member of this family with real-robot results, and its planning cost is again
+Euclidean distance to a goal embedding. Two cautions attach. First, the original
+release shipped with an action-normalisation defect, and the corrected
+checkpoint should be used. Second, \citet{murlabadia2026vjepa21} (C) reports that
+a dense predictive loss and deeper self-supervision yield a twenty-point
+improvement in real-robot grasping over V-JEPA 2-AC. That is a live alternative
+explanation for contact failure---improve the features rather than the
+cost---and Section~\ref{sec:threats} returns to it.
+\citet{maes2026leworldmodel} (C) trains the encoder and predictor end to end from
+pixels, which changes what ``frozen encoder'' even denotes;
+\citet{causaljepa2026,invariantjepwm2026} (C) impose object-level and
+planning-facing invariance structure at training time.
+
+\paragraph{What this licenses}
+Nothing about planning. It licenses exactly one statement: the latents used by
+these planners are shaped by predictive and invariance objectives that never see
+a planner, and no member of this family defines the cost the planner will later
+query.
+
+% ---------------------------------------------------------------
+\subsection{Latent world models as planners: the systems under audit}
+% ---------------------------------------------------------------
+
+\citet{zhou2024dinowm} (A) is the canonical stack: freeze a DINOv2 encoder,
+train only an action-conditioned predictor over patch tokens, and plan zero-shot
+with CEM against the latent $L_2$ distance to a goal \emph{image}. Three details
+matter for reading later tables---the latent is a patch-token field rather than a
+single vector, the cost is summed over tokens, and the goal is specified
+visually rather than as a state.
+
+\citet{jepawms2025} (A) is the most load-bearing citation in this document. It
+systematically ablates design choices for joint-embedding predictive world
+models and, critically, releases the exact MetaWorld checkpoints and planning
+stack audited in Section~\ref{sec:evidence}. Its planning configurations are
+$L_2$ with CEM for every baseline, which is why $L_2$ is the cost under study
+rather than an arbitrary choice. It answers what makes planning \emph{succeed};
+the present programme answers the complementary question of which block fails.
+Related latent-planning systems---\citet{sobal2025pldm} (C) on reward-free
+offline data, \citet{nwm2024} (C) on navigation, and \citet{zhang2026hwm} (C) on
+hierarchical decomposition---vary the data regime and the temporal structure
+while keeping the same terminal-distance formulation.
+
+\citet{hansen2024tdmpc2} (B) is the conceptual counterexample and should be read
+as such. Its latent is trained jointly with reward and value, that is, \emph{for
+control}, and its planner uses a learned terminal value inside MPPI. It does not
+exhibit this failure in the same form, which is evidence that cost geometry is a
+property one can train for rather than an inevitability.
+
+\citet{yu2020metaworld} (B) supplies the evaluation substrate and must be read
+for its definitions, not its breadth: success is the simulator's task flag,
+evaluated here strictly at the final environment step rather than latched at any
+step, with object-to-goal radii of $5$\,cm for push and $7$\,cm for pick-place.
+\citet{rubinstein1997cem} and \citet{pinneri2020icem} (B) define the optimiser.
+
+\paragraph{What this licenses}
+That the audited stack is the field's standard one, and that reported successes
+concentrate in free-space or saturating cells. It licenses no claim about
+joint-embedding models in general. \emph{Gap:} aggregate closed-loop success is
+essentially the only statistic these systems report. None reports
+selection-level statistics on its own candidate population, which is precisely
+the quantity Section~\ref{sec:evidence} measures.
+
+% ---------------------------------------------------------------
+\subsection{Failure surface 1: prediction error}
+% ---------------------------------------------------------------
+
+\citet{janner2019trust} (B) established that a policy optimised inside a learned
+model exploits that model's error, and that rollout length must be limited by
+model confidence. \citet{lambert2020objective} (B) is the sharper statement for
+this proposal: the objective used to train a dynamics model is not monotonically
+related to control performance, so a model that is better by likelihood can
+control worse. Everything in this document is a transposition of that argument
+from the dynamics block to the cost block.
+
+\citet{parthasarathy2025traintest} (B\,$\dagger$) identifies a second, distinct
+channel: gradient-based planners query the model through input gradients, which
+is not how it was trained, and therefore produce out-of-distribution or
+adversarial action trajectories; they repair it with train-time synthesis.
+\citet{bhamidipaty2026imperfect} (C) states the general form---imperfect world
+models are exploitable---and is the closest published work by vocabulary, so it
+must be cited explicitly rather than left implicit.
+
+\paragraph{What this licenses}
+That exploitation of \emph{dynamics} error is well established for both sampling
+and gradient planners. \emph{Gap and consequence:} every result in this cluster
+locates the defect in $f$. The audit design removes $f$ entirely by executing
+candidates in the simulator, so this surface is closed by construction and
+cannot explain the observed failure. That is the single most important reason
+the audit is set up the way it is.
+
+% ---------------------------------------------------------------
+\subsection{Failure surface 2: proposal and coverage}
+% ---------------------------------------------------------------
+
+\citet{imwm2026} (C) replaces the learned predictor with literal environment
+rollout while holding the encoder, the terminal latent-MSE cost, the CEM budget
+and the replanning cadence fixed. Two things follow, and the order matters.
+First, \emph{oracle dynamics is theirs}: no later work, including this one, may
+claim it as a novel construction. Second, their diagnosis differs from the one
+reached here. Inspecting whether any goal-reaching candidate appeared in the CEM
+population at all, they find that on their failing cells almost none did, which
+makes the binding constraint proposal coverage rather than ranking; their
+repairs are demonstration retrieval, a start--goal--action compatibility score,
+and a reliability gate.
+
+This is the principal competing explanation for the results in
+Section~\ref{sec:evidence} and cannot be dismissed by narration; it has to be
+measured on the same populations, which is why availability is reported in
+Table~\ref{tab:mechanism}. \citet{nguyen2026latentgeometry} (C) attacks the same
+surface from the opposite side by removing online search altogether in favour of
+a goal-conditioned inverse-dynamics map, matching or beating CEM in seven of
+eight settings at $100$--$130\times$ lower per-decision cost. Its sweep spans
+CEM, MPPI, iCEM and gradient planners, and stands as the field's clearest
+warning against drawing conclusions from a single optimiser.
+
+\paragraph{What this licenses}
+That coverage is a real and sometimes dominant failure mode, and that
+attributing failure to ranking requires ruling it out. \emph{Gap:} coverage and
+selection are almost never decomposed on the \emph{same} population. IMWM
+measures availability, TRM measures ranking, and no work reports both jointly
+against physical ground truth.
+
+% ---------------------------------------------------------------
+\subsection{Failure surface 3: transition realizability and action grounding}
+% ---------------------------------------------------------------
+
+\citet{acid2026} (C) argues that terminal closeness does not ensure that
+intermediate predicted transitions are realizable, and adds per-step
+inverse-dynamics cycle residuals to the planning cost with an adaptive scale,
+reporting gains across four action-conditioned world models and six tasks.
+\citet{liu2026wav} (C) decomposes verification into state plausibility and action
+reachability using a sparse inverse model and cycle consistency.
+\citet{chen2026atm} (C) builds probes on real encoded versus model-predicted
+transitions and produces a transfer matrix diagnosing whether transitions
+preserve action-identifiable semantics, together with a screening score and a
+training objective.
+
+\citet{radha2026uwmjepa} (C) is relevant for one specific mechanism, and should
+be read only for it: under a teacher-forced JEPA objective the target encoder has
+already observed the trajectory containing the action's effect, which admits an
+action-invariant solution in which the predictor matches the target without using
+the action channel; counterfactual targets restore action sensitivity. Its
+experimental setting is a small partially observed physics task, not robot
+planning, so its evidentiary weight here is low even though its mechanism claim
+is directly relevant. \citet{mirabench2026} and \citet{whatifworld2026} (C)
+provide paired-intervention and action-following benchmarks for video world
+models; \citet{xia2023neuralcausal} (B) is the peer-reviewed anchor for
+counterfactual identification vocabulary.
+
+\paragraph{What this licenses}
+That action identifiability, counterfactual targets, inverse-consistency
+verification, and paired physical interventions are all already published. No
+priority claim survives in this cluster, which is the direct reason the present
+programme retired its own action-grounding framing
+(Section~\ref{sec:evidence-observational}). \emph{Gap:} every repair here is
+measured under \emph{learned} dynamics, so an observed gain cannot be attributed
+to the realizability surface rather than to ordinary dynamics-error reduction.
+The discriminating experiment---the same repair under exact dynamics---is unrun
+in the literature, and is direction D5.
+
+% ---------------------------------------------------------------
+\subsection{Failure surface 4: cost geometry and selection under
+optimisation}\label{sec:lit-cost}
+% ---------------------------------------------------------------
+
+This is the surface the completed work lands on, and the longest subsection.
+
+\paragraph{(a) Cost-geometry repairs in latent planning}
+\citet{trm2026} (C) is the closest published work and must be represented
+accurately, because it is easy to overstate the remaining novelty. Holding
+encoder, dynamics, sampler, optimiser, budget and evaluation fixed, it replaces
+or hybridises only the terminal cost, and reports: a raw latent cost that
+misranks candidates despite nearly perfect linear decodability of task
+coordinates; a true task-state cost reaching full success under identical
+settings; a solver-stress control in which much more search fails to rescue the
+wrong objective; same-candidate selection audits comparing cost orderings on
+identical candidates; and a subspace intervention showing that the useful
+coordinate rowspace accounts for under one percent of raw latent MSE. It also
+deploys the repaired metric inside full CEM. Consequently, any statement that
+prior work reports only aggregate success, or never audits candidate selection,
+or never tests a repair under search, is false. \citet{rcaux2026} (C) makes the
+adjacent argument that a candidate can be close in latent space yet unreachable
+within a finite horizon, and adds a budget-conditioned reachability head.
+\citet{straightening2026} (C) reshapes the representation directly so that
+Euclidean latent distance better approximates geodesic distance, and
+\citet{kim2026latentstate} (C) frames the general problem as latent state design
+under sufficiency constraints---which of the two is the right frame is an open
+question this proposal returns to in D3.
+
+\paragraph{(b) Selection under noisy proxies}
+This is the peer-reviewed backbone, and the most commonly skipped reading.
+\citet{smith2006optimizer} (B) is the null hypothesis of the entire audit:
+selecting the maximum over noisy estimates guarantees that the chosen item's
+true value is worse than its estimate, \emph{even when every estimate is
+unbiased}. It follows that a demonstration of proxy misranking means nothing
+unless it exceeds a matched-noise baseline---which is why
+Table~\ref{tab:mechanism} reports a residual-matched permutation null rather
+than a raw regret. \citet{skalse2022defining} (B) formalises when improving a
+proxy reduces true performance. \citet{gao2023overopt} (B) measures proxy against
+gold reward as optimisation pressure increases and exhibits the characteristic
+rise-then-fall; that curve shape is what licenses the word
+\emph{overoptimisation}, and in its absence this document says \pocketsel{}
+instead. \citet{karwowski2024goodhart} (B) supplies a measurable definition of
+optimisation pressure, which is the abscissa of any budget sweep.
+
+\paragraph{(c) Inference-time proxy exploitation elsewhere}
+\citet{inferencetimehacking2025} and \citet{gamingverifiers2026} (C) report the
+same shape for best-of-$n$ and verifier-guided selection in language models.
+The analogy is therefore established and ``Goodhart under search'' is not itself
+a novel observation.
+
+\paragraph{What this licenses}
+The vocabulary---proxy, reference, optimisation pressure---and a methodological
+requirement: no misranking claim without a matched null. \emph{Gap:} the Goodhart
+literature never has physical ground truth for the selected candidate, and the
+latent-planning literature never has an optimiser-independent truth channel. The
+intersection, exact candidate dynamics together with simulator-state truth on the
+optimiser's own realised population, is the seam the completed work occupies.
+
+% ---------------------------------------------------------------
+\subsection{Evaluation protocol: what counts as evidence}
+% ---------------------------------------------------------------
+
+\citet{yu2026wmeval} (C) argues that predictive quality should be connected to
+downstream decision quality rather than reported in isolation.
+\citet{hiddenfailure2026} (C) identifies a protocol confound this programme must
+rule out: terminal-at-horizon scoring can be misaligned with prefix execution
+under receding-horizon control, so planning horizon, executed prefix,
+terminal versus running score, and replanning cadence must all be reported.
+\citet{wmsurvey2026} (C) provides the wider taxonomy for orientation.
+
+\paragraph{What this licenses}
+That protocol details are first-class. \emph{Gap:} no shared protocol reports
+horizon, executed prefix, coverage, selection regret and rank correlation
+together, which makes results across these papers formally incomparable. That
+absence is itself proposable, as D6.
+
+% ---------------------------------------------------------------
+\subsection{Synthesis: the map and the seams}\label{sec:lit-synthesis}
+% ---------------------------------------------------------------
+
+Table~\ref{tab:matrix} places the work that makes a failure claim against the
+four surfaces. The \emph{Dynamics} column is the one to read carefully: it makes
+visible that almost every proposed repair is evaluated under learned dynamics,
+so its reported gain cannot be attributed to the surface it names.
+
+\begin{table}[t]
+\centering\footnotesize
+\caption{Failure-surface matrix. $\bullet$ primary claim, $\circ$ secondary.
+``Dynamics'' is the dynamics under which the paper's own evidence was
+collected.}\label{tab:matrix}
+\begin{tabularx}{\textwidth}{@{}L{3.5cm} c cccc l Y@{}}
+\toprule
+Work & Role & S1 & S2 & S3 & S4 & Dynamics & Diagnosis or repair \\
+\midrule
+MBPO & B & $\bullet$ & & & & learned & repair (rollout limit) \\
+Objective mismatch & B & $\bullet$ & & & $\circ$ & learned & diagnosis \\
+Train--test gap & B\,$\dagger$ & $\bullet$ & & & & learned & repair (train-time synth.) \\
+Imperfect WMs exploitable & C & $\bullet$ & & & $\circ$ & learned & diagnosis \\
+IMWM & C & & $\bullet$ & & $\circ$ & \textbf{oracle} & repair (retrieval, gate) \\
+Latent Geometry & C & & $\bullet$ & & & learned & repair (amortisation) \\
+ACID & C & & & $\bullet$ & $\circ$ & learned & repair (cost term) \\
+WAV & C & & & $\bullet$ & & learned & repair (verifier) \\
+ATM & C & & & $\bullet$ & & learned & diagnosis + objective \\
+UWM-JEPA & C & & & $\bullet$ & & learned & objective (counterfactual) \\
+TRM & C & & $\circ$ & & $\bullet$ & learned & repair (terminal metric) \\
+RC-aux & C & & & $\circ$ & $\bullet$ & learned & repair (reachability) \\
+Temporal straightening & C & & & & $\bullet$ & learned & repair (representation) \\
+Optimizer's curse & B & & & & $\bullet$ & n/a & theory (null) \\
+Goodhart in RL / overopt. & B & & & & $\bullet$ & n/a & theory + measurement \\
+\textbf{This programme} & --- & --- & $\circ$ & --- & $\bullet$ & \textbf{exact} & diagnosis \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Five seams follow from the map, each pointing to a direction in
+Section~\ref{sec:open}.
+
+\begin{enumerate}[label=S\arabic*.,leftmargin=2.4em]
+\item No released planning system reports selection-level statistics on its own
+candidate population; success rate is the only published statistic. $\rightarrow$ D6
+\item Coverage and selection are never decomposed on the same population against
+physical truth. $\rightarrow$ D6
+\item Every realizability repair is evaluated under learned dynamics, so its
+attribution is undetermined. $\rightarrow$ D5
+\item Cost repairs are trained on logged or fixed candidate distributions, not on
+the distribution the optimiser induces after refitting. $\rightarrow$ D1
+\item Representation objectives in this family optimise prediction or invariance;
+none optimises \emph{decision equivalence}---preservation of the argmin over a
+goal family. $\rightarrow$ D3
+\end{enumerate}
+
+% ===============================================================
+\section{Evidence to date}\label{sec:evidence}
+% ===============================================================
+
+This section is deliberately compact and table-driven. Its purpose is to say
+which doors the completed work closes, not to re-argue the submission.
+
+\paragraph{Status discipline}
+Rows are labelled by evidentiary status. \emph{Paper} denotes evidence carried by
+the submission of record. \emph{Supporting} denotes measured, reproducible
+evidence held at arm's length because of a carried caveat. \emph{Historical}
+denotes a superseded framing retained for provenance. Supporting and historical
+evidence may motivate a direction in Section~\ref{sec:open}; neither may carry a
+headline claim.
+
+\begin{table}[t]
+\centering\small
+\caption{Fixed audit protocol. Held identical across every arm of every
+comparison in this section.}\label{tab:protocol}
+\begin{tabularx}{\textwidth}{@{}L{5cm} Y@{}}
+\toprule
+Component & Setting \\
+\midrule
+Checkpoints & \texttt{dino\_wm\_metaworld}, \texttt{jepa\_wm\_metaworld}, released \\
+Tasks & \texttt{mw-push}, \texttt{mw-pick-place}; \texttt{mw-reach} as free-space control \\
+Goal specification & Final frame of the scripted expert trajectory \\
+Success & Simulator task flag at the final environment step (not any-step latched) \\
+Success radii & $5$\,cm push, $7$\,cm pick-place \\
+Planner & Receding-horizon CEM, $100$ candidates, top-$10\%$ elites, $6$ refit
+iterations, horizon $H=6$ \\
+Candidate dynamics & Exact: restore the MuJoCo snapshot, execute, render, encode \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ---------------------------------------------------------------
+\subsection{The cost is the block that flips the outcome}
+% ---------------------------------------------------------------
+
+The oracle ladder swaps exactly one component per rung, holding dynamics,
+planner, budget and success radius fixed (Table~\ref{tab:ladder}). It rules out,
+in order: the predictor, the planner and budget, the cost \emph{formula}, and
+static readout precision. A cost computed from true simulator state solves push;
+every cost computed from the frozen representation does not, including one that
+reproduces the successful cost's exact functional form using probe readouts.
+
+\begin{table}[t]
+\centering\small
+\caption{Oracle ladder (\texttt{dino\_wm\_metaworld}, 16 episodes per cell,
+8 where marked). Every rung shares the same perfect dynamics, planner, budget
+and radii; only the cost changes. \emph{Status: supporting.}}\label{tab:ladder}
+\begin{tabularx}{\textwidth}{@{}L{3.6cm} L{2.3cm} Y cc@{}}
+\toprule
+Rung & Dynamics & Cost & Push & Pick \\
+\midrule
+State oracle & exact & true simulator state & \textbf{16/16} & 11/16 \\
+Latent oracle $L_2$ & exact & $\lVert z_{\mathrm{fin}} - z_g \rVert^2$ & 0/16 & 0/16 \\
+Latent oracle \texttt{gobj} & exact & learned object head on latents & 0/8 & 0/8 \\
+Latent oracle \texttt{metric} & exact & learned metric $d_\theta(z_{\mathrm{fin}}, z_g)$ & 0/8 & 0/8 \\
+Latent oracle stateprobe & exact & state-oracle form, probe readouts & 2/16 & 0/16 \\
+\quad + off-policy-robust probe & exact & same, probes robustified & 1/16 & 0/16 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Table~\ref{tab:terminal} is the same comparison at the submission's sample size
+and seed discipline.
+
+\begin{table}[t]
+\centering\small
+\caption{Terminal-cost comparison under exact candidate dynamics. Fresh paired
+environment seeds $30000$--$30063$, strict episode-end success. The reference
+row is a privileged positive control for the search budget, \emph{not} a
+deployable method. \emph{Status: paper.}}\label{tab:terminal}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Cost & DINO push & DINO pick & JEPA push & JEPA pick \\
+\midrule
+Simulator-state reference & 64/64 & 49/64 & 64/64 & 49/64 \\
+Latent $L_2$ & 0/64 & 0/64 & 0/64 & 0/64 \\
+Stateprobe & 5/64 & 0/64 & 1/64 & 1/64 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+This comparison establishes that learned-dynamics error is \emph{not necessary}
+for failure in this harness. It does not isolate an encoder defect, and it is
+not evidence about any cost outside those tested.
+
+% ---------------------------------------------------------------
+\subsection{The mechanism appears only under search}
+% ---------------------------------------------------------------
+
+The stateprobe cost is the interpretable arm, and its decoding is good: object
+coordinate RMSE of $1.64$--$1.71$\,cm on held-out expert trajectories, well
+inside the $5$\,cm success radius. Yet it plans at $5/64$ at best. The
+resolution is in Table~\ref{tab:mechanism}: agreement with the physical
+reference is moderate on initial populations and collapses on the populations
+the optimiser itself produces after refitting.
+
+\begin{table}[t]
+\centering\small
+\caption{Mechanism estimands. \textbf{Stateprobe only}---latent $L_2$ is
+supported by the end-to-end comparison in Table~\ref{tab:terminal}, not by this
+same-population audit. Ranges span the four model$\times$task cells. Uncertainty
+is clustered over 16 environment seeds, which is not uncertainty over checkpoint
+training seeds. \emph{Status: paper.}}\label{tab:mechanism}
+\begin{tabularx}{\textwidth}{@{}L{5.4cm} l l Y@{}}
+\toprule
+Estimand & Value & Comparison & Reading \\
+\midrule
+Held-out object decode RMSE & 1.64--1.71\,cm & --- & inside the 5\,cm radius \\
+Held-out hand decode RMSE & 3.75--4.31\,cm & --- & the weaker readout \\
+Rank corr.\ (Spearman), initial pop. & 0.43--0.55 & --- & moderate agreement \\
+Rank corr., final proxy-guided pop. & 0.11--0.16 & --- & agreement collapses \\
+Reference top-10 recall, initial & 0.19--0.26 & --- & --- \\
+Reference top-10 recall, final & 0.07--0.10 & --- & --- \\
+Within-population selection regret & 2.05--2.48\,cm & null 1.07--1.15\,cm &
+excess 0.91--1.36\,cm, all CIs $>0$ \\
+Refitting branch contrast & 1.51--2.01\,cm worse & --- & 8/8 seeds, sign test $p=0.0078$ \\
+Exact-success availability, final pop. & 8.0 / 3.6 / 0 / 0\,\% & --- & sparse; see caveat \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Two readings must be resisted. The selection-regret row is only meaningful
+against the residual-matched permutation null, because selecting the minimum of
+noisy estimates degrades true value on its own~\citep{smith2006optimizer}; the
+reported quantity is the \emph{excess} over that null. And the availability row
+is measured after prior proxy refits, at $H=6$, at encountered snapshots, so it
+is properly described as sparse exact-success availability under proxy-guided
+search, not as a proposal-coverage failure in the sense
+of~\citet{imwm2026}.
+
+% ---------------------------------------------------------------
+\subsection{The negative-result ledger}\label{sec:evidence-nulls}
+% ---------------------------------------------------------------
+
+Table~\ref{tab:nulls} is the most useful table in this document for anyone
+looking for a direction. Nine interventions were run in the same harness. Every
+one improved the quantity it targeted. None moved contact planning outside the
+$0$--$2/16$ band of the frozen baseline.
+
+\begin{table}[p]
+\centering\footnotesize
+\caption{Negative-result ledger. All contact-task planning under exact dynamics
+unless noted. The recurring signature---the targeted metric improves, planning
+does not---is the reason Section~\ref{sec:open} is organised around decision
+relevance rather than around fidelity.}\label{tab:nulls}
+\begin{tabularx}{\textwidth}{@{}L{3.5cm} L{4.4cm} L{2.6cm} l Y@{}}
+\toprule
+Intervention & What it improved & Planning outcome & Status & Conclusion \\
+\midrule
+Frozen post-hoc cost family (\texttt{gobj}, learned metric, stateprobe) &
+various; all match or beat $L_2$ offline & 0--2/16 & supporting &
+No cost computed post hoc on the frozen encoder crossed contact success \\
+Off-policy-robust probe & off-policy object decode 78\%\,$\rightarrow$\,91.5\%
+$<5$\,cm, median 2.0\,cm & 1/16 push & supporting &
+A real, measured readout fix transferred zero planning success \\
+Relearned representation adapter $\varphi$ & decode median 6.9\,cm & 1/16 push &
+supporting & Relearning the readout end to end did not help either \\
+Encoder LoRA $+\ \varphi$, 5 seeds & grounding 94--100\%\,$<5$\,cm &
+$\{5,0,2,1,1\}/16$, mean 1.8, CI [0, 3.7] & supporting &
+Inside the frozen baseline band; the single 5/16 is seed variance \\
+Ensemble disagreement penalty, $\lambda\in\{0,0.5,1,2\}$ & penalty is active
+($\lambda{=}2 \neq \lambda{=}0$) & $\{2,1,2,1\}/16$ & supporting &
+Standard pessimism fails: seeds share the frozen base's blind spot \\
+Search-free amortised control (GC-IDM) & removes the optimiser entirely &
+null; object does not move & supporting &
+Removing search is not sufficient either \\
+Grounded dynamics channel ($0.5$M params) & counterfactual tracking corr
+$+0.682$ / $+0.702$; boundary blindness $1.323 \rightarrow 0.660$; cost surface
+$+0.089$ [$+0.022$, $+0.162$] & \textbf{0} successes flipped & historical &
+The cleanest instance of grounding$\uparrow$ $\not\rightarrow$ planning$\uparrow$ \\
+Counterfactual predictor objective (offline) & DINO: CRA
+$0.036 \rightarrow 0.233$, action error $1.492 \rightarrow 1.085$ &
+not evaluated closed-loop & historical &
+JEPA-WM mixed (AE $1.337 \rightarrow 1.344$), blocking a general claim \\
+Selection-aware encoder sprint, 4 arms $\times$ 3 seeds & validation selection
+regret $0.0020$--$0.0069$; reach preserved 14--16/16 &
+tail $[0,0,0]$; regression $[1,0,2]$; pairwise $[5,0,0]$ & supporting &
+Verdict \texttt{STOP\_METHOD\_}\allowbreak\texttt{DIRECTION}; see D1 for the surviving thread \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ---------------------------------------------------------------
+\subsection{Observational context, held at arm's length}\label{sec:evidence-observational}
+% ---------------------------------------------------------------
+
+Two further result sets are reported here because they shaped the programme's
+direction, and are explicitly \emph{not} headline claims
+(Table~\ref{tab:observational}). The earlier framing of this project was an
+action-grounding diagnostic built on counterfactual ranking accuracy and a
+boundary-blindness metric. That framing was retired for two reasons: concurrent
+work published the diagnostic idea independently~\citep{chen2026atm,
+radha2026uwmjepa}, and, more decisively, the programme's own evidence showed
+that repairing grounding does not repair planning
+(Table~\ref{tab:nulls}). The correct summary is \groundinsuff{}---not that
+grounding is unnecessary, and not that it is necessary.
+
+\begin{table}[t]
+\centering\small
+\caption{Observational results. The third column states the exact scope limit
+that keeps each out of the headline. \emph{Status: supporting /
+historical.}}\label{tab:observational}
+\begin{tabularx}{\textwidth}{@{}L{4.2cm} L{4.2cm} Y@{}}
+\toprule
+Observation & Value & Why it is not a headline claim \\
+\midrule
+Encoder scale, 22M\,/\,300M\,/\,1B\,/\,1B-OSS & effect-conditioned CRA
+$0.055$\,/\,$0.045$\,/\,$0.035$\,/\,$0.033$ in contact against 16-way chance
+$0.0625$; boundary blindness $>0$ in every cell & Each model defines its own
+latent effect mask, so scores are not strictly comparable across families. The
+safe statement is \scopedscale{} \\
+Planner endpoint control, DINO push, stateprobe & CEM 1/16, MPPI 0/16, random
+shooting 2/16; reach controls 16/16, 13/16, 6/16 & An endpoint control, not a
+mechanism replication. The same-population and refitting mechanisms were tested
+only for CEM \\
+Free-space control, \texttt{mw-reach}, latent $L_2$ & 6/16 $=37.5\%$
+[18.5, 61.4] & Inside the published DINO-WM CEM-$L_2$ figure of
+$44.8 \pm 8.9$. This supersedes an earlier $94\%$ obtained with an any-step
+success latch, which is retracted \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ===============================================================
+\section{Synthesis: which doors are closed}\label{sec:synthesis}
+% ===============================================================
+
+Table~\ref{tab:doors} is the hinge of this document. Closures come in three
+kinds, and conflating them is the most common way to over-read a negative
+result. A closure \emph{by construction} is permanent within this harness: the
+design removed the mechanism. A closure \emph{empirical at tested scale} means
+the intervention was run and did not work at the sample sizes and budgets used;
+it constrains but does not eliminate the direction. \emph{Unresolved} means the
+question was not addressed and remains fully open.
+
+\begin{table}[t]
+\centering\footnotesize
+\caption{Evidence, the door it closes, and what it leaves open.}\label{tab:doors}
+\begin{tabularx}{\textwidth}{@{}L{3.9cm} L{4.0cm} L{2.5cm} Y@{}}
+\toprule
+Evidence & Door closed & Closure type & Leaves open \\
+\midrule
+Exact candidate dynamics, still 0/64 & Learned-dynamics error as a
+\emph{necessary} cause & construction & Everything on surfaces 2 and 4 \\
+Reference cost 64/64 at same budget & Planner, budget and radii as the
+constraint & construction & Which cost is learnable (D1, D3) \\
+Stateprobe reproduces the reference cost's form, still $\le5/64$ & The cost
+\emph{formula} as the defect & construction & The readout composition (D1) \\
+Excess regret over matched null; branch contrast 8/8 seeds & Pure
+optimizer's-curse explanation & empirical & Generality across optimisers (D6) \\
+Robust probe 91.5\% yet 1/16 & Off-policy readout precision as the binding
+constraint & empirical & Objectives that are not readout-precision (D1, D3) \\
+Encoder LoRA inside frozen band & Light encoder fine-tuning with a grounding
+objective & empirical at 5 seeds & Encoder training with a \emph{selection}
+objective at scale (D1) \\
+Ensemble $\lambda$ sweep flat & Naive disagreement pessimism & empirical &
+Diversity that does not share a frozen base (D1) \\
+Amortised control null & ``Just remove the search'' & empirical &
+Hierarchical or subgoal-structured control (D4) \\
+Selection-sprint STOP & Scalar selection-regret regression on the encoder tail &
+empirical at pilot scale & Group-relative ranking objectives (D1) \\
+Endpoint-only planner control & --- & unresolved & Mechanism generality across
+optimisers (D6) \\
+Two checkpoints, one family style & --- & unresolved & Dense-feature models
+(Section~\ref{sec:threats}), second family (D6) \\
+Availability confounded by prior refits & --- & unresolved &
+Coverage/selection decomposition (D6) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The pattern across Table~\ref{tab:nulls} is worth stating plainly, because it is
+the strongest signal the programme produced. Nine interventions improved
+decoding accuracy, counterfactual tracking, grounding, boundary blindness, cost
+surface quality, or validation selection regret. Planning moved in none of them.
+Every one of those quantities is a measure of \emph{fidelity}---how well some
+learned quantity matches a physical one on a distribution chosen by the
+experimenter. None is a measure of \emph{decision equivalence}---whether the
+induced ordering preserves the right choice on the distribution the optimiser
+actually visits. That gap is what Section~\ref{sec:open} is organised around.
+
+% ===============================================================
+\section{Open research directions}\label{sec:open}
+% ===============================================================
+
+Six directions. Each carries a mandatory \textbf{What already constrains it}
+field: if nothing constrains a direction, it is a wish rather than a direction,
+and it does not belong here. Table~\ref{tab:directions} is the compressed index.
+
+\subsection*{D1 --- Group-relative selection objectives}
+
+\dfield{Hypothesis.} A cost trained to preserve the \emph{ordering} of
+candidates within the optimiser's own populations, rather than to regress their
+values, crosses contact success where value-fidelity objectives do not.
+
+\dfield{What opens it.} The cost is the only block whose replacement flips the
+outcome (Table~\ref{tab:terminal}: $64/64$ versus $0/64$ at identical budget).
+
+\dfield{What already constrains it.} The selection-aware encoder sprint already
+ran four arms at pilot scale and returned \texttt{STOP\_METHOD\_DIRECTION}. The
+scalar softmin selection-regret objective gave push $[0,0,0]/16$; direct
+regression to true cost gave $[1,0,2]/16$. Reach was preserved at 14--16/16
+across arms, so the failure is not lost capacity. The one thread that survives
+is narrow but real: the \emph{pairwise ranking} arm produced both the best
+validation selection regret ($0.0020$ versus $0.0069$ for regression) and the
+only non-zero seed ($5/16$).
+
+\dfield{Falsifiable prediction.} A pairwise or listwise objective trained on at
+least $5\times$ the mined populations reaches $\ge 8/16$ push in $\ge 3/3$
+training seeds while preserving reach $\ge 13/16$.
+
+\dfield{Minimal decisive experiment.} Four arms---pairwise, listwise softmin,
+regression control, frozen control---on \texttt{dino\_wm\_metaworld} push, with
+trainable capacity held identical across arms, disjoint mining and evaluation
+episodes, and the primary readout reported per training seed.
+
+\dfield{Kill criterion.} Pairwise indistinguishable from regression at $5\times$
+data, or an apparent gain carried by a single seed.
+
+\subsection*{D2 --- The predictor axis, evaluated at the planning level}
+
+\dfield{Hypothesis.} A counterfactual-target predictor objective, which repairs
+action sensitivity offline, changes closed-loop contact success under
+\emph{learned} dynamics.
+
+\dfield{What opens it.} The offline gains on DINO-WM were substantial (CRA
+$0.036 \rightarrow 0.233$; action error $1.492 \rightarrow 1.085$), and the
+predictor axis was bypassed by construction in the oracle ladder, so it is
+untested at the planning level.
+
+\dfield{What already constrains it.} The same objective was mixed on JEPA-WM
+(action error $1.337 \rightarrow 1.344$), which blocks a general method claim.
+The objective family is also already published~\citep{radha2026uwmjepa,
+chen2026atm}, so any contribution here is the closed-loop evaluation, not the
+objective.
+
+\dfield{Falsifiable prediction.} Closed-loop contact success changes by
+$\ge 4/16$ on at least one checkpoint.
+
+\dfield{Kill criterion.} Offline metrics improve while planning stays inside the
+$0$--$2/16$ band on both checkpoints. Note that this outcome is publishable in
+its own right: it would be the tenth entry in Table~\ref{tab:nulls} and would
+close the predictor axis as firmly as the cost axis is now closed.
+
+\subsection*{D3 --- Decision-equivalent representation objectives}
+
+\dfield{Hypothesis.} The missing constraint is not fidelity but decision
+equivalence: a representation should be trained so that the induced cost
+preserves the \emph{argmin} over a goal family, discarding whatever the decision
+does not use.
+
+\dfield{What opens it.} The signature across Table~\ref{tab:nulls}---nine
+fidelity improvements, zero planning improvements. The literature anchor is
+\citet{kim2026latentstate}, which frames world-model design as latent state
+choice under sufficiency constraints, and \citet{straightening2026}, which
+reshapes geometry so Euclidean latent distance approximates the quantity
+planning actually needs.
+
+\dfield{What already constrains it.} D1's sprint is a weak instance of this idea
+applied at the encoder tail, and it stopped. Any stronger version must explain
+why it is not simply that experiment with more parameters. The concept is also
+close to what TD-MPC2~\citep{hansen2024tdmpc2} already achieves by training the
+latent jointly with value, so the novelty must be argued in the goal-conditioned,
+reward-free setting rather than assumed.
+
+\dfield{Falsifiable prediction.} An explicit decision-equivalence objective
+preserves the reference-optimal choice on $\ge 95\%$ of held-out decision points
+where a value-fidelity objective at matched capacity preserves it on
+substantially fewer, and this transfers to $\ge 8/16$ contact success.
+
+\dfield{Kill criterion.} Decision-point preservation improves while contact
+success stays in the frozen band---which would make decision equivalence the
+tenth fidelity metric to dissociate from planning.
+
+\subsection*{D4 --- Hierarchy and subgoals rather than flat amortisation}
+
+\dfield{Hypothesis.} A two-level decomposition with learned subgoals crosses
+contact success where both flat CEM and flat amortised control fail, because
+each level faces a shorter-horizon cost with less room to be exploited.
+
+\dfield{What opens it.} \citet{nguyen2026latentgeometry} matched CEM in seven of
+eight settings at $100$--$130\times$ lower cost, and \citet{zhang2026hwm}
+demonstrates hierarchical latent planning in this exact model family.
+
+\dfield{What already constrains it.} The programme's own amortised control
+experiment is a null---the object never moves---so removing search alone does
+not cross the wall. A hierarchy that inherits the same terminal-cost geometry at
+every level has no obvious reason to behave differently.
+
+\dfield{Falsifiable prediction.} $\ge 8/16$ push where flat CEM and flat GC-IDM
+both sit at $0$--$2/16$.
+
+\dfield{Kill criterion.} Subgoal decomposition stays inside the frozen band,
+which would localise the defect to the cost at every level of the hierarchy---a
+strong result either way.
+
+\subsection*{D5 --- The missing discriminating experiment: repairs under exact dynamics}
+
+\dfield{Hypothesis.} Repairs that target transition realizability lose most of
+their reported gain when candidate dynamics are made exact, because they are in
+fact repairing dynamics error.
+
+\dfield{What opens it.} The \emph{Dynamics} column of Table~\ref{tab:matrix}:
+ACID, WAV, ATM and RC-aux all report gains under learned dynamics only. The
+experiment that separates the two attributions has not been run by anyone.
+
+\dfield{What already constrains it.} The programme's own attempt at a
+concurrent-method adaptation was excluded from the submission precisely because
+its null lacked adaptation-specific positive controls. A null here is
+uninterpretable without first demonstrating that the reimplementation reproduces
+the original paper's gain under \emph{learned} dynamics. That positive control is
+a prerequisite, not an optional extra.
+
+\dfield{Falsifiable prediction.} At least one realizability repair loses
+$\ge 80\%$ of its reported gain under exact dynamics.
+
+\dfield{Kill criterion.} A repair survives exact dynamics. This is the single
+most valuable counterexample to the programme's thesis and must be reported as
+prominently as a confirmation.
+
+\subsection*{D6 --- An optimizer-conditioned evaluation protocol}
+
+\dfield{Hypothesis.} The selection-regret-beyond-null signature is a general
+property of representation-derived costs under selection pressure, not a CEM
+pathology, and can be standardised into a protocol that makes results across
+this literature comparable.
+
+\dfield{What opens it.} Seams S1--S3: no shared protocol reports horizon,
+executed prefix, coverage, selection regret and rank correlation together, so
+results across these papers are formally incomparable.
+
+\dfield{What already constrains it.} The programme's own planner control is an
+\emph{endpoint} control (CEM 1/16, MPPI 0/16, random shooting 2/16) that
+compares outcomes, not mechanisms. Mechanism generality across optimisers is
+genuinely unestablished, and single-checkpoint conclusions are exactly what this
+literature warns against.
+
+\dfield{Falsifiable prediction.} The signature replicates in $\ge 2$ non-CEM
+optimisers and $\ge 2$ checkpoint families, with the coverage/selection
+decomposition computed on identical populations.
+
+\dfield{Kill criterion.} The signature is CEM-specific, which reframes the
+finding as a CEM pathology and must be stated as such.
+
+\begin{table}[t]
+\centering\footnotesize
+\caption{Directions with pre-registered gates.}\label{tab:directions}
+\begin{tabularx}{\textwidth}{@{}c L{3.4cm} Y L{3.4cm}@{}}
+\toprule
+D\# & Direction & GO criterion & Prior constraint \\
+\midrule
+D1 & Group-relative selection objectives & $\ge 8/16$ push in 3/3 seeds, reach $\ge13/16$ & Sprint STOP; only pairwise survived \\
+D2 & Counterfactual predictor, closed loop & $\ge 4/16$ change on one checkpoint & JEPA-WM mixed offline \\
+D3 & Decision-equivalent representations & $\ge 95\%$ decision preservation \emph{and} $\ge 8/16$ & D1 is a weak instance and stopped \\
+D4 & Hierarchical subgoal control & $\ge 8/16$ push & Flat amortised control is null \\
+D5 & Repairs under exact dynamics & $\ge 80\%$ gain loss, with learned-dynamics positive control & Prior adaptation null was uninterpretable \\
+D6 & Optimizer-conditioned protocol & Replication in $\ge2$ optimisers, $\ge2$ families & Existing control is endpoint-only \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{Anti-directions}
+Three things the evidence says not to attempt again in this harness. First,
+post-hoc cost repair on the frozen encoder: six variants, all inside
+$0$--$2/16$. Second, naive ensemble-disagreement pessimism: the standard
+model-based remedy is flat here because ensemble members share the frozen base's
+blind spot, so disagreement stays low exactly where the cost is wrong. Third,
+improving decoding accuracy as a proxy target: the off-policy-robust probe took
+object decoding from $78\%$ to $91.5\%$ below $5$\,cm and transferred zero
+planning success.
+
+% ===============================================================
+\section{Threats to validity and claim discipline}\label{sec:threats}
+% ===============================================================
+
+\paragraph{The strongest alternative explanation}
+\citet{murlabadia2026vjepa21} reports that dense predictive features improve
+real-robot grasping by twenty points over the previous generation of the same
+model family. If contact failure is caused by insufficient spatial density in
+the frozen features rather than by cost geometry, then the correct intervention
+is a better encoder, and the audit would be measuring a property of two
+older released checkpoints rather than of latent planning. This programme cannot
+currently distinguish the two, which is why every scale statement is written as
+\scopedscale{}. Testing a dense-feature checkpoint through the same audit is the
+highest-value single extension available.
+
+\paragraph{Other limits}
+Two checkpoints from one design lineage; one simulator; one task family;
+uncertainty clustered over environment seeds, which is not uncertainty over
+checkpoint training seeds; a privileged reference cost that is a control and not
+a method; and a literature base in which the closest works are unrefereed 2026
+preprints whose reported numbers have not been independently reproduced here.
+
+\begin{table}[t]
+\centering\small
+\caption{Claim discipline. These are the project's writing rules, reproduced so
+that a reader can hold this document to them.}\label{tab:discipline}
+\begin{tabularx}{\textwidth}{@{}L{5.2cm} Y@{}}
+\toprule
+Tempting phrasing & Required wording, and why \\
+\midrule
+``Grounding is necessary'' & \groundinsuff{}. Repairing grounding flipped zero
+successes, which bounds sufficiency, not necessity \\
+``All latent costs fail'' & \testedcosts{}. Only a finite family was tested \\
+``The planner exploits model error'' & Candidate dynamics are exact in the
+headline audit; the supported mechanism is proxy misranking under selection and
+refitting \\
+``Encoder exploitation'' & The stateprobe measures the
+representation--readout--cost \emph{composition}; no unique attribution to the
+encoder is available \\
+``Overoptimisation'' & \pocketsel{}, unless a powered curve shows proxy
+improving while physical outcome degrades~\citep{gao2023overopt} \\
+``Coverage failure'' & Sparse exact-success availability under proxy-guided
+search; the measurement is confounded by prior refits and horizon \\
+``Scale does not fix contact'' & \scopedscale{} \\
+``First oracle-dynamics study'' & \citet{imwm2026} did it first \\
+``First selection audit'' & \citet{trm2026} audits candidate selection and
+deploys a repaired cost inside CEM \\
+Generalising mechanism across planners & The endpoint control compares outcomes,
+not mechanisms; the mechanism was tested only for CEM \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ===============================================================
+\section{Programme, deliverables and gates}\label{sec:timeline}
+% ===============================================================
+
+\begin{table}[h]
+\centering\small
+\caption{Indicative programme. Each stage carries a stated fallback so that a
+failed gate produces a result rather than a restart.}\label{tab:timeline}
+\begin{tabularx}{\textwidth}{@{}c L{4.2cm} L{3.6cm} Y@{}}
+\toprule
+Stage & Workstream & Deliverable & Fallback if the gate fails \\
+\midrule
+1 & D6 protocol + second checkpoint family & Replication report & Finding is
+scoped to CEM and reported as such \\
+2 & D1 group-relative objectives at scale & Method paper or tenth null &
+Table~\ref{tab:nulls} entry closing the cost axis \\
+3 & D5 concurrent repairs under exact dynamics & Comparative study & Positive
+control fails $\Rightarrow$ report as unreproduced, not as null \\
+4 & D2 predictor axis closed-loop & Closed-loop evaluation & Closes the
+predictor axis \\
+5 & D3 or D4, chosen on stage-2 outcome & Method paper & Revert to the
+diagnostic contribution \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ===============================================================
+\bibliographystyle{plainnat}
+\bibliography{refs}
+% ===============================================================
+
+\appendix
+
+\section{Full reading ledger}\label{app:ledger}
+
+Table~\ref{tab:ledger} is the complete list, ordered by the subsection of
+Section~\ref{sec:lit} in which each paper is discussed. ``Local'' gives the
+filename under \texttt{world\_model/} where a PDF is already available in the
+repository.
+
+{\footnotesize
+\begin{longtable}{@{}L{4.2cm} c c L{1.2cm} L{5.3cm}@{}}
+\caption{Full reading ledger. Role per Section~\ref{sec:roles}: (A) system we
+run, (B) peer-reviewed foundation, (C) concurrent work read to
+delimit.}\label{tab:ledger}\\
+\toprule
+Paper & Year & Role & Surface & Local PDF / note \\
+\midrule
+\endfirsthead
+\multicolumn{5}{@{}l}{\small\itshape Table~\ref{tab:ledger} continued}\\
+\toprule
+Paper & Year & Role & Surface & Local PDF / note \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\multicolumn{5}{@{}l}{\textit{\S\ref{sec:lit-found} Foundations}}\\
+LeCun, Path to Autonomous MI & 2022 & B\,$\dagger$ & --- & \texttt{jepa.pdf} \\
+I-JEPA & 2023 & B & --- & \texttt{i-jepa.pdf} \\
+VICReg & 2022 & B & --- & \texttt{VICreg.pdf} \\
+LeJEPA & 2025 & C & --- & \texttt{lejepa.pdf} \\
+V-JEPA 2 / 2-AC & 2025 & A & --- & \texttt{v-jepa2.pdf} \\
+V-JEPA 2.1 & 2026 & C & --- & \texttt{v-jepa2-1.pdf}; alt.\ explanation \\
+LeWorldModel & 2026 & C & --- & \texttt{le-wm.pdf} \\
+Causal-JEPA & 2026 & C & --- & \texttt{causal-jepa.pdf} \\
+Invariant repr.\ for JEPWM & 2026 & C & --- & \texttt{invariance-rep-}\allowbreak\texttt{jepa.pdf} \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{\S4.2 Systems under audit}}\\
+DINO-WM & 2025 & A & --- & \texttt{dino-wm.pdf} \\
+Terver et al., What Drives Success & 2026 & A & --- & \texttt{jepa-success.pdf} \\
+PLDM & 2025 & C & --- & \texttt{PLDM.pdf} \\
+Navigation World Models & 2024 & C & --- & \texttt{NWM.pdf} \\
+Hierarchical Planning with LWMs & 2026 & C & 2 & \texttt{HWM.pdf}; see D4 \\
+TD-MPC2 & 2024 & B & --- & \texttt{TD-MPC2.pdf}; counterexample \\
+Meta-World & 2020 & B & --- & \texttt{metaworld.pdf} \\
+CEM (Rubinstein) & 1997 & B & --- & --- \\
+iCEM & 2020 & B & --- & not in repo; obtain \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{\S4.3 Surface 1: prediction error}}\\
+MBPO & 2019 & B & 1 & not in repo; obtain \\
+Objective mismatch & 2020 & B & 1 & not in repo; obtain \\
+Train--test gap, gradient planning & 2025 & B\,$\dagger$ & 1 & \texttt{train-test-}\allowbreak\texttt{gap-wm.pdf} \\
+Imperfect WMs are Exploitable & 2026 & C & 1 & \texttt{imperfect-world-}\allowbreak\texttt{model.pdf} \\
+Robot world-model survey & 2026 & C & --- & \texttt{world-model-}\allowbreak\texttt{survey.pdf} \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{\S4.4 Surface 2: proposal and coverage}}\\
+IMWM & 2026 & C & 2 & \texttt{imwm.pdf}; competing explanation \\
+Latent Geometry Beyond Search & 2026 & C & 2 & \texttt{latent-geometry.pdf} \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{\S4.5 Surface 3: realizability}}\\
+ACID & 2026 & C & 3 & \texttt{ACID.pdf} \\
+World Action Verifier & 2026 & C & 3 & \texttt{world-action-verifier.pdf} \\
+ATM & 2026 & C & 3 & \texttt{ATM.pdf} \\
+UWM-JEPA & 2026 & C & 3 & \texttt{UWM-JEPA.pdf}; mechanism only \\
+MiraBench & 2026 & C & 3 & not in repo \\
+What-If World & 2026 & C & 3 & not in repo \\
+Neural causal models & 2023 & B & 3 & \texttt{counterfactual.pdf} \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{\S\ref{sec:lit-cost} Surface 4: cost geometry and selection}}\\
+TRM & 2026 & C & 4 & not in repo; \textbf{closest work} \\
+RC-aux & 2026 & C & 4 & \texttt{Predictive-but-Not-}\allowbreak\texttt{Plannable.pdf} \\
+Temporal straightening & 2026 & C & 4 & \texttt{temporal-straightening-*} \\
+Latent state design & 2026 & C & 4 & \texttt{latent-state-}\allowbreak\texttt{design-wm.pdf} \\
+The Optimizer's Curse & 2006 & B & 4 & the audit's null hypothesis \\
+Defining reward hacking & 2022 & B & 4 & not in repo; obtain \\
+Reward-model overoptimisation & 2023 & B & 4 & not in repo; obtain \\
+Goodhart's law in RL & 2024 & B & 4 & not in repo; obtain \\
+Inference-time reward hacking & 2025 & C & 4 & not in repo \\
+LLMs gaming verifiers & 2026 & C & 4 & not in repo \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{\S4.7 Evaluation protocol}}\\
+Decision-centric WM evaluation & 2026 & C & --- & not in repo \\
+Hidden failure modes (workshop) & 2026 & C & --- & protocol confound \\
+\end{longtable}
+}
+
+\section{Reproduction pointers}
+
+Diagnostic code, configurations and per-seed summaries are under
+\texttt{diagnosis/}. The documents below are the authoritative sources for
+everything reported in Section~\ref{sec:evidence}.
+
+\begin{description}[leftmargin=0pt,style=nextline,font=\normalfont\ttfamily\small]
+\item[diagnosis/docs/CLAIMS\_EVIDENCE.md]
+The evidentiary ledger: every claim mapped to the artifact backing it, with a
+status marker. A claim with no row there does not enter a table.
+\item[diagnosis/docs/CURRENT\_STATUS.md]
+Current scope, the headline evidence, and the claim-discipline rules reproduced
+as Table~\ref{tab:discipline}.
+\item[diagnosis/docs/plans/2026-07-13-\ldots-audit.md]
+The literature positioning audit that produced the four-surface taxonomy of
+Table~\ref{tab:surfaces} and the primary-source ledger.
+\item[diagnosis/results/oracle\_ladder\_cost\_report.md]
+The oracle ladder of Table~\ref{tab:ladder}.
+\item[diagnosis/results/selection\_sprint\_report.md]
+The selection-aware encoder sprint that constrains D1.
+\item[READING\_LIST\_VI.md]
+A Vietnamese-language curriculum covering the same core reading as
+Table~\ref{tab:core}.
+\end{description}
+
+\end{document}
