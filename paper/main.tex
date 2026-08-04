@@ -12,7 +12,7 @@
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,calc}
 
-\title{Decoding Accuracy Does Not Certify Plannability:
+\title{Per-Channel Decoding Accuracy Does Not Certify Plannability:
 An Optimizer-Conditioned Audit of World-Model Costs\thanks{An LLM-based assistant was
 used for manuscript restructuring and language editing. The authors verified
 all scientific claims, analyses, and conclusions.}}
@@ -40,19 +40,19 @@ budget, a simulator-state reference cost solves push in $64/64$ episodes and
 pick-place in $49/64$, whereas latent $L_2$ solves $0/64$ in every cell.
 A supervised state-decoding cost reaches at most $5/64$ despite a
 $2.1$\,cm median error on its object channel on held-out expert frames.
-The audit separates two distinct failure modes. Latent $L_2$ never carries
-much usable ordering: its rank correlation with the physical reference is
-already $-0.02$--$0.27$ on initial contact populations, with reference elite
-recall at or below the chance level on both pick-place cells before any
-refitting.
-Stateprobe does carry ordering
-($\rho=0.43$--$0.55$) and loses it under search, falling to
+The audit separates two failure modes. Latent $L_2$ carries only weak and
+task-dependent ordering that becomes anti-aligned under search: its rank
+correlation with the physical reference is $0.25$--$0.27$ on the two push cells
+but indistinguishable from zero on both pick-place cells, and it is negative in
+all four cells after refitting. Stateprobe carries substantially more initial
+ordering ($\rho=0.43$--$0.55$) and loses it under search, falling to
 $0.11$--$0.16$ after refitting; on identical candidates its selection incurs
 structured regret beyond a residual-matched noisy-score null, and changing only
 the refitting cost then causes later populations to lose better physical
 candidates. Exact-success candidates are also sparse in the realized final
-populations, though a matched-snapshot control attributes most of that
-sparsity to the trajectory the proxy drives rather than to its final refits.
+populations; a matched-snapshot control finds a limited within-snapshot
+refitting effect, leaving an additional state-distribution effect that our
+design does not quantify.
 Apparently accurate per-channel decoding can therefore coexist with a cost that
 becomes unreliable on optimizer-induced inputs. The causal selection and
 refitting diagnosis is established for the fixed stateprobe composition.
@@ -97,11 +97,12 @@ We contribute both the reusable audit and a controlled empirical diagnosis.
 First, exact dynamics plus latent or probe-derived cost remains near failure,
 while the same search budget succeeds with a simulator-state cost. Second,
 applying the audit to both costs separates two failure modes that the success
-table alone conflates. Latent $L_2$ fails by \emph{absent ordering}: it already
-ranks contact candidates almost independently of the physical reference on
-initial populations---on pick-place it recovers the physically best elites at
-or below chance before any refitting---so no optimizer-conditioned explanation
-is required.
+table alone conflates. Latent $L_2$ fails by \emph{weak, task-dependent initial
+ordering that becomes anti-aligned under search}: on pick-place its ranking of
+contact candidates is already indistinguishable from independent of the physical
+reference, recovering the physically best elites at or below chance before any
+refitting, whereas on push it retains a weak but nonzero initial ordering that
+turns negative only after refitting.
 Stateprobe fails by
 \emph{eroded and exploited ordering}: per-channel decoding that appears accurate
 on held-out expert observations does supply real initial ordering, but rank
@@ -110,7 +111,8 @@ identical candidates beyond an equally noisy residual-matched baseline, and a
 cost-only intervention shows that this misranking degrades later proposals.
 Third, we measure exact-success candidate availability rather than silently
 attributing every failure to ranking, and use a matched-snapshot branch control
-to ask how much of the observed sparsity the refitting cost itself explains.
+to bound how much of the observed sparsity the refitting cost itself explains
+within a snapshot.
 The causal selection and refitting tests are run for stateprobe; latent $L_2$ is
 covered by the exact-dynamics terminal-cost comparison and the
 same-population ranking audit.
@@ -141,11 +143,13 @@ and control-oriented model learning differentiates through the planner
 itself~\citep{nikishin2022omd}. That literature reweights the \emph{dynamics}
 objective by decision relevance, and its notion of relevance is a value
 function on the model's own state space. Our setting is the complementary one:
-dynamics are exact by construction, so the only remaining decision-relevant
-object is the terminal cost, and the distribution that matters is the one the
-optimizer itself generates. The audit can be read as measuring how far a
-released latent cost is from decision equivalence on precisely that
-distribution.
+we remove learned-dynamics error by construction and isolate the terminal-cost
+interface under a fixed search process, evaluating it on the distribution that
+the optimizer itself generates. Proposal generation and the optimizer remain
+active parts of the system, and the availability measurements below address
+them directly. The audit can be read as measuring planner-facing ranking
+agreement between a released latent cost and a physical reference on precisely
+that distribution.
 
 \paragraph{Optimization against imperfect models and costs.}
 Model-based control has long studied policies that exploit learned-dynamics
@@ -436,14 +440,14 @@ practitioner would be most tempted to over-read. The held-out split validates
 the two decoded \emph{channels} separately. It does not evaluate the deployed
 scalar cost $\hat c$ as a whole: that cost composes a decoded endpoint object, a
 decoded goal-frame object, and a decoded hand position through two norms, and we
-did not measure its error against $c^*$ on the held-out expert split. Because
-the weaker hand channel enters $\hat c$ with weight $0.5$ and the object channel
-enters twice, the composite is certainly less accurate than the $2.1$\,cm object
-figure alone suggests. The $2.1$\,cm number should therefore be read as
-``one channel of this cost looks accurate by the usual standard,'' which is
-exactly the kind of partial evidence that motivates the audit, and not as a
-certificate that the cost is accurate. A direct held-out evaluation of $\hat c$
-remains an open validation item (Section~\ref{sec:discussion}).
+did not measure its error against $c^*$ on the held-out expert split. The
+$2.1$\,cm object-channel figure therefore neither estimates nor bounds the error
+of the deployed scalar cost: the channels enter through two norms, and their
+errors may cancel or compound. It should be read as ``one channel of this cost
+looks accurate by the usual standard,'' which is exactly the kind of partial
+evidence that motivates the audit, and not as a certificate that the cost is
+accurate. A direct held-out evaluation of $\hat c$ remains an open validation
+item (Section~\ref{sec:discussion}).
 
 With that scope fixed, the planning result is still the informative one: a
 readout whose object channel achieves apparently useful accuracy on ordinary
@@ -542,8 +546,8 @@ optimizer's curse therefore explain part, but not all, of the observed
 misranking. The residuals retain candidate-specific structure that is harmful
 under selection.
 
-\subsection{Latent $L_2$ fails differently: the ordering is largely absent
-from the start}\label{sec:l2audit}
+\subsection{Latent $L_2$ fails differently: weak, task-dependent ordering that
+turns anti-aligned}\label{sec:l2audit}
 
 The same-population estimands apply to any terminal cost, so we run the ranking
 audit for the deployed latent $L_2$ cost as well. Two of the four estimands
@@ -604,17 +608,20 @@ $2.05$--$2.48$\,cm on the same tasks. After five refits, $\rho$ is
 \emph{negative} with the whole interval below zero in all four cells, and recall
 falls to $0.01$--$0.02$, well below chance.
 
-This says something the success table alone cannot. Stateprobe begins with real
-ordering information and loses it under search, which is what makes the
-optimizer-conditioned mechanism in Sections~\ref{sec:selection}
-and~\ref{sec:branch} the relevant explanation for it. Latent $L_2$ needs no such explanation on these contact tasks: it barely
-orders contact candidates by physical quality even on fresh populations drawn
-from the untouched initial distribution. Its $0/64$ is therefore consistent with
-a cost that is close to uninformative for contact, rather than with a cost that
-is informative and then exploited. The mild anti-alignment in the final
-populations is compatible with search concentrating on a region that $L_2$
-prefers and physics does not, but we do not run the refitting intervention for
-$L_2$, so we do not claim that refitting causes it.
+This says something the success table alone cannot, and the two tasks say
+different things. Stateprobe begins with substantially more ordering information
+and loses it under search, which is what makes the optimizer-conditioned
+mechanism in Sections~\ref{sec:selection} and~\ref{sec:branch} the relevant
+explanation for it. On pick-place, latent $L_2$ needs no such explanation: it
+does not order contact candidates by physical quality even on fresh populations
+drawn from the untouched initial distribution, so its $0/64$ there is already
+accounted for before the optimizer acts. On push the picture is genuinely
+unresolved. A weak but nonzero initial ordering is present and becomes negative
+after refitting, which is compatible with search concentrating on a region that
+$L_2$ prefers and physics does not; but we do not run the refitting intervention
+for $L_2$, so we describe the anti-alignment rather than attributing it to
+refitting. Whether adaptive search causally contributes to the push failure of
+$L_2$ is left open.
 
 A methodological caution applies to $R_{\mathrm{sel}}$ across stages. Within
 either cost, regret falls between iterations 0 and 5 (for example $2.98$ to
@@ -699,11 +706,12 @@ whole realized search rather than the initial proposal distribution alone.
 The branch intervention of Section~\ref{sec:branch} answers this within matched
 snapshots, because both branches are evaluated at the same true-state carrier
 snapshots and differ only in refitting cost. Table~\ref{tab:covctrl} reports
-final-iteration availability for each branch. The intervention costs
-$2.5$--$13.1$ percentage points, but the interval excludes zero only for JEPA
-push. The two reference-refit push entries are numerically identical
-($47.5\%$) because that branch never consults the representation, which serves
-as a protocol check on the harness.
+final-iteration availability for each branch. The within-snapshot refitting
+effect is limited: $2.5$--$13.1$ percentage points, with the interval excluding
+zero only for JEPA push. Each difference is a paired within-run contrast; the
+two branches of a run share the snapshot sequence, the iteration-0 population
+and the base noise, but separate runs do not, so the reference-refit column
+should not be compared across rows.
 
 \begin{table}[H]
 \centering
@@ -726,37 +734,40 @@ JEPA pick & 8.3\% [0.0, 20.8] & 15.1\% [4.2, 26.9] & $-6.8$ [$-16.8$, 0.0] \\
 \end{tabular}
 \end{table}
 
-Comparing across the two experiments is informative but not controlled. At
-reference-carrier snapshots, availability under stateprobe refitting is
+The two experiments are not on a common footing. At reference-carrier
+snapshots, availability under stateprobe refitting is
 $42.5\%$, $16.2\%$, $34.4\%$ and $8.3\%$; in Table~\ref{tab:availability},
 where the proxy also determines which snapshots the episode reaches, it is
 $8.0\%$, $3.6\%$, $0\%$ and $0\%$. The two audits use disjoint seed sets and
-different snapshot-generating processes, so the gap is suggestive rather than
-an estimate of a single effect. Read together, however, they indicate that the
-last few refits at a good snapshot are the smaller term, and that most of the
-availability deficit accrues through the states the proxy-driven episode
-actually visits. That distinction matters for method design: it points at
-closed-loop state distribution rather than at within-population proposal
-diversity as the larger target.
+different snapshot-generating processes, so this gap cannot be decomposed and
+we do not read a magnitude off it. What the pair does support is a qualitative
+statement: the matched-snapshot control finds a limited within-snapshot
+refitting effect, and the lower availability under the proxy-driven closed loop
+is consistent with an additional state-distribution effect whose size our
+design does not identify. Separating the two would require running both
+carriers under a common seed set, which we did not do.
 
 \section{Discussion and Limitations}\label{sec:discussion}
 
 \paragraph{Mechanistic picture.}
 The two costs fail the same benchmark for different reasons, and the audit is
 what separates them. Latent $L_2$ ranks contact candidates weakly or not at all
-by physical quality on fresh initial populations---indistinguishably from
-independent on both pick-place cells, where reference elite recall is also at or
-below chance before any refitting. Its failure is
-adequately described without invoking the optimizer. The stateprobe is the
-opposite case and the one that motivates the title: its object channel is
-accurate on held-out expert frames, the composite cost does carry real ordering
-on fresh populations, and that ordering then degrades where it is used. Immediate
+by physical quality on fresh initial populations, and the two tasks differ: on
+pick-place its ordering is already indistinguishable from independent, with
+reference elite recall at or below chance before any refitting, so the failure
+is evident without invoking the optimizer; on push a weak initial ordering
+survives and turns negative only after refitting, and because we did not run the
+refitting intervention for $L_2$ we cannot say whether adaptive search causally
+contributes there. The stateprobe is the case that motivates the title: its
+object channel is accurate on held-out expert frames, the composite cost does
+carry real ordering on fresh populations, and that ordering then degrades where
+it is used. Immediate
 misranking exceeds the matched-noise baseline, and the refitting intervention
 shows that it changes which physical candidates remain available. At the same
-time, exact-success candidates are sparse in final populations, though the
-matched-snapshot control indicates that the refitting cost accounts for only a
-few percentage points of that sparsity and the proxy-driven state distribution
-for most of it. The resulting diagnosis is a coupled
+time, exact-success candidates are sparse in final populations, with the
+matched-snapshot control showing a limited within-snapshot refitting
+contribution and leaving an unquantified state-distribution contribution
+alongside it. The resulting diagnosis is a coupled
 selection-and-availability failure at the
 representation--readout--cost--optimizer interface, holding for a cost that has
 ordering to lose.
@@ -805,17 +816,20 @@ structure, and we do not claim that separation here.
 Exact candidate dynamics do not rescue the two tested representation-derived
 costs, although the same finite search succeeds with an informative physical
 reference. Auditing the two costs on identical populations shows that they fail
-for different reasons. Latent $L_2$ barely orders contact candidates by physical
-quality even before refitting, so its failure needs no optimizer-conditioned
-account. The stateprobe does supply real initial ordering and then loses it:
+for different reasons. Latent $L_2$ orders contact candidates weakly at best
+before refitting and anti-alignedly after it; on pick-place the failure is
+already evident before refitting, while on push whether adaptive refitting
+causally contributes remains unresolved. The stateprobe does supply real initial
+ordering and then loses it:
 optimizer-induced candidates erode rank agreement, structured residuals alter
 immediate selection beyond a matched-noise null, and cost-only refitting changes
 later candidate quality. Sparse exact-success availability compounds this loss,
-mostly through the states the proxy-driven episode reaches rather than through
-its final refits. World-model evaluation should therefore test a cost on the
+with a limited within-snapshot refitting contribution and a further
+state-distribution contribution that our design does not quantify.
+World-model evaluation should therefore test a cost on the
 distribution and decisions induced by its optimizer, and should report which of
-these two regimes a given cost is in; held-out prediction or decoding accuracy
-alone does not certify plannability.
+these two regimes a given cost is in; held-out prediction or per-channel
+decoding accuracy alone does not certify plannability.
 
 \subsubsection*{Broader Impact Statement}
 This work studies failure modes of simulation-based robot world-model planning

@@ -53,8 +53,64 @@ this harness; it does not isolate an encoder defect.
   (two-sided exact sign test `p=0.0078` per cell).
 
 These detailed selection and refitting claims apply to **stateprobe only**.
-Latent L2 is supported by the end-to-end terminal-cost comparison, not by the
-same-population or branch causal audit.
+Latent L2 is supported by the end-to-end terminal-cost comparison **and by the
+same-population ranking audit below**, but not by the branch causal audit.
+
+### Latent L2 same-population ranking audit
+
+Folded into the paper (§4.4/Table 4) from `results/cem_preselection_audit.md`
+(`*_l2` arms, script 53). L2 fails by a different mechanism than stateprobe:
+
+| cell | rho init | rho final | recall init | recall final | R_sel init |
+|---|---:|---:|---:|---:|---:|
+| DINO push | 0.25 | −0.08 | 0.16 | 0.02 | 2.98 cm |
+| DINO pick | 0.02 | −0.09 | 0.07 | 0.01 | 3.74 cm |
+| JEPA push | 0.27 | −0.08 | 0.16 | 0.02 | 3.01 cm |
+| JEPA pick | −0.02 | −0.12 | 0.06 | 0.01 | 3.96 cm |
+
+Chance recall is 0.10. Initial rho covers zero on both pick cells; final rho is
+CI-clean negative in all four. Initial R_sel is **larger** than stateprobe's
+2.05--2.48 cm.
+
+Claim discipline for this row:
+
+- Say **"weak, task-dependent initial ordering that becomes anti-aligned under
+  search,"** not "absent ordering." Push retains rho=0.25/0.27 and recall 0.16,
+  which is weak but not absent.
+- On pick, failure is evident **before** refitting. On push, whether refitting
+  causally contributes is **unresolved** — there is no L2 refit branch.
+- Report **only rho and R_sel** for L2. Script 53 line 59 reads
+  `stateprobe_optimism_m` and `obj_decode_error_cm` in *every* arm, so
+  `proxy_elite_optimism_enrichment_m` / `proxy_elite_enrichment_cm` on L2 rows
+  are stateprobe quantities, not L2 ones; optimism `c* − chat` is also not
+  dimensionally meaningful when chat is not in metres.
+
+### Matched-snapshot coverage control
+
+Paper §4.6/Table 7, from `results/shared_population_branch_audit.md`
+(`coverage_success_end`, iter 5). Stateprobe-refit 42.5/16.2/34.4/8.3% vs
+reference-refit 47.5/18.7/47.5/15.1%; paired within-run difference −2.5 to
+−13.1 points, CI-clean only for JEPA push.
+
+- The difference column is a **paired within-run** contrast and is valid.
+- Do **not** call the two 47.5% push entries a protocol check. The
+  reference-refit branch is not identical across model cells: the pick cells
+  differ at **iteration 0** already (0.0595 vs 0.0417), so cross-cell equality
+  is not a demonstrated harness invariant. Separate runs do not share seeds or
+  base noise, so the reference-refit column is not comparable across rows.
+- Do **not** say the cross-experiment gap (42.5% vs Table 6's 8.0%) attributes
+  "most" of the deficit to the trajectory. Disjoint seeds (42000--42007 vs
+  40000--40015) and different snapshot-generating processes mean the gap cannot
+  be decomposed. Permitted wording: limited within-snapshot refitting effect,
+  plus an additional state-distribution effect of unidentified magnitude.
+
+### Open validation item
+
+The deployed stateprobe **scalar** cost has never been evaluated end-to-end on
+the held-out expert split; only its two channels have. The 2.1 cm object-channel
+figure neither estimates nor bounds the scalar cost's error, since the channels
+enter through two norms and their errors may cancel or compound. The paper title
+is scoped to **per-channel** decoding accuracy for this reason.
 
 ### Stateprobe validation
 
