@@ -184,6 +184,68 @@ dynamics, stateprobe succeeds with CEM `1/16`, MPPI `0/16`, and random shooting
 contact outcome is not observed only with CEM, but does not establish
 mechanism generality.
 
+## Generality extension (in progress, NOT yet in the paper)
+
+Post-submission review argued the paper is an existence-and-mechanism case
+study (2 checkpoints x 2 tasks), not a prevalence/generality claim, and asked
+for staged extension. Full design and pre-registration:
+`docs/plans/2026-08-04-generality-extension-design.md`. **User instruction:
+do not edit the paper during this pass** -- this section records findings for
+later use, not current paper content.
+
+### Shared-encoder finding (changes how "n=2 checkpoints" should be read)
+
+`dino_wm_metaworld` and `jepa_wm_metaworld` both use a **frozen
+`dinov2_vits14`** visual encoder (`external/jepa-wms/configs/evals/
+simu_env_planning/mw/{dino-wm,jepa-wm}/*.yaml`, identical `enc_version`,
+`pretrain_enc_path:` empty in both; frozen at
+`external/jepa-wms/app/vjepa_wm/utils.py:685-692`). Checked every upstream
+environment family (metaworld, wall, pusht, point-maze, droid, robocasa) --
+**all** `dino-wm`/`jepa-wm` arms share this same frozen encoder; no exception.
+Under exact dynamics the predictor is never called
+(`scripts/30_latent_oracle.py:12`), so the two checkpoints' latent-$L_2$ arm
+differs only by an affine input rescale. Confirmed empirically: `dino_wm` and
+`jepa_wm` L2 mean object-goal distance on mw-pick-place both equal
+26.6314 cm to 4 decimal places (`results/confirmatory_{dino,jepa}
+_wm_metaworld_l2_mw-pick-place_seed20000_n64.csv`).
+
+**On MetaWorld the paper currently has n=1 representation, not n=2.** The
+user has not yet decided how (or whether) to disclose this in the paper --
+do not add it to `main.tex` without explicit instruction.
+
+The one genuinely independent encoder anywhere in the upstream registry is
+`vjepa2_ac_droid`/`vjepa2_ac_oss` (V-JEPA-2 ViT-Giant, `embed_dim: 1408`,
+`enc_type: vjepa` -- confirmed distinct by `results/droid_scaling_curve.md`),
+but it only runs on DROID (real-robot video, no simulator), so it cannot
+support exact-dynamics snapshot/restore. Pairing it with a real simulator
+(RoboCasa is the only in-repo candidate that loads it, per
+`configs/diagnostic_robocasa.yaml:15,17`) would require building a new oracle
+harness from scratch -- `snapshot()`/`restore()`
+(`scripts/29_oracle_ceiling.py:62-90`) and `make_env`/expert-policy lookup
+are all MetaWorld/Sawyer-specific, not generic MuJoCo. **Track B
+(representation independence) is paused by user decision** pending a scoped
+harness-effort estimate; not attempted in this pass.
+
+### Task-breadth extension (Track A) -- running
+
+Gate 1 (scripted-expert competence, `scripts/70_task_breadth_expert_check.py`,
+job 35500): 5/6 candidate tasks ELIGIBLE (door-open, drawer-close,
+button-press, window-close, assembly); `mw-peg-insert-side` INELIGIBLE-BUDGET
+(69% success within the production 100-step cap vs the pre-registered 75%
+threshold, confirming the earlier signal in
+`results/metaworld_precision_ladder.csv`) and excluded from this pass.
+`results/task_breadth_expert_check.{csv,md}`.
+
+Gate 2 (positive control) + Stage 1 terminal-cost ladder (job 35508, array of
+10 = 5 tasks x {oracle, l2}, 16 episodes, seed0=70000): **running**. Only
+`dino_wm_metaworld` runs the l2 arm, since the shared-encoder finding above
+means `jepa_wm_metaworld` would duplicate it. Results land at
+`results/task_breadth_ladder_<task>_<arm>_seed70000_n16.csv`; not yet
+summarized here.
+
+Pre-registered reporting rule: any task where latent $L_2$ succeeds is a
+**boundary condition to report**, not a cell to discard.
+
 ## Submission readiness
 
 Review-driven source fixes are complete. Job `33069` regenerated the TRM
