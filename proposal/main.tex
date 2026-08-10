@@ -46,29 +46,29 @@ literature, trajectory optimisers in the control literature, and end-to-end
 success rates in the robotics literature---with the result that reported
 failures are difficult to attribute to a cause.
 
-This proposal surveys the area and organises it around that attribution problem.
-After background on how learned world models displaced classical system
-identification (Section~\ref{sec:background}), we review the literature along
-two axes---the objective that shapes the representation and the algorithm that
-searches over it---covering reconstruction-based latent dynamics,
-joint-embedding predictive architectures, frozen pretrained visual features, and
-value-aware latents, together with sampling-based, gradient-based, amortised and
-hierarchical planners, and the diagnostic work that has grown up around their
-failures (Section~\ref{sec:lit}). From that review we derive a taxonomy of four
-failure surfaces---prediction error, proposal coverage, transition
-realizability, and cost geometry under selection---each carrying an explicit
-condition that would refute attributing a failure to it
-(Section~\ref{sec:failures}). Applying the taxonomy exposes a systematic
-methodological gap: nearly every proposed repair is evaluated under learned
+We propose a research program built around making that attribution tractable.
+Its instrument is a taxonomy of four failure surfaces---prediction error,
+proposal coverage, transition realizability, and cost geometry under
+selection---each carrying an explicit condition that would refute attributing a
+failure to it (Section~\ref{sec:failures}). Read against the literature on
+representation objectives and search algorithms (Section~\ref{sec:lit}), the
+taxonomy exposes the methodological gap the proposed work targets: nearly every
+existing repair for the latter three surfaces is evaluated under learned
 dynamics, so its reported gain cannot be separated from ordinary prediction
-error. Section~\ref{sec:case} summarises a controlled study that closes this
-confound by executing every candidate in the simulator, finding that a
-privileged state-based cost solves a contact-rich task in $64/64$ episodes where
-the standard latent cost solves $0/64$ under identical search. We close with the
-research directions this analysis exposes, the most consequential being that
-current representation objectives optimise fidelity on distributions chosen by
-the experimenter, while planners consume orderings on distributions chosen by
-the optimiser.
+error, and the discriminating experiment---rerunning each repair with candidate
+dynamics held exact---has, to our knowledge, not been reported for any of them.
+Section~\ref{sec:case} reports a controlled pilot that runs this experiment for
+one surface: executing every candidate in the simulator, a privileged
+state-based cost solves a contact-rich task in $64/64$ episodes where the
+standard latent cost solves $0/64$ under identical search, and a series of
+repairs aimed at representation fidelity, run in the same harness, leaves
+planning unchanged. That result motivates the plan in Section~\ref{sec:open}:
+costs trained on the distribution the optimiser itself induces rather than one
+fixed by the experimenter, a decision-equivalence criterion for how much a
+representation must preserve, discriminating reruns of the field's existing
+repairs under exact dynamics, and an evaluation protocol reporting the
+quantities---candidate availability, selection regret, proxy--physical rank
+correlation---that current practice omits.
 \end{abstract}
 
 \tableofcontents
@@ -106,22 +106,46 @@ We exclude model-free reinforcement learning, video generation evaluated for
 perceptual quality alone, and policy learning in which no explicit forward model
 is optimised over.
 
-\paragraph{Contributions}
-Three, beyond consolidating the literature.
-
-\begin{enumerate}[label=(\roman*)]
-\item A \emph{design-space organisation} (Section~\ref{sec:lit}) separating what
-shapes the latent from what searches over it, which makes visible that these two
-choices are usually made independently and rarely co-designed.
-\item A \emph{failure-surface taxonomy} (Section~\ref{sec:failures}) in which
-each surface carries an explicit refutation condition. Applying it to the
-literature exposes a methodological gap: the great majority of proposed repairs
-are evaluated under learned dynamics, which confounds the surface they claim to
-fix with ordinary prediction error.
-\item An \emph{empirical case study} (Section~\ref{sec:case}) that removes that
-confound for one surface, and whose outcome motivates the research directions in
-Section~\ref{sec:open}.
+\paragraph{Research questions}
+The taxonomy and pilot study below motivate three questions this proposal is
+organised to answer.
+\begin{enumerate}[label=(\arabic*)]
+\item \emph{Which failure surface binds where?} The diagnostic literature
+reviewed in Section~\ref{sec:lit-diag} disagrees on this, but the disagreement
+may be an artifact of protocol---different systems, tasks and dynamics
+conditions---rather than a real disagreement about mechanism
+(Section~\ref{sec:lit-synth}). Section~\ref{sec:open} proposes the
+discriminating experiment, holding candidate dynamics exact, that would settle
+this for the field's existing S3 and S4 repairs.
+\item \emph{Can a cost or representation be trained on the distribution the
+planner itself induces, rather than one fixed in advance?} Every objective
+surveyed in Section~\ref{sec:lit-repr} is fit on a distribution chosen by the
+experimenter; what a planner consumes is an ordering on a distribution its own
+search produces after refitting (Equation~\eqref{eq:plan}). Whether an objective
+can be defined directly on that induced distribution is open, and is the
+question Section~\ref{sec:open} treats as most consequential.
+\item \emph{Does this failure mode generalise beyond one optimiser and one
+representation family?} The pilot evidence in Section~\ref{sec:case} comes from
+CEM and two frozen-encoder checkpoints. Section~\ref{sec:open} states what would
+need to hold for the mechanism to be a property of sampling-based search against
+underdetermined latent costs generally, rather than of this instance.
 \end{enumerate}
+
+\paragraph{Approach and preliminary evidence}
+Answering these questions needs an instrument, and a demonstration that the
+instrument matters. Both are already in hand. A \emph{design-space organisation}
+(Section~\ref{sec:lit}) separates what shapes the latent from what searches over
+it, making visible that these two choices are usually made independently and
+rarely co-designed. A \emph{failure-surface taxonomy}
+(Section~\ref{sec:failures}) turns question (1) into an experiment: each surface
+carries an explicit refutation condition, and applying it to the literature
+shows that the great majority of proposed repairs are evaluated under learned
+dynamics, confounding the surface they claim to fix with ordinary prediction
+error. A \emph{controlled pilot} (Section~\ref{sec:case}) runs the
+discriminating experiment for one surface and finds that removing prediction
+error does not, by itself, close the gap---evidence that motivates the specific
+directions proposed in Section~\ref{sec:open} rather than settling question (1)
+in general.
 
 \paragraph{Organisation}
 Section~\ref{sec:background} gives background on world models in robot
@@ -318,52 +342,19 @@ below.
 \section{Literature review}\label{sec:lit}
 % ===============================================================
 
-\subsection{Scope and organisation of the review}
-
-We organise the review by the design axes of Table~\ref{tab:design}:
 Section~\ref{sec:lit-repr} covers what shapes the latent,
 Section~\ref{sec:lit-planners} what searches over it. Two further bodies of work
-are essential and are reviewed separately: the diagnostic literature that has
-grown up around planning failures (Section~\ref{sec:lit-diag}), and the
-cross-domain literature on optimising against imperfect proxies
-(Section~\ref{sec:lit-proxy}), which supplies the statistical vocabulary the
-robotics work has largely lacked. Section~\ref{sec:lit-eval} covers evaluation
-methodology, and Section~\ref{sec:lit-synth} synthesises.
-
-\paragraph{A note on sources}
-A substantial part of the work closest to the questions in
-Section~\ref{sec:failures} consists of 2026 preprints that have not been
-refereed. We include them, since excluding recent work would misrepresent the
-state of the field, but they are marked in Table~\ref{tab:index} and their
-findings are reported as claims rather than as settled results. Where a
-comparison rests on an unrefereed source, we say so at the point of use.
-
-\begin{table}[t]
-\centering\small
-\caption{Design axes along which systems in this literature differ. The first two
-rows organise Sections~\ref{sec:lit-repr} and~\ref{sec:lit-planners}; the
-remainder are recorded because they vary independently and are often left
-implicit in reported comparisons.}\label{tab:design}
-\begin{tabularx}{\textwidth}{@{}L{3.5cm} Y@{}}
-\toprule
-Axis & Range observed in the literature \\
-\midrule
-Representation objective & pixel reconstruction; latent self-prediction
-(joint-embedding); frozen pretrained features; value- or reward-aware; explicitly
-structured (object-centric, invariant, reachability-shaped) \\
-Search algorithm & sampling-based MPC (CEM, iCEM, MPPI); gradient descent through
-the model; amortised inverse dynamics; hierarchical decomposition \\
-Encoder status at planning time & frozen; fine-tuned; trained end to end with the
-predictor \\
-Goal specification & goal image; goal state; reward function; language \\
-Cost form & Euclidean latent distance; learned metric; decoded-state distance;
-learned value; hybrid \\
-Prediction target & pixels; latent tokens; distribution over latents \\
-Dynamics supervision & offline demonstrations; reward-free interaction; online
-collection \\
-\bottomrule
-\end{tabularx}
-\end{table}
+are reviewed separately: the diagnostic literature that has grown up around
+planning failures (Section~\ref{sec:lit-diag}), and the cross-domain literature
+on optimising against imperfect proxies (Section~\ref{sec:lit-proxy}), which
+supplies the statistical vocabulary the robotics work has largely lacked.
+Section~\ref{sec:lit-eval} covers evaluation methodology, and
+Section~\ref{sec:lit-synth} synthesises. A substantial part of the work closest
+to the questions in Section~\ref{sec:failures} consists of 2026 preprints that
+have not been refereed; we include them, since excluding recent work would
+misrepresent the state of the field, but their findings are reported as claims
+rather than as settled results, and where a comparison rests on an unrefereed
+source we say so at the point of use.
 
 % ---------------------------------------------------------------
 \subsection{Representation objectives}\label{sec:lit-repr}
@@ -469,7 +460,14 @@ TD-MPC2~\citep{hansen2024tdmpc2} occupies the opposite end of this axis. The
 latent is trained jointly with reward and value prediction and is never required
 to reconstruct anything; planning uses MPPI with a learned terminal value that
 substitutes for the tail of the horizon. The system scales to a single agent
-spanning many tasks and embodiments.
+spanning many tasks and embodiments. The line traces back to
+MuZero~\citep{schrittwieser2020muzero}, which trains a latent purely to support
+its own reward, value and policy predictions---never grounding it in
+observations or an explicit dynamics-reconstruction loss at all---and searches
+over it with Monte Carlo tree search rather than the sampling-based MPC that
+dominates Table~\ref{tab:planners}; TD-MPC2 keeps the value-trained latent but
+swaps tree search for MPPI, which is the more practical choice in continuous
+action spaces.
 
 \emph{Assessment.} This is the clearest existing demonstration that cost
 geometry is a property one can \emph{train for} rather than an inevitable
@@ -629,8 +627,13 @@ by limiting rollout length according to model confidence.
 showing that the objective used to train a dynamics model is not monotonically
 related to control performance---a model that is better by likelihood can control
 worse. \citet{bhamidipaty2026imperfect} state the general case for planning
-against imperfect models. This surface is comparatively well understood, and its
-remedies are standard.
+against imperfect models. The offline setting produced the sharpest version of
+the same fix: MOPO~\citep{yu2020mopo} and MOReL~\citep{kidambi2020morel}
+penalise a candidate by an estimate of the model's own uncertainty at that
+candidate, so the optimiser is pushed away from exactly the region it would
+otherwise exploit, rather than being stopped early as in the rollout-length
+repair. This surface is comparatively well understood, and its remedies are
+standard.
 
 \subsubsection{Proposal coverage}
 
@@ -664,14 +667,6 @@ transitions and summarise action-semantic preservation in a transfer matrix,
 collapsible into a screening score that ranks checkpoints without planner-coupled
 evaluation---reporting order-of-magnitude speedups over simulator rollout for
 model selection.
-
-Underlying these is a mechanism specific to joint-embedding training, articulated
-by \citet{radha2026uwmjepa}: because the target encoder has already observed the
-trajectory containing the action's effect, the objective admits an
-action-invariant solution in which the predictor matches its target without using
-the action channel, and counterfactual targets are required to restore
-sensitivity. Their setting is a small partially observed physics task rather than
-robot planning, so the mechanism is better supported than its claimed scope.
 
 \subsubsection{Cost geometry and selection}\label{sec:lit-diag-cost}
 
@@ -851,29 +846,33 @@ condition under which each paper's own evidence was collected.
 
 \begin{table}[t]
 \centering\footnotesize
-\caption{Failure-surface matrix. $\bullet$ primary claim, $\circ$ secondary.
-``Dynamics'' is the condition under which the paper's evidence was
-collected.}\label{tab:matrix}
-\begin{tabularx}{\textwidth}{@{}L{3.4cm} cccc l Y@{}}
+\caption{Failure-surface matrix: which surface each work's evidence primarily
+targets, and under what dynamics condition that evidence was collected.
+S1~prediction error, S2~proposal coverage, S3~transition realizability,
+S4~cost geometry/selection --- full definitions and refutation conditions are
+in Table~\ref{tab:surfaces}. $\bullet$ primary claim, $\circ$ secondary
+claim.}\label{tab:matrix}
+\begin{tabularx}{\textwidth}{@{}L{3.65cm} >{\centering\arraybackslash}p{1.48cm} >{\centering\arraybackslash}p{1.48cm} >{\centering\arraybackslash}p{1.48cm} >{\centering\arraybackslash}p{1.48cm} l Y@{}}
 \toprule
-Work & S1 & S2 & S3 & S4 & Dynamics & Contribution type \\
+Work & \shortstack{S1\\\footnotesize pred.\ err.} & \shortstack{S2\\\footnotesize coverage} &
+\shortstack{S3\\\footnotesize realiz.} & \shortstack{S4\\\footnotesize cost geom.} &
+Dynamics & Contribution type \\
 \midrule
-MBPO & $\bullet$ & & & & learned & repair (rollout limit) \\
-Objective mismatch & $\bullet$ & & & $\circ$ & learned & diagnosis \\
-Train--test gap & $\bullet$ & & & & learned & repair (train-time synthesis) \\
-Imperfect WMs exploitable & $\bullet$ & & & $\circ$ & learned & diagnosis \\
-IMWM & & $\bullet$ & & $\circ$ & \textbf{exact} & repair (retrieval, gate) \\
-Latent Geometry & & $\bullet$ & & & learned & repair (amortisation) \\
-ACID & & & $\bullet$ & $\circ$ & learned & repair (cost term) \\
-World Action Verifier & & & $\bullet$ & & learned & repair (verifier) \\
-ATM & & & $\bullet$ & & learned & diagnosis + objective \\
-UWM-JEPA & & & $\bullet$ & & learned & objective (counterfactual) \\
-TRM & & $\circ$ & & $\bullet$ & learned & repair (terminal metric) \\
-RC-aux & & & $\circ$ & $\bullet$ & learned & repair (reachability) \\
-Temporal straightening & & & & $\bullet$ & learned & repair (representation) \\
-Optimizer's curse & & & & $\bullet$ & n/a & theory (null model) \\
-Goodhart / overoptimisation & & & & $\bullet$ & n/a & theory + measurement \\
-\S\ref{sec:case} case study & --- & $\circ$ & --- & $\bullet$ & \textbf{exact} &
+MBPO \citep{janner2019trust} & $\bullet$ & & & & learned & repair (rollout limit) \\
+Objective mismatch \citep{lambert2020objective} & $\bullet$ & & & $\circ$ & learned & diagnosis \\
+Train--test gap \citep{parthasarathy2025traintest} & $\bullet$ & & & & learned & repair (train-time synthesis) \\
+Imperfect WMs exploitable \citep{bhamidipaty2026imperfect} & $\bullet$ & & & $\circ$ & learned & diagnosis \\
+IMWM \citep{imwm2026} & & $\bullet$ & & $\circ$ & \textbf{exact} & repair (retrieval, gate) \\
+Latent Geometry \citep{nguyen2026latentgeometry} & & $\bullet$ & & & learned & repair (amortisation) \\
+ACID \citep{acid2026} & & & $\bullet$ & $\circ$ & learned & repair (cost term) \\
+World Action Verifier \citep{liu2026wav} & & & $\bullet$ & & learned & repair (verifier) \\
+ATM \citep{chen2026atm} & & & $\bullet$ & & learned & diagnosis + objective \\
+TRM \citep{trm2026} & & $\circ$ & & $\bullet$ & learned & repair (terminal metric) \\
+RC-aux \citep{rcaux2026} & & & $\circ$ & $\bullet$ & learned & repair (reachability) \\
+Temporal straightening \citep{straightening2026} & & & & $\bullet$ & learned & repair (representation) \\
+Optimizer's curse \citep{smith2006optimizer} & & & & $\bullet$ & n/a & theory (null model) \\
+Goodhart / overoptimisation \citep{skalse2022defining,gao2023overopt,karwowski2024goodhart} & & & & $\bullet$ & n/a & theory + measurement \\
+\S\ref{sec:case} case study (this proposal) & --- & $\circ$ & --- & $\bullet$ & \textbf{exact} &
 diagnosis \\
 \bottomrule
 \end{tabularx}
@@ -1129,89 +1128,5 @@ protocol needed to answer it.
 \bibliographystyle{plainnat}
 \bibliography{refs}
 % ===============================================================
-
-\appendix
-
-\section{Literature index}\label{app:index}
-
-Table~\ref{tab:index} lists the surveyed work by topic. ``Preprint'' marks
-sources that had not been refereed at the time of writing; their findings are
-reported in this proposal as claims. ``Local copy'' gives the filename under
-\texttt{world\_model/} where a copy is held.
-
-{\footnotesize
-\begin{longtable}{@{}L{4.4cm} c c L{4.9cm}@{}}
-\caption{Index of surveyed work.}\label{tab:index}\\
-\toprule
-Work & Year & Preprint & Local copy / note \\
-\midrule
-\endfirsthead
-\multicolumn{4}{@{}l}{\small\itshape Table~\ref{tab:index} continued}\\
-\toprule
-Work & Year & Preprint & Local copy / note \\
-\midrule
-\endhead
-\bottomrule
-\endfoot
-\multicolumn{4}{@{}l}{\textit{\S\ref{sec:lit-repr} Representation objectives}}\\
-World Models (Ha \& Schmidhuber) & 2018 & & NeurIPS \\
-PlaNet & 2019 & & ICML \\
-DreamerV3 & 2025 & & Nature \\
-A Path Towards Autonomous MI & 2022 & \checkmark & \texttt{jepa.pdf}; position paper \\
-I-JEPA & 2023 & & \texttt{i-jepa.pdf}; CVPR \\
-VICReg & 2022 & & \texttt{VICreg.pdf}; ICLR \\
-LeJEPA & 2025 & \checkmark & \texttt{lejepa.pdf} \\
-V-JEPA 2 / 2-AC & 2025 & \checkmark & \texttt{v-jepa2.pdf} \\
-V-JEPA 2.1 & 2026 & \checkmark & \texttt{v-jepa2-1.pdf} \\
-LeWorldModel & 2026 & \checkmark & \texttt{le-wm.pdf} \\
-DINOv2 & 2024 & & TMLR \\
-DINO-WM & 2025 & & \texttt{dino-wm.pdf}; ICML \\
-JEPA-WM design study & 2026 & & \texttt{jepa-success.pdf}; TMLR \\
-PLDM & 2025 & \checkmark & \texttt{PLDM.pdf} \\
-Navigation World Models & 2024 & \checkmark & \texttt{NWM.pdf} \\
-TD-MPC2 & 2024 & & \texttt{TD-MPC2.pdf}; ICLR \\
-Latent state design & 2026 & \checkmark & \texttt{latent-state-design-wm.pdf} \\
-Temporal straightening & 2026 & \checkmark & \texttt{temporal-straightening-*} \\
-Causal-JEPA & 2026 & \checkmark & \texttt{causal-jepa.pdf} \\
-Invariant repr.\ for JEPWM & 2026 & \checkmark & \texttt{invariance-rep-jepa.pdf} \\
-\midrule
-\multicolumn{4}{@{}l}{\textit{\S\ref{sec:lit-planners} Planning algorithms}}\\
-CEM (Rubinstein) & 1997 & & Eur.\ J.\ Oper.\ Res. \\
-iCEM & 2020 & & CoRL \\
-MPPI & 2017 & & J.\ Guid.\ Control Dyn. \\
-Latent Geometry Beyond Search & 2026 & \checkmark & \texttt{latent-geometry.pdf} \\
-Hierarchical Planning with LWMs & 2026 & \checkmark & \texttt{HWM.pdf} \\
-\midrule
-\multicolumn{4}{@{}l}{\textit{\S\ref{sec:lit-diag} Diagnostic work}}\\
-MBPO & 2019 & & NeurIPS \\
-Objective mismatch & 2020 & & L4DC \\
-Train--test gap, gradient planning & 2025 & \checkmark & \texttt{train-test-gap-wm.pdf} \\
-Imperfect WMs are Exploitable & 2026 & \checkmark & \texttt{imperfect-world-}\allowbreak\texttt{model.pdf} \\
-IMWM & 2026 & \checkmark & \texttt{imwm.pdf} \\
-ACID & 2026 & \checkmark & \texttt{ACID.pdf} \\
-World Action Verifier & 2026 & \checkmark & \texttt{world-action-verifier.pdf} \\
-ATM & 2026 & \checkmark & \texttt{ATM.pdf} \\
-UWM-JEPA & 2026 & \checkmark & \texttt{UWM-JEPA.pdf} \\
-TRM & 2026 & \checkmark & not held locally \\
-RC-aux & 2026 & \checkmark & \texttt{Predictive-but-Not-}\allowbreak\texttt{Plannable.pdf} \\
-\midrule
-\multicolumn{4}{@{}l}{\textit{\S\ref{sec:lit-proxy} Optimisation against proxies}}\\
-The Optimizer's Curse & 2006 & & Management Science \\
-Defining reward hacking & 2022 & & NeurIPS \\
-Reward-model overoptimisation & 2023 & & ICML \\
-Goodhart's law in RL & 2024 & & ICLR \\
-Inference-time reward hacking & 2025 & \checkmark & not held locally \\
-LLMs gaming verifiers & 2026 & \checkmark & not held locally \\
-\midrule
-\multicolumn{4}{@{}l}{\textit{\S\ref{sec:lit-eval} Evaluation}}\\
-Meta-World & 2020 & & \texttt{metaworld.pdf}; CoRL \\
-Decision-centric WM evaluation & 2026 & \checkmark & not held locally \\
-MiraBench & 2026 & \checkmark & not held locally \\
-What-If World & 2026 & \checkmark & not held locally \\
-Hidden failure modes (workshop) & 2026 & \checkmark & not held locally \\
-Neural causal models & 2023 & & \texttt{counterfactual.pdf}; ICLR \\
-Robot world-model survey & 2026 & \checkmark & \texttt{world-model-}\allowbreak\texttt{survey.pdf} \\
-\end{longtable}
-}
 
 \end{document}

@@ -18,10 +18,12 @@ sbatch scripts/slurm_proposal_build.sh
 
 1. **It must not contradict `paper/main.tex`.** Where both report a number, the
    submission wins. Success counts are strict episode-end, never any-step latched.
-2. **Unrefereed sources are marked.** The literature index (Appendix A) flags
-   preprints; findings from them are reported as claims, not settled results. A
-   large share of the closest work is 2026 preprints, so this distinction is
-   load-bearing.
+2. **Unrefereed sources are marked.** There is no longer a standalone literature
+   index; preprint status is instead flagged inline at the point of use (see
+   `refs.bib`'s `[VERIFIED]`/`[UNVERIFIED]`/`[VERIFIED, no local PDF]` notes for
+   the underlying source-verification record). Findings from unrefereed sources
+   are reported as claims, not settled results. A large share of the closest
+   work is 2026 preprints, so this distinction is load-bearing.
 3. **§6 stays proportionate.** It is a case study illustrating the methodology
    argued for in §5, not the centre of the document. If it grows past ~3 pages
    the document has drifted back toward being a paper.
