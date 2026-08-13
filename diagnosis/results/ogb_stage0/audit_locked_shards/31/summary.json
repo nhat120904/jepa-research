@@ -1,0 +1,246 @@
+{
+  "action_normalizer_roundtrip_max_abs": 5.960464477539063e-08,
+  "config": {
+    "action_block": 5,
+    "cem_steps": 30,
+    "checkpoint": "quentinll/lewm-cube",
+    "dataset": "ogbench/cube_single_expert.h5",
+    "goal_offset": 25,
+    "horizon": 5,
+    "manifest_snapshots": 32,
+    "num_samples": 300,
+    "num_snapshots": 32,
+    "processed_snapshots": 1,
+    "seed": 20260810,
+    "snapshot_index": 31,
+    "topk": 30,
+    "var_scale": 1.0
+  },
+  "metrics": {
+    "final": {
+      "candidate_headroom_m": {
+        "ci_high": 0.022965494581110624,
+        "ci_low": 0.022965494581110624,
+        "mean": 0.022965494581110624
+      },
+      "dynamics_selection_regret_latent": {
+        "ci_high": 186.81124877929688,
+        "ci_low": 186.81124877929688,
+        "mean": 186.81124877929688
+      },
+      "end_to_end_selection_regret_m": {
+        "ci_high": 0.02260692549470846,
+        "ci_low": 0.02260692549470846,
+        "mean": 0.02260692549470846
+      },
+      "end_to_end_success_gap": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "mean": 0.0
+      },
+      "false_elite_rate_physical": {
+        "ci_high": 0.3333333333333333,
+        "ci_low": 0.3333333333333333,
+        "mean": 0.3333333333333333
+      },
+      "latent_selected_physical_distance_m": {
+        "ci_high": 0.02502665743373442,
+        "ci_low": 0.02502665743373442,
+        "mean": 0.02502665743373442
+      },
+      "latent_selected_success": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "mean": 1.0
+      },
+      "oracle_candidate_success": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "mean": 1.0
+      },
+      "oracle_improvement_m": {
+        "ci_high": 0.14255430329728733,
+        "ci_low": 0.14255430329728733,
+        "mean": 0.14255430329728733
+      },
+      "oracle_physical_distance_m": {
+        "ci_high": 0.004502607983882786,
+        "ci_low": 0.004502607983882786,
+        "mean": 0.004502607983882786
+      },
+      "representation_selection_regret_m": {
+        "ci_high": 0.020524049449851634,
+        "ci_low": 0.020524049449851634,
+        "mean": 0.020524049449851634
+      },
+      "representation_success_gap": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "mean": 0.0
+      },
+      "selected_physical_distance_m": {
+        "ci_high": 0.027109533478591248,
+        "ci_low": 0.027109533478591248,
+        "mean": 0.027109533478591248
+      },
+      "selected_success": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "mean": 1.0
+      },
+      "spearman_learned_physical": {
+        "ci_high": 0.033663485149835,
+        "ci_low": 0.033663485149835,
+        "mean": 0.033663485149835
+      },
+      "spearman_learned_true_latent": {
+        "ci_high": 0.039321325792508806,
+        "ci_low": 0.039321325792508806,
+        "mean": 0.039321325792508806
+      },
+      "spearman_true_latent_physical": {
+        "ci_high": 0.054230380337559295,
+        "ci_low": 0.054230380337559295,
+        "mean": 0.054230380337559295
+      },
+      "start_physical_distance_m": {
+        "ci_high": 0.1470569112811701,
+        "ci_low": 0.1470569112811701,
+        "mean": 0.1470569112811701
+      },
+      "top10pct_recall_physical": {
+        "ci_high": 0.23333333333333334,
+        "ci_low": 0.23333333333333334,
+        "mean": 0.23333333333333334
+      },
+      "top10pct_recall_true_latent": {
+        "ci_high": 0.1,
+        "ci_low": 0.1,
+        "mean": 0.1
+      }
+    },
+    "initial": {
+      "candidate_headroom_m": {
+        "ci_high": 0.045981730512615226,
+        "ci_low": 0.045981730512615226,
+        "mean": 0.045981730512615226
+      },
+      "dynamics_selection_regret_latent": {
+        "ci_high": 282.9842834472656,
+        "ci_low": 282.9842834472656,
+        "mean": 282.9842834472656
+      },
+      "end_to_end_selection_regret_m": {
+        "ci_high": 0.030874751382218256,
+        "ci_low": 0.030874751382218256,
+        "mean": 0.030874751382218256
+      },
+      "end_to_end_success_gap": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "mean": 0.0
+      },
+      "false_elite_rate_physical": {
+        "ci_high": 0.26666666666666666,
+        "ci_low": 0.26666666666666666,
+        "mean": 0.26666666666666666
+      },
+      "latent_selected_physical_distance_m": {
+        "ci_high": 0.038053073882873455,
+        "ci_low": 0.038053073882873455,
+        "mean": 0.038053073882873455
+      },
+      "latent_selected_success": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "mean": 1.0
+      },
+      "oracle_candidate_success": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "mean": 1.0
+      },
+      "oracle_improvement_m": {
+        "ci_high": 0.13920496058205903,
+        "ci_low": 0.13920496058205903,
+        "mean": 0.13920496058205903
+      },
+      "oracle_physical_distance_m": {
+        "ci_high": 0.007851950699111083,
+        "ci_low": 0.007851950699111083,
+        "mean": 0.007851950699111083
+      },
+      "representation_selection_regret_m": {
+        "ci_high": 0.03020112318376237,
+        "ci_low": 0.03020112318376237,
+        "mean": 0.03020112318376237
+      },
+      "representation_success_gap": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "mean": 0.0
+      },
+      "selected_physical_distance_m": {
+        "ci_high": 0.03872670208132934,
+        "ci_low": 0.03872670208132934,
+        "mean": 0.03872670208132934
+      },
+      "selected_success": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "mean": 1.0
+      },
+      "spearman_learned_physical": {
+        "ci_high": 0.31772175246391626,
+        "ci_low": 0.31772175246391626,
+        "mean": 0.31772175246391626
+      },
+      "spearman_learned_true_latent": {
+        "ci_high": 0.37006188957655084,
+        "ci_low": 0.37006188957655084,
+        "mean": 0.37006188957655084
+      },
+      "spearman_true_latent_physical": {
+        "ci_high": 0.40667474083045363,
+        "ci_low": 0.40667474083045363,
+        "mean": 0.40667474083045363
+      },
+      "start_physical_distance_m": {
+        "ci_high": 0.1470569112811701,
+        "ci_low": 0.1470569112811701,
+        "mean": 0.1470569112811701
+      },
+      "top10pct_recall_physical": {
+        "ci_high": 0.13333333333333333,
+        "ci_low": 0.13333333333333333,
+        "mean": 0.13333333333333333
+      },
+      "top10pct_recall_true_latent": {
+        "ci_high": 0.3,
+        "ci_low": 0.3,
+        "mean": 0.3
+      }
+    }
+  },
+  "representation_gate": {
+    "criteria": {
+      "oracle_candidate_success_ci_low_gt_zero": true,
+      "representation_regret_ci_low_gt_zero": true,
+      "representation_success_gap_ci_low_gt_zero": false
+    },
+    "population": "final",
+    "status": "distance_only_support"
+  },
+  "restoration": [
+    {
+      "dataset_qpos_max_abs": 0.0,
+      "dataset_qvel_max_abs": 0.0,
+      "pixel_restore_max_abs": 0.0,
+      "qpos_restore_max_abs": 0.0,
+      "qvel_restore_max_abs": 0.0,
+      "snapshot": 31,
+      "target_restore_max_abs": 0.0
+    }
+  ],
+  "scope": "offline matched-candidate audit; simulator was not exposed to the planner"
+}

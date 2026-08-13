@@ -12,10 +12,15 @@
 \usepackage[round]{natbib}
 \usepackage[hidelinks]{hyperref}
 \usepackage{url}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
 
-% Deliberately NOT loaded: graphicx, tikz, pgfplots.
-% This document contains no figures and must compile with zero image
-% dependencies.
+% Two figures only, both native TikZ (no external image files, so the
+% document still compiles anywhere with a standard TeX Live install):
+% Figure~\ref{fig:pipeline} (the encode/search/score loop with S1--S4
+% located on it) and Figure~\ref{fig:collapse} (the rank-correlation
+% collapse under refitting, Section~\ref{sec:case}).
 
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
@@ -40,35 +45,36 @@ Planning for robots directly from visual observation has converged on a common
 architecture: an encoder maps images to a latent state, an action-conditioned
 predictor rolls that state forward, and an optimiser searches over action
 sequences for the one whose predicted terminal state minimises a distance to a
-goal. The components of this architecture have been studied largely in
-isolation---representation objectives in the self-supervised learning
-literature, trajectory optimisers in the control literature, and end-to-end
-success rates in the robotics literature---with the result that reported
-failures are difficult to attribute to a cause.
+goal. The four components of this architecture are studied largely in
+isolation: representation objectives in the self-supervised learning
+literature, trajectory optimisers in the control literature, end-to-end
+success rates in the robotics literature. Because any one of the four can fail
+silently, a reported failure is usually reported without a cause.
 
 We propose a research program built around making that attribution tractable.
 Its instrument is a taxonomy of four failure surfaces---prediction error,
 proposal coverage, transition realizability, and cost geometry under
-selection---each carrying an explicit condition that would refute attributing a
-failure to it (Section~\ref{sec:failures}). Read against the literature on
-representation objectives and search algorithms (Section~\ref{sec:lit}), the
-taxonomy exposes the methodological gap the proposed work targets: nearly every
+selection---each carrying an explicit condition that would refute attributing
+a failure to it. Read against the literature on representation objectives and
+search algorithms, the taxonomy exposes a methodological gap: nearly every
 existing repair for the latter three surfaces is evaluated under learned
 dynamics, so its reported gain cannot be separated from ordinary prediction
-error, and the discriminating experiment---rerunning each repair with candidate
-dynamics held exact---has, to our knowledge, not been reported for any of them.
-Section~\ref{sec:case} reports a controlled pilot that runs this experiment for
-one surface: executing every candidate in the simulator, a privileged
-state-based cost solves a contact-rich task in $64/64$ episodes where the
-standard latent cost solves $0/64$ under identical search, and a series of
-repairs aimed at representation fidelity, run in the same harness, leaves
-planning unchanged. That result motivates the plan in Section~\ref{sec:open}:
-costs trained on the distribution the optimiser itself induces rather than one
-fixed by the experimenter, a decision-equivalence criterion for how much a
-representation must preserve, discriminating reruns of the field's existing
-repairs under exact dynamics, and an evaluation protocol reporting the
-quantities---candidate availability, selection regret, proxy--physical rank
-correlation---that current practice omits.
+error. The discriminating experiment---rerunning each repair with candidate
+dynamics held exact---has, to our knowledge, not been reported for any of
+them.
+
+We report a controlled pilot that runs this experiment for one surface.
+Executing every candidate in the simulator, a privileged state-based cost
+solves a contact-rich task in $64/64$ episodes where the standard latent cost
+solves $0/64$ under identical search. A series of repairs aimed at
+representation fidelity, run in the same harness, leaves planning unchanged.
+That result motivates the plan we propose: costs trained on the distribution
+the optimiser itself induces, rather than one fixed by the experimenter; a
+decision-equivalence criterion for how much a representation must preserve;
+discriminating reruns of the field's existing repairs under exact dynamics;
+and an evaluation protocol that reports three quantities current practice
+omits---candidate availability, selection regret, and proxy--physical rank
+correlation.
 \end{abstract}
 
 \tableofcontents
@@ -159,76 +165,44 @@ the proposed directions.
 \section{Background}\label{sec:background}
 % ===============================================================
 
-\subsection{What a world model is}
+\subsection{What a world model is, and why robot learning wants one}
 
 A world model is an internal, learned model of how an environment responds to
-action. Given some representation of the current situation and a candidate
-action, it predicts what the situation will become. The idea long predates deep
-learning: it is the model in model-based control, the environment model in
-Sutton's Dyna architecture, and, in cognitive science, the mental simulation
-that lets an agent evaluate an action before committing to it.
+action: given a representation of the current situation and a candidate
+action, it predicts what the situation will become. The idea long predates
+deep learning---it is the model in model-based control and in Sutton's Dyna
+architecture---but unlike a policy, which encodes what to do, a world model
+encodes what would happen, so a single model can be reused for any objective
+expressible over its predictions rather than being tied to one reward.
 
-What distinguishes a world model from a policy is that it is
-\emph{goal-agnostic}. A policy encodes what to do; a world model encodes what
-would happen. The distinction has a practical consequence that motivates much of
-this literature: a policy is tied to the reward it was trained against, whereas
-a single dynamics model can be reused for any objective one can express over its
-predictions. This is why world models are attractive precisely where task
-specifications are numerous, changeable, or unavailable in advance.
-
-\subsection{Why world models for robot learning}
-
-Four arguments recur, and they are worth separating because different lines of
-work lean on different ones.
-
-\paragraph{Data efficiency}
-Robot interaction is expensive in a way that simulated benchmarks are not. Each
-episode runs in real time, requires resetting the scene, and wears the hardware;
-collecting the number of transitions that model-free reinforcement learning
-typically consumes is impractical on physical robots. A world model reuses each
-observed transition many times, generating training experience or evaluating
-candidate actions without touching the environment. This is the argument that
-originally drove the field~\citep{ha2018worldmodels,hafner2019planet}.
-
-\paragraph{Task generality}
-The dynamics of a scene are shared across every task performed in it, while
-rewards are not. A model learned once can serve a new goal at deployment with no
-retraining, provided the goal can be scored against predicted futures. This
-argument is strongest for the goal-conditioned formulations that dominate recent
-visual world-model work, where a new task is specified simply by supplying a new
-goal image.
-
-\paragraph{Learning without reward labels}
-Large robot datasets are typically demonstrations or unstructured interaction,
-carrying no reward annotation. Model-free methods cannot use such data directly.
-A dynamics model can be fitted to it, and planning then supplies the behaviour
-that the missing reward would otherwise have shaped~\citep{sobal2025pldm}.
-
-\paragraph{Deliberation before acting}
-Predicting consequences allows a robot to reject a candidate action before
-executing it. This matters for safety, and it also permits behaviour that
-reactive policies obtain only through extensive training---recovering from novel
-configurations, or composing a sequence no demonstration contained.
+Four arguments recur for why robot learning wants this. \emph{Data
+efficiency}: robot interaction is expensive in a way simulated benchmarks are
+not, and a world model reuses each observed transition many times instead of
+consuming fresh environment steps~\citep{ha2018worldmodels,hafner2019planet}.
+\emph{Task generality}: scene dynamics are shared across tasks while rewards
+are not, so goal-conditioned formulations can serve a new goal at deployment
+by supplying a new goal image, with no retraining. \emph{Learning without
+reward labels}: most robot data is demonstrations or unstructured
+interaction with no reward annotation, which planning can exploit where
+model-free methods cannot~\citep{sobal2025pldm}. \emph{Deliberation before
+acting}: predicting consequences lets a robot reject a candidate action
+before executing it, which matters for safety and for behaviour---recovering
+from a novel configuration, composing an undemonstrated sequence---that a
+reactive policy obtains only through extensive training.
 
 \subsection{How a world model is used}
 
 Three usages appear in robot learning, and the distinction determines what a
-model must be good at.
-
-\emph{As a simulator for policy learning.} The model generates synthetic
-experience on which a policy or value function is trained, in the Dyna
-tradition; the Dreamer line~\citep{hafner2019planet,hafner2025dreamerv3} is the
-mature form. Here the model must be accurate on the distribution the improving
-policy visits, and errors are absorbed by the policy's own training.
-
-\emph{As a substrate for planning at decision time.} The model is queried inside
-an optimisation loop that searches over action sequences at every control step,
-in the model-predictive control tradition. Here the model is exposed directly to
-whatever the optimiser chooses to evaluate, including regions no policy would
-visit. This proposal is concerned with this usage.
-
-\emph{As an auxiliary objective.} Predicting the future is used as a
-self-supervised signal to shape a representation, with control obtained by other
+model must be good at. \emph{As a simulator for policy learning}, in the Dyna
+tradition matured by Dreamer~\citep{hafner2019planet,hafner2025dreamerv3}, the
+model must be accurate on the distribution the improving policy visits, and
+its errors are absorbed by that policy's own training. \emph{As a substrate
+for planning at decision time}, the usage this proposal is concerned with, the
+model is queried inside an optimisation loop at every control step and is
+exposed directly to whatever the optimiser chooses to evaluate, including
+regions no policy would visit. \emph{As an auxiliary objective}, predicting the
+future is used as a self-supervised signal to shape a representation, with
+control obtained by other
 means. Much recent representation-learning work sits here, and its outputs are
 frequently adopted by the planning work reviewed later.
 
@@ -349,12 +323,11 @@ planning failures (Section~\ref{sec:lit-diag}), and the cross-domain literature
 on optimising against imperfect proxies (Section~\ref{sec:lit-proxy}), which
 supplies the statistical vocabulary the robotics work has largely lacked.
 Section~\ref{sec:lit-eval} covers evaluation methodology, and
-Section~\ref{sec:lit-synth} synthesises. A substantial part of the work closest
-to the questions in Section~\ref{sec:failures} consists of 2026 preprints that
-have not been refereed; we include them, since excluding recent work would
-misrepresent the state of the field, but their findings are reported as claims
-rather than as settled results, and where a comparison rests on an unrefereed
-source we say so at the point of use.
+Section~\ref{sec:lit-synth} synthesises. A substantial part of the work
+closest to Section~\ref{sec:failures} consists of unrefereed 2026 preprints,
+included because excluding them would misrepresent the state of the field but
+flagged as such at the point of use.\footnote{Unrefereed sources are marked in
+\texttt{refs.bib} and reported as claims rather than settled results.}
 
 % ---------------------------------------------------------------
 \subsection{Representation objectives}\label{sec:lit-repr}
@@ -689,12 +662,11 @@ of raw latent error. They also deploy their repaired metric inside full CEM
 rather than evaluating it offline.
 
 \emph{Assessment.} These two works establish that the phenomenon is real and not
-an artifact of one system. It is worth stating explicitly what
-\citet{trm2026} already covers, since it bounds what any subsequent work can
-claim: candidate-level selection auditing, a state-based positive control, and
-deployment of a repaired cost under search are all present. What is absent from
-this strand is a study conducted with candidate dynamics held exact, which is
-the gap Section~\ref{sec:failures} identifies.
+an artifact of one system. \citet{trm2026} already covers candidate-level
+selection auditing, a state-based positive control, and deployment of a
+repaired cost under search. What is absent from this strand is a study
+conducted with candidate dynamics held exact, which is the gap
+Section~\ref{sec:failures} identifies.
 
 % ---------------------------------------------------------------
 \subsection{Optimisation against imperfect proxies}\label{sec:lit-proxy}
@@ -834,9 +806,41 @@ The surfaces map onto the review as follows: S1 to
 Section~\ref{sec:lit-diag}, S2 to \citet{imwm2026}, S3 to the
 action-grounding group of Section~\ref{sec:lit-diag-action}, and S4 to
 Section~\ref{sec:lit-diag-cost} with the statistical machinery of
-Section~\ref{sec:lit-proxy}. One asymmetry is worth noting: S1 is the only
-surface that can be closed \emph{by construction}, by supplying exact dynamics,
-which makes it the natural control condition for studying the other three.
+Section~\ref{sec:lit-proxy}. S1 is the only surface that can be closed
+\emph{by construction}, by supplying exact dynamics, which makes it the
+natural control condition for studying the other three.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  node distance=1.15cm and 1.35cm,
+  box/.style={draw, thick, rounded corners, align=center, minimum height=1.1cm,
+    minimum width=3.1cm, font=\small},
+  tag/.style={align=center, font=\scriptsize\itshape, text width=3.1cm},
+  arr/.style={-{Stealth[length=2.2mm]}, thick}
+]
+  \node[box] (sample) {Sample / refit candidates\\$a_{1:H}\in\mathcal{A}$};
+  \node[box, right=of sample] (rollout) {Encode + roll out\\$\hat z_{t+H}=f^{H}(z_t,a_{1:H})$};
+  \node[box, right=of rollout] (score) {Score\\$c(\hat z_{t+H}, z_g)$};
+
+  \draw[arr] (sample) -- (rollout);
+  \draw[arr] (rollout) -- (score);
+  \draw[arr] (score.north) to[out=100,in=80,looseness=1.4]
+    node[above,font=\scriptsize] {refit toward low cost} (sample.north);
+
+  \node[tag, below=0.35cm of sample] {S2 proposal coverage: a good candidate
+    never enters $\mathcal{A}$};
+  \node[tag, below=0.35cm of rollout] {S1 prediction error, S3 transition
+    realizability: the rollout is wrong or unrealizable};
+  \node[tag, below=0.35cm of score] {S4 cost geometry / selection: low cost
+    does not imply good outcome};
+\end{tikzpicture}
+\caption{The planning loop of Equation~\eqref{eq:plan}, with each failure
+surface of Table~\ref{tab:surfaces} located on the stage it attaches to. The
+feedback arrow is the mechanism behind Section~\ref{sec:lit-planners}'s
+assessment of CEM/MPPI: refitting concentrates future candidates wherever the
+cost currently reads low, including where S4 makes it wrong.}\label{fig:pipeline}
+\end{figure}
 
 \subsection{Applying the taxonomy: a methodological gap}
 
@@ -960,61 +964,106 @@ Supervised state readout & 5/64 & 0/64 & 1/64 & 1/64 \\
 \end{table}
 
 \paragraph{Mechanism}
-Why an apparently accurate readout fails is answered only by conditioning on the
-optimiser. Agreement between the readout cost and the physical reference is
-moderate on initial candidate populations (Spearman $0.43$--$0.55$; reference
-top-10 recall $0.19$--$0.26$) and collapses on the populations the optimiser
-itself produces after refitting ($0.11$--$0.16$; $0.07$--$0.10$). On identical
-populations the readout's selection incurs $2.05$--$2.48$\,cm of within-population
-regret against the reference, versus $1.07$--$1.15$\,cm for a residual-matched
-permutation null---so the excess of $0.91$--$1.36$\,cm exceeds the
-optimizer's-curse baseline of \citet{smith2006optimizer}, with all confidence
-intervals above zero. Intervening on the refitting cost alone degrades the best
-candidate subsequently available by $1.51$--$2.01$\,cm, in the same direction in
-all eight seeds. Exact-success candidates remain sparse in final populations
-($8.0\%$, $3.6\%$, $0\%$, $0\%$ across cells), which is a partial concession to
-the coverage account of~\citet{imwm2026}: availability is measured after prior
-refits, so it does not independently establish a proposal failure.
+Why an apparently accurate readout fails is answered only by conditioning on
+the optimiser. Figure~\ref{fig:collapse} shows agreement between the readout
+cost and the physical reference on the optimiser's own candidate populations:
+moderate on the initial population, collapsed on the population the optimiser
+produces after refitting. Table~\ref{tab:mechanism} quantifies the
+consequence for selection. The excess regret over a residual-matched
+permutation null exceeds the optimizer's-curse baseline of
+\citet{smith2006optimizer}, with all confidence intervals above zero, and
+intervening on the refitting cost alone degrades the best candidate
+subsequently available in the same direction in all eight seeds. Exact-success
+candidates remain sparse in final populations, which is a partial concession
+to the coverage account of~\citet{imwm2026}: availability is measured after
+prior refits, so it does not independently establish a proposal failure.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[font=\small]
+  \def\ymax{6}
+  \draw[thick] (0,0) -- (0,\ymax);
+  \foreach \y/\lbl in {0/0.0,1/0.1,2/0.2,3/0.3,4/0.4,5/0.5,6/0.6}
+    \draw (-0.1,\y) -- (0.1,\y) node[left=2pt, font=\scriptsize] {\lbl};
+  \draw[thick] (0,0) -- (10.5,0);
+
+  % Spearman group
+  \draw[very thick, gray!55] (2.0,4.3) -- (2.0,5.5);
+  \draw[gray!55] (1.75,4.3) -- (2.25,4.3); \draw[gray!55] (1.75,5.5) -- (2.25,5.5);
+  \draw[very thick, black] (3.2,1.1) -- (3.2,1.6);
+  \draw[black] (2.95,1.1) -- (3.45,1.1); \draw[black] (2.95,1.6) -- (3.45,1.6);
+  \node[font=\scriptsize] at (2.6,-0.55) {Spearman $\rho$};
+
+  % Recall group
+  \draw[very thick, gray!55] (6.5,1.9) -- (6.5,2.6);
+  \draw[gray!55] (6.25,1.9) -- (6.75,1.9); \draw[gray!55] (6.25,2.6) -- (6.75,2.6);
+  \draw[very thick, black] (7.7,0.7) -- (7.7,1.0);
+  \draw[black] (7.45,0.7) -- (7.95,0.7); \draw[black] (7.45,1.0) -- (7.95,1.0);
+  \node[font=\scriptsize] at (7.1,-0.55) {reference top-10 recall};
+
+  % Legend
+  \draw[very thick, gray!55] (9.3,5.6) -- (9.7,5.6); \node[right, font=\scriptsize] at (9.7,5.6) {initial population};
+  \draw[very thick, black] (9.3,5.15) -- (9.7,5.15); \node[right, font=\scriptsize] at (9.7,5.15) {after refit};
+\end{tikzpicture}
+\caption{Readout--reference agreement on the optimiser's own candidate
+populations, range across four checkpoint$\times$task cells. Both agreement
+measures collapse between the initial population and the population the same
+optimiser produces after refitting the sampling distribution toward low
+cost---the mechanism in Figure~\ref{fig:pipeline}'s feedback
+arrow.}\label{fig:collapse}
+\end{figure}
+
+\begin{table}[t]
+\centering\small
+\caption{Selection cost of the collapse in Figure~\ref{fig:collapse}, on
+identical candidate populations (range across four
+cells).}\label{tab:mechanism}
+\begin{tabular}{@{}L{9.5cm}r@{}}
+\toprule
+Quantity & Value \\
+\midrule
+Within-population regret, readout selection & $2.05$--$2.48$\,cm \\
+Within-population regret, residual-matched permutation null & $1.07$--$1.15$\,cm \\
+Excess over matched-noise null (all CIs $>0$) & $0.91$--$1.36$\,cm \\
+Degradation to best-available candidate from intervening on the refitting cost & $1.51$--$2.01$\,cm \\
+Exact-success candidates, final population & $8.0\%,\ 3.6\%,\ 0\%,\ 0\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \paragraph{Repairs attempted}
-Table~\ref{tab:nulls} summarises interventions run in the same harness. The
-pattern is more informative than any single row: each improved the quantity it
-targeted, and none moved contact planning outside the baseline band. Raising
-off-policy readout accuracy from $78\%$ to $91.5\%$ within $5$\,cm transferred no
-planning success; restoring counterfactual action tracking to a correlation of
-$0.68$--$0.70$ flipped no episodes; light encoder fine-tuning reaching
-$94$--$100\%$ grounding accuracy stayed inside the frozen band across five seeds;
-and an ensemble-disagreement penalty, the standard model-based remedy, was flat
-because ensemble members share the frozen backbone's blind spots.
+Table~\ref{tab:nulls} summarises interventions run in an earlier pilot phase
+of the same harness, before the fresh $64$-seed headline comparison of
+Table~\ref{tab:terminal}: $16$ episode seeds per cell, contact tasks scored on
+strict episode-end success. Every row improved the quantity it targeted; none
+moved contact planning outside the $0$--$2/16$ baseline band. Ensemble
+disagreement, the standard model-based remedy for an optimiser exploiting
+proxy error, was flat because the ensemble members share the frozen
+backbone's blind spots rather than disagreeing on them.
 
 \begin{table}[t]
 \centering\footnotesize
-\caption{Interventions in the same harness. Every row improved its target
-quantity; none moved contact planning outside the $0$--$2/16$ baseline
-band.}\label{tab:nulls}
-\begin{tabularx}{\textwidth}{@{}L{3.5cm} L{4.5cm} L{2.3cm} Y@{}}
+\caption{Interventions run in the $n{=}16$ pilot harness. Every row improved
+its target quantity; none crossed the $0$--$2/16$ baseline band on contact
+tasks.}\label{tab:nulls}
+\begin{tabularx}{\textwidth}{@{}L{4.3cm} L{5.7cm} Y@{}}
 \toprule
-Intervention & Target quantity improved & Planning & Reading \\
+Intervention & Target quantity improved & Planning \\
 \midrule
 Post-hoc cost variants (learned metric, decoded object, composed readout) &
-various; all match or beat $L_2$ offline & 0--2/16 & no post-hoc cost on the
-frozen encoder crossed \\
+various; all match or beat $L_2$ offline & 0--2/16 \\
 Off-policy-robust readout & off-policy decode $78 \rightarrow 91.5\%$ $<5$\,cm &
-1/16 & readout precision was not the constraint \\
-Relearned representation adapter & decode median $6.9$\,cm & 1/16 & nor was the
-readout's parameterisation \\
+1/16 \\
+Relearned representation adapter & decode median $6.9$\,cm & 1/16 \\
 Encoder fine-tuning (LoRA), 5 seeds & grounding $94$--$100\%$ $<5$\,cm &
-$\{5,0,2,1,1\}/16$ & inside the frozen band; the $5$ is seed variance \\
+$\{5,0,2,1,1\}/16$ (the $5$ is seed variance) \\
 Ensemble disagreement penalty & penalty demonstrably active across $\lambda$ &
-$\{2,1,2,1\}/16$ & members share the backbone's blind spots \\
-Amortised search-free control & removes the optimiser entirely & null & removing
-search is not sufficient \\
+$\{2,1,2,1\}/16$ \\
+Amortised search-free control & removes the optimiser entirely & null \\
 Grounded dynamics channel & counterfactual tracking corr $+0.68$/$+0.70$; cost
-surface $+0.089$ [$+0.022$, $+0.162$] & 0 episodes flipped & grounding improved,
-planning unchanged \\
+surface $+0.089$ [$+0.022$, $+0.162$] & 0 episodes flipped \\
 Selection-aware encoder objective, 4 arms $\times$ 3 seeds & validation selection
-regret $0.0020$--$0.0069$ & $0$--$5/16$ & only the ranking-based arm was
-non-degenerate \\
+regret $0.0020$--$0.0069$ & $0$--$5/16$ \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -1031,74 +1080,103 @@ through the same protocol is the most informative single extension available.
 \section{Proposed research directions}\label{sec:open}
 % ===============================================================
 
-\paragraph{Costs trained on the distribution the planner induces}
-The recurring pattern of Table~\ref{tab:nulls}---fidelity improves, planning does
-not---has a structural reading. Every objective in Section~\ref{sec:lit-repr}
-optimises how well some learned quantity matches a physical one on a distribution
-chosen by the experimenter. What a planner consumes is an ordering on a
-distribution chosen by the \emph{optimiser}, after refitting has moved it.
-Objectives defined on rankings within realised populations, rather than on values
-over a fixed dataset, are largely unexplored; the limited evidence available
-suggests scalar regression onto true cost is not the right form, while
-group-relative ranking objectives are more promising and essentially untested at
-scale.
+Table~\ref{tab:agenda} orders seven directions raised by
+Sections~\ref{sec:lit} and~\ref{sec:case} by tractability. Tier 1 reuses the
+harness of Section~\ref{sec:case} unmodified and adjudicates a live confound;
+Tier 2 tests how far the mechanism generalises; Tier 3 is the two directions
+that require building a new objective or representation criterion---the most
+consequential in Section~\ref{sec:intro}'s framing, and the most speculative.
+Each row carries a decision rule, not only a hypothesis.
 
-\paragraph{Decision equivalence as a representation criterion}
-\citet{kim2026latentstate} frames representation design as a question of
-sufficiency: what must the state preserve for its intended use? For planning, the
-natural criterion is preservation of the $\arg\min$ over a family of goals, which
-is far weaker than reconstructing the state and far stronger than predicting the
-next latent. TD-MPC2~\citep{hansen2024tdmpc2} achieves something like it through
-value supervision; whether an equivalent is obtainable in the reward-free,
-goal-image setting is open, and would be the most direct response to the evidence
-in Section~\ref{sec:case}.
+\begin{table}[t]
+\centering\footnotesize
+\caption{Proposed directions, ordered by tractability. Tiers 1--2 reuse the
+harness of Section~\ref{sec:case}; Tier 3 requires new
+objectives.}\label{tab:agenda}
+\begin{tabularx}{\textwidth}{@{}c L{3.0cm} L{3.5cm} Y@{}}
+\toprule
+Tier & Direction & First experiment & Decision rule \\
+\midrule
+1 & Discriminating reruns of S3/S4 repairs & Rerun 2--3 published repairs
+(e.g.\ ACID, a learned terminal metric) under exact candidate dynamics, with
+a positive control under learned dynamics & Gain does not survive $\Rightarrow$
+S1 confound confirmed, deprioritise further reruns; gain survives
+$\Rightarrow$ genuine counterexample, becomes its own case study \\
+1 & Representation quality as competing explanation & Run a dense-feature
+checkpoint~\citep{murlabadia2026vjepa21} through the Table~\ref{tab:terminal}
+protocol unmodified & Latent $L_2$ alone approaches the reference band
+$\Rightarrow$ cost geometry is not the binding constraint for that family,
+pivot toward feature density; band unchanged $\Rightarrow$ cost geometry
+survives net of density \\
+1 & Evaluation protocol & Report candidate availability, selection regret, and
+proxy--physical rank correlation for every run in Tiers 1--2 & No kill
+condition; ships as instrumentation alongside the two rows above \\
+2 & Generality across optimisers & Sweep CEM, MPPI, iCEM, gradient and
+amortised control on the two pilot tasks, reusing Figure~\ref{fig:collapse}'s
+protocol & Collapse appears only under refitting-based search $\Rightarrow$
+narrow the S4 claim to that class; collapse is broad $\Rightarrow$ S4
+generalises \\
+2 & Whether hierarchy changes the picture & Rerun the pilot tasks with
+hierarchical decomposition~\citep{zhang2026hwm} at 2--3 subgoal levels &
+Contact success unchanged $\Rightarrow$ failure is horizon-independent, rules
+out shallow search depth as the cause \\
+3 & Costs trained on the planner-induced distribution & Fit a group-relative
+ranking objective on the optimiser's own final-population candidates and
+rerun Table~\ref{tab:terminal} & Does not close a material fraction of the
+$0/64\rightarrow 64/64$ gap $\Rightarrow$ objective form joins the encoder-
+and predictor-side levers already ruled out by Table~\ref{tab:nulls} \\
+3 & Decision equivalence as a representation criterion & Contingent on the
+row above: test whether preserving $\arg\min$ over the pilot's goal family is
+sufficient once conditioned on it & Evaluated only if the ranking objective
+shows partial traction; otherwise deprioritised \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-\paragraph{Discriminating experiments for existing repairs}
-The gap identified in Table~\ref{tab:matrix} is directly actionable. Running the
-S3 and S4 repairs---inverse-consistency costs, reachability heads, learned
-terminal metrics---under exact candidate dynamics would establish, for each,
-whether its gain survives when prediction error is removed. A repair that loses
-most of its benefit was repairing S1; one that survives is a genuine
-counterexample to the attribution in Section~\ref{sec:case}. Either outcome is
-informative, and the experiment is inexpensive relative to its value. The
-prerequisite is a positive control reproducing the original gain under learned
-dynamics, without which a null result is uninterpretable.
+\paragraph{Tier 1: closing the methodological gap with the existing harness}
+The gap identified in Table~\ref{tab:matrix} is directly actionable: rerunning
+the S3 and S4 repairs surveyed in Section~\ref{sec:lit-diag}---inverse-consistency
+costs, reachability heads, learned terminal metrics---under exact candidate
+dynamics would establish, for each, whether its gain survives when prediction
+error is removed. Running Table~\ref{tab:terminal}'s protocol on a
+dense-feature checkpoint~\citep{murlabadia2026vjepa21} does the same for the
+leading alternative to the cost-geometry account of Section~\ref{sec:case}:
+denser predictive features and cost geometry make opposite predictions for
+this one experiment, so it adjudicates between the two research programmes
+rather than merely adding evidence to one. Both experiments produce, as a
+byproduct, the three quantities identified in Section~\ref{sec:lit-eval} as
+cheap and essentially unreported; standardising their computation is a
+contribution available independently of either outcome.
 
-\paragraph{Whether hierarchy changes the picture}
-Amortisation removes the optimiser but inherits the latent geometry, and the one
-controlled test available found it insufficient. Hierarchical
-decomposition~\citep{zhang2026hwm} differs in kind: it shortens the horizon each
-cost must span, leaving less room for a candidate to reach a low-cost region that
-is physically wrong. Whether this helps, or merely relocates the same failure to
-every level, is unresolved and directly testable.
+\paragraph{Tier 2: testing generality}
+Almost all evidence for cost-geometry failure comes from CEM. Since the
+mechanism depends on distribution refitting---Figure~\ref{fig:pipeline}'s
+feedback arrow---it should transfer to MPPI and iCEM and behave differently
+under gradient or amortised control, but that is a prediction, not yet a
+finding; \citet{nguyen2026latentgeometry} is the only study in this area
+sweeping several optimisers, and for a different purpose. Hierarchical
+decomposition~\citep{zhang2026hwm} tests a different kind of generality: it
+shortens the horizon each cost must span, leaving less room for a candidate
+to reach a low-cost region that is physically wrong, so it is a plausible
+mitigation for cost-geometry failure as well as a scalability mechanism.
 
-\paragraph{Representation quality as the competing explanation}
-The strongest alternative to a cost-geometry account is that the frozen features
-themselves lack the spatial precision contact requires.
-\citet{murlabadia2026vjepa21} report large contact-task gains from denser
-predictive features, which is exactly what that account predicts. No published
-study runs a dense-feature checkpoint through a cost-attribution protocol, so the
-two explanations remain entangled. Resolving this should be a priority, since
-they imply opposite research programmes---improve the encoder, or change the
-objective that shapes it.
-
-\paragraph{Generality across optimisers}
-Almost all evidence about cost-geometry failure comes from CEM. Since the
-proposed mechanism depends on distribution refitting, it should transfer to MPPI
-and iCEM and behave differently for gradient and amortised controllers, but that
-is a prediction rather than a finding. \citet{nguyen2026latentgeometry} is the
-only study in this area sweeping several optimisers, and it does so for a
-different purpose. Until the mechanism is replicated across optimisers and model
-families, the conservative reading is that it is a property of sampling-based
-search against a particular class of costs.
-
-\paragraph{An evaluation protocol}
-Section~\ref{sec:lit-eval} identified three quantities that are cheap to compute
-and essentially never reported: candidate availability, selection regret against
-the best available candidate, and proxy--physical rank correlation measured at
-the first and last search iteration. Standardising these would make the competing
-diagnoses of Section~\ref{sec:lit-synth} directly comparable for the first time,
-and is a contribution available independently of any new method.
+\paragraph{Tier 3: the new-objective bet}
+The recurring pattern of Table~\ref{tab:nulls}---fidelity improves, planning
+does not---has a structural reading. Every objective in
+Section~\ref{sec:lit-repr} optimises how well a learned quantity matches a
+physical one on a distribution chosen by the experimenter; what a planner
+consumes is an ordering on a distribution chosen by the \emph{optimiser},
+after refitting has moved it. Objectives defined on rankings within realised
+populations, rather than on values over a fixed dataset, are largely
+unexplored; the limited evidence available suggests scalar regression onto
+true cost is not the right form, while group-relative ranking objectives are
+more promising and essentially untested at scale. If such an objective shows
+partial traction, the natural follow-on is \citet{kim2026latentstate}'s
+sufficiency framing applied to planning specifically: the natural criterion is
+preservation of the $\arg\min$ over a family of goals, weaker than
+reconstructing the state and stronger than predicting the next latent, which
+TD-MPC2~\citep{hansen2024tdmpc2} achieves through value supervision but which
+no reward-free, goal-image method yet obtains.
 
 % ===============================================================
 \section{Conclusion}\label{sec:conclusion}

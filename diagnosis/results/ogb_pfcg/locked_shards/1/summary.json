@@ -1,0 +1,50 @@
+{
+  "artifact_reproduction": {
+    "executed_steps": 0.0,
+    "learned_cost": 1.1789276356921619e-05,
+    "physical_distance_m": 0.0,
+    "success_disagreements": 0
+  },
+  "config": {
+    "action_block": 5,
+    "checkpoint": "quentinll/lewm-cube",
+    "dataset": "ogbench/cube_single_expert.h5",
+    "goal_offset": 25,
+    "horizon": 5,
+    "num_candidates": 300,
+    "probe_pairs": 32,
+    "relative_eigen_floor": 1e-06,
+    "replay_physical_atol": 1e-05,
+    "ridge_fraction": 0.1,
+    "seed": 20260811,
+    "snapshot_index": 1
+  },
+  "deployable_selected_before_simulator": {
+    "pred_diag": 286,
+    "pred_l2": 286,
+    "pred_pfcg": 286,
+    "pred_projected": 286,
+    "pred_random": 251
+  },
+  "geometry": {
+    "largest_eigenvalue": 31.22685821802109,
+    "latent_dim": 192,
+    "rank": 31,
+    "response_energy_retained": 1.0,
+    "ridge": 0.006840663759787494,
+    "smallest_retained_eigenvalue": 0.0008911069133248998
+  },
+  "independent_replay": {
+    "executed_steps": 0.0,
+    "physical_distance_m": 0.0,
+    "success": 0.0
+  },
+  "scope": "PFCG costs and deployable choices fixed before MuJoCo evaluation; simulator supplies physical distance and success only after selection",
+  "snapshot": {
+    "episode": 294,
+    "order": 1,
+    "reset_seed": 20270811,
+    "start_step": 45,
+    "storage_row": 59139
+  }
+}

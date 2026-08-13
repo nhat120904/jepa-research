@@ -1,0 +1,16 @@
+[
+  {
+    "episode": 3132,
+    "order": 0,
+    "reset_seed": 20270810,
+    "start_step": 63,
+    "storage_row": 629595
+  },
+  {
+    "episode": 8908,
+    "order": 1,
+    "reset_seed": 20270811,
+    "start_step": 104,
+    "storage_row": 1790612
+  }
+]

@@ -1,0 +1,151 @@
+{
+  "config": {
+    "action_block": 5,
+    "checkpoint": "quentinll/lewm-cube",
+    "dataset": "ogbench/cube_single_expert.h5",
+    "domain_ratio_max": 0.25,
+    "goal_offset": 25,
+    "horizon": 5,
+    "independent_worlds": 2,
+    "latent_atol": 1e-05,
+    "num_candidates": 300,
+    "physical_atol": 1e-05,
+    "snapshot_index": 28,
+    "visual_variation": [],
+    "warmstart_disabled": true
+  },
+  "domain": {
+    "dataset_task_cost": 75.5416163655473,
+    "dataset_vs_rendered_goal_pixels": {
+      "max_abs": 103.0,
+      "mean_abs": 0.3443412521258503
+    },
+    "dataset_vs_rendered_init_pixels": {
+      "max_abs": 119.0,
+      "mean_abs": 0.41596912202380953
+    },
+    "domain_ratio": 0.0005737723996618113,
+    "domain_ratio_max": 0.25,
+    "pass": true,
+    "rendered_goal_identity": true,
+    "rendered_init_identity": true,
+    "rendered_task_cost": 76.17592393551045,
+    "same_state_goal_cost": 0.03192734288312141,
+    "same_state_init_cost": 0.043343694496392034
+  },
+  "gate": {
+    "checks": {
+      "dataset_goal_cost_repeat": true,
+      "dataset_goal_selection_repeat": true,
+      "domain_match": true,
+      "endpoint_pixels_exact": true,
+      "executed_repeat": true,
+      "goal_pixels_exact": true,
+      "initial_pixels_exact": true,
+      "physical_repeat": true,
+      "reference_executed": true,
+      "reference_physical": true,
+      "reference_success": true,
+      "rendered_goal_cost_repeat": true,
+      "rendered_goal_selection_repeat": true,
+      "success_repeat": true,
+      "visual_signature": true
+    },
+    "pass": true
+  },
+  "oracle_candidate_success": 1,
+  "oracle_physical_distance_m": 0.021258137689552,
+  "reference_corrected_physical": {
+    "executed_steps_max_abs": 0.0,
+    "physical_distance_m_max_abs": 0.0,
+    "success_disagreements": 0
+  },
+  "repeat": {
+    "endpoint_pixels": {
+      "max_abs": 0.0,
+      "mean_abs": 0.0
+    },
+    "executed_steps_max_abs": 0.0,
+    "goal_pixels": {
+      "max_abs": 0.0,
+      "mean_abs": 0.0
+    },
+    "initial_pixels": {
+      "max_abs": 0.0,
+      "mean_abs": 0.0
+    },
+    "physical_distance_m_max_abs": 0.0,
+    "success_disagreements": 0,
+    "true_dataset_goal_cost_max_abs": 0.0,
+    "true_dataset_goal_selected_match": true,
+    "true_rendered_goal_cost_max_abs": 0.0,
+    "true_rendered_goal_selected_match": true,
+    "visual_signature_match": true
+  },
+  "scope": "offline diagnostic on locked candidates; simulator images/state are never exposed to a deployable selector",
+  "snapshot": {
+    "episode": 9365,
+    "order": 28,
+    "reset_seed": 20270838,
+    "start_step": 118,
+    "storage_row": 1882483
+  },
+  "visual_signature": {
+    "array_shapes": {
+      "cam_fovy": [
+        4
+      ],
+      "cam_mat0": [
+        4,
+        9
+      ],
+      "cam_pos": [
+        4,
+        3
+      ],
+      "cam_quat": [
+        4,
+        4
+      ],
+      "geom_rgba": [
+        64,
+        4
+      ],
+      "light_ambient": [
+        2,
+        3
+      ],
+      "light_diffuse": [
+        2,
+        3
+      ],
+      "light_dir": [
+        2,
+        3
+      ],
+      "light_pos": [
+        2,
+        3
+      ],
+      "light_specular": [
+        2,
+        3
+      ],
+      "mat_rgba": [
+        10,
+        4
+      ],
+      "tex_adr": [
+        2
+      ],
+      "tex_height": [
+        2
+      ],
+      "tex_width": [
+        2
+      ]
+    },
+    "first": "add82fdd0218b4f63c1da71f49d69b2f8e650d5c28540e52d8798d15d91cf93b",
+    "second": "add82fdd0218b4f63c1da71f49d69b2f8e650d5c28540e52d8798d15d91cf93b"
+  }
+}

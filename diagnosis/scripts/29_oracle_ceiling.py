@@ -106,13 +106,19 @@ def roll_cost(env, snap, plan_raw: np.ndarray, goal_obj: np.ndarray, w_hand: flo
 
 
 def cem_plan_sim(env, goal_obj, *, plan_h, num_samples, iterations, elite_frac,
-                 var0, w_hand, rng):
+                 var0, w_hand, rng, planner="cem", mppi_beta=5.0):
+    """``planner`` mirrors scripts/30_latent_oracle.py's ``cem_plan_latent`` test-time
+    optimizer switch (cem / mppi / shooting) so the privileged physical-reference
+    control can be compared against a learned cost under the SAME non-CEM optimizer,
+    not only under CEM. Only the distribution update differs; the cost (true
+    object-goal distance + hand-approach term) and dynamics are unchanged."""
     plan_raw_len = plan_h * FRAMESKIP
     dim = plan_raw_len * RAW_A
     mean = np.zeros(dim, dtype=np.float64)
     var = np.full(dim, var0, dtype=np.float64)
     n_elite = max(2, int(num_samples * elite_frac))
     snap = snapshot(env)
+    best_cost, best_sample = None, None
     for _ in range(iterations):
         samples = mean[None] + np.sqrt(var)[None] * rng.standard_normal((num_samples, dim))
         samples = np.clip(samples, -1.0, 1.0)
@@ -120,10 +126,24 @@ def cem_plan_sim(env, goal_obj, *, plan_h, num_samples, iterations, elite_frac,
         for i in range(num_samples):
             costs[i] = roll_cost(env, snap, samples[i].reshape(plan_raw_len, RAW_A),
                                  goal_obj, w_hand)
-        elites = samples[np.argsort(costs)[:n_elite]]
-        mean = elites.mean(0)
-        var = elites.var(0) + 1e-4
+        order = np.argsort(costs)
+        if best_cost is None or costs[order[0]] < best_cost:
+            best_cost = float(costs[order[0]]); best_sample = samples[order[0]].copy()
+        if planner == "cem":
+            elites = samples[order[:n_elite]]
+            mean = elites.mean(0); var = elites.var(0) + 1e-4
+        elif planner == "mppi":
+            c = (costs - costs.mean()) / (costs.std() + 1e-8)
+            w = np.exp(-mppi_beta * c); w /= w.sum()
+            mean = (w[:, None] * samples).sum(0)
+            var = (w[:, None] * (samples - mean[None]) ** 2).sum(0) + 1e-4
+        elif planner == "shooting":
+            pass                              # fixed proposal; commit to global best
+        else:
+            raise ValueError(f"unknown planner {planner!r}")
     restore(env, snap)                       # rewind to the real current state
+    if planner == "shooting":
+        return best_sample.reshape(plan_raw_len, RAW_A)
     return mean.reshape(plan_raw_len, RAW_A)
 
 
@@ -148,7 +168,9 @@ def run_episode(task, seed, env, init_state, goal_state, expert_succ, *,
                 break
         if success and not strict:
             break
-    return {"task": task, "arm": "oracle", "seed": seed, "success": int(success),
+    _pl = cem_kw.get("planner", "cem")
+    arm = "oracle" + ("" if _pl == "cem" else f"_{_pl}")
+    return {"task": task, "arm": arm, "seed": seed, "success": int(success),
             "success_end": int(last_success), "steps": steps,
             "final_state_dist": float(np.linalg.norm(obs - goal_state)),
             "ee_dist": float(np.linalg.norm(obs[:3] - goal_state[:3])),
@@ -171,12 +193,17 @@ def main() -> int:
     ap.add_argument("--var0", type=float, default=1.0)
     ap.add_argument("--w-hand", type=float, default=0.5,
                     help="dense hand→object approach weight in the sim cost")
+    ap.add_argument("--planner", choices=["cem", "mppi", "shooting"], default="cem",
+                    help="test-time optimizer, matching scripts/30_latent_oracle.py")
+    ap.add_argument("--mppi-beta", type=float, default=5.0,
+                    help="MPPI temperature (concentration on standardized cost)")
     ap.add_argument("--strict-success", action="store_true")
     ap.add_argument("--out", default="results/metaworld_oracle_ceiling.csv")
     args = ap.parse_args()
 
     cem_kw = dict(num_samples=args.cem_num_samples, iterations=args.cem_iterations,
-                  elite_frac=args.elite_frac, var0=args.var0, w_hand=args.w_hand)
+                  elite_frac=args.elite_frac, var0=args.var0, w_hand=args.w_hand,
+                  planner=args.planner, mppi_beta=args.mppi_beta)
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     fields = ["task", "arm", "seed", "success", "success_end", "steps",

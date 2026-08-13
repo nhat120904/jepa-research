@@ -1,0 +1,69 @@
+{
+  "config": {
+    "action_block": 5,
+    "cem_iterations": 30,
+    "checkpoint": "quentinll/lewm-cube",
+    "dataset": "ogbench/cube_single_expert.h5",
+    "goal_arm": "same_renderer",
+    "goal_offset": 25,
+    "horizon": 5,
+    "noise_seed": 20260812,
+    "num_samples": 300,
+    "snapshot_index": 8,
+    "topk": 30,
+    "var_scale": 1.0,
+    "visual_variation": [],
+    "w_hand": 0.5,
+    "warmstart_disabled": true
+  },
+  "gate": {
+    "checks": {
+      "iteration_zero_shared": true,
+      "provenance_executed_exact": true,
+      "provenance_latent_exact": true,
+      "provenance_physical_exact": true,
+      "provenance_success_exact": true,
+      "repeat_cube_exact": true,
+      "repeat_executed_exact": true,
+      "repeat_hand_exact": true,
+      "repeat_latent_exact": true,
+      "repeat_success_exact": true
+    },
+    "pass": true
+  },
+  "gates": {
+    "provenance": {
+      "executed_max_abs": 0.0,
+      "latent_max_abs": 0.0,
+      "physical_max_abs": 0.0,
+      "success_disagreements": 0
+    },
+    "repeat": {
+      "cube_goal_max_abs": 0.0,
+      "executed_max_abs": 0.0,
+      "hand_cube_max_abs": 0.0,
+      "latent_max_abs": 0.0,
+      "success_disagreements": 0
+    }
+  },
+  "primary": {
+    "delta_best_shaped_cost": 0.019159619531095087,
+    "delta_best_task_distance_m": 0.01907578096637774,
+    "delta_mean_task_distance_m": 0.02025549990559883,
+    "delta_selected_task_distance_m": 0.02183439895599759,
+    "delta_success_any": 0,
+    "latent_final_best_task_distance_m": 0.019112035952559298,
+    "physical_final_best_task_distance_m": 3.625498618156085e-05
+  },
+  "runtime_minutes": 34.59865179459254,
+  "scope": "cost-only CEM intervention with simulator-exact dynamics; simulator state is a positive control, never a deployable selector",
+  "snapshot": {
+    "episode": 2359,
+    "order": 8,
+    "reset_seed": 20270818,
+    "start_step": 118,
+    "storage_row": 474277
+  },
+  "start_distance_m": 0.09251964900334277,
+  "visual_signature": "add82fdd0218b4f63c1da71f49d69b2f8e650d5c28540e52d8798d15d91cf93b"
+}

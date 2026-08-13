@@ -27,9 +27,11 @@ sbatch scripts/slurm_proposal_build.sh
 3. **§6 stays proportionate.** It is a case study illustrating the methodology
    argued for in §5, not the centre of the document. If it grows past ~3 pages
    the document has drifted back toward being a paper.
-4. **No figures.** `graphicx` is deliberately not loaded and the build script
-   asserts the PDF embeds no images. The document is self-contained and compiles
-   anywhere.
+4. **Figures are native TikZ only, no raster images.** The two figures
+   (`fig:pipeline`, `fig:collapse`) are drawn with `tikz`/`graphicx` but embed
+   no external image files; the build script asserts the PDF has zero
+   `pdfimages`-listed bitmaps. The document stays self-contained and compiles
+   anywhere with a standard TeX Live install.
 5. **Blocked evidence stays out.** Rows marked ⛔ in
    `diagnosis/docs/CLAIMS_EVIDENCE.md` are excluded, lacking the positive-control
    validation needed to distinguish a method boundary from an implementation

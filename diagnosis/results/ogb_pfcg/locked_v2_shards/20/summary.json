@@ -1,0 +1,50 @@
+{
+  "artifact_reproduction": {
+    "executed_steps": 0.0,
+    "learned_cost": 1.167710927063581e-06,
+    "physical_distance_m": 0.005732995014999354,
+    "success_disagreements": 0
+  },
+  "config": {
+    "action_block": 5,
+    "checkpoint": "quentinll/lewm-cube",
+    "dataset": "ogbench/cube_single_expert.h5",
+    "goal_offset": 25,
+    "horizon": 5,
+    "num_candidates": 300,
+    "probe_pairs": 32,
+    "relative_eigen_floor": 1e-06,
+    "replay_physical_atol": 1e-05,
+    "ridge_fraction": 0.1,
+    "seed": 20260811,
+    "snapshot_index": 20
+  },
+  "deployable_selected_before_simulator": {
+    "pred_diag": 0,
+    "pred_l2": 0,
+    "pred_pfcg": 265,
+    "pred_projected": 0,
+    "pred_random": 0
+  },
+  "geometry": {
+    "largest_eigenvalue": 33.4163353704653,
+    "latent_dim": 192,
+    "rank": 31,
+    "response_energy_retained": 0.9999999999999998,
+    "ridge": 0.001428162521439836,
+    "smallest_retained_eigenvalue": 0.0005282843178232771
+  },
+  "repeat_replay": {
+    "executed_steps": 0.0,
+    "physical_distance_m": 0.0,
+    "success": 0.0
+  },
+  "scope": "PFCG choices fixed before MuJoCo evaluation; one compiled physical model is replayed twice and supplies distance/success only",
+  "snapshot": {
+    "episode": 6997,
+    "order": 20,
+    "reset_seed": 20270830,
+    "start_step": 12,
+    "storage_row": 1406409
+  }
+}

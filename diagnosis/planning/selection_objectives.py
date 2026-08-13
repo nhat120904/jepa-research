@@ -94,6 +94,52 @@ def grouped_regression_huber(
     return torch.stack(losses).mean()
 
 
+def grouped_regret_weighted_pairwise(
+    predicted_cost: torch.Tensor,
+    true_cost: torch.Tensor,
+    group_id: torch.Tensor,
+    *,
+    kappa: float = 3.0,
+    min_true_gap: float = 0.0,
+) -> torch.Tensor:
+    """Cost-sensitive pairwise ranking, weighted by the truly-worse candidate.
+
+    ``grouped_pairwise_logistic`` treats every inversion alike, and
+    ``grouped_softmin_regret`` weights by the *predicted* soft-argmin mass.
+    Neither penalises the specific error ``argmin`` consumes: ranking a
+    genuinely terrible candidate cheap.  Here each pair is weighted by the
+    normalised true regret of its worse member, so an inversion that puts a
+    high-regret candidate in the cheap tail costs ``1 + kappa`` times a swap
+    between two near-equal candidates.  ``kappa = 0`` recovers the uniform
+    pairwise loss, which makes this a strict generalisation and lets the
+    ablation isolate the asymmetry rather than the parameterisation.
+    """
+    if kappa < 0:
+        raise ValueError("kappa must be non-negative")
+    losses = []
+    for idx in _groups(group_id):
+        pred = predicted_cost[idx]
+        truth = true_cost[idx].detach()
+        spread = truth.mean() - truth.min()
+        if spread <= 0:
+            continue
+        regret = (truth - truth.min()) / spread
+        i, j = torch.triu_indices(len(idx), len(idx), offset=1, device=pred.device)
+        true_delta = truth[j] - truth[i]
+        keep = true_delta.abs() > min_true_gap
+        if not keep.any():
+            continue
+        i, j, true_delta = i[keep], j[keep], true_delta[keep]
+        signed_pred_delta = true_delta.sign() * (pred[j] - pred[i])
+        worse = torch.where(true_delta > 0, j, i)
+        weight = 1.0 + kappa * regret[worse]
+        loss = (weight * F.softplus(-signed_pred_delta)).sum() / weight.sum()
+        losses.append(loss)
+    if not losses:
+        raise ValueError("no non-tied within-group candidate pairs")
+    return torch.stack(losses).mean()
+
+
 @torch.no_grad()
 def grouped_hard_selection_regret(
     predicted_cost: torch.Tensor,

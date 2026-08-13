@@ -1,0 +1,29 @@
+{
+  "script": "54_shared_population_branch.py",
+  "config": "configs/diagnostic_metaworld.yaml",
+  "model": "dino_wm_metaworld",
+  "tasks": [
+    "mw-pick-place"
+  ],
+  "probe": "checkpoints/spatial_object_probe_dino_wm_metaworld_offpolicy.pt",
+  "ee_probe": "checkpoints/ee_probe_dino_wm_metaworld_offpolicy.pt",
+  "branches": [
+    "l2",
+    "true_state"
+  ],
+  "carrier": "true_state",
+  "episodes": 16,
+  "seed0": 44000,
+  "horizon": 6,
+  "num_act_stepped": 3,
+  "max_episode_steps": 100,
+  "max_replans": 34,
+  "cem_num_samples": 100,
+  "cem_iterations": 6,
+  "elite_frac": 0.1,
+  "var0": 1.0,
+  "w_hand": 0.5,
+  "strict_success": false,
+  "common_random_numbers": "same eps tensor at every iteration; exact same population at iter=0",
+  "dynamics": "MuJoCo simulator; learned predictor bypassed"
+}

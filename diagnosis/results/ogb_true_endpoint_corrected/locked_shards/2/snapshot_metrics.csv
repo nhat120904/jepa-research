@@ -1,0 +1,4 @@
+snapshot,selector,selected_candidate,selected_physical_distance_m,selected_success,selection_regret_m,success_gap,spearman_physical,top10pct_recall_physical,false_elite_rate_physical
+2,learned_predicted_goal,0,0.2600585922382583,0.0,0.014847711608378722,0.0,0.023974488605428945,0.06666666666666667,0.5
+2,true_dataset_goal,14,0.2777611508071479,0.0,0.03255027017726836,0.0,-0.006970299669996333,0.23333333333333334,0.6
+2,true_rendered_goal,97,0.26768352745375634,0.0,0.022472646823876785,0.0,-0.006705407837864864,0.23333333333333334,0.6

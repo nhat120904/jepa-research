@@ -8,12 +8,12 @@
 \usepackage{float}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\hypersetup{hidelinks}
 \usepackage{url}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,calc}
 
-\title{Per-Channel Decoding Accuracy Does Not Certify Plannability:
-An Optimizer-Conditioned Audit of World-Model Costs\thanks{An LLM-based assistant was
+\title{Isolating Terminal-Cost Misranking in Latent-Space Planning\thanks{An LLM-based assistant was
 used for manuscript restructuring and language editing. The authors verified
 all scientific claims, analyses, and conclusions.}}
 
@@ -29,156 +29,120 @@ all scientific claims, analyses, and conclusions.}}
 \maketitle
 
 \begin{abstract}
-World-model planners do not consume average representation or decoding error;
-they optimize the ordering induced by a terminal cost on their own candidate
-distribution. We introduce an optimizer-conditioned cost audit that separates
-dynamics error, candidate availability, immediate selection, and adaptive
-search. On two contact-rich MetaWorld tasks and two released visual world-model
-checkpoints, every candidate is executed from a simulator snapshot and its
-endpoint is re-encoded, making candidate dynamics exact. With the same CEM
-budget, a simulator-state reference cost solves push in $64/64$ episodes and
-pick-place in $49/64$, whereas latent $L_2$ solves $0/64$ in every cell.
-A supervised state-decoding cost reaches at most $5/64$ despite a
-$2.1$\,cm median error on its object channel on held-out expert frames.
-The audit separates two failure modes. Latent $L_2$ carries only weak and
-task-dependent ordering that becomes anti-aligned under search: its rank
-correlation with the physical reference is $0.25$--$0.27$ on the two push cells
-but indistinguishable from zero on both pick-place cells, and it is negative in
-all four cells after refitting. Stateprobe carries substantially more initial
-ordering ($\rho=0.43$--$0.55$) and loses it under search, falling to
-$0.11$--$0.16$ after refitting; on identical candidates its selection incurs
-structured regret beyond a residual-matched noisy-score null, and changing only
-the refitting cost then causes later populations to lose better physical
-candidates. Exact-success candidates are also sparse in the realized final
-populations; a matched-snapshot control finds a limited within-snapshot
-refitting effect, leaving an additional state-distribution effect that our
-design does not quantify.
-Apparently accurate per-channel decoding can therefore coexist with a cost that
-becomes unreliable on optimizer-induced inputs. The causal selection and
-refitting diagnosis is established for the fixed stateprobe composition.
+Latent world-model planners often select actions by minimizing the distance
+between a predicted outcome and a goal in representation space. We ask whether
+this terminal cost can fail even when every candidate outcome is exact. On
+MetaWorld contact tasks, we replace learned rollouts with simulator execution
+while holding the encoder and CEM budget fixed. Latent $L_2$ solves $0/64$ push
+and pick-place episodes using the released DINOv2-based representation, while a
+physical reference cost solves $64/64$ push and $49/64$ pick-place episodes.
+The failure is task-dependent: latent $L_2$ also fails button-press and
+window-close but solves drawer-close. On the candidate populations CEM creates,
+latent-$L_2$/physical-cost agreement is weak or absent initially and becomes
+negative after refitting. In matched CEM branches that differ only in refitting
+cost, latent-$L_2$ refitting produces candidates $1.13$--$2.18$\,cm worse in
+task distance. A supervised state readout provides a complementary diagnostic:
+it has good broad held-out rank agreement but modest elite recovery, both of
+which degrade further on CEM-generated candidates. A second encoder on
+OGBench-Cube also exhibits residual misranking after predicted endpoints are
+replaced by rendered outcomes. These results argue for evaluating planning
+costs on the candidate distributions created by search, not only on held-out
+trajectory metrics.
 \end{abstract}
 
 \section{Introduction}
 
-Visual world models increasingly support planning by predicting future latent
-states and minimizing their distance to a goal
-\citep{zhou2024dinowm,jepawms2025}. This decomposition creates at least three
-distinct failure sites: the predictor may produce the wrong future, the search
-may not propose a useful action sequence, or the terminal cost may prefer a
-physically worse sequence. Aggregate prediction or decoding error does not
-distinguish these cases. A planner consumes an \emph{ordering} over its own
-candidates, often after the optimizer has moved those candidates away from the
-data on which the representation or readout was validated.
+Visual world models increasingly plan by predicting future representations and
+minimizing their distance to a goal
+\citep{zhou2024dinowm,jepawms2025,maes2026lewm}. This approach can fail because
+the prediction is wrong, because search never proposes a useful action, or
+because latent distance prefers the wrong outcome. These explanations are easy
+to conflate: a failed episode alone does not reveal which component failed.
 
-We ask: \emph{if every candidate future is exact, when does a
-representation-derived cost still fail to support contact-rich planning?} In
-MetaWorld~\citep{yu2020metaworld}, we snapshot the simulator, execute each CEM
-candidate, render its endpoint, and pass that observation through the frozen
-encoder. This exact-dynamics construction preserves the real representation
-and terminal scorer while removing the learned predictor. Simulator state
-provides a reference score for every candidate.
+This paper isolates the third possibility. We ask a simple question: \emph{if
+every candidate outcome is exact, does the latent cost choose the physically
+better one?} In MetaWorld~\citep{yu2020metaworld}, we save the simulator state,
+execute every candidate action sequence, render its endpoint, and encode that
+image. The learned predictor is removed, while the representation, goal image,
+terminal cost, and search budget stay unchanged. Simulator state supplies a
+physical reference cost and verifies that the same search can solve the task.
+We evaluate two released MetaWorld planning stacks, DINO-WM and JEPA-WM; both
+route through the same frozen \texttt{dinov2\_vits14} encoder once their
+predictors are bypassed, so the MetaWorld study probes one representation
+through two released implementations, and a second, independently trained
+encoder on OGBench-Cube tests whether the pattern is specific to that
+representation.
 
-We call the resulting procedure an \emph{optimizer-conditioned cost audit}.
-It scores identical populations with both the deployed proxy and a physical
-reference, compares real selection with a matched-noise permutation null, and
-intervenes on the cost used for adaptive CEM refitting. A separate availability
-test asks whether an exactly successful sequence is present in the realized
-final population. The audit separates:
-\begin{enumerate}
-  \item whether failure persists without learned-dynamics error;
-  \item whether the finite planner budget can solve the task with an
-  informative cost;
-  \item whether useful candidates are present under the realized search; and
-  \item whether the proxy selects and preserves the better candidates that are
-  available.
-\end{enumerate}
+The answer is often no. With exact candidate outcomes, latent $L_2$ fails all
+64 push and pick-place episodes for both released planning stacks, whereas the
+physical cost solves all push episodes and 49 pick-place episodes. Candidate-
+level measurements explain the gap: the costs rank the same outcomes
+differently, and repeated CEM updates amplify that disagreement. A second cost
+based on decoded object and hand positions looks accurate on held-out expert
+frames but also loses rank agreement on CEM's candidates. Directly changing
+only the refitting cost produces worse later candidates. Residual true-endpoint
+misranking also appears with a distinct encoder on
+OGBench-Cube, although learned prediction error explains part of the total
+regret there.
 
-We contribute both the reusable audit and a controlled empirical diagnosis.
-First, exact dynamics plus latent or probe-derived cost remains near failure,
-while the same search budget succeeds with a simulator-state cost. Second,
-applying the audit to both costs separates two failure modes that the success
-table alone conflates. Latent $L_2$ fails by \emph{weak, task-dependent initial
-ordering that becomes anti-aligned under search}: on pick-place its ranking of
-contact candidates is already indistinguishable from independent of the physical
-reference, recovering the physically best elites at or below chance before any
-refitting, whereas on push it retains a weak but nonzero initial ordering that
-turns negative only after refitting.
-Stateprobe fails by
-\emph{eroded and exploited ordering}: per-channel decoding that appears accurate
-on held-out expert observations does supply real initial ordering, but rank
-correlation and elite recall collapse during refitting, the proxy misranks
-identical candidates beyond an equally noisy residual-matched baseline, and a
-cost-only intervention shows that this misranking degrades later proposals.
-Third, we measure exact-success candidate availability rather than silently
-attributing every failure to ranking, and use a matched-snapshot branch control
-to bound how much of the observed sparsity the refitting cost itself explains
-within a snapshot.
-The causal selection and refitting tests are run for stateprobe; latent $L_2$ is
-covered by the exact-dynamics terminal-cost comparison and the
-same-population ranking audit.
+Our audit has three steps. First, exact simulator execution asks whether a
+terminal cost fails without prediction error. Second, it evaluates the ordering
+that cost induces on the candidates CEM actually creates. Third, matched CEM
+branches change the refitting cost while holding the initial population,
+snapshots, and base noise fixed. This identifies whether cost ordering changes
+later proposals. Across MetaWorld and OGBench-Cube, the audit shows that
+terminal-cost misranking can survive exact outcome prediction. Stateprobe
+further shows why average held-out accuracy is not enough: broad rank agreement
+need not imply reliable elite selection, especially after search shifts the
+candidate distribution. The drawer-close boundary limits the conclusion to
+tasks where latent geometry fails to preserve task-relevant ordering.
 
 \section{Related Work}
 
-\paragraph{Latent world-model planning.}
+\paragraph{Latent planning and goal geometry.}
 DINO-WM plans in the frozen feature space of a self-supervised visual encoder
-\citep{zhou2024dinowm}. A subsequent TMLR study systematically evaluates design
-choices for joint-embedding predictive world models and releases the
-MetaWorld checkpoints and planning stack used here
-\citep{jepawms2025}. Our experiments audit two of those released checkpoints;
-they do not make a claim about all JEPA systems. More broadly, a
-decision-centric view of world-model evaluation argues that predictive quality
-should be connected to downstream decision quality
-\citep{yu2026wmeval}. We instantiate that connection at the optimizer--cost
-interface.
+\citep{zhou2024dinowm}; the released MetaWorld stacks evaluated here come from
+a later study of joint-embedding world models~\citep{jepawms2025}.
+LeWorldModel trains a compact encoder and world model end to end and provides
+the OGBench-Cube checkpoint used in our second study
+\citep{maes2026lewm,maes2026stablewm,park2025ogbench}. Other approaches give
+latent geometry a behavioral target: contrastive goal-conditioned RL learns
+similarities for goal reaching~\citep{eysenbach2022contrastive}, and temporal-
+distance learning predicts how many steps separate two states
+\citep{myers2024temporal}. Our question is diagnostic rather than
+constructive: does an already trained geometry rank the candidates encountered
+during planning in the right order?
 
-\paragraph{Decision-aware model and cost learning.}
-That predictive accuracy is the wrong target for a model used inside a planner
-is a long-standing position. Value-aware model learning weights model error by
-its effect on the value backup rather than by observation
-likelihood~\citep{farahmand2017vaml,farahmand2018itervaml}; the value
-equivalence principle characterizes when different models are
-interchangeable for planning~\citep{grimm2020ve}; MuZero learns a model
-supervised only by decision-relevant quantities~\citep{schrittwieser2020muzero};
-and control-oriented model learning differentiates through the planner
-itself~\citep{nikishin2022omd}. That literature reweights the \emph{dynamics}
-objective by decision relevance, and its notion of relevance is a value
-function on the model's own state space. Our setting is the complementary one:
-we remove learned-dynamics error by construction and isolate the terminal-cost
-interface under a fixed search process, evaluating it on the distribution that
-the optimizer itself generates. Proposal generation and the optimizer remain
-active parts of the system, and the availability measurements below address
-them directly. The audit can be read as measuring planner-facing ranking
-agreement between a released latent cost and a physical reference on precisely
-that distribution.
+\paragraph{Decision-aware models and objectives.}
+Predictive accuracy need not measure usefulness inside a planner. Value-aware
+model learning weights errors by their effect on value
+\citep{farahmand2017vaml,farahmand2018itervaml}; value equivalence formalizes
+when different models support the same planning computations
+\citep{grimm2020ve}; and MuZero and control-oriented model learning train
+models through decision-relevant targets
+\citep{schrittwieser2020muzero,nikishin2022omd}. Recent latent-planning methods
+similarly learn reachability, trajectory-ordering, or action-consistency
+objectives~\citep{rcaux2026,trm2026,acid2026}, while latent-geometry methods can
+amortize planning itself~\citep{nguyen2026latentgeometry}. We complement this
+work by holding the learned representation fixed and measuring its terminal
+cost against physical outcomes.
 
-\paragraph{Optimization against imperfect models and costs.}
-Model-based control has long studied policies that exploit learned-dynamics
-error~\citep{janner2019trust} and the mismatch between prediction objectives
-and control performance~\citep{lambert2020objective}. More recent work shows
-that gradient-based planning can produce out-of-distribution or adversarial
-action trajectories and smooths the induced planning landscape through
-adversarial training~\citep{parthasarathy2025traintest}. We instead hold
-dynamics exact and study the terminal scorer. Selection over noisy estimates
-already creates an optimizer's curse~\citep{smith2006optimizer}; proxy and
-target can additionally decouple under optimization
-\citep{gao2023overopt,skalse2022defining,karwowski2024goodhart}. Our
-matched-residual null measures how much candidate misranking remains beyond
-the generic noisy-selection effect.
-
-\paragraph{Closest concurrent diagnoses.}
-Concurrent work in latent planning addresses complementary interfaces.
-RC-aux reshapes a representation using a reachability objective
-\citep{rcaux2026}; TRM learns a trajectory-ordering terminal metric
-\citep{trm2026}; and ACID augments the terminal objective with
-inverse-dynamics consistency along a proposed trajectory
-\citep{acid2026}. IMWM replaces learned dynamics by environment rollout and
-identifies finite-population proposal coverage as an important failure mode
-\citep{imwm2026}. These studies establish related failure modes, but leave open
-how to separate cost selection from candidate availability under a controlled
-optimizer intervention. Our audit provides that decomposition: exact dynamics,
-dual scoring of identical contact-rich candidates, a residual-matched null, a
-cost-only intervention on adaptive refitting, and explicit measurement of
-exact-success availability in one harness.
+\paragraph{Optimization can expose model and score errors.}
+Policies can exploit learned-dynamics errors~\citep{janner2019trust}, and model
+objectives may disagree with control performance~\citep{lambert2020objective}.
+Planning can also move action sequences away from the training distribution
+\citep{parthasarathy2025traintest}. Even without such structure, selecting the
+minimum of noisy estimates creates an optimizer's curse
+\citep{smith2006optimizer}; under repeated optimization, a proxy can diverge
+further from its target~\citep{gao2023overopt,skalse2022defining,
+karwowski2024goodhart}. IMWM separately highlights limited proposal coverage
+when environment rollout replaces learned dynamics~\citep{imwm2026}. Our
+experiments score the same candidate outcomes with latent and physical costs,
+then change only the score used to update CEM. Scoring identical candidate
+outcomes separates ranking error from prediction error and candidate-set
+contents; the matched-refit intervention then tests how that ranking affects
+subsequent proposals, following the broader call to evaluate world models by
+downstream decisions~\citep{yu2026wmeval}.
 
 \section{Experimental Design}\label{sec:design}
 
@@ -211,37 +175,31 @@ exact-success availability in one harness.
 \node[font=\scriptsize, align=center] at ($(ref)!0.5!(proxy)$)
   {identical\\candidates};
 
-% question bus
+% audit questions
 \coordinate (bus) at ($(ref.south)!0.5!(proxy.south)+(0,-7mm)$);
 \draw[semithick] (ref.south) |- (bus);
 \draw[semithick] (proxy.south) |- (bus);
-\draw[semithick] ($(bus)+(-55.5mm,0)$) -- ($(bus)+(55.5mm,0)$);
+\draw[semithick] ($(bus)+(-45mm,0)$) -- ($(bus)+(45mm,0)$);
 
-\node[probe, below=7mm of bus, xshift=-55.5mm] (q1)
+\node[probe, below=7mm of bus, xshift=-37mm] (q1)
   {\textbf{Q1 terminal cost}\\Table~\ref{tab:costcomparison}\\
    Does failure survive exact dynamics?};
-\node[probe, below=7mm of bus, xshift=-18.5mm] (q2)
-  {\textbf{Q2 ranking}\\Tables~\ref{tab:selection},~\ref{tab:l2audit}\\
-   $\rho$, elite recall, $R_{\rm sel}$};
-\node[probe, below=7mm of bus, xshift=18.5mm] (q3)
-  {\textbf{Q3 matched null}\\Table~\ref{tab:selection}\\
-   Beyond equally noisy scores?};
-\node[probe, below=7mm of bus, xshift=55.5mm] (q4)
-  {\textbf{Q4 refit \& coverage}\\Tables~\ref{tab:branch},~\ref{tab:covctrl}\\
-   Intervene on the refit cost};
+\node[probe, below=7mm of bus, xshift=0mm] (q2)
+  {\textbf{Q2 latent-$L_2$ ranking}\\Table~\ref{tab:l2audit}\\
+   Does CEM preserve physical ordering?};
+\node[probe, below=7mm of bus, xshift=37mm] (q3)
+  {\textbf{Q3 matched refit}\\Table~\ref{tab:branch}\\
+   Does the cost change later proposals?};
 
-\foreach \n in {q1,q2,q3,q4}{%
+\foreach \n in {q1,q2,q3}{%
   \draw[arr] ($(\n.north)+(0,7mm)$) -- (\n.north);}
 
 \end{tikzpicture}
-\caption{The optimizer-conditioned cost audit. Every candidate is executed from
-an identical simulator snapshot and re-encoded, so candidate dynamics are exact
-and only the terminal scorer varies. The same populations are scored by the
-deployed proxy and by a simulator-state reference, which supports four
-successive questions: whether failure survives exact dynamics, whether the proxy
-orders identical candidates correctly, whether any misordering exceeds a
-residual-matched null, and whether the proxy's ordering changes what later
-search proposes and keeps available.}
+\caption{Overview of the controlled audit. Each action sequence is executed
+from the same simulator snapshot and scored by both the tested cost and a
+physical reference. We first verify that the search budget can solve the task,
+then measure latent-cost ranking on its own candidates, and finally intervene
+on the cost used to update CEM.}
 \label{fig:audit}
 \end{figure}
 
@@ -250,22 +208,38 @@ search proposes and keeps available.}
 We evaluate the released \texttt{dino\_wm\_metaworld} and
 \texttt{jepa\_wm\_metaworld} checkpoints through their public
 \texttt{EncPredWM} interface~\citep{jepawms2025}. Both use their released
-preprocessing and action normalization. The contact tasks are
+preprocessing and action normalization. Both stacks use the same frozen
+\texttt{dinov2\_vits14} encoder; once their predictors are bypassed, they are
+two released-stack checks of the same representation. The contact tasks are
 \texttt{mw-push} and \texttt{mw-pick-place}; \texttt{mw-reach} is used only as
 a free-space control. The goal image is the scripted expert trajectory's final
 frame. Episode success is the simulator's task flag at the final environment
 step, not an any-step latch. Its object-to-goal distance radii are $5$\,cm for
 push and $7$\,cm for pick-place.
 
-Unless otherwise stated, the mechanistic experiments use receding-horizon CEM
+Unless otherwise stated, the candidate-level experiments use receding-horizon CEM
 \citep{rubinstein1997cem} with 100 candidates, a top-10\% elite set, six
 refitting iterations, and action horizon $H=6$. We denote this budget by
-$100\times6$. The simulator-state reference arm is a positive control for the
-planner and budget; it is not a deployable vision-only method.
+$100\times6$. The simulator-state cost is a positive control for the planner
+and budget.
 
-\subsection{Oracle dynamics and three terminal costs}
+The OGBench study uses the independently trained end-to-end
+\texttt{quentinll/lewm-cube} checkpoint and the official OGBench
+\texttt{cube\_single\_expert} dataset~\citep{maes2026lewm,park2025ogbench}. Its
+ViT-tiny encoder is distinct from the MetaWorld DINOv2 encoder. We evaluate one
+checkpoint on one Cube task.
 
-At each replan, the oracle-dynamics harness saves the full MuJoCo state. For
+For task breadth, a pre-specified scripted-expert gate retained five additional
+MetaWorld tasks; peg-insert-side failed this gate. We then ran paired
+exact-dynamics reference and latent-$L_2$ arms. Because the released stacks
+share an encoder, this breadth check uses DINO-WM only. A task is interpreted
+only when the physical reference establishes finite-budget solvability; all
+cells, including failed reference controls, are reported. The full eligibility
+rule and seed ranges are in the supplement.
+
+\subsection{Exact candidate execution and three terminal costs}
+
+At each replan, the evaluation harness saves the full MuJoCo state. For
 every action sequence $a$, it restores the same snapshot, executes $a$ in the
 simulator, renders the terminal observation, and encodes that observation with
 the frozen visual encoder. Thus candidate transitions are exact, while the
@@ -275,7 +249,7 @@ We compare three costs:
 \begin{enumerate}
   \item \textbf{Latent $L_2$}, the released Euclidean distance between the
   encoded endpoint and goal.
-  \item \textbf{Stateprobe}, an interpretable privileged diagnostic that decodes
+  \item \textbf{Stateprobe}, a supervised diagnostic that decodes
   object position $\hat o$ and end-effector position $\hat h$ with
   supervised probes on frozen
   endpoint tokens using simulator labels, then applies the planning cost
@@ -286,104 +260,93 @@ We compare three costs:
   \item \textbf{Simulator-state reference}, which applies the same form to
   simulator object and hand state:
   \begin{equation}
+    \label{eq:state-reference}
     c^*(a)=\|o_T(a)-o_g\|_2+
        0.5\|h_T(a)-o_T(a)\|_2.
   \end{equation}
 \end{enumerate}
-The reference is a shaped physical cost, not task return or a claim of a
-unique ``true'' objective.
+The reference is a shaped physical cost; we also report task success and direct
+object-to-goal distance. Stateprobe combines the frozen representation with a
+supervised readout and a fixed functional form, so results below diagnose
+whether task-relevant state is \emph{accessible through this readout and
+cost}, not whether the encoder discards it; Appendix~\ref{app:probe}
+discusses this distinction further.
 
-\subsection{Selection, null, refitting, and availability estimands}
+\subsection{Measuring cost quality during search}
 
-For a population $\mathcal{A}$ scored by stateprobe and simulator reference, we
-define within-population selection regret
+For each CEM population, we compare the learned and physical costs by Spearman
+rank agreement, reference top-10\% recall, and selection regret. Under the
+shaped reference, this is
 \begin{equation}
  R_{\mathrm{sel}} =
- c^*\!\left(\arg\min_{a\in\mathcal{A}}\hat c(a)\right)
- - \min_{a\in\mathcal{A}} c^*(a).
+ c^*\!\left(\arg\min_{a\in\mathcal A}\hat c(a)\right)
+ - \min_{a\in\mathcal A}c^*(a).
 \end{equation}
-It measures the opportunity lost by proxy selection within the sampled
-population.
-Optimism is $o(a)=c^*(a)-\hat c(a)$. We report optimism enrichment of the
-proxy-selected elite set relative to its population. Let
-$e_o(a)=\|\hat o_T(a)-o_T(a)\|_2$ and let
-$E_{\hat c}\subset\mathcal A$ be the 10 candidates with smallest stateprobe
-cost. The object-only elite error excess and optimism enrichment are
-\begin{align}
- \Delta_{\mathrm{err}}
- &= \frac{1}{|E_{\hat c}|}\sum_{a\in E_{\hat c}}e_o(a)
-    -\frac{1}{|\mathcal A|}\sum_{a\in\mathcal A}e_o(a),\\
- \Delta_{\mathrm{opt}}
- &= \frac{1}{|E_{\hat c}|}\sum_{a\in E_{\hat c}}o(a)
-    -\frac{1}{|\mathcal A|}\sum_{a\in\mathcal A}o(a).
-\end{align}
-The first diagnostic concerns object decoding only; hand error enters the
-composite stateprobe cost and is reported separately in
-Appendix~\ref{app:probe}.
-
-The matched-residual null writes $\hat c(a)=c^*(a)+r(a)$ and randomly permutes
-the observed residual multiset within each population before selecting an
-argmin. It preserves candidate states, reference costs, marginal error
-magnitudes, and search budget while breaking residual--candidate association.
-We use 1,000 permutations.
+For the two contact tasks, we additionally report direct physical task-distance
+regret,
+\begin{equation}
+ R_{\mathrm{phys}} =
+ d_{\mathrm{task}}\!\left(\arg\min_{a\in\mathcal A}\hat c(a)\right)
+ - \min_{a\in\mathcal A}d_{\mathrm{task}}(a), \qquad
+ d_{\mathrm{task}}(a)=\|o_T(a)-o_g\|_2.
+\end{equation}
+Supplementary stateprobe diagnostics measure elite decode error, optimism, and
+a shuffled-residual baseline. Their definitions and results are in
+Appendix~\ref{app:selection}.
 
 To test adaptive refitting, we fork CEM from candidate-for-candidate identical
 first populations. One branch refits on $\hat c$ and the other on $c^*$.
 Subsequent samples use the same base Gaussian noise transformed by each
-branch's own fitted mean and variance. A true-state \emph{carrier} supplies the
-shared sequence of receding-horizon simulator snapshots. The contrast is
-therefore a within-snapshot intervention on search.
+branch's fitted mean and variance. Both branches are evaluated at the same
+sequence of simulator snapshots, making the refitting cost the only
+intervention.
 
-Exact-success candidate availability is the fraction of replans whose
-final-iteration population contains at least one sequence satisfying the exact
-MetaWorld success predicate at its horizon endpoint. Selected success asks
-whether the proxy argmin is such a sequence. This is deliberately not called
-independent proposal coverage because the population is measured after earlier
-proxy-guided refits.
-
-For the two contact tasks, physical task distance is the 3-D Euclidean
-object-to-goal distance
-$d_{\mathrm{task}}(a)=\|o_T(a)-o_g\|_2$. Its within-population regret is
-\begin{equation}
- R_{\mathrm{phys}} =
- d_{\mathrm{task}}\!\left(\arg\min_{a\in\mathcal A}\hat c(a)\right)
- - \min_{a\in\mathcal A}d_{\mathrm{task}}(a).
-\end{equation}
-This differs from $R_{\mathrm{sel}}$, which evaluates the composite shaped
-reference cost $c^*$.
+We also audit whether final CEM populations contain an exactly successful
+candidate. This supporting availability analysis is reported in
+Appendix~\ref{app:availability}.
 
 \subsection{Evaluation splits and uncertainty}
 
-The terminal-cost comparison uses fresh paired environment seeds
-30000--30063. The
-same-population audit and matched null use independently fixed seeds
-41000--41015; the branch intervention uses 42000--42007; and the availability audit
-uses 40000--40015. Confidence intervals for population-level estimands are
-percentile bootstraps clustered by environment seed (5,000 resamples). Episode
-rates use Wilson intervals, and paired episode contrasts use paired resampling
-or exact McNemar tests as appropriate. These reported evaluation ranges are
-disjoint from the eight off-policy probe-training environment seeds
-20000--20007. Uncertainty is over environment seeds, not
-checkpoint-training seeds.
+All reported MetaWorld evaluation splits are disjoint from the probe-training
+seeds. Population-level intervals are bootstrap confidence intervals clustered
+by environment seed; episode rates use Wilson intervals. Uncertainty is over
+environment seeds, not checkpoint-training seeds. Exact seed ranges,
+resampling counts, and per-cell testing details are in Appendix~\ref{app:audit}.
 
-\paragraph{Implementation integrity.}
-We corrected three environment-side mismatches before evaluation: renderer
-construction relative to camera assignment, the vertical image flip used in
-training preprocessing, and goal-frame selection. With the shipped latent
-$L_2$ planner and its larger upstream budget, our Reach control succeeds in
-$6/16$ episodes ($37.5\%$, Wilson 95\% interval $[18.5,61.4]\%$), compatible
-with the reported $44.8\pm8.9\%$ but not a seed-matched replication
-\citep{jepawms2025}. The exact audit protocol is given in
-Appendix~\ref{app:audit}.
+\subsection{OGBench-Cube audit}
+
+The OGBench extension uses a fixed manifest of 32 snapshots and the 300 final
+CEM candidates persisted for each snapshot. We compare four selectors on each
+population:
+\begin{enumerate}
+  \item the released predicted-endpoint squared latent-$L_2$ cost;
+  \item squared latent $L_2$ after executing each candidate and encoding its
+  true rendered endpoint, using the dataset goal image;
+  \item the same true-endpoint cost using a goal rendered from the exact future
+  state in the same renderer; and
+  \item the physically best candidate by cube-to-goal distance.
+\end{enumerate}
+The same-renderer true-endpoint arm is primary: it removes learned endpoint
+prediction and renderer mismatch while retaining the frozen encoder and
+terminal squared-$L_2$ rule. Physical regret is selected cube distance minus
+the best distance among the same 300 candidates. This isolates endpoint
+scoring on fixed populations; it does not rerun search. Full integrity checks
+and the evaluation protocol are in Appendix~\ref{app:ogbench}.
+
+\paragraph{MetaWorld implementation integrity.}
+After matching renderer construction, image orientation, and goal-frame
+selection to the released stack, our Reach control is consistent with its
+reported performance ($37.5\%$ versus $44.8\pm8.9\%$)
+\citep{jepawms2025}. Appendix~\ref{app:audit} gives the complete protocol.
 
 \section{Results}\label{sec:results}
 
-\subsection{Terminal-cost comparison under perfect dynamics}
+\subsection{Exact outcomes expose terminal-cost failures}
 
 Table~\ref{tab:costcomparison} varies only the terminal cost after replacing the learned
 predictor with simulator rollout. The same finite search solves nearly all push
 episodes and most pick-place episodes with the reference cost. Both
-representation-derived alternatives remain near failure.
+learned costs remain near failure.
 
 \begin{table}[H]
 \centering
@@ -410,157 +373,64 @@ simulator & JEPA-WM & stateprobe & 1/64 & 20.99 & 1/64 & 24.19 \\
 \end{tabular}
 \end{table}
 
-Wilson 95\% intervals are $[94.3,100]\%$ for reference push,
-$[64.9,85.3]\%$ for reference pick-place, $[3.4,17.0]\%$ for the
-$5/64$ cell, $[0.3,8.3]\%$ for each $1/64$ cell, and $[0,5.7]\%$ for
-each zero cell. The paired outcomes are completely separated: all 64 push
-episodes and 49 pick-place episodes solved by the reference cost fail under
-latent $L_2$. The distance columns show that $0/64$ is not a near-threshold
-floor: latent $L_2$ ends roughly $23$--$27$\,cm from the goal, versus the
-$5$\,cm and $7$\,cm task radii.
+The zero-success cells have a Wilson 95\% upper bound of $5.7\%$; the reference
+rates have intervals $[94.3,100]\%$ (push) and $[64.9,85.3]\%$ (pick-place).
+All 64 push episodes and 49 pick-place episodes solved by the reference cost
+fail under latent $L_2$. These are not near misses: latent $L_2$ ends
+$23$--$27$\,cm from the goal, versus task radii of $5$ and $7$\,cm.
 
 Learned-dynamics error is therefore not required for failure in this harness,
 and the fixed search budget is capable of solving the tasks when supplied an
 informative cost. Separate sensitivity axes extending to 24 refits and to 300
 candidates per iteration do not rescue the contact costs
-(Appendix~\ref{app:budget}). Stateprobe performance reflects the complete
-representation--readout--cost--optimizer interface; the following experiments
-localize how that interface fails.
+(Appendix~\ref{app:budget}). We next examine how the tested costs rank the
+candidates that CEM actually produces.
 
-\subsection{Held-out decoding does not predict ranking under search}
+\paragraph{The failure is task-dependent.}\label{sec:breadth}
 
-Table~\ref{tab:probeexpertmain} first evaluates the exact probes used by the
-planner on a held-out expert-trajectory split. Object localization appears
-strong in isolation: median Euclidean error is $2.1$\,cm, below both task
-distance radii. The hand readout is markedly weaker, at $5.6$--$6.7$\,cm median
-error.
-
-We state the scope of this validation precisely, because it is the quantity a
-practitioner would be most tempted to over-read. The held-out split validates
-the two decoded \emph{channels} separately. It does not evaluate the deployed
-scalar cost $\hat c$ as a whole: that cost composes a decoded endpoint object, a
-decoded goal-frame object, and a decoded hand position through two norms, and we
-did not measure its error against $c^*$ on the held-out expert split. The
-$2.1$\,cm object-channel figure therefore neither estimates nor bounds the error
-of the deployed scalar cost: the channels enter through two norms, and their
-errors may cancel or compound. It should be read as ``one channel of this cost
-looks accurate by the usual standard,'' which is exactly the kind of partial
-evidence that motivates the audit, and not as a certificate that the cost is
-accurate. A direct held-out evaluation of $\hat c$ remains an open validation
-item (Section~\ref{sec:discussion}).
-
-With that scope fixed, the planning result is still the informative one: a
-readout whose object channel achieves apparently useful accuracy on ordinary
-held-out frames supports at most $5/64$ successful plans.
+The physical cost solves all 16 episodes of button-press, drawer-close, and
+window-close. With the same exact outcomes and search budget, latent $L_2$
+solves none of button-press or window-close but all of drawer-close
+(Table~\ref{tab:breadth}). Door-open and assembly are inconclusive because the
+physical control itself solves only $2/16$ and $0/16$; peg-insert-side failed
+the pre-specified expert-goal gate. The drawer result shows that latent distance
+can work when its visual ordering aligns with the task. For all breadth tasks,
+the state reference uses the generic goal-observable state slots specified in
+Appendix~\ref{app:audit}.
 
 \begin{table}[H]
 \centering
-\small
-\caption{Held-out expert-trajectory probe validation ($n=1{,}368$
-transitions). RMSE is per coordinate and medians are Euclidean endpoint errors;
-all values are cm.}
-\label{tab:probeexpertmain}
-\begin{tabular}{lrrrr}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\caption{Pre-specified MetaWorld breadth test with exact candidate dynamics
+(16 paired seeds per task). Rows with a weak physical control are reported but
+not interpreted. For $16/16$ and $0/16$, Wilson 95\% intervals are
+$[80.6,100]\%$ and $[0,19.4]\%$, respectively. On each failure row passing the
+control, all 16 pairs are discordant (exact McNemar $p=3.05\times10^{-5}$).}
+\label{tab:breadth}
+\begin{tabular}{lccc}
 \toprule
-representation & object RMSE & object median & hand RMSE & hand median \\
+task & state reference & latent $L_2$ & interpretation \\
 \midrule
-DINO-WM & 1.71 & 2.09 & 4.31 & 6.65 \\
-JEPA-WM & 1.64 & 2.10 & 3.75 & 5.62 \\
+button-press & 16/16 & 0/16 & additional failure \\
+drawer-close & 16/16 & 16/16 & boundary: plannable \\
+window-close & 16/16 & 0/16 & additional failure \\
+door-open & 2/16 & 0/16 & excluded: weak control \\
+assembly & 0/16 & 0/16 & excluded: failed control \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The relevant test is therefore the ranking on candidates produced by search.
-Figure~\ref{fig:optimizer-shift} shows the shift directly. Stateprobe/reference
-Spearman agreement is $0.43$--$0.55$ on initial populations but only
-$0.11$--$0.16$ after five refits. Reference top-10\% recall drops from
-$0.19$--$0.26$ to $0.07$--$0.10$, at or below the $0.10$ expected overlap of
-two independent size-10 subsets of 100 candidates. Object error concurrently
-rises from $4.78$--$5.18$\,cm to $6.13$--$6.72$\,cm
-(Appendix~\ref{app:probe}). Average held-out accuracy thus misses the
-optimizer-induced regime in which the cost is actually used.
+\subsection{Cost ordering deteriorates on search-induced candidates}
+\label{sec:l2audit}
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{figures/optimizer_shift.pdf}
-\caption{Optimizer-conditioned cost degradation. Panels A--B show all 100
-candidates in the population fixed before plotting (DINO-WM push, seed 41000,
-first replan); colored points mark the proxy and reference top-10\% sets.
-Panels C--D aggregate 112 populations and 11,200 candidates per stage in each
-of four checkpoint--task cells; error bars are seed-clustered 95\% intervals
-over 16 episode seeds. Refitting reduces both rank agreement and recovery of
-the physically best elites.}
-\label{fig:optimizer-shift}
-\end{figure}
-
-\subsection{The stateprobe cost misranks identical candidates}\label{sec:selection}
-
-We next inspect the iteration-0 population at each audited replan, before
-adaptive refitting at that snapshot. Each of the same 100 action sequences is
-executed in MuJoCo and scored by both $\hat c$ and $c^*$.
-Table~\ref{tab:selection} reports the selection diagnostics and matched null.
-First, candidates in the proxy top-10\% have $1.24$--$1.40$\,cm more object
-decode error than the full population. Second, proxy elites have
-$2.16$--$2.33$\,cm more optimistic residuals than their populations, with all
-seed-clustered confidence intervals above zero. Third, proxy argmins incur
-$2.05$--$2.48$\,cm reference-cost regret within the sampled set---a substantial
-loss on tasks with $5$\,cm and $7$\,cm distance radii.
-
-\begin{table}[H]
-\centering
-\footnotesize
-\caption{Identical iteration-0 populations: 16 independent episodes, seven
-replans per episode, 112 populations, and 11,200 candidates per cell. Values
-are cm; brackets are seed-clustered 95\% confidence intervals.
-$\Delta_{\rm err}$ is object-only elite error excess and
-$\Delta_{\rm opt}$ is optimism enrichment. The null permutes stateprobe
-residuals within each population. Null means omit intervals for compactness;
-actual-minus-null intervals include permutation and seed uncertainty.}
-\label{tab:selection}
-\begin{tabular}{lccccc}
-\toprule
-cell & $\Delta_{\rm err}$ & $\Delta_{\rm opt}$ & actual $R_{\rm sel}$ &
-null $R_{\rm sel}$ & actual $-$ null \\
-\midrule
-DINO push & 1.27 [0.87, 1.64] & 2.33 [2.08, 2.59] &
-2.48 [2.26, 2.69] & 1.12 &
-1.36 [1.16, 1.55] \\
-DINO pick & 1.25 [0.79, 1.76] & 2.16 [1.81, 2.56] &
-2.25 [1.86, 2.64] & 1.07 &
-1.17 [0.83, 1.54] \\
-JEPA push & 1.24 [0.64, 1.83] & 2.28 [1.88, 2.69] &
-2.05 [1.81, 2.32] & 1.13 &
-0.92 [0.72, 1.13] \\
-JEPA pick & 1.40 [0.88, 1.94] & 2.21 [1.90, 2.59] &
-2.06 [1.76, 2.34] & 1.15 &
-0.91 [0.66, 1.15] \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Selection over any noisy score creates regret, and indeed the matched null
-incurs $1.07$--$1.15$\,cm. The actual score incurs roughly twice as much.
-Actual-minus-null regret is positive in all four cells, with lower confidence
-bounds between $0.66$ and $1.16$\,cm. Marginal stateprobe error and the generic
-optimizer's curse therefore explain part, but not all, of the observed
-misranking. The residuals retain candidate-specific structure that is harmful
-under selection.
-
-\subsection{Latent $L_2$ fails differently: weak, task-dependent ordering that
-turns anti-aligned}\label{sec:l2audit}
-
-The same-population estimands apply to any terminal cost, so we run the ranking
-audit for the deployed latent $L_2$ cost as well. Two of the four estimands
-transfer directly. Spearman $\rho$ between the proxy and the reference is
-rank-based and therefore scale-free, and $R_{\mathrm{sel}}$ is defined purely in
-reference units. We do not report $\Delta_{\mathrm{err}}$ or
-$\Delta_{\mathrm{opt}}$ for latent $L_2$: optimism $c^*-\hat c$ is not
-dimensionally meaningful for a cost that is not expressed in metres, and object
-decode error is a property of the stateprobe readout that $L_2$ never consults.
-Each cost is audited on the populations its own search produces; iteration-0
-populations are drawn from the same fixed initial distribution but are not
-candidate-identical across costs, whereas within an arm the proxy and reference
-always score identical candidates.
+We first evaluate latent $L_2$ on the populations generated by its own search.
+On fresh populations, it retains weak ordering on push ($\rho=0.25,0.27$) but
+essentially none on pick-place ($0.02,-0.02$). Its top-10\% recall follows the
+same split, and its initial shaped-reference regret is $2.98$--$3.96$\,cm. After
+five refits, rank correlation is negative in all four cells and recall falls to
+$0.01$--$0.02$. Thus pick-place fails before refitting; on push, weak initial
+ordering becomes anti-aligned as CEM updates its population.
 
 \begin{table}[H]
 \centering
@@ -569,10 +439,9 @@ always score identical candidates.
 replans per episode, 112 populations and 11,200 candidates per cell and stage.
 Initial and final denote CEM iterations 0 and 5. Recall is reference top-10\%
 intersection-over-10, whose chance level is $0.10$. $R_{\rm sel}$ is
-iteration-0 within-population reference-cost regret in cm. Brackets are
-seed-clustered 95\% intervals. Stateprobe values from
-Tables~\ref{tab:selection} and~\ref{tab:probecem} are repeated in the last two
-rows for comparison at matched iterations.}
+iteration-0 within-population shaped-reference regret in cm. Brackets are
+seed-clustered 95\% intervals. Stateprobe values are included only as a compact
+secondary comparison; its full diagnostics are in Appendix~\ref{app:probe}.}
 \label{tab:l2audit}
 \begin{tabular}{lccccc}
 \toprule
@@ -595,241 +464,150 @@ range over 4 cells & 0.43 to 0.55 & 0.11 to 0.16 &
 \end{tabular}
 \end{table}
 
-The contrast in Table~\ref{tab:l2audit} is qualitative, not merely one of
-degree. On initial populations latent $L_2$ agrees with the physical reference
-at $\rho=0.25$ and $0.27$ on the two push cells and is statistically
-indistinguishable from zero on both pick-place cells ($0.02$ and $-0.02$, both
-intervals covering zero). Its reference top-10\% recall follows the same split:
-$0.16$ on the two push cells, modestly above the $0.10$ chance level, but
-$0.07$ and $0.06$ on the two pick-place cells, at or below chance before any
-refitting and CI-clean below it for JEPA pick. Its
-iteration-0 selection regret, $2.98$--$3.96$\,cm, is larger than stateprobe's
-$2.05$--$2.48$\,cm on the same tasks. After five refits, $\rho$ is
-\emph{negative} with the whole interval below zero in all four cells, and recall
-falls to $0.01$--$0.02$, well below chance.
+Regret magnitudes should not be compared across iterations because refitting
+compresses the candidate set. The matched-refit experiment below tests whether
+these ordering failures change what search proposes next.
 
-This says something the success table alone cannot, and the two tasks say
-different things. Stateprobe begins with substantially more ordering information
-and loses it under search, which is what makes the optimizer-conditioned
-mechanism in Sections~\ref{sec:selection} and~\ref{sec:branch} the relevant
-explanation for it. On pick-place, latent $L_2$ needs no such explanation: it
-does not order contact candidates by physical quality even on fresh populations
-drawn from the untouched initial distribution, so its $0/64$ there is already
-accounted for before the optimizer acts. On push the picture is genuinely
-unresolved. A weak but nonzero initial ordering is present and becomes negative
-after refitting, which is compatible with search concentrating on a region that
-$L_2$ prefers and physics does not; but we do not run the refitting intervention
-for $L_2$, so we describe the anti-alignment rather than attributing it to
-refitting. Whether adaptive search causally contributes to the push failure of
-$L_2$ is left open.
+\subsection{Misranking changes later candidates}\label{sec:branch}
 
-A methodological caution applies to $R_{\mathrm{sel}}$ across stages. Within
-either cost, regret falls between iterations 0 and 5 (for example $2.98$ to
-$1.60$\,cm for DINO push $L_2$) because refitting concentrates the population
-and compresses the spread of $c^*$ within it. Regret is comparable across costs
-at a fixed iteration, not across iterations.
-
-\subsection{Changing only the refitting cost changes later proposals}\label{sec:branch}
-
-Immediate misranking need not affect adaptive search. The shared-population
-branch intervention tests this link. Both branches begin with identical actions
-at the same snapshot; only the cost used to fit the next CEM distribution
-differs. Table~\ref{tab:branch} shows the probe-refit branch minus the
-reference-refit branch after five refits.
+We next fork CEM on a common matched-snapshot sequence from identical initial
+candidates. One branch updates on the learned cost and the other on the
+physical cost; sampling noise is shared. Table~\ref{tab:branch} reports the
+difference after five updates.
 
 \begin{table}[H]
 \centering
 \small
-\caption{Within-snapshot branch intervention ($n=8$ independent seeds).
-The final column is the difference in each branch's best available
-simulator-state reference cost at iteration 5. Positive values favor
-reference-cost refitting. All intervals exclude zero; the seed-level mean
-difference is positive in $8/8$ seeds in every cell (two-sided exact sign
-test $p=0.0078$ per cell).}
+\caption{Cost-only CEM intervention. Values are learned-cost minus
+physical-cost refitting for each branch's best candidate after five updates;
+positive values favor physical-cost refitting. Brackets are seed-bootstrap
+95\% intervals. Stateprobe cells use $n=8$ seeds; latent $L_2$ cells use
+$n=16$ seeds.}
 \label{tab:branch}
 \begin{tabular}{lcc}
 \toprule
-cell & immediate $R_{\rm sel}$ & final $\Delta$ best reference cost \\
+cell & final $\Delta$ best task distance & final $\Delta$ best shaped cost \\
 \midrule
-DINO push & 1.71 [1.22, 2.21]\,cm & 1.64 [1.14, 2.20]\,cm \\
-DINO pick & 1.95 [1.33, 2.57]\,cm & 1.51 [0.98, 2.06]\,cm \\
-JEPA push & 1.44 [0.97, 2.04]\,cm & 2.01 [1.65, 2.35]\,cm \\
-JEPA pick & 1.65 [1.24, 2.05]\,cm & 1.77 [0.96, 2.64]\,cm \\
+latent $L_2$, DINO push & 2.18 [1.86, 2.50]\,cm & 3.87 [3.38, 4.32]\,cm \\
+latent $L_2$, DINO pick & 1.13 [0.72, 1.55]\,cm & 3.23 [2.86, 3.62]\,cm \\
+\midrule
+stateprobe, DINO push & 1.09 [0.62, 1.61]\,cm & 1.64 [1.14, 2.20]\,cm \\
+stateprobe, DINO pick & 0.84 [0.32, 1.35]\,cm & 1.51 [0.98, 2.06]\,cm \\
+stateprobe, JEPA push & 1.55 [1.22, 1.88]\,cm & 2.01 [1.65, 2.35]\,cm \\
+stateprobe, JEPA pick & 1.14 [0.39, 1.98]\,cm & 1.77 [0.96, 2.64]\,cm \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-After five refits, every probe-guided population has a worse \emph{best}
-reference-cost candidate. Because both branches share the initial population
-and base sampling noise, the difference is caused by the intervened refitting
-cost within this search process. The direction is consistent in all $8/8$
-seed-level mean contrasts in every cell.
+Latent-$L_2$ refitting produces candidates $2.18$\,cm worse on push and
+$1.13$\,cm worse on pick-place in direct task distance; both confidence
+intervals exclude zero. The corresponding directions hold in 16/16 and 14/16
+seed means, respectively. Thus the ranking failure is not merely descriptive:
+using latent $L_2$ to update CEM changes later proposals for the worse on both
+tested contact tasks.
 
-\subsection{Exact-success candidates are sparse under proxy-guided search}
+\paragraph{Stateprobe as a secondary diagnostic.}
+The stateprobe illustrates a distinct warning about average validation. On
+held-out expert trajectories, its scalar cost has broad rank agreement
+($\rho=0.80$--$0.83$), but reference top-10\% recall is only $0.18$--$0.27$.
+On CEM-generated populations, rank agreement falls from $0.43$--$0.55$ to
+$0.11$--$0.16$ and elite recall from $0.19$--$0.26$ to $0.07$--$0.10$.
+Stateprobe refitting also worsens later candidates by $0.84$--$1.55$\,cm
+(Table~\ref{tab:branch}). Thus global held-out rank agreement does not certify
+the decision-relevant tail, and search can further degrade it. Full readout,
+selection, and shuffled-residual diagnostics are in
+Appendix~\ref{app:probe} and~\ref{app:selection}.
 
-Table~\ref{tab:availability} evaluates the final CEM population across 112 replans
-from 16 episodes per cell. Exact successful candidates are rare: availability is
-$8.0\%$ and $3.6\%$ for DINO push and pick-place, and zero for both JEPA cells.
-At those replans, reranking the realized final population cannot select an
-exactly successful sequence when none is present. Selected physical-distance
-regret nevertheless remains positive on those same candidates in every cell.
+Final proxy-guided populations also contain exactly successful candidates only
+rarely; this supporting availability audit is reported in
+Appendix~\ref{app:availability}. It is consistent with earlier refits degrading
+proposal quality, but does not separately identify all sources of scarcity.
+
+\subsection{A second encoder shows residual misranking}
+\label{sec:ogbench}
+
+On the fixed OGBench populations, replacing the predicted endpoint with its
+rendered outcome reduces mean physical regret by $4.51$\,cm [1.84, 7.52] and
+raises success from $16/32$ to $21/32$ (Table~\ref{tab:ogbench}). Dynamics error
+therefore matters. It is not the whole explanation: true-endpoint latent $L_2$
+still leaves $3.29$\,cm [1.49, 5.67] regret and misses four successes found by
+the physical selector. Rank agreement improves from $\rho=0.006$ to $0.395$,
+but remains imperfect. Using the dataset goal or a goal rendered in the same
+world changes mean regret by only $0.03$\,cm.
 
 \begin{table}[H]
 \centering
-\small
-\caption{Final-iteration exact-success availability and selection over 112 replans from 16
-independent episodes per cell. Brackets are seed-clustered 95\% confidence
-intervals. Physical regret is $R_{\rm phys}$, based on 3-D object-to-goal
-distance and distinct from the composite shaped-cost regret in
-Tables~\ref{tab:selection}--\ref{tab:branch}.}
-\label{tab:availability}
-\begin{tabular}{lccc}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\caption{OGBench-Cube outcome audit on 32 independent
+snapshots with 300 fixed final CEM candidates each. Distance and regret are in
+cm; brackets are 95\% snapshot-bootstrap intervals. $\rho$ is the mean
+within-snapshot Spearman agreement between selector cost and physical cube
+distance over 28 non-degenerate snapshots. The physical-best row reports the
+best candidate available in each population.}
+\label{tab:ogbench}
+\begin{tabular}{lrrrr}
 \toprule
-cell & exact-success availability & selected success & physical regret \\
+selector & success & selected dist. & physical regret & $\rho$ \\
 \midrule
-DINO push & 8.0\% [0.0, 17.0] & 6.3\% [0.0, 14.3] &
-0.41 [0.25, 0.57]\,cm \\
-DINO pick & 3.6\% [0.0, 8.9] & 1.8\% [0.0, 5.4] &
-0.44 [0.24, 0.67]\,cm \\
-JEPA push & 0.0\% & 0.0\% & 0.42 [0.29, 0.55]\,cm \\
-JEPA pick & 0.0\% & 0.0\% & 0.59 [0.42, 0.75]\,cm \\
+predicted endpoint $L_2$ & 16/32 & 12.11 & 7.80 [4.86, 10.96] & 0.006 [$-0.025$, 0.037] \\
+true endpoint, dataset goal & 21/32 & 7.63 & 3.32 [1.54, 5.70] & 0.396 [0.234, 0.536] \\
+true endpoint, rendered goal & 21/32 & 7.60 & \textbf{3.29 [1.49, 5.67]} & 0.395 [0.236, 0.541] \\
+physical best in population & 25/32 & \textbf{4.31} & 0 & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The realized search therefore faces both sparse exact-success candidates and
-positive selection regret among the candidates it does produce. Because these
-populations follow earlier proxy refits, availability is a property of the
-whole realized search rather than the initial proposal distribution alone.
-
-\paragraph{How much of that sparsity does the refitting cost cause?}
-The branch intervention of Section~\ref{sec:branch} answers this within matched
-snapshots, because both branches are evaluated at the same true-state carrier
-snapshots and differ only in refitting cost. Table~\ref{tab:covctrl} reports
-final-iteration availability for each branch. The within-snapshot refitting
-effect is limited: $2.5$--$13.1$ percentage points, with the interval excluding
-zero only for JEPA push. Each difference is a paired within-run contrast; the
-two branches of a run share the snapshot sequence, the iteration-0 population
-and the base noise, but separate runs do not, so the reference-refit column
-should not be compared across rows.
-
-\begin{table}[H]
-\centering
-\small
-\caption{Final-iteration exact-success availability by refitting cost at
-matched carrier snapshots ($n=8$ seeds, iteration 5). Both branches share the
-snapshot sequence, the iteration-0 population, and the base sampling noise.
-Brackets are seed-clustered 95\% intervals; the last column is the paired
-stateprobe-minus-reference contrast in percentage points.}
-\label{tab:covctrl}
-\begin{tabular}{lccc}
-\toprule
-cell & stateprobe refit & reference refit & difference \\
-\midrule
-DINO push & 42.5\% [35.0, 50.0] & 47.5\% [42.5, 53.8] & $-5.0$ [$-10.0$, 0.0] \\
-DINO pick & 16.2\% [6.1, 25.6] & 18.7\% [7.7, 29.4] & $-2.5$ [$-9.3$, 3.6] \\
-JEPA push & 34.4\% [26.9, 41.3] & 47.5\% [42.5, 53.8] & $-13.1$ [$-23.1$, $-3.1$] \\
-JEPA pick & 8.3\% [0.0, 20.8] & 15.1\% [4.2, 26.9] & $-6.8$ [$-16.8$, 0.0] \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-The two experiments are not on a common footing. At reference-carrier
-snapshots, availability under stateprobe refitting is
-$42.5\%$, $16.2\%$, $34.4\%$ and $8.3\%$; in Table~\ref{tab:availability},
-where the proxy also determines which snapshots the episode reaches, it is
-$8.0\%$, $3.6\%$, $0\%$ and $0\%$. The two audits use disjoint seed sets and
-different snapshot-generating processes, so this gap cannot be decomposed and
-we do not read a magnitude off it. What the pair does support is a qualitative
-statement: the matched-snapshot control finds a limited within-snapshot
-refitting effect, and the lower availability under the proxy-driven closed loop
-is consistent with an additional state-distribution effect whose size our
-design does not identify. Separating the two would require running both
-carriers under a common seed set, which we did not do.
+This result concerns one LeWM encoder, one Cube task, and fixed final
+populations; the MetaWorld experiment provides the direct refitting test.
+Replay and renderer integrity checks are reported in Appendix~\ref{app:ogbench}.
 
 \section{Discussion and Limitations}\label{sec:discussion}
 
-\paragraph{Mechanistic picture.}
-The two costs fail the same benchmark for different reasons, and the audit is
-what separates them. Latent $L_2$ ranks contact candidates weakly or not at all
-by physical quality on fresh initial populations, and the two tasks differ: on
-pick-place its ordering is already indistinguishable from independent, with
-reference elite recall at or below chance before any refitting, so the failure
-is evident without invoking the optimizer; on push a weak initial ordering
-survives and turns negative only after refitting, and because we did not run the
-refitting intervention for $L_2$ we cannot say whether adaptive search causally
-contributes there. The stateprobe is the case that motivates the title: its
-object channel is accurate on held-out expert frames, the composite cost does
-carry real ordering on fresh populations, and that ordering then degrades where
-it is used. Immediate
-misranking exceeds the matched-noise baseline, and the refitting intervention
-shows that it changes which physical candidates remain available. At the same
-time, exact-success candidates are sparse in final populations, with the
-matched-snapshot control showing a limited within-snapshot refitting
-contribution and leaving an unquantified state-distribution contribution
-alongside it. The resulting diagnosis is a coupled
-selection-and-availability failure at the
-representation--readout--cost--optimizer interface, holding for a cost that has
-ordering to lose.
+The experiments reveal two ways a cost can fail. Latent $L_2$ carries little
+task-relevant ordering on fresh pick-place candidates and only weak ordering on
+push. Stateprobe begins with better ordering, despite being imperfect, but CEM
+moves into regions where that ordering degrades. In both cases, updating CEM
+with the learned cost produces worse later candidates than updating it with the
+physical cost. The OGBench result adds an important qualification: dynamics
+error can be a large part of total regret even when cost misranking remains
+after that error is removed.
 
-\paragraph{Implications.}
-A planning representation should be evaluated for the ordering it supports on
-the optimizer-induced distribution. When simulator state is available, we
-recommend the audit used here: dual-score identical populations, report rank
-agreement and within-population regret, compare against a residual-matched
-baseline, measure exact-success availability with its horizon and snapshot
-conditioning, and intervene on adaptive refitting. This protocol distinguishes
-whether method development should prioritize cost learning, proposal
-generation, or both.
+The practical implication is simple. A world model should not be evaluated
+only by average prediction error, and a planning representation should not be
+evaluated only on held-out trajectories. When simulator access permits, execute
+the planner's candidates, score the same outcomes with both learned and
+physical costs, and change only the cost used to update search. These tests
+indicate whether effort should go
+toward the predictor, the terminal objective, or candidate generation.
 
-\paragraph{Scope and limitations.}
-The audit covers MetaWorld, two contact tasks, two released checkpoints, one
-fixed stateprobe architecture and training seed, and CEM. The branch
-intervention uses eight seeds and a shared true-state snapshot carrier;
-uncertainty is across environment seeds rather than checkpoint-training seeds.
-The simulator-state cost and probe supervision are privileged diagnostics, not
-deployable methods. The mechanism tests establish misranking for the complete
-stateprobe composition---representation, readout, cost form, and
-optimizer---rather than for the encoder alone. The
-same-population regret is local to sampled candidates, and final availability
-also depends on previous refits, horizon, and encountered snapshots. Planner
-endpoint controls include MPPI and random shooting, but the causal mechanism
-has only been tested for CEM. Physical-robot, probe/weight sensitivity, and
-independent initial-proposal studies remain open.
-
-Three specific gaps are worth naming because they bound what the current
-evidence supports. First, the deployed stateprobe scalar cost has not been
-evaluated end-to-end on the held-out expert split; only its two decoded
-channels have. Second, latent $L_2$ is covered by the terminal-cost comparison
-and the same-population ranking audit of Section~\ref{sec:l2audit}, but not by
-the refitting intervention, so its negative final-population rank correlation is
-described rather than causally attributed. Third, the matched-residual null
-establishes structured misranking at the level of within-population selection
-regret. We have not run the corresponding closed-loop control, in which a
-reference cost is perturbed by unstructured noise of matched magnitude and
-planned with end to end. That control would separate how much of the
-$5/64$ endpoint result is due to error magnitude and how much to error
-structure, and we do not claim that separation here.
+Our experiments cover two MetaWorld contact tasks with one DINOv2
+representation, a cost-only refitting intervention run on eight seeds per
+stateprobe cell and sixteen seeds per latent-$L_2$ cell, and one OGBench-Cube
+task with an independently trained encoder.
+Simulator-state costs and probe labels are evaluation tools, not deployable
+inputs. Representation training seeds, alternative probe architectures, and
+physical robots remain untested. Non-CEM optimizers are tested only as
+planner-level robustness controls; candidate-level ranking and matched-refit
+analyses remain CEM-specific. The shuffled-score result separates generic
+error magnitude from error structure for the shaped planning cost but not for
+direct task distance; that separation for task distance is left open.
 
 \section{Conclusion}
 
-Exact candidate dynamics do not rescue the two tested representation-derived
-costs, although the same finite search succeeds with an informative physical
-reference. Auditing the two costs on identical populations shows that they fail
-for different reasons. Latent $L_2$ orders contact candidates weakly at best
-before refitting and anti-alignedly after it; on pick-place the failure is
-already evident before refitting, while on push whether adaptive refitting
-causally contributes remains unresolved. The stateprobe does supply real initial
-ordering and then loses it:
-optimizer-induced candidates erode rank agreement, structured residuals alter
-immediate selection beyond a matched-noise null, and cost-only refitting changes
-later candidate quality. Sparse exact-success availability compounds this loss,
-with a limited within-snapshot refitting contribution and a further
-state-distribution contribution that our design does not quantify.
-World-model evaluation should therefore test a cost on the
-distribution and decisions induced by its optimizer, and should report which of
-these two regimes a given cost is in; held-out prediction or per-channel
-decoding accuracy alone does not certify plannability.
+A controlled audit that holds the encoder, terminal cost, and search budget
+fixed while replacing learned prediction with exact simulator outcomes
+reveals a failure that survives perfect dynamics: in MetaWorld, the same
+finite search succeeds with a physical cost while latent $L_2$ and a
+supervised state-space cost remain near failure. The reason is not just
+inaccurate outcome prediction -- the costs misrank exact outcomes, and CEM
+acts on that ranking when it generates later candidates. OGBench-Cube shows
+the same residual scoring problem with a distinct, independently trained
+encoder, while also confirming that dynamics error can explain a substantial
+share of total regret. The drawer-close success shows that the failure is
+task-dependent rather than universal. The broader lesson is to test the
+ordering a cost induces on the candidates created by search, rather than
+infer planning quality from average held-out accuracy.
 
 \subsubsection*{Broader Impact Statement}
 This work studies failure modes of simulation-based robot world-model planning
@@ -851,8 +629,8 @@ controls, remains necessary before applying these conclusions to robots.
 \begin{table}[ht]
 \centering
 \footnotesize
-\caption{Fixed protocol used by the reported oracle-dynamics and mechanistic
-experiments.}
+\caption{Fixed MetaWorld protocol used by the exact-dynamics and candidate-
+level experiments.}
 \label{tab:protocol}
 \begin{tabular}{p{0.25\linewidth}p{0.68\linewidth}}
 \toprule
@@ -872,6 +650,11 @@ camera at $(0.75,0.075,0.7)$; $224{\times}224$ render; renderer reconstructed
 after camera assignment; vertical image flip \\
 Model inputs & scripted expert's final frame as goal; released visual
 preprocessing and released action normalization \\
+Breadth reference & \raggedright All five breadth tasks use
+$h=\texttt{state[0:3]}$ and $o=\texttt{state[4:7]}$;
+$o_g=\texttt{goal\_state[4:7]}$ comes from the scripted expert's final
+observation. The reference applies Equation~\eqref{eq:state-reference} with
+these generic goal-observable slots \tabularnewline
 Object probe & two-layer, six-head transformer with learned query, hidden size
 512, 2.57M parameters; Adam, learning rate $5{\times}10^{-4}$, batch 64,
 8 epochs; final epoch used \\
@@ -882,11 +665,12 @@ split by trajectory 90/10 with seed 0; 240 random-action frames from both
 contact tasks (seeds 20000--20007, 60 steps, sampled every 4 steps);
 off-policy-to-expert batch ratio 0.5 \\
 Cost coefficient & hand--object weight fixed at 0.5 in both stateprobe and
-reference costs before the confirmatory and mechanistic evaluation; not tuned
+reference costs before the confirmatory and candidate-level evaluation; not tuned
 on the reported evaluation seeds \\
-Uncertainty & 5,000 seed-clustered bootstrap resamples; 1,000 within-population
-residual permutations; Wilson intervals and exact paired McNemar tests for
-episode rates \\
+Uncertainty & 5,000 seed-clustered bootstrap resamples by default; 10,000 for
+task-aligned and OGBench estimates; 1,000 within-population residual
+permutations for shaped regret and 5,000 for task-distance regret; Wilson
+intervals and exact paired McNemar tests for episode rates \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -895,30 +679,175 @@ episode rates \\
 For every candidate action sequence, the harness restores an identical MuJoCo
 snapshot, executes the sequence, renders the endpoint, and runs the released
 encoder on that rendered observation. Simulator state is used only for
-evaluation, stateprobe supervision, or the explicitly privileged reference
-branch. Candidates are never assigned reference state by the learned
-predictor.
+evaluation, stateprobe supervision, and the physical reference branch; it is
+never supplied to the learned predictor.
 
 \paragraph{Immediate selection.}
 The first-population audit evaluates 100 sequences per seed before any CEM
 refit. The top-10\% elite sets are independently formed under stateprobe and
-reference cost. The residual null performs 1,000 within-population
+reference cost. The shuffled-residual baseline performs 1,000 within-population
 permutations. Seed-clustered percentile intervals use 5,000 bootstrap
 resamples.
+
+\paragraph{Held-out scalar cost.}
+We reconstruct the probes' immutable trajectory split (90/10, seed 0) without
+loading or changing the world model. For each non-Reach held-out expert
+trajectory, every frame-skip-5 endpoint is scored against that trajectory's
+final latent goal using the deployed stateprobe composition and against the
+final simulator-state goal using $c^*$. Metrics first reduce within trajectory;
+the primary 95\% intervals resample the 11 push/pick-place trajectories; the
+all-manipulation aggregate uses all 67 non-Reach trajectories. This test uses
+one probe-training seed and expert trajectories; the CEM population test
+measures the distribution encountered during planning.
 
 \paragraph{Adaptive branch.}
 Both CEM branches share the simulator snapshot, first candidate population,
 and base Gaussian noise. Each branch transforms later common noise by its own
-mean and variance. The reference-cost carrier determines the common sequence
-of MPC snapshots, so the audit isolates search behavior at those snapshots
-rather than comparing two closed-loop policies.
+mean and variance. The physical-cost branch determines the common sequence of
+MPC snapshots, so the comparison isolates search updates at those snapshots.
 
 \paragraph{Candidate availability.}
 Candidate-horizon success is evaluated with the simulator's exact task
 predicate. It need not imply episode-end success after subsequent MPC replans.
-Intervals cluster replans by their environment seed. Because this is measured
-on final proxy-guided populations, it is not an independent estimate of the
-initial proposal distribution's coverage.
+Intervals cluster replans by environment seed. The final populations reflect
+all earlier proxy-guided updates.
+
+\section{Supplementary Stateprobe and Availability Diagnostics}
+\label{app:selection}
+
+\begin{table}[ht]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\caption{Held-out expert-trajectory validation for the fixed stateprobe.
+Channel metrics use all 1,368 transitions; scalar metrics use 209 transitions
+from the 11 held-out push and pick-place trajectories. Channel RMSE is per
+coordinate; channel medians and scalar MAE are cm. Scalar $\rho$ is the mean
+within-trajectory Spearman coefficient, and recall is reference top-10\%
+recall; brackets are trajectory-bootstrap 95\% intervals.}
+\label{tab:probeexpertmain}
+\begin{tabular}{lrrrrrrr}
+\toprule
+repr. & object RMSE & object med. & hand RMSE & hand med. & scalar MAE & scalar $\rho$ & recall \\
+\midrule
+DINO-WM & 1.71 & 2.09 & 4.31 & 6.65 & 2.43 [1.97, 2.98] & 0.800 [0.700, 0.890] & 0.18 [0.00, 0.41] \\
+JEPA-WM & 1.64 & 2.10 & 3.75 & 5.62 & 2.84 [2.36, 3.41] & 0.826 [0.756, 0.890] & 0.27 [0.09, 0.50] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For a population $\mathcal{A}$ scored by stateprobe and simulator reference,
+the shaped-reference selection regret is
+\begin{equation}
+ R_{\mathrm{sel}} =
+ c^*\!\left(\arg\min_{a\in\mathcal{A}}\hat c(a)\right)
+ - \min_{a\in\mathcal{A}} c^*(a).
+\end{equation}
+Let $e_o(a)=\|\hat o_T(a)-o_T(a)\|_2$ and let $E_{\hat c}$ denote the ten
+smallest-stateprobe-cost candidates. We report object-only elite error excess
+$\Delta_{\mathrm{err}}=\operatorname{mean}_{a\in E_{\hat c}}e_o(a)-
+\operatorname{mean}_{a\in\mathcal A}e_o(a)$ and optimism enrichment
+$\Delta_{\mathrm{opt}}$, defined analogously for
+$o(a)=c^*(a)-\hat c(a)$. The shuffled-residual baseline writes
+$\hat c(a)=c^*(a)+r(a)$ and permutes residuals within each population before
+selection; it preserves the residual magnitudes while breaking their association
+with candidates.
+
+\begin{table}[ht]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\caption{Stateprobe immediate-selection diagnostics on identical iteration-0
+populations: 16 independent episodes, seven replans per episode, 112
+populations, and 11,200 candidates per cell. Values are cm; brackets are
+seed-clustered 95\% confidence intervals. The null permutes stateprobe residuals
+within each population; actual-minus-null intervals quantify seed uncertainty.}
+\label{tab:selection}
+\begin{tabular}{lccccc}
+\toprule
+cell & $\Delta_{\rm err}$ & $\Delta_{\rm opt}$ & actual $R_{\rm sel}$ &
+null $R_{\rm sel}$ & actual $-$ null \\
+\midrule
+DINO push & 1.27 [0.87, 1.64] & 2.33 [2.08, 2.59] &
+2.48 [2.26, 2.69] & 1.12 & 1.36 [1.16, 1.55] \\
+DINO pick & 1.25 [0.79, 1.76] & 2.16 [1.81, 2.56] &
+2.25 [1.86, 2.64] & 1.07 & 1.17 [0.83, 1.54] \\
+JEPA push & 1.24 [0.64, 1.83] & 2.28 [1.88, 2.69] &
+2.05 [1.81, 2.32] & 1.13 & 0.92 [0.72, 1.13] \\
+JEPA pick & 1.40 [0.88, 1.94] & 2.21 [1.90, 2.59] &
+2.06 [1.76, 2.34] & 1.15 & 0.91 [0.66, 1.15] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Selection over any noisy score creates shaped-cost regret: the shuffled
+baseline incurs $1.07$--$1.15$\,cm, while the actual score incurs roughly twice
+as much. The excess is positive in all four cells. Under direct object-to-goal
+distance, however, actual-minus-shuffled regret ranges only from $-0.06$ to
+$0.08$\,cm and excludes zero in one cell. The residual result therefore
+characterizes the operational shaped cost, not a consistent excess in immediate
+task-distance regret.
+
+\paragraph{Candidate availability.}\label{app:availability}
+The final CEM population contains at least one exactly successful sequence on
+$8.0\%$ and $3.6\%$ of DINO push and pick-place replans, respectively, and on
+none of the corresponding JEPA replans. These populations reflect earlier
+proxy-guided refits and therefore do not independently measure initial proposal
+coverage.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Final-iteration exact-success availability and selection over 112
+replans from 16 episodes per cell. Brackets are seed-clustered 95\% intervals;
+physical regret is based on object-to-goal distance.}
+\label{tab:availability}
+\begin{tabular}{lccc}
+\toprule
+cell & exact-success availability & selected success & physical regret \\
+\midrule
+DINO push & 8.0\% [0.0, 17.0] & 6.3\% [0.0, 14.3] & 0.41 [0.25, 0.57]\,cm \\
+DINO pick & 3.6\% [0.0, 8.9] & 1.8\% [0.0, 5.4] & 0.44 [0.24, 0.67]\,cm \\
+JEPA push & 0.0\% & 0.0\% & 0.42 [0.29, 0.55]\,cm \\
+JEPA pick & 0.0\% & 0.0\% & 0.59 [0.42, 0.75]\,cm \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The two zero cells have degenerate cluster bootstraps, so only their observed
+rates are shown. In the matched-snapshot stateprobe intervention, switching to
+physical refitting increases availability by $2.5$--$13.1$ percentage points;
+only the JEPA-push interval excludes zero.
+
+\section{OGBench-Cube Protocol and Integrity}\label{app:ogbench}
+
+The OGBench audit uses the released
+\path{quentinll/lewm-cube} checkpoint and the official
+\path{ogbench/cube_single_expert.h5} dataset, with goal offset 25, horizon 5,
+action block 5, and 300 persisted final candidates for each of 32 snapshots.
+The manifest fixes one snapshot per distinct episode. A candidate is successful
+when its final cube-to-goal distance is below $4$\,cm. Snapshot is the unit of
+uncertainty, and all reported intervals use 10,000 paired bootstrap draws.
+
+The evaluator creates two independent \texttt{World}/\texttt{MjModel}
+instances. Each is initialized once with visual variation disabled, after which
+camera, light, material, texture, and geometry signatures must agree. Before
+each state render or candidate rollout, it calls \texttt{mj\_resetData}, restores
+dataset position and velocity plus the future cube target, calls
+\texttt{mj\_forward}, aligns finite-difference previous-state fields, and
+disables solver warm-start. The two worlds must agree within $10^{-5}$\,m on
+physical distance and exactly on success, executed steps, endpoint pixels, and
+selected index; encoder costs must agree within $10^{-5}$. All 32 shards pass,
+with zero worst-case repeat error on the reported physical, pixel, latent-cost,
+and selection fields.
+
+For an exact initial or goal state, the encoder-domain ratio is the larger
+same-state squared-latent discrepancy between evaluator and dataset render,
+divided by the smaller initial-to-goal separation in the two render domains.
+The precommitted maximum is 0.25; the worst observed ratio is
+$6.59\times10^{-4}$. The dataset-goal and same-renderer-goal controls select the
+same number of successes and differ by $0.0315$\,cm in mean regret. These checks
+establish reproducible, encoder-near-domain endpoint evaluation.
 
 \section{Probe and Cost Details}\label{app:probe}
 
@@ -975,17 +904,16 @@ than the hand readout. On the CEM populations actually used by the mechanism
 test, initial cost rank agreement is moderate
 ($\rho=0.43$--$0.55$), but final-population agreement is only
 $0.11$--$0.16$ and reference top-10 recall is $0.07$--$0.10$.
-These measurements characterize the fixed stateprobe composition; they do not
-establish invariance to a different readout architecture or training seed.
+These measurements characterize the fixed stateprobe used in planning.
 
 The probe weights use random-rollout episodes from environment seeds
-20000--20007. Because those random-action frames are training augmentation,
-we do not present them as independent validation;
-Tables~\ref{tab:probeexpertmain} and~\ref{tab:probecem} instead use the
-held-out trajectory split and disjoint CEM evaluation seeds. The held-out terminal-cost comparison
+20000--20007 as training augmentation. Tables~\ref{tab:probeexpertmain}
+and~\ref{tab:probecem} use the held-out trajectory split and disjoint CEM
+evaluation seeds. The held-out terminal-cost comparison
 (30000--30063), selection audit (41000--41015), branch intervention
-(42000--42007), and availability audit (40000--40015) use disjoint environment
-seeds.
+(42000--42007 stateprobe, 42000--42015 latent-$L_2$ push, 44000--44015
+latent-$L_2$ pick-place), and availability audit (40000--40015) use disjoint
+environment seeds.
 
 \section{Search-Budget Sensitivity}\label{app:budget}
 
@@ -996,8 +924,7 @@ setting does not rescue either contact cost, whereas the latent-$L_2$ Reach
 control saturates at $16/16$ by six refits. At 12 refits, a separate
 population-size sweep over 50, 100, and 300 candidates gives push success
 $0/8$, $0/8$, and $0/8$ for latent $L_2$, and $0/8$, $1/8$, and $0/8$ for
-stateprobe. These supporting runs rule out a narrow tuning artifact over the
-tested range, not arbitrary search budgets.
+stateprobe. Thus the failure persists across the tested budgets.
 
 \begin{table}[ht]
 \centering
@@ -1021,11 +948,16 @@ reach & latent $L_2$ & 5/16 & 16/16 & 16/16 & 16/16 \\
 \section{Planner-Level Robustness Control}\label{app:planner}
 
 On DINO-WM push under oracle dynamics, stateprobe remains near failure with CEM
-($1/16$), MPPI ($0/16$), and random shooting ($2/16$). Their free-space Reach
-controls are $16/16$, $13/16$, and $6/16$, respectively. These endpoint
-controls show that the contact failure is not a CEM-only observation. They do
-not establish mechanism generality because the identical-population,
-matched-null, and refitting interventions were run only for CEM, and the
-planners have different effective search strength.
+($1/16$), MPPI ($0/16$), and random shooting ($2/16$); latent $L_2$ remains near
+failure with MPPI ($0/16$) and random shooting ($0/16$). Their free-space Reach
+controls are $16/16$, $13/16$, and $6/16$, respectively. We additionally run a
+privileged physical-reference cost on push itself, at the same seeds and
+budget, under every tested optimizer: it solves $16/16$ under CEM, $16/16$
+under MPPI, and $11/16$ under random shooting. Because this physical reference
+converts the same finite search into success under all three optimizers --
+including a majority of shooting's non-adaptive, fixed-proposal search -- the
+near-failure of stateprobe and latent $L_2$ on push is not explained by
+planner capacity alone. The candidate-level and refitting analyses in the
+main paper use CEM.
 
 \end{document}

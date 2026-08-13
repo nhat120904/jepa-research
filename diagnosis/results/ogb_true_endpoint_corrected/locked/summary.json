@@ -1,0 +1,260 @@
+{
+  "aggregation": "10,000 bootstrap draws over 32 distinct snapshots",
+  "config": {
+    "action_block": 5,
+    "checkpoint": "quentinll/lewm-cube",
+    "dataset": "ogbench/cube_single_expert.h5",
+    "domain_ratio_max": 0.25,
+    "goal_offset": 25,
+    "horizon": 5,
+    "independent_worlds": 2,
+    "latent_atol": 1e-05,
+    "num_candidates": 300,
+    "physical_atol": 1e-05,
+    "processed_snapshots": 32,
+    "visual_variation": [],
+    "warmstart_disabled": true
+  },
+  "domain": {
+    "dataset_task_cost": {
+      "ci_high": 335.86800248250796,
+      "ci_low": 267.22091562923697,
+      "mean": 302.87208990930515,
+      "n_finite": 32
+    },
+    "domain_ratio": {
+      "ci_high": 0.00022010811216881905,
+      "ci_low": 0.00011960754246021456,
+      "mean": 0.00016567787946527316,
+      "n_finite": 32
+    },
+    "rendered_task_cost": {
+      "ci_high": 335.0799610052414,
+      "ci_low": 265.5083547209946,
+      "mean": 302.23108095994434,
+      "n_finite": 32
+    },
+    "same_state_goal_cost": {
+      "ci_high": 0.032590065718927606,
+      "ci_low": 0.019749058500435526,
+      "mean": 0.025887600491196233,
+      "n_finite": 32
+    },
+    "same_state_init_cost": {
+      "ci_high": 0.03972531709984425,
+      "ci_low": 0.021385039766700364,
+      "mean": 0.02954558265661798,
+      "n_finite": 32
+    }
+  },
+  "gate_worst": {
+    "domain_ratio": 0.0006590610705662848,
+    "reference_physical_distance_m": 0.0,
+    "repeat_dataset_goal_cost_max_abs": 0.0,
+    "repeat_endpoint_pixel_max_abs": 0.0,
+    "repeat_physical_distance_m": 0.0,
+    "repeat_rendered_goal_cost_max_abs": 0.0
+  },
+  "metrics": {
+    "learned_predicted_goal": {
+      "false_elite_rate_physical": {
+        "ci_high": 0.4583333333333333,
+        "ci_low": 0.3302083333333333,
+        "mean": 0.396875,
+        "n_finite": 32
+      },
+      "selected_physical_distance_m": {
+        "ci_high": 0.1591402463354163,
+        "ci_low": 0.08429689982194553,
+        "mean": 0.12109520263633042,
+        "n_finite": 32
+      },
+      "selected_success": {
+        "ci_high": 0.65625,
+        "ci_low": 0.3125,
+        "mean": 0.5,
+        "n_finite": 32
+      },
+      "selection_regret_m": {
+        "ci_high": 0.10956353993229818,
+        "ci_low": 0.04860930956013024,
+        "mean": 0.07798551016030314,
+        "n_finite": 32
+      },
+      "spearman_physical": {
+        "ci_high": 0.03653350874911404,
+        "ci_low": -0.025190888900972583,
+        "mean": 0.005978013635561332,
+        "n_finite": 28
+      },
+      "success_gap": {
+        "ci_high": 0.4375,
+        "ci_low": 0.125,
+        "mean": 0.28125,
+        "n_finite": 32
+      },
+      "top10pct_recall_physical": {
+        "ci_high": 0.11979166666666667,
+        "ci_low": 0.08541666666666667,
+        "mean": 0.10208333333333333,
+        "n_finite": 32
+      }
+    },
+    "true_dataset_goal": {
+      "false_elite_rate_physical": {
+        "ci_high": 0.3145833333333333,
+        "ci_low": 0.13541666666666669,
+        "mean": 0.221875,
+        "n_finite": 32
+      },
+      "selected_physical_distance_m": {
+        "ci_high": 0.11272069598589425,
+        "ci_low": 0.04530961307774754,
+        "mean": 0.07628487628840486,
+        "n_finite": 32
+      },
+      "selected_success": {
+        "ci_high": 0.8125,
+        "ci_low": 0.5,
+        "mean": 0.65625,
+        "n_finite": 32
+      },
+      "selection_regret_m": {
+        "ci_high": 0.056977285223997136,
+        "ci_low": 0.01542697795410016,
+        "mean": 0.03317518381237759,
+        "n_finite": 32
+      },
+      "spearman_physical": {
+        "ci_high": 0.536197467941522,
+        "ci_low": 0.23396018549315323,
+        "mean": 0.3956844284452367,
+        "n_finite": 28
+      },
+      "success_gap": {
+        "ci_high": 0.25,
+        "ci_low": 0.03125,
+        "mean": 0.125,
+        "n_finite": 32
+      },
+      "top10pct_recall_physical": {
+        "ci_high": 0.36354166666666665,
+        "ci_low": 0.19583333333333336,
+        "mean": 0.27604166666666663,
+        "n_finite": 32
+      }
+    },
+    "true_rendered_goal": {
+      "false_elite_rate_physical": {
+        "ci_high": 0.31562499999999993,
+        "ci_low": 0.1375,
+        "mean": 0.22291666666666665,
+        "n_finite": 32
+      },
+      "selected_physical_distance_m": {
+        "ci_high": 0.11233609824804436,
+        "ci_low": 0.0448593993991886,
+        "mean": 0.07596995055861139,
+        "n_finite": 32
+      },
+      "selected_success": {
+        "ci_high": 0.8125,
+        "ci_low": 0.5,
+        "mean": 0.65625,
+        "n_finite": 32
+      },
+      "selection_regret_m": {
+        "ci_high": 0.056715943067981354,
+        "ci_low": 0.014946760284159666,
+        "mean": 0.0328602580825841,
+        "n_finite": 32
+      },
+      "spearman_physical": {
+        "ci_high": 0.5405685542967915,
+        "ci_low": 0.2361548759338774,
+        "mean": 0.39528379288293214,
+        "n_finite": 28
+      },
+      "success_gap": {
+        "ci_high": 0.25,
+        "ci_low": 0.03125,
+        "mean": 0.125,
+        "n_finite": 32
+      },
+      "top10pct_recall_physical": {
+        "ci_high": 0.3625,
+        "ci_low": 0.196875,
+        "mean": 0.27708333333333335,
+        "n_finite": 32
+      }
+    }
+  },
+  "paired_contrasts": {
+    "true_dataset_vs_learned": {
+      "regret_gain_m": {
+        "ci_high": 0.07406072453107869,
+        "ci_low": 0.01796158118491538,
+        "mean": 0.04481032634792555,
+        "n_finite": 32
+      },
+      "success_gain": {
+        "ci_high": 0.3125,
+        "ci_low": 0.0,
+        "mean": 0.15625,
+        "n_finite": 32
+      }
+    },
+    "true_rendered_vs_learned": {
+      "regret_gain_m": {
+        "ci_high": 0.07519432269122299,
+        "ci_low": 0.018367070695647605,
+        "mean": 0.04512525207771904,
+        "n_finite": 32
+      },
+      "success_gain": {
+        "ci_high": 0.3125,
+        "ci_low": 0.0,
+        "mean": 0.15625,
+        "n_finite": 32
+      }
+    },
+    "true_rendered_vs_true_dataset": {
+      "regret_gain_m": {
+        "ci_high": 0.00094477718938046,
+        "ci_low": 0.0,
+        "mean": 0.0003149257297934867,
+        "n_finite": 32
+      },
+      "success_gain": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "mean": 0.0,
+        "n_finite": 32
+      }
+    }
+  },
+  "physical_oracle": {
+    "candidate_success": {
+      "ci_high": 0.90625,
+      "ci_low": 0.625,
+      "mean": 0.78125,
+      "n_finite": 32
+    },
+    "distance_m": {
+      "ci_high": 0.06919375979178037,
+      "ci_low": 0.022344782470707675,
+      "mean": 0.04310969247602728,
+      "n_finite": 32
+    }
+  },
+  "representation_gate": {
+    "criteria": {
+      "oracle_candidate_success_ci_low_gt_zero": true,
+      "representation_regret_ci_low_gt_zero": true,
+      "representation_success_gap_ci_low_gt_zero": true
+    },
+    "primary_selector": "true_rendered_goal",
+    "status": "strong_support"
+  },
+  "scope": "corrected offline true-endpoint diagnostic on locked candidates; same-renderer goal is primary and simulator information is evaluation-only"
+}

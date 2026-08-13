@@ -13,7 +13,8 @@ bibtex main
 pdflatex -interaction=nonstopmode -halt-on-error main.tex
 pdflatex -interaction=nonstopmode -halt-on-error main.tex
 pdfinfo main.pdf | grep -E '^(Pages|Page size)'
-# The proposal is a tables-only document: this listing must stay empty.
-echo "--- embedded images (must be empty) ---"
+# The two figures are native TikZ (vector draw commands), not raster images,
+# so no external image file or embedded bitmap should ever appear here.
+echo "--- embedded raster images (must be empty) ---"
 pdfimages -list main.pdf || true
 echo "===== PROPOSAL_BUILD_DONE ====="

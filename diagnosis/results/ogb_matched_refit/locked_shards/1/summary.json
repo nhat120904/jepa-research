@@ -1,0 +1,69 @@
+{
+  "config": {
+    "action_block": 5,
+    "cem_iterations": 30,
+    "checkpoint": "quentinll/lewm-cube",
+    "dataset": "ogbench/cube_single_expert.h5",
+    "goal_arm": "same_renderer",
+    "goal_offset": 25,
+    "horizon": 5,
+    "noise_seed": 20260812,
+    "num_samples": 300,
+    "snapshot_index": 1,
+    "topk": 30,
+    "var_scale": 1.0,
+    "visual_variation": [],
+    "w_hand": 0.5,
+    "warmstart_disabled": true
+  },
+  "gate": {
+    "checks": {
+      "iteration_zero_shared": true,
+      "provenance_executed_exact": true,
+      "provenance_latent_exact": true,
+      "provenance_physical_exact": true,
+      "provenance_success_exact": true,
+      "repeat_cube_exact": true,
+      "repeat_executed_exact": true,
+      "repeat_hand_exact": true,
+      "repeat_latent_exact": true,
+      "repeat_success_exact": true
+    },
+    "pass": true
+  },
+  "gates": {
+    "provenance": {
+      "executed_max_abs": 0.0,
+      "latent_max_abs": 0.0,
+      "physical_max_abs": 0.0,
+      "success_disagreements": 0
+    },
+    "repeat": {
+      "cube_goal_max_abs": 0.0,
+      "executed_max_abs": 0.0,
+      "hand_cube_max_abs": 0.0,
+      "latent_max_abs": 0.0,
+      "success_disagreements": 0
+    }
+  },
+  "primary": {
+    "delta_best_shaped_cost": 0.14410486242511203,
+    "delta_best_task_distance_m": 0.09383726993726413,
+    "delta_mean_task_distance_m": 0.09503172716148575,
+    "delta_selected_task_distance_m": 0.1011889072875443,
+    "delta_success_any": -1,
+    "latent_final_best_task_distance_m": 0.09471591422480317,
+    "physical_final_best_task_distance_m": 0.0008786442875390525
+  },
+  "runtime_minutes": 40.5711339990298,
+  "scope": "cost-only CEM intervention with simulator-exact dynamics; simulator state is a positive control, never a deployable selector",
+  "snapshot": {
+    "episode": 294,
+    "order": 1,
+    "reset_seed": 20270811,
+    "start_step": 45,
+    "storage_row": 59139
+  },
+  "start_distance_m": 0.24722097897144896,
+  "visual_signature": "add82fdd0218b4f63c1da71f49d69b2f8e650d5c28540e52d8798d15d91cf93b"
+}
