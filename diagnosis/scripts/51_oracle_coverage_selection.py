@@ -211,7 +211,13 @@ def main() -> int:
     ap.add_argument("--config", required=True)
     ap.add_argument("--model", required=True)
     ap.add_argument("--tasks", nargs="+", default=["mw-push"])
-    ap.add_argument("--cost", choices=["l2", "stateprobe", "gobj"], default="l2")
+    ap.add_argument("--cost", choices=["l2", "stateprobe", "gobj", "straight"], default="l2")
+    ap.add_argument("--encoder-lora", default=None,
+                    help="encoder-LoRA ckpt (hys_h0/scripts/04 or scripts/38); injected "
+                         "into the adapter so the audit scores the SAME reshaped latents "
+                         "the cost was trained on")
+    ap.add_argument("--projector", default=None,
+                    help="straightening-projector ckpt (hys_h0/scripts/02); --cost straight")
     ap.add_argument("--probe", default=None)
     ap.add_argument("--ee-probe", default=None)
     ap.add_argument("--episodes", type=int, default=16)
@@ -247,9 +253,23 @@ def main() -> int:
         probe, _ = load_probe(args.probe, device)
     if args.ee_probe:
         ee_probe, _ = load_probe(args.ee_probe, device)
+    if args.encoder_lora:
+        from models.heads.lora_encoder import load_encoder_lora
+        _inj, _lmeta = load_encoder_lora(adapter, args.encoder_lora, device)
+        print(f"encoder LoRA: {args.encoder_lora} (r={_lmeta.get('r')}, "
+              f"gate={_lmeta.get('meta', {}).get('gate')})", flush=True)
+
+    projector = None
+    if args.cost == "straight":
+        if not args.projector:
+            raise SystemExit("--projector is required for --cost straight")
+        from models.heads.straightening_projector import load_projector
+        projector, pmeta = load_projector(args.projector, device)
+        print(f"straightening projector: {args.projector} (gate={pmeta.get('gate')}, "
+              f"final_val_curv={pmeta.get('final_eval', {}).get('curv_all')})", flush=True)
     cost_spec = dict(
         cost=args.cost, probe=probe, ee_probe=ee_probe, metric=None,
-        repr_adapter=None, w_hand=args.w_hand, s_g=args.s_g,
+        repr_adapter=None, projector=projector, w_hand=args.w_hand, s_g=args.s_g,
         beta=args.beta, gamma_l2=args.gamma_l2,
     )
     cem_kw = dict(

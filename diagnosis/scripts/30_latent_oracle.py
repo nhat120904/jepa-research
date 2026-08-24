@@ -73,7 +73,8 @@ from stratification.metaworld_regimes import OBJECT_SLICE  # noqa: E402
 
 
 def build_oracle_cost(cost, z_goal, *, probe=None, metric=None, ee_probe=None,
-                      repr_adapter=None, w_hand=0.5, s_g=0.1276, beta=0.1, gamma_l2=1.0):
+                      repr_adapter=None, projector=None, w_hand=0.5, s_g=0.1276,
+                      beta=0.1, gamma_l2=1.0):
     """Build the latent-oracle scoring fn ``(z_fin (B,*frame)) -> cost (B,)``.
 
     The latent oracle gives PERFECT latent dynamics; the only thing swapped here
@@ -203,6 +204,22 @@ def build_oracle_cost(cost, z_goal, *, probe=None, metric=None, ee_probe=None,
             c = ((z_fin.reshape(B, -1) - zg[None]) ** 2).mean(-1)
             obj_term = (((repr_adapter(z_fin)[:, :obj_dim] - obj_goal) / s_g_dim) ** 2).mean(-1)
             return gamma_l2 * c + beta * obj_term
+        return fn
+
+    if cost == "straight":
+        # Temporal-straightening projector (hys_h0/scripts/02). The pre-gate measured
+        # the frozen latent's curvature at 1.096 against a chance level of 1.000 and a
+        # physical reference of 0.03-0.32, i.e. consecutive latent displacements are
+        # anti-correlated. P is trained to remove that; the planner then reads L2 in
+        # P-space instead of raw latent space. Encoder/predictor stay frozen.
+        if projector is None:
+            raise ValueError("--cost straight needs --projector")
+        with torch.no_grad():
+            p_goal = projector(z_goal.unsqueeze(0))          # (1, d)
+
+        @torch.no_grad()
+        def fn(z_fin):
+            return ((projector(z_fin) - p_goal) ** 2).mean(-1)
         return fn
 
     raise ValueError(f"unknown --cost {cost}")
@@ -417,7 +434,8 @@ def main() -> int:
     # Phase-0 cost gate: only the COST is swapped vs the L2 null (the dynamics stay
     # perfect). See build_oracle_cost for the decision rule.
     ap.add_argument("--cost",
-                    choices=["l2", "gobj", "stateprobe", "metric", "advmetric", "phi", "phil2"],
+                    choices=["l2", "gobj", "stateprobe", "metric", "advmetric", "phi",
+                             "phil2", "straight"],
                     default="l2",
                     help="latent-oracle scoring: l2 (null) / gobj (object readout) / "
                          "stateprobe (state-oracle cost via probes: object + hand-approach) / "
@@ -434,6 +452,8 @@ def main() -> int:
                     help="learned latent-metric ckpt (scripts/33); --cost metric/advmetric")
     ap.add_argument("--repr-adapter", default=None,
                     help="action-repr-adapter ckpt (scripts/37 or scripts/38); --cost phi")
+    ap.add_argument("--projector", default=None,
+                    help="straightening-projector ckpt (hys_h0/scripts/02); --cost straight")
     ap.add_argument("--encoder-lora", default=None,
                     help="encoder-LoRA ckpt (scripts/38, Phase D): injected before any "
                          "encoding, so the whole gate — goal encoding + every CEM "
@@ -457,7 +477,15 @@ def main() -> int:
         print(f"encoder LoRA: {args.encoder_lora} (r={lmeta['r']}, "
               f"{len(injected)} modules, val_obj_median_cm="
               f"{lmeta.get('val_obj_median_cm')})", flush=True)
-    probe = metric = ee_probe = repr_adapter = None
+    probe = metric = ee_probe = repr_adapter = projector = None
+    if args.cost == "straight":
+        if not args.projector:
+            raise SystemExit("--projector is required for --cost straight")
+        from models.heads.straightening_projector import load_projector
+        projector, pmeta = load_projector(args.projector, device)
+        print(f"straightening projector: {args.projector} "
+              f"(gate={pmeta.get('gate')}, out_dim={projector.out_dim}, "
+              f"final_val_curv={pmeta.get('final_eval', {}).get('curv_all')})", flush=True)
     if args.cost in ("gobj", "stateprobe"):
         if not args.probe:
             raise SystemExit(f"--probe is required for --cost {args.cost}")
@@ -488,7 +516,8 @@ def main() -> int:
               f"obj_dim={rmeta.get('obj_dim')} extra_scale={rmeta.get('extra_scale')})",
               flush=True)
     cost_spec = dict(cost=args.cost, probe=probe, metric=metric, ee_probe=ee_probe,
-                     repr_adapter=repr_adapter, w_hand=args.w_hand, s_g=args.s_g,
+                     repr_adapter=repr_adapter, projector=projector,
+                     w_hand=args.w_hand, s_g=args.s_g,
                      beta=args.beta, gamma_l2=args.gamma_l2)
     print(f"latent-oracle cost={args.cost} (s_g={args.s_g} beta={args.beta} "
           f"gamma_l2={args.gamma_l2} w_hand={args.w_hand})", flush=True)
