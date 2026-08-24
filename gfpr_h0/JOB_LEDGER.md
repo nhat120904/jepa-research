@@ -1,0 +1,20 @@
+# GFPR execution ledger
+
+All model loading, feature extraction, training, and aggregate analysis run on
+Slurm compute nodes.  Commands are issued from the repository root.
+
+| Job | Exact command | Dependency | Outputs | Final state |
+|---|---|---|---|---|
+| 42945 | `sbatch gfpr_h0/scripts/slurm_feature_smoke.sh` | none | no accepted feature output; log `/mnt/data/nhatnc129/jepa_runs/logs/gfpr_feat_smoke_42945.out` | **FAILED**, exit 1 after 24 s: max cost drift 0.001464 exceeded the original `1e-4` gate; no model trained; prompted the pre-outcome rank-preserving gate amendment in `PROTOCOL.md` |
+| 42946 | `sbatch gfpr_h0/scripts/slurm_feature_smoke.sh` | none | `outputs/features_smoke/0/features.npz`; log `/mnt/data/nhatnc129/jepa_runs/logs/gfpr_feat_smoke_42946.out` | **COMPLETED**, exit 0 in 19 s: max cost drift 0.001464, rank Spearman 1.0, argmin/top-10 exact, max rank shift 0, physical-input flag false |
+| 42947[0-31] | `sbatch gfpr_h0/scripts/slurm_feature_array.sh` | smoke 42946 inspected and passed | invalid/superseded partial outputs under `outputs/features/`; logs `/mnt/data/nhatnc129/jepa_runs/logs/gfpr_features_42947_%a.out` | task 1 failed the absolute-only gate at 0.007792 despite exact rank preservation; tasks 0/2/3 completed, tasks 4-5 were cancelled while running and 6-31 before start; every output from this partial array is excluded |
+| 42954 | `sbatch --export=ALL,GFPR_SMOKE_INDEX=1 gfpr_h0/scripts/slurm_feature_smoke.sh` | rank+relative gate amendment | `outputs/features_smoke_v2/1/features.npz`; log `/mnt/data/nhatnc129/jepa_runs/logs/gfpr_feat_smoke_42954.out` | **COMPLETED**, exit 0 in 17 s: absolute 0.007792, relative 2.62e-5, Spearman 1.0, exact argmin/top-10/all ranks |
+| 42955[0-31] | `sbatch gfpr_h0/scripts/slurm_feature_array.sh` | hard-snapshot smoke 42954 inspected and passed | excluded v2 outputs under `outputs/features_v2/`; logs `/mnt/data/nhatnc129/jepa_runs/logs/gfpr_features_42955_%a.out` | 31 tasks completed; task 18 **FAILED** at relative drift `1.0629e-4` (absolute `0.009614`) despite Spearman 1.0, exact argmin/top-10, and zero rank shift; all v2 outputs excluded before training |
+| 42960 | `sbatch --dependency=afterok:42955 gfpr_h0/scripts/slurm_train_smoke.sh` | all 32 v2 feature shards | none | dependency never satisfied; cancelled before execution |
+| 42961[0-3] | `sbatch --dependency=afterok:42960 gfpr_h0/scripts/slurm_train_folds.sh` | train smoke 42960 | none | cancelled before execution |
+| 42962 | `sbatch --dependency=afterok:42961 gfpr_h0/scripts/slurm_aggregate.sh` | all four held-out folds | none | cancelled before execution |
+| 43008 | `sbatch --export=ALL,GFPR_SMOKE_INDEX=18 gfpr_h0/scripts/slurm_feature_smoke.sh` | final replay-gate amendment | `outputs/features_smoke_v3/18/features.npz`; log `/mnt/data/nhatnc129/jepa_runs/logs/gfpr_feat_smoke_43008.out` | **COMPLETED**, exit 0 in 17 s: absolute drift `0.009614`, relative drift `1.0629e-4`, Spearman 1.0, exact argmin/top-10/all ranks, physical-input flag false |
+| 43009[0-31] | `sbatch gfpr_h0/scripts/slurm_feature_array.sh` | hard-snapshot smoke 43008 inspected and passed | `outputs/features_v3/{0..31}/features.npz`; logs `/mnt/data/nhatnc129/jepa_runs/logs/gfpr_features_43009_%a.out` | **COMPLETED**, all 32 tasks exit 0 in 13–18 s with one code hash |
+| 43012 | `sbatch --dependency=afterok:43009 gfpr_h0/scripts/slurm_train_smoke.sh` | all 32 v3 feature shards | `outputs/fold_smoke/`; log `/mnt/data/nhatnc129/jepa_runs/logs/gfpr_train_smoke_43012.out` | **COMPLETED**, exit 0 in 5 s; fold/API smoke passed |
+| 43013[0-3] | `sbatch --dependency=afterok:43012 gfpr_h0/scripts/slurm_train_folds.sh` | train smoke 43012 | `outputs/folds/{0..3}/`; logs `/mnt/data/nhatnc129/jepa_runs/logs/gfpr_fold_43013_%a.out` | **COMPLETED**, all four episode-held-out folds exit 0 in 42–48 s |
+| 43014 | `sbatch --dependency=afterok:43013 gfpr_h0/scripts/slurm_aggregate.sh` | all four held-out folds | `outputs/aggregate/{summary.json,REPORT.md}`; log `/mnt/data/nhatnc129/jepa_runs/logs/gfpr_aggregate_43014.out` | **COMPLETED**, exit 0; locked verdict `STOP_GFPR_FORMULATION` |
