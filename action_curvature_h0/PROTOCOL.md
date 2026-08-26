@@ -1804,3 +1804,26 @@ reported `14.2` is real. **The bar itself is unchanged.**
 
 The control is still our own run of the released `quentinll/lewm-cube` through
 this same path; their LeWM number is not assumed.
+
+### Nineteenth amendment, second addendum (2026-08-26): which LeWM is the control
+
+The repository ships `variant=lewm` and `variant=rc_aux` alongside `td_jepa`,
+all trainable with the same recipe. That creates two distinct LeWM references,
+and using the wrong one would invalidate the gate.
+
+- **Fidelity-gate control: `variant=lewm`, trained by us, same recipe and same
+  three seeds.** Their reported `+14.2` is a within-codebase delta against their
+  own LeWM baseline, so only a within-codebase LeWM reproduces it. Comparing
+  against the released checkpoint instead would fold any difference between the
+  release and their baseline into the measured gain, in an unknown direction.
+- **Phase-1 arena control: the released `quentinll/lewm-cube`.** That is the
+  deployed model this whole program has studied, and every earlier amendment's
+  numbers refer to it.
+
+Both are evaluated and reported; neither substitutes for the other. Cost is six
+training runs rather than three, which is the price of a gate that can actually
+fail for the right reason.
+
+Should our within-codebase LeWM and the released checkpoint differ materially
+under the identical eval path, that difference is recorded as a finding about
+reproduction, and the Phase-1 arena still uses the release.
