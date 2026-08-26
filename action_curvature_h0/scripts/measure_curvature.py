@@ -97,6 +97,10 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--repeats", type=int, default=3,
                    help="Repeated realized evaluations of the centre action (floor test).")
     p.add_argument("--encode-batch", type=int, default=64)
+    p.add_argument("--state-dict", type=Path, default=None,
+                   help="checkpoint.pt from train_as.py; loaded on top of the "
+                        "released weights so fine-tuned arms can be measured "
+                        "through the identical diagnostic path.")
     p.add_argument("--probe", type=Path, default=None,
                    help="probe.npz from train_probe.py; enables the physical-space "
                         "bridge (Gate B and the metre-space primary metric).")
@@ -409,6 +413,12 @@ def main() -> None:
     model.requires_grad_(False)
     model.interpolate_pos_encoding = True
     embedder_patched = False
+    if args.state_dict is not None:
+        blob = torch.load(args.state_dict, map_location="cuda")
+        missing, unexpected = model.load_state_dict(blob["model"], strict=True)
+        state_dict_meta = {k: blob.get(k) for k in ("lambda_as", "seed", "steps")}
+    else:
+        state_dict_meta = None
     if args.model_dtype == "float64":
         model = model.double()
         # Upstream LeWM hardcodes a float32 downcast in the action embedder
@@ -966,6 +976,8 @@ def write_outputs(
         "contact_resolution": contact_info,
         "embedder_float32_patch_applied": embedder_patched,
         "probe_path": str(args.probe) if args.probe is not None else None,
+        "state_dict": str(args.state_dict) if args.state_dict is not None else None,
+        "state_dict_meta": state_dict_meta,
         "direction_feasibility": feasibility,
         "centre_clipping": centre_clipping,
         "clip_diagnostic": clip_diagnostic,

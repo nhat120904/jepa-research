@@ -1,0 +1,69 @@
+{
+  "args": {
+    "checkpoint": "quentinll/lewm-cube",
+    "dataset": "ogbench/cube_single_expert.h5",
+    "horizon": 5,
+    "history_size": 3,
+    "frameskip": 5,
+    "img_size": 224,
+    "batch_size": 8,
+    "steps": 20,
+    "lr": 5e-05,
+    "weight_decay": 0.001,
+    "grad_clip": 1.0,
+    "lambda_as": 0.1,
+    "sigma_min": 0.00125,
+    "sigma_max": 0.2,
+    "seed": 0,
+    "log_every": 5,
+    "out_dir": "/home/nhatnc129/nhat.nc/jepa-research/action_curvature_h0/outputs/train_smoke/lam0.1_seed0"
+  },
+  "frozen_modules": [
+    "encoder",
+    "projector"
+  ],
+  "trained_modules": [
+    "predictor",
+    "action_encoder",
+    "pred_proj"
+  ],
+  "n_trainable_params": 11740484,
+  "history": [
+    {
+      "step": 0,
+      "loss": 0.3464414179325104,
+      "base_loss": 0.19580161571502686,
+      "as_loss": 1.5063979625701904,
+      "sigma": 0.08964136509891986,
+      "curvature_norm": 2.181304693222046,
+      "action_sensitivity": 11.290616035461426
+    },
+    {
+      "step": 5,
+      "loss": 0.29733699560165405,
+      "base_loss": 0.1542188972234726,
+      "as_loss": 1.4311809539794922,
+      "sigma": 0.005279578358807837,
+      "curvature_norm": 1.6194829940795898,
+      "action_sensitivity": 189.54994201660156
+    },
+    {
+      "step": 10,
+      "loss": 0.2794179320335388,
+      "base_loss": 0.1422630399465561,
+      "as_loss": 1.3715487718582153,
+      "sigma": 0.013909607045318946,
+      "curvature_norm": 1.7408134937286377,
+      "action_sensitivity": 74.48292541503906
+    },
+    {
+      "step": 15,
+      "loss": 0.30512312054634094,
+      "base_loss": 0.15905620157718658,
+      "as_loss": 1.4606691598892212,
+      "sigma": 0.0852564235047392,
+      "curvature_norm": 1.7909027338027954,
+      "action_sensitivity": 11.214126586914062
+    }
+  ]
+}

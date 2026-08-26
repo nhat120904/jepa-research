@@ -1,0 +1,213 @@
+{
+  "args": {
+    "checkpoint": "quentinll/lewm-cube",
+    "dataset": "ogbench/cube_single_expert.h5",
+    "horizon": 5,
+    "history_size": 3,
+    "frameskip": 5,
+    "img_size": 224,
+    "batch_size": 16,
+    "steps": 1000,
+    "lr": 5e-05,
+    "weight_decay": 0.001,
+    "grad_clip": 1.0,
+    "lambda_as": 0.1,
+    "sigma_min": 0.00125,
+    "sigma_max": 0.2,
+    "seed": 2,
+    "log_every": 50,
+    "out_dir": "/home/nhatnc129/nhat.nc/jepa-research/action_curvature_h0/outputs/dev/lam0.1_seed2"
+  },
+  "frozen_modules": [
+    "encoder",
+    "projector"
+  ],
+  "trained_modules": [
+    "predictor",
+    "action_encoder",
+    "pred_proj"
+  ],
+  "n_trainable_params": 11740484,
+  "history": [
+    {
+      "step": 0,
+      "loss": 0.22802165150642395,
+      "base_loss": 0.0720389261841774,
+      "as_loss": 1.5598270893096924,
+      "sigma": 0.00574630789213457,
+      "curvature_norm": 1.9735573530197144,
+      "action_sensitivity": 93.6707534790039
+    },
+    {
+      "step": 50,
+      "loss": 0.24892926216125488,
+      "base_loss": 0.08838049322366714,
+      "as_loss": 1.605487585067749,
+      "sigma": 0.0971241024427743,
+      "curvature_norm": 2.128687858581543,
+      "action_sensitivity": 5.714062690734863
+    },
+    {
+      "step": 100,
+      "loss": 0.2340986728668213,
+      "base_loss": 0.09495449811220169,
+      "as_loss": 1.391441822052002,
+      "sigma": 0.0029207962311457373,
+      "curvature_norm": 1.649277687072754,
+      "action_sensitivity": 231.41976928710938
+    },
+    {
+      "step": 150,
+      "loss": 0.23322263360023499,
+      "base_loss": 0.09010942280292511,
+      "as_loss": 1.4311320781707764,
+      "sigma": 0.018104772378143688,
+      "curvature_norm": 1.838823676109314,
+      "action_sensitivity": 35.25950622558594
+    },
+    {
+      "step": 200,
+      "loss": 0.21996858716011047,
+      "base_loss": 0.07671289891004562,
+      "as_loss": 1.4325568675994873,
+      "sigma": 0.08012345588344393,
+      "curvature_norm": 1.8358194828033447,
+      "action_sensitivity": 7.046003818511963
+    },
+    {
+      "step": 250,
+      "loss": 0.21613000333309174,
+      "base_loss": 0.0882575511932373,
+      "as_loss": 1.2787245512008667,
+      "sigma": 0.039009144336592985,
+      "curvature_norm": 1.595305323600769,
+      "action_sensitivity": 18.813249588012695
+    },
+    {
+      "step": 300,
+      "loss": 0.266848623752594,
+      "base_loss": 0.12169638276100159,
+      "as_loss": 1.4515224695205688,
+      "sigma": 0.1967704785787349,
+      "curvature_norm": 1.9314894676208496,
+      "action_sensitivity": 3.776223659515381
+    },
+    {
+      "step": 350,
+      "loss": 0.2783687114715576,
+      "base_loss": 0.1365625560283661,
+      "as_loss": 1.4180617332458496,
+      "sigma": 0.07812817764728738,
+      "curvature_norm": 1.8898179531097412,
+      "action_sensitivity": 9.029664039611816
+    },
+    {
+      "step": 400,
+      "loss": 0.22808103263378143,
+      "base_loss": 0.09492981433868408,
+      "as_loss": 1.3315120935440063,
+      "sigma": 0.006703197072194933,
+      "curvature_norm": 1.7299622297286987,
+      "action_sensitivity": 98.21051025390625
+    },
+    {
+      "step": 450,
+      "loss": 0.24528223276138306,
+      "base_loss": 0.10295814275741577,
+      "as_loss": 1.4232409000396729,
+      "sigma": 0.005096716156654162,
+      "curvature_norm": 1.7453339099884033,
+      "action_sensitivity": 151.13848876953125
+    },
+    {
+      "step": 500,
+      "loss": 0.25797516107559204,
+      "base_loss": 0.08885236084461212,
+      "as_loss": 1.691227912902832,
+      "sigma": 0.13517278018407689,
+      "curvature_norm": 2.482717514038086,
+      "action_sensitivity": 4.808137893676758
+    },
+    {
+      "step": 550,
+      "loss": 0.2399800717830658,
+      "base_loss": 0.09190768003463745,
+      "as_loss": 1.4807238578796387,
+      "sigma": 0.023244242911583005,
+      "curvature_norm": 1.9280390739440918,
+      "action_sensitivity": 32.24299240112305
+    },
+    {
+      "step": 600,
+      "loss": 0.22860252857208252,
+      "base_loss": 0.08277853578329086,
+      "as_loss": 1.4582397937774658,
+      "sigma": 0.06868079855363951,
+      "curvature_norm": 1.9312177896499634,
+      "action_sensitivity": 8.762535095214844
+    },
+    {
+      "step": 650,
+      "loss": 0.23889301717281342,
+      "base_loss": 0.08237233757972717,
+      "as_loss": 1.56520676612854,
+      "sigma": 0.004803216191487295,
+      "curvature_norm": 2.0648655891418457,
+      "action_sensitivity": 139.17196655273438
+    },
+    {
+      "step": 700,
+      "loss": 0.24785292148590088,
+      "base_loss": 0.10833931714296341,
+      "as_loss": 1.3951358795166016,
+      "sigma": 0.021314444469901075,
+      "curvature_norm": 1.899198055267334,
+      "action_sensitivity": 44.70805358886719
+    },
+    {
+      "step": 750,
+      "loss": 0.2431652694940567,
+      "base_loss": 0.09396688640117645,
+      "as_loss": 1.4919837713241577,
+      "sigma": 0.00531264011097826,
+      "curvature_norm": 1.8069716691970825,
+      "action_sensitivity": 123.72647857666016
+    },
+    {
+      "step": 800,
+      "loss": 0.20080003142356873,
+      "base_loss": 0.06349875032901764,
+      "as_loss": 1.3730127811431885,
+      "sigma": 0.003479997580033708,
+      "curvature_norm": 1.7887451648712158,
+      "action_sensitivity": 224.66998291015625
+    },
+    {
+      "step": 850,
+      "loss": 0.25897279381752014,
+      "base_loss": 0.09333544224500656,
+      "as_loss": 1.6563736200332642,
+      "sigma": 0.020503423712422527,
+      "curvature_norm": 2.3272595405578613,
+      "action_sensitivity": 28.245765686035156
+    },
+    {
+      "step": 900,
+      "loss": 0.23418891429901123,
+      "base_loss": 0.09494265913963318,
+      "as_loss": 1.3924624919891357,
+      "sigma": 0.0012667627789675754,
+      "curvature_norm": 1.6902055740356445,
+      "action_sensitivity": 688.143310546875
+    },
+    {
+      "step": 950,
+      "loss": 0.23402605950832367,
+      "base_loss": 0.09468312561511993,
+      "as_loss": 1.3934292793273926,
+      "sigma": 0.023675536186631138,
+      "curvature_norm": 1.6986497640609741,
+      "action_sensitivity": 29.867067337036133
+    }
+  ]
+}

@@ -1084,3 +1084,30 @@ are committed.
 fell relative to the paired `lambda = 0`. That shows the gradient reaches the
 predictor and moves it in the intended direction; over 20 steps it is not
 evidence that the method works, and is not recorded as such.
+
+### H. What a Gate-1 failure means, locked before the dev eval is read
+
+If no `lambda` in the committed grid lowers angular curvature against its paired
+`lambda = 0` on the fixed manifest, the conclusion is stated as:
+
+> Cosine AS, at this formulation and this scale, does not have the authority to
+> control angular curvature in this model.
+
+It is **not** licensed to extend the grid to `lambda in {1, 3, 10}` and continue
+calling the result the same preregistered sweep. Extending a grid because its
+committed range failed is hyperparameter selection on the outcome, and it
+converts a preregistered test into an exploratory one without saying so.
+
+The admissible response is a **new development amendment on orders 0-63**,
+declared as exploratory, investigating why the gradient is too weak: relative
+gradient scale of the AS term against the base loss, loss normalisation, or a
+different weighting. Orders 64-127 stay closed throughout, so the held-out
+evaluation remains uncontaminated no matter how many development iterations
+this takes.
+
+**Reading order for the dev eval, not to be shortcut.** Gate 1 on the fixed
+manifest first; only lambdas passing it are examined for base loss and
+sensitivity; only survivors of those have their `false_valley` looked at. The
+training logs already hint that AS may be too weak, but each of their points
+sits at a different sampled sigma and direction, so they are a warning and not
+evidence, and they are not consulted for the verdict.
