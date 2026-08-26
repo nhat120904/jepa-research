@@ -949,3 +949,78 @@ frozen, so the latent chart is identical before and after and curvature is
 comparable across arms. Nothing about planning is licensed yet; the chain
 AS -> angular curvature down -> false-valley down -> CEM ordering better ->
 planning success up still has three untested links.
+
+## Twelfth amendment (2026-08-25): intervention design, locked before training
+
+Three arms, encoder frozen throughout so the latent chart is identical across
+arms and curvature is comparable.
+
+| arm | description |
+|---|---|
+| 1 | original `quentinll/lewm-cube`, no further training |
+| 2 | frozen encoder, predictor trained on an **open-loop H-step rollout** prediction loss |
+| 3 | arm 2 exactly, plus `lambda * (1 - cos(v-, v+))` on the same triplet rollouts |
+
+### A. Arm 2 must share arm 3's computational graph, not merely its data
+
+"Same data, steps and optimizer" is not sufficient. The AS term requires three
+`H`-step rollouts with gradients flowing through the unrolled predictor, while
+the upstream LeWM objective is teacher-forced single-step
+(`pred_loss = (pred_emb - tgt_emb)^2`, `scripts/train/lewm.py:80`). If arm 2 kept
+the single-step objective, arm 3 would differ by *two* things -- open-loop
+multi-step training and AS -- and any gain would be unattributable. This is the
+confound identified at the very start of this program and it is binding here.
+
+Both arms therefore train on the identical open-loop `H=5` rollout loss over the
+identical sampled triplets; arm 3 adds only the AS term. Setting `lambda = 0`
+would **not** be a valid arm 2 if the rollouts existed solely to serve the AS
+branch, because no gradient would flow through them.
+
+With the encoder frozen, SIGReg contributes no gradient (it acts on encoder
+outputs), so the continuation objective reduces to the rollout prediction loss.
+
+### B. What "held out" means for orders 64-127, stated rather than assumed
+
+The original checkpoint was trained on the full OGBench-Cube dataset, which
+includes the episodes behind snapshots 64-127. Excluding those episodes from
+continuation training would leave arms 2 and 3 *less* exposed to them than arm
+1, an asymmetry that would bias the very comparison the design exists to make.
+
+So: **all three arms share identical training data**, and 64-127 is held out
+from *our design decisions* -- which snapshots we looked at when choosing the
+component to target, the threshold, `lambda`, and the checkpoint rule -- not
+from the model's training distribution. That is the notion that matters here,
+because the contamination risk being managed is analyst choice, not memorisation.
+
+### C. Seeds, so the AS effect can be separated from continuation noise
+
+Arm 1 is a single deterministic checkpoint. Arms 2 and 3 run **3 seeds each**,
+fixed now. Every link is evaluated seed-wise, and arm 3 must beat arm 2 by more
+than the seed spread of arm 2. A single-seed comparison cannot distinguish AS
+from where continuation training happened to land.
+
+### D. Guards during development (orders 0-63 only)
+
+Tracked jointly, since curvature falling is not by itself good:
+angular curvature down; rollout prediction quality not collapsed; action
+sensitivity not collapsed. The cosine loss is scale-invariant, so it does not
+*directly* reward shrinking the displacement to zero, but joint optimisation can
+still reach an action-deaf predictor by another route, and that is the failure
+this program has documented more than any other.
+
+`lambda`, the checkpoint-selection rule, and the seed count are chosen on orders
+0-63 and committed **before** any shard from 64-127 is generated. Trying several
+`lambda` on the held-out set and keeping the best is explicitly excluded.
+
+### E. Preregistered claim order for the held-out evaluation
+
+1. **Manipulation check** -- does arm 3 lower angular curvature versus arm 2?
+   Fail: the method does not do what it claims; stop.
+2. **Mechanism** -- does the false-valley rate fall? Fail: curvature is not the
+   causal lever, only a correlate.
+3. **Planner interaction** -- CEM elite quality / candidate ordering / false
+   elites. Fail: the local minima were fixed but search barely notices.
+4. **Endpoint** -- planning success and physical regret.
+
+A failure at any link is reported at that link; later links are not consulted to
+rescue an earlier failure.
