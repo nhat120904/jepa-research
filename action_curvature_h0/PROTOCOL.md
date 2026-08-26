@@ -1024,3 +1024,25 @@ this program has documented more than any other.
 
 A failure at any link is reported at that link; later links are not consulted to
 rescue an earlier failure.
+
+### F. Final three details, locked 2026-08-25 before any training run
+
+1. **One script, one flag.** Arms 2 and 3 are the same training script with
+   `lambda_as = 0` versus `> 0`. Arm 2 also builds the symmetric triplet and
+   runs the same three `H=5` rollouts; it simply carries no AS gradient. Matched
+   in graph and compute, not merely in objective family. The base loss is the
+   open-loop `H`-step rollout prediction loss on the centre chunk, so both arms
+   receive multi-step gradient; the `+-delta` rollouts serve AS alone, and the
+   only difference between arms is the AS gradient itself.
+2. **Paired seeds.** Seed `k` of arm 2 and seed `k` of arm 3 start from the same
+   checkpoint and share batch order and perturbation RNG. The primary contrast
+   is the **within-seed paired difference** `AS - continuation`, which removes
+   the between-run variance that a two-sample comparison would carry.
+3. **`lambda` grid, `lambda`-selection rule and checkpoint rule are committed
+   before any 64-127 shard exists.** Selecting the AS checkpoint by best
+   false-valley while selecting arm 2's by best prediction loss is specifically
+   excluded; the rule must be identical across arms.
+
+**Primary criterion.** AS must improve on **arm 2** consistently across paired
+seeds. Arm 1 is context -- it says what continuation and multi-step training do
+on their own -- not the comparison. The causal contrast for AS is arm 3 vs arm 2.
