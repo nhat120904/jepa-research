@@ -894,3 +894,58 @@ are the AS intervention's claims and require the causal chain: AS lowers
 curvature -> false-valley rate falls -> CEM elite quality rises -> planning
 success rises. The first link is now worth testing; none of the rest is
 established.
+
+## Eleventh amendment (2026-08-25): the false-valley effect is ANGULAR, so the
+## cosine loss is on target -- and snapshots 64-127 are now reserved
+
+`k_model_self` is total curvature; the AS cosine loss only touches the angular
+half of the identity, so confirming the total does not license the loss. Tested
+on the confirmatory shards, no new compute: the components are recovered from
+the energy fractions already recorded, `k_rad = k sqrt(f_r)` and
+`k_ang = k sqrt(f_a)`.
+
+Radial and angular are parts of one total and are mutually correlated, so a
+univariate test on each would show an effect for both. The design is
+conditional: bin on one component, read the contrast along the other within
+those bins.
+
+**False-valley rate, radial (rows) x angular (columns), 1161 records, 39 snapshots:**
+
+|  | ang0 | ang1 | ang2 |
+|---|---|---|---|
+| **rad0** | 0.007 (n=276) | 0.034 (n=87) | 0.167 (n=24) |
+| **rad1** | 0.000 (n=100) | 0.046 (n=197) | 0.167 (n=90) |
+| **rad2** | 0.000 (n=11) | 0.000 (n=103) | 0.150 (n=273) |
+
+The rate rises monotonically along every row and is flat or falling down every
+column.
+
+| conditional contrast | top-minus-bottom | 95% CI | excludes 0 |
+|---|---:|---|---|
+| angular, holding radial | **+0.158** | [+0.102, +0.212] | **yes** |
+| radial, holding angular | -0.017 | [-0.069, +0.035] | no |
+
+**Verdict: `ANGULAR_DOMINATES_COSINE_AS_IS_ON_TARGET`.**
+
+**Why, stated plainly rather than dressed up.** The median energy split is
+**3% radial, 97% angular**: this model's action-map curvature is almost entirely
+directional, which is a large part of why the angular component carries the
+effect. The conditional analysis still earns its place -- it shows radial adds
+nothing once angular is held -- but the honest summary is that cosine AS is on
+target mainly because there is little else to aim at. A caveat with it: the two
+components are positively correlated through the total, so the off-diagonal
+cells are thin (n=11 and n=24 at the corners) and the conditioning is weaker
+there than the well-populated diagonal suggests.
+
+**Reservation, binding from now.** This decomposition used snapshots 8-63, so
+those snapshots have now informed the *design* of the intervention and can no
+longer serve as its evaluation. Orders **64-127** of the manifest, 64 snapshots,
+have never been measured, inspected or aggregated at any point in this program.
+They are reserved as the held-out causal-evaluation set and must not be touched
+until the intervention is trained and its evaluation preregistered.
+
+**What is licensed now.** Training cosine AS on the predictor with the encoder
+frozen, so the latent chart is identical before and after and curvature is
+comparable across arms. Nothing about planning is licensed yet; the chain
+AS -> angular curvature down -> false-valley down -> CEM ordering better ->
+planning success up still has three untested links.
