@@ -1,0 +1,120 @@
+{
+  "target": "object",
+  "threshold": 0.25,
+  "min_fraction": 0.75,
+  "degeneracy": {
+    "min_span_m": 1e-06,
+    "min_records_per_snapshot": 3
+  },
+  "counts": {
+    "records_seen": 512,
+    "records_kept": 345,
+    "snapshots_with_records": 12,
+    "snapshots_non_degenerate": 12
+  },
+  "gate_b": {
+    "median_d2e_m": 0.0006027058233132854,
+    "median_d2_true_m": 0.00014338372943726216,
+    "ratio": 4.203446413890361,
+    "pass": false
+  },
+  "gate_c": {
+    "snapshots_passing": 0,
+    "snapshots_considered": 12,
+    "fraction": 0.0,
+    "pass": false
+  },
+  "per_snapshot": {
+    "cem_fixed/snapshot_000": {
+      "n_records": 32,
+      "median_d2e_m": 0.0007771237507465405,
+      "median_d2_true_m": 0.00025190295092413205,
+      "ratio": 3.085012493484421,
+      "pass": false
+    },
+    "cem_fixed/snapshot_001": {
+      "n_records": 32,
+      "median_d2e_m": 0.0010889394621843972,
+      "median_d2_true_m": 0.0004331620840091709,
+      "ratio": 2.513930702580474,
+      "pass": false
+    },
+    "cem_fixed/snapshot_004": {
+      "n_records": 32,
+      "median_d2e_m": 0.002086360040665488,
+      "median_d2_true_m": 0.002239461636831697,
+      "ratio": 0.9316346421621176,
+      "pass": false
+    },
+    "cem_fixed/snapshot_006": {
+      "n_records": 32,
+      "median_d2e_m": 0.0012646069631269382,
+      "median_d2_true_m": 0.0007619711947490905,
+      "ratio": 1.659651928893927,
+      "pass": false
+    },
+    "cem_fixed/snapshot_007": {
+      "n_records": 25,
+      "median_d2e_m": 0.0002813503640409934,
+      "median_d2_true_m": 3.055401140811116e-06,
+      "ratio": 92.08295443861209,
+      "pass": false
+    },
+    "dataset/snapshot_000": {
+      "n_records": 32,
+      "median_d2e_m": 0.00044569096655717273,
+      "median_d2_true_m": 6.877559977362526e-05,
+      "ratio": 6.4803646645636475,
+      "pass": false
+    },
+    "dataset/snapshot_001": {
+      "n_records": 32,
+      "median_d2e_m": 0.00035700940964618935,
+      "median_d2_true_m": 5.889063244980613e-07,
+      "ratio": 606.2244448647701,
+      "pass": false
+    },
+    "dataset/snapshot_003": {
+      "n_records": 32,
+      "median_d2e_m": 0.0009521421800364754,
+      "median_d2_true_m": 0.0007433959508987338,
+      "ratio": 1.2808008691537482,
+      "pass": false
+    },
+    "dataset/snapshot_004": {
+      "n_records": 32,
+      "median_d2e_m": 0.0004491595251868478,
+      "median_d2_true_m": 8.08894784137828e-05,
+      "ratio": 5.552755858916694,
+      "pass": false
+    },
+    "dataset/snapshot_005": {
+      "n_records": 16,
+      "median_d2e_m": 0.0009280705626328504,
+      "median_d2_true_m": 0.00045472645505711853,
+      "ratio": 2.0409425321785486,
+      "pass": false
+    },
+    "dataset/snapshot_006": {
+      "n_records": 32,
+      "median_d2e_m": 6.733447156475905e-05,
+      "median_d2_true_m": 9.895654819372891e-08,
+      "ratio": 680.4448295118096,
+      "pass": false
+    },
+    "dataset/snapshot_007": {
+      "n_records": 16,
+      "median_d2e_m": 0.0008393919691913278,
+      "median_d2_true_m": 0.0007243423411532823,
+      "ratio": 1.158833222223163,
+      "pass": false
+    }
+  },
+  "primary_if_gates_pass": {
+    "median_d2_mismatch_m": 0.00016840915015385564,
+    "median_d2_model_decoded_m": 1.1203499100595611e-06,
+    "median_d2_true_m": 0.00014338372943726216,
+    "median_bridge_centre_err_m": 0.013529282499251961
+  },
+  "verdict": "BRIDGE_FAILS_DO_NOT_SUBSTITUTE_NONLINEAR_PROBE"
+}

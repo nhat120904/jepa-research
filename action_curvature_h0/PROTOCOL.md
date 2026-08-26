@@ -848,3 +848,49 @@ times more, so the CI should narrow by about a factor of 2.8. At the pilot's
 observed effect size (+0.163) that is comfortably enough to exclude zero. The
 test is therefore capable of detecting the effect it was built for, and a null
 here is informative rather than merely underpowered.
+
+## Tenth amendment (2026-08-25): the confirmatory test CONFIRMS the false-valley
+## hypothesis
+
+Job `46416`, snapshots 8-63, run and analysed under the rule locked in commit
+`733d77a` before any of these shards existed. 3584 records, 1177 usable after
+the unchanged spread filter, 39 snapshot clusters.
+
+**Primary outcome, as preregistered.**
+
+| curvature quantile | median `k_model_self` | `false_valley` rate | n |
+|---|---:|---:|---:|
+| 0 | 0.0014 | 0.0034 | 294 |
+| 1 | 0.0063 | 0.0170 | 294 |
+| 2 | 0.0196 | 0.0544 | 294 |
+| 3 | 0.0601 | 0.1763 | 295 |
+
+Top minus bottom: **+0.1729, 95% CI [+0.1213, +0.2347]**, excludes zero. By the
+locked decision rule this is **CONFIRMED**.
+
+The rate rises monotonically across all four quantiles, a factor of 52 from
+lowest to highest, and the effect size reproduces the pilot's (+0.163) almost
+exactly on a disjoint sample -- an independent replication, not a re-reading.
+
+**Secondaries behave as in the pilot and remain null**: `shape_disagree`
+-0.006 (CI [-0.081, +0.078]), `argmin_wrong` +0.076 (CI [-0.012, +0.167]),
+Spearman 0.047. Curvature does not predict ordinal disagreement in general. It
+predicts one specific, operationally important failure: the model reporting a
+local minimum that physics does not have.
+
+**A stale automated field, flagged rather than quoted.** `curvature_vs_misranking.py`
+still computes its `verdict` string from `shape_disagree`, the pilot's primary,
+so it prints `NO_CURVATURE_MISRANKING_LINK_KILL_AS` on this run. That string does
+**not** implement the preregistered rule for the confirmatory analysis and must
+not be reported as the result; the primary is `false_valley` per the ninth
+amendment. The field is left as-is rather than edited after seeing the data, and
+this note records the discrepancy.
+
+**What this does and does not license.** It establishes an association between
+model-side action-space curvature and false local minima, on OGBench-Cube, one
+frozen checkpoint, at the tested scales. It does not establish that reducing
+curvature removes those minima, nor that removing them improves planning. Those
+are the AS intervention's claims and require the causal chain: AS lowers
+curvature -> false-valley rate falls -> CEM elite quality rises -> planning
+success rises. The first link is now worth testing; none of the rest is
+established.

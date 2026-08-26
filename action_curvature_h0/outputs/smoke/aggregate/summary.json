@@ -1,0 +1,626 @@
+{
+  "n_records_total": 96,
+  "n_records_unclipped": 32,
+  "n_records_after_sensitivity_gate": 31,
+  "sensitivity_gate": {
+    "dropped": 1,
+    "kept": 31,
+    "quantile": 0.1,
+    "n_cells": 16
+  },
+  "n_snapshots": 1,
+  "sources": [
+    "dataset"
+  ],
+  "thresholds": {
+    "curvature_high": 0.25,
+    "mismatch_high": 0.25,
+    "effector_gate": 0.25,
+    "smooth_alpha_low": 1.5,
+    "min_r2": 0.9,
+    "min_sensitivity_quantile": 0.1
+  },
+  "primary_cell": {
+    "horizon": 5,
+    "sigma": 0.1,
+    "source": "cem_fixed",
+    "reference": "dataset"
+  },
+  "gates": {
+    "effector_curvature": {
+      "n": 31,
+      "n_snapshots": 1,
+      "point": 0.04197061451586059,
+      "low": 0.04197061451586059,
+      "high": 0.04197061451586059
+    },
+    "effector_gate_pass": true,
+    "repeat_floor_max": 0.0,
+    "repeat_floor_all_zero": true,
+    "discard_rate_by_mode": {
+      "same_mode_non_contact": 1.0,
+      "cross_mode": 1.0,
+      "same_mode_contact": 0.0
+    },
+    "discard_rate_spread": 1.0
+  },
+  "stratified": {
+    "same_mode_non_contact": {
+      "e_k": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "e_j": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "g_k": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "k_model_self": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "k_model_true": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "k_true": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "a_k": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "model_ratio": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "true_ratio": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "d2c_mismatch_normalized": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "s_model": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "s_true": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "s_ratio": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "model_radial_fraction": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "model_angular_fraction": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "error_radial_fraction": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "error_angular_fraction": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "k_true_state_object": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "k_true_state_effector": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      }
+    },
+    "same_mode_contact": {
+      "e_k": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": 0.7710481788858227,
+        "low": 0.7710481788858227,
+        "high": 0.7710481788858227
+      },
+      "e_j": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": 1.0064457157936473,
+        "low": 1.0064457157936473,
+        "high": 1.0064457157936473
+      },
+      "g_k": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": -0.7465747787973657,
+        "low": -0.7465747787973657,
+        "high": -0.7465747787973657
+      },
+      "k_model_self": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": 0.0661950101171789,
+        "low": 0.0661950101171789,
+        "high": 0.0661950101171789
+      },
+      "k_model_true": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": 0.04110057842508519,
+        "low": 0.04110057842508519,
+        "high": 0.04110057842508519
+      },
+      "k_true": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": 0.7810409623143024,
+        "low": 0.7810409623143024,
+        "high": 0.7810409623143024
+      },
+      "a_k": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": 0.0669861280420831,
+        "low": 0.0669861280420831,
+        "high": 0.0669861280420831
+      },
+      "model_ratio": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": 0.16336198942912253,
+        "low": 0.16336198942912253,
+        "high": 0.16336198942912253
+      },
+      "true_ratio": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": 0.12536066005506863,
+        "low": 0.12536066005506863,
+        "high": 0.12536066005506863
+      },
+      "d2c_mismatch_normalized": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": -0.35165884237000966,
+        "low": -0.35165884237000966,
+        "high": -0.35165884237000966
+      },
+      "s_model": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": 1.2195972324641569,
+        "low": 1.2195972324641569,
+        "high": 1.2195972324641569
+      },
+      "s_true": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": 1.4322260824474795,
+        "low": 1.4322260824474795,
+        "high": 1.4322260824474795
+      },
+      "s_ratio": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": 1.5761211453875064,
+        "low": 1.5761211453875064,
+        "high": 1.5761211453875064
+      },
+      "model_radial_fraction": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": 0.19648116238382052,
+        "low": 0.19648116238382052,
+        "high": 0.19648116238382052
+      },
+      "model_angular_fraction": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": 0.8035188376161794,
+        "low": 0.8035188376161794,
+        "high": 0.8035188376161794
+      },
+      "error_radial_fraction": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": 0.0692785321396156,
+        "low": 0.0692785321396156,
+        "high": 0.0692785321396156
+      },
+      "error_angular_fraction": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": 0.9307214678603843,
+        "low": 0.9307214678603843,
+        "high": 0.9307214678603843
+      },
+      "k_true_state_object": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": 0.030294832562221236,
+        "low": 0.030294832562221236,
+        "high": 0.030294832562221236
+      },
+      "k_true_state_effector": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": 0.04197061451586059,
+        "low": 0.04197061451586059,
+        "high": 0.04197061451586059
+      }
+    },
+    "cross_mode": {
+      "e_k": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "e_j": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "g_k": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "k_model_self": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "k_model_true": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "k_true": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "a_k": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "model_ratio": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "true_ratio": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "d2c_mismatch_normalized": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "s_model": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "s_true": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "s_ratio": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "model_radial_fraction": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "model_angular_fraction": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "error_radial_fraction": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "error_angular_fraction": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "k_true_state_object": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      },
+      "k_true_state_effector": {
+        "n": 0,
+        "point": null,
+        "low": null,
+        "high": null
+      }
+    }
+  },
+  "taxonomy": {
+    "same_mode_contact": {
+      "model_erases_real_nonlinearity": 29,
+      "model_genuinely_smooth": 1,
+      "same_magnitude_wrong_direction": 1
+    }
+  },
+  "horizon_curves": {
+    "1": {
+      "k_model_self": {
+        "n": 15,
+        "n_snapshots": 1,
+        "point": 0.0661950101171789,
+        "low": 0.0661950101171789,
+        "high": 0.0661950101171789
+      },
+      "k_true": {
+        "n": 15,
+        "n_snapshots": 1,
+        "point": 1.2831418200996898,
+        "low": 1.2831418200996898,
+        "high": 1.2831418200996898
+      },
+      "e_k": {
+        "n": 15,
+        "n_snapshots": 1,
+        "point": 1.2853074617777158,
+        "low": 1.2853074617777158,
+        "high": 1.2853074617777158
+      },
+      "s_model": {
+        "n": 15,
+        "n_snapshots": 1,
+        "point": 1.2195972324641569,
+        "low": 1.2195972324641569,
+        "high": 1.2195972324641569
+      },
+      "s_true": {
+        "n": 15,
+        "n_snapshots": 1,
+        "point": 1.5606819526226854,
+        "low": 1.5606819526226854,
+        "high": 1.5606819526226854
+      }
+    },
+    "5": {
+      "k_model_self": {
+        "n": 16,
+        "n_snapshots": 1,
+        "point": 0.06907978217947716,
+        "low": 0.06907978217947716,
+        "high": 0.06907978217947716
+      },
+      "k_true": {
+        "n": 16,
+        "n_snapshots": 1,
+        "point": 0.6606394866657539,
+        "low": 0.6606394866657539,
+        "high": 0.6606394866657539
+      },
+      "e_k": {
+        "n": 16,
+        "n_snapshots": 1,
+        "point": 0.6613532853356021,
+        "low": 0.6613532853356021,
+        "high": 0.6613532853356021
+      },
+      "s_model": {
+        "n": 16,
+        "n_snapshots": 1,
+        "point": 0.9806367592260274,
+        "low": 0.9806367592260274,
+        "high": 0.9806367592260274
+      },
+      "s_true": {
+        "n": 16,
+        "n_snapshots": 1,
+        "point": 1.3811806027339955,
+        "low": 1.3811806027339955,
+        "high": 1.3811806027339955
+      }
+    }
+  },
+  "detector_agreement": {
+    "cross_tab": {
+      "agree_smooth": 0,
+      "agree_boundary": 0,
+      "contact_only": 0,
+      "exponent_only": 0,
+      "unassigned_no_fit": 0,
+      "unassigned_low_r2": 4
+    },
+    "n_fits_used": 0,
+    "alpha_median_by_mode": {},
+    "alpha_n_by_mode": {}
+  },
+  "region_comparison": {
+    "dataset": {
+      "e_k": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": 0.7710481788858227,
+        "low": 0.7710481788858227,
+        "high": 0.7710481788858227
+      },
+      "k_model_true": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": 0.04110057842508519,
+        "low": 0.04110057842508519,
+        "high": 0.04110057842508519
+      },
+      "k_true": {
+        "n": 31,
+        "n_snapshots": 1,
+        "point": 0.7810409623143024,
+        "low": 0.7810409623143024,
+        "high": 0.7810409623143024
+      }
+    }
+  },
+  "verdict": {
+    "decision": "MISMATCH_BUT_MODEL_UNDER_TRUE",
+    "cell": {
+      "source": "dataset",
+      "horizon": 5,
+      "sigma": 0.1,
+      "strata": [
+        "same_mode_non_contact",
+        "same_mode_contact"
+      ]
+    },
+    "e_k": {
+      "n": 2,
+      "n_snapshots": 1,
+      "point": 0.34662790328122284,
+      "low": 0.34662790328122284,
+      "high": 0.34662790328122284
+    },
+    "e_k_absolute": {
+      "n": 2,
+      "n_snapshots": 1,
+      "point": 1.0971086363528078,
+      "low": 1.0971086363528078,
+      "high": 1.0971086363528078
+    },
+    "e_j": {
+      "n": 2,
+      "n_snapshots": 1,
+      "point": 1.1273862624943072,
+      "low": 1.1273862624943072,
+      "high": 1.1273862624943072
+    },
+    "k_model_true": {
+      "n": 2,
+      "n_snapshots": 1,
+      "point": 0.044837399162156996,
+      "low": 0.044837399162156996,
+      "high": 0.044837399162156996
+    },
+    "k_true": {
+      "n": 2,
+      "n_snapshots": 1,
+      "point": 0.3441502903773187,
+      "low": 0.3441502903773187,
+      "high": 0.3441502903773187
+    },
+    "s_model": {
+      "n": 2,
+      "n_snapshots": 1,
+      "point": 1.0328282772387118,
+      "low": 1.0328282772387118,
+      "high": 1.0328282772387118
+    },
+    "s_true": {
+      "n": 2,
+      "n_snapshots": 1,
+      "point": 1.0040237116887272,
+      "low": 1.0040237116887272,
+      "high": 1.0040237116887272
+    },
+    "primary_contrast": {
+      "n_pairs": 0,
+      "point": null,
+      "low": null,
+      "high": null,
+      "metric": "e_k",
+      "contrast": "cem_fixed - dataset"
+    },
+    "secondary_contrast_cem_local": {
+      "n_pairs": 0,
+      "point": null,
+      "low": null,
+      "high": null,
+      "metric": "e_k",
+      "contrast": "cem_local - dataset"
+    },
+    "mismatch_present": true,
+    "model_curvature_exceeds_true": false,
+    "same_mode_alpha_is_smooth": null,
+    "action_deaf": false
+  },
+  "code_hashes": [
+    "d9c69a2b8df635c212ee7c7c64694796710d6b3b412a3ed0b612d421ad8fe243"
+  ],
+  "shards": [
+    "cem_fixed/snapshot_000",
+    "cem_local/snapshot_000",
+    "dataset/snapshot_000"
+  ]
+}

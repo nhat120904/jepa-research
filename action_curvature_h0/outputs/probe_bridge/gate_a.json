@@ -1,0 +1,42 @@
+{
+  "n_train": 360,
+  "n_heldout": 120,
+  "n_train_episodes": 90,
+  "n_heldout_episodes": 30,
+  "latent_dim": 192,
+  "ridge": 0.001,
+  "train_r2_per_axis": {
+    "object_x": 0.9973725092500265,
+    "object_y": 0.997810334288708,
+    "object_z": 0.9957324461611397,
+    "effector_x": 0.9938963552280091,
+    "effector_y": 0.9884002405898906,
+    "effector_z": 0.9927745691535249
+  },
+  "train_median_err_mm": {
+    "object": 8.01116497050822,
+    "effector": 11.960074296090351
+  },
+  "train_p90_err_mm": {
+    "object": 15.059444269699823,
+    "effector": 26.899530662408317
+  },
+  "heldout_r2_per_axis": {
+    "object_x": 0.987283621176793,
+    "object_y": 0.9878386149319236,
+    "object_z": 0.9765265351987084,
+    "effector_x": 0.9765517575695041,
+    "effector_y": 0.9460555964277387,
+    "effector_z": 0.9473323866496064
+  },
+  "heldout_median_err_mm": {
+    "object": 13.709524027243084,
+    "effector": 26.858671577237978
+  },
+  "heldout_p90_err_mm": {
+    "object": 33.12185552738569,
+    "effector": 60.92545328005353
+  },
+  "visual_signature": "add82fdd0218b4f63c1da71f49d69b2f8e650d5c28540e52d8798d15d91cf93b",
+  "excluded_manifest_episodes": 128
+}

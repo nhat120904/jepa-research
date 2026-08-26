@@ -1,0 +1,107 @@
+{
+  "snapshot": {
+    "order": 0,
+    "episode": 16,
+    "start_step": 57,
+    "storage_row": 3273,
+    "reset_seed": 20360819
+  },
+  "action_source": "cem_fixed",
+  "population_index": 1,
+  "n_snapshots_preregistered": 64,
+  "horizons": [
+    1,
+    5
+  ],
+  "sigmas": [
+    0.00125,
+    0.0025,
+    0.005,
+    0.01,
+    0.025,
+    0.05,
+    0.1,
+    0.2
+  ],
+  "n_directions": 2,
+  "seed": 20260824,
+  "checkpoint": "quentinll/lewm-cube",
+  "dataset": "ogbench/cube_single_expert.h5",
+  "visual_signature": "add82fdd0218b4f63c1da71f49d69b2f8e650d5c28540e52d8798d15d91cf93b",
+  "contact_resolution": {
+    "body_names": {
+      "0": "world",
+      "1": "ur5e/",
+      "2": "ur5e/base",
+      "3": "ur5e/shoulder_link",
+      "4": "ur5e/upper_arm_link",
+      "5": "ur5e/forearm_link",
+      "6": "ur5e/wrist_1_link",
+      "7": "ur5e/wrist_2_link",
+      "8": "ur5e/wrist_3_link",
+      "9": "ur5e/robotiq/",
+      "10": "ur5e/robotiq/base_mount",
+      "11": "ur5e/robotiq/base",
+      "12": "ur5e/robotiq/right_driver",
+      "13": "ur5e/robotiq/right_coupler",
+      "14": "ur5e/robotiq/right_spring_link",
+      "15": "ur5e/robotiq/right_follower",
+      "16": "ur5e/robotiq/right_pad",
+      "17": "ur5e/robotiq/right_silicone_pad",
+      "18": "ur5e/robotiq/left_driver",
+      "19": "ur5e/robotiq/left_coupler",
+      "20": "ur5e/robotiq/left_spring_link",
+      "21": "ur5e/robotiq/left_follower",
+      "22": "ur5e/robotiq/left_pad",
+      "23": "ur5e/robotiq/left_silicone_pad",
+      "24": "object_0",
+      "25": "object_target_0"
+    },
+    "joint_id": 14,
+    "cube_body_id": 24,
+    "cube_body_name": "object_0",
+    "cube_geom_ids": [
+      62
+    ],
+    "cube_geom_names": [
+      "object_0"
+    ],
+    "n_world_geoms": 5,
+    "n_geoms_total": 64
+  },
+  "direction_feasibility": [
+    {
+      "direction": 0,
+      "masked_fraction": 0.016,
+      "shrink": 1.0,
+      "feasible": 1.0
+    },
+    {
+      "direction": 1,
+      "masked_fraction": 0.016,
+      "shrink": 1.0,
+      "feasible": 1.0
+    }
+  ],
+  "code_sha256": "d9c69a2b8df635c212ee7c7c64694796710d6b3b412a3ed0b612d421ad8fe243",
+  "floor": {
+    "repeat_floor": 0.0,
+    "repeats": 3
+  },
+  "scaling_fits": [],
+  "discard_by_mode": {
+    "same_mode_non_contact": {
+      "total": 26,
+      "discarded": 26
+    },
+    "cross_mode": {
+      "total": 6,
+      "discarded": 6
+    }
+  },
+  "n_records": 32,
+  "npz_skipped_non_scalar_keys": [
+    "mode",
+    "touched_bodies"
+  ]
+}

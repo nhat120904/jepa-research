@@ -1,0 +1,149 @@
+{
+  "curvature_key": "k_model_self",
+  "filters": {
+    "min_physical_spread_m": 0.0001,
+    "min_model_spread": 0.0
+  },
+  "physical_spread_before_filter": {
+    "n": 3584,
+    "percentiles_m": {
+      "5": 0.0,
+      "25": 0.0,
+      "50": 6.98130610789216e-06,
+      "75": 0.0002851371296937813,
+      "95": 0.006915529460825416
+    }
+  },
+  "by_sigma_unfiltered": {
+    "0.00125": {
+      "n": 448,
+      "median_physical_spread_m": 7.413752515679495e-07,
+      "shape_disagree_rate": 0.5200892857142857,
+      "false_valley_rate": 0.0
+    },
+    "0.0025": {
+      "n": 448,
+      "median_physical_spread_m": 1.5327183828343915e-06,
+      "shape_disagree_rate": 0.5290178571428571,
+      "false_valley_rate": 0.0
+    },
+    "0.005": {
+      "n": 448,
+      "median_physical_spread_m": 3.7252117066968737e-06,
+      "shape_disagree_rate": 0.5401785714285714,
+      "false_valley_rate": 0.002232142857142857
+    },
+    "0.01": {
+      "n": 448,
+      "median_physical_spread_m": 9.333324953203492e-06,
+      "shape_disagree_rate": 0.5491071428571429,
+      "false_valley_rate": 0.006696428571428571
+    },
+    "0.025": {
+      "n": 448,
+      "median_physical_spread_m": 2.6955372450628012e-05,
+      "shape_disagree_rate": 0.5491071428571429,
+      "false_valley_rate": 0.024553571428571428
+    },
+    "0.05": {
+      "n": 448,
+      "median_physical_spread_m": 4.143477577517318e-05,
+      "shape_disagree_rate": 0.5580357142857143,
+      "false_valley_rate": 0.04241071428571429
+    },
+    "0.1": {
+      "n": 448,
+      "median_physical_spread_m": 8.492866645980202e-05,
+      "shape_disagree_rate": 0.5870535714285714,
+      "false_valley_rate": 0.06919642857142858
+    },
+    "0.2": {
+      "n": 448,
+      "median_physical_spread_m": 0.00019991777535184607,
+      "shape_disagree_rate": 0.609375,
+      "false_valley_rate": 0.12946428571428573
+    }
+  },
+  "counts": {
+    "records": 3584,
+    "usable": 1177,
+    "snapshots": 39
+  },
+  "overall_rates": {
+    "shape_disagree": 0.6389124893797791,
+    "false_valley": 0.06287170773152082,
+    "argmin_wrong": 0.5581988105352591
+  },
+  "by_curvature_quantile": [
+    {
+      "quantile": 0,
+      "curvature_range": [
+        9.446038384480628e-05,
+        0.0032730239617099065
+      ],
+      "n": 294,
+      "median_curvature": 0.0013780993545335018,
+      "shape_disagree_rate": 0.6802721088435374,
+      "false_valley_rate": 0.003401360544217687,
+      "argmin_wrong_rate": 0.54421768707483
+    },
+    {
+      "quantile": 1,
+      "curvature_range": [
+        0.0032730239617099065,
+        0.011177572698156814
+      ],
+      "n": 294,
+      "median_curvature": 0.006324311012715857,
+      "shape_disagree_rate": 0.5986394557823129,
+      "false_valley_rate": 0.017006802721088437,
+      "argmin_wrong_rate": 0.5204081632653061
+    },
+    {
+      "quantile": 2,
+      "curvature_range": [
+        0.011177572698156814,
+        0.03387644592198284
+      ],
+      "n": 294,
+      "median_curvature": 0.01956984519020523,
+      "shape_disagree_rate": 0.6020408163265306,
+      "false_valley_rate": 0.05442176870748299,
+      "argmin_wrong_rate": 0.5476190476190477
+    },
+    {
+      "quantile": 3,
+      "curvature_range": [
+        0.03387644592198284,
+        0.2461680850384722
+      ],
+      "n": 295,
+      "median_curvature": 0.06013820458435093,
+      "shape_disagree_rate": 0.6745762711864407,
+      "false_valley_rate": 0.17627118644067796,
+      "argmin_wrong_rate": 0.6203389830508474
+    }
+  ],
+  "top_vs_bottom_quantile": {
+    "shape_disagree": {
+      "top_minus_bottom": -0.005695837657096692,
+      "ci_low": -0.0811931158777046,
+      "ci_high": 0.07818533610957061,
+      "excludes_zero": false
+    },
+    "false_valley": {
+      "top_minus_bottom": 0.17286982589646027,
+      "ci_low": 0.12133310076240046,
+      "ci_high": 0.2346576943458604,
+      "excludes_zero": true
+    },
+    "argmin_wrong": {
+      "top_minus_bottom": 0.07612129597601747,
+      "ci_low": -0.01197842421983382,
+      "ci_high": 0.16651610395713803,
+      "excludes_zero": false
+    }
+  },
+  "spearman_curvature_vs_disagreement": 0.047046117715895876,
+  "verdict": "NO_CURVATURE_MISRANKING_LINK_KILL_AS"
+}
