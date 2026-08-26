@@ -1400,3 +1400,63 @@ need not itself be good, which is precisely the property under test.
 - Only if the iteration-0 primary passes is the full per-arm closed-loop CEM
   endpoint run, where each arm generates its own population over 30 iterations.
   That endpoint, not this test, is what may be called a planning improvement.
+
+## Sixteenth amendment (2026-08-26): viability filter, locked before arm scoring
+
+The fifteenth amendment's population regeneration completed (job `46676`, orders
+64-127, 64/64 shards, all 64 index-0 pre-refit gates PASS). Before any arm other
+than the scorer-validation smoke was scored, the validation run exposed a
+measurement-validity problem that the preregistration did not cover.
+
+### The problem
+
+`cube.yaml` sets `terminate_at_goal: True`. On a start state that already
+satisfies the success predicate the episode terminates on the first primitive
+action, so a 25-action plan never executes and no arm's choice can change the
+outcome. On the regenerated populations this affects **16 of 64** snapshots,
+where *every* candidate terminates after one action. Such snapshots contribute
+an exactly-zero paired difference, diluting the primary and inflating `n`.
+
+### The filter, defined on the pre-action start state
+
+A snapshot enters the analysis **iff its start state is not already successful**
+under the environment's own predicate: `cube_env.py:_compute_successes` marks a
+cube successful iff `||obj_pos - tar_pos|| <= 0.04`, and
+`72_ogb_stage0_candidate_audit.py:cube_distance` computes that same norm. The
+filter is therefore
+
+    keep snapshot iff cube_distance(start_state, goal_block_0_pos) > 0.04 m
+
+evaluated on the restored start state, depending only on the state and the goal
+and on no model, so it cannot favour an arm.
+
+`max(executed_steps) > 1` over the shared population is **not** the definition,
+only a corroborating classification, because it depends additionally on the 300
+sampled actions: a state could be unsolved yet have every candidate terminate
+early for an unrelated reason. Agreement between the two classifications is
+reported. The `spread >= 1 mm` condition is dropped from the definition; on the
+old-budget cache it excluded nothing beyond the frozen states and is reported as
+corroboration only.
+
+### Snapshot 064 is retained, with the contamination disclosed
+
+Scorer validation necessarily ran a real arm, so the contrast on snapshot 064 is
+partially unblinded: `original 0.02681 m` versus `lam0_seed0 0.02906 m`, i.e.
+continuation **worse** on that snapshot. Snapshot 064 is viable under the filter
+above and is **kept in the primary**:
+
+> Snapshot 064 was partially unblinded during scorer validation. No decision
+> rule was changed as a consequence; therefore it remained in the confirmatory
+> analysis.
+
+Removing an observed unfavourable point would be indefensible regardless of the
+purity rationale. The one contrast seen runs *against* the hypothesis, so
+retaining it makes the test more conservative, not less. A sensitivity analysis
+`primary excluding snapshot 064` is reported alongside; if the conclusions agree
+the contamination is immaterial.
+
+### Unchanged
+
+Primary outcome, test statistic, `K = 30`, both arenas, and the arena roles are
+exactly as locked in the fifteenth amendment. Only the analysis population is
+narrowed, by an arm-independent validity rule fixed before scoring.
