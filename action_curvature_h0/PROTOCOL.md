@@ -1301,3 +1301,102 @@ snapshots but its metrics are preregistered before being computed. If CEM and
 planning improve, the chain closes. If they do not, the conclusion is that
 false valleys are a local pathology that is not yet shown to be the planning
 bottleneck.
+
+## Fifteenth amendment (2026-08-26): CEM-interaction preregistration
+
+Locked before any population at the deployed budget exists and before any arm
+scores any candidate. Gates 1 and 2 of the thirteenth amendment having passed
+(fourteenth amendment), this is the next link in the chain.
+
+### Why the cached populations are not reused
+
+`physical_search_distillation/outputs/h0/populations` was collected at a reduced
+budget -- `N=96`, `K=10`, `T=12` (`physical_search_distillation/PROTOCOL.md:30`)
+-- not the deployed cube configuration. Verified in the released code:
+`scripts/plan/config/solver/cem.yaml` is `num_samples: 300`, `n_steps: 30`,
+`topk: 30`, and `scripts/plan/config/cube.yaml` is `horizon: 5`,
+`action_block: 5`. Scoring at `K=30` on a 96-candidate population would be a
+31% elite fraction against the deployed 10%, i.e. a planner surrogate rather
+than the planner. Populations are therefore regenerated at the deployed budget.
+
+### What is regenerated
+
+- Original frozen checkpoint only, once, shared byte-identically by every arm.
+  Orders 64-127.
+- Deployed configuration: `N=300`, `K=30`, `T=30`, `H=5`, `action_block=5`.
+- Cached iterations: `0` and `T-1 = 29`, together with the simulator start
+  state, so any arm can be scored on the identical candidate tensors and any
+  action sequence can be executed from the identical state.
+
+### The two arenas have different standing and are not pooled
+
+**Primary arena: iteration 0.** Candidates are drawn from the initial proposal
+(`mean = 0`, `std = var_scale = 1`) before any model has refit anything, so the
+population is not conditioned on either arm. Verified in `cem.py` that the
+callback receives `candidates` sampled *before* the update alongside the
+`prev_mean`/`prev_var` they were drawn from; confirmed empirically on the old
+cache (`proposal_mean[0]` all zero, `proposal_std[0]` all one, candidate 0
+equal to the mean, while the final iterate has `max|mean| = 2.70`). The smoke
+re-asserts all three at the deployed budget before any array is submitted.
+
+**Secondary arena: iteration 29, the original model's own final population.**
+This deliberately places continuation inside the basin the original CEM already
+selected. Passing here is strong evidence. Failing here while iteration 0 passes
+does **not** license "continuation does not help CEM"; the only supported
+reading is: *continuation improves refitting on an unbiased common proposal, but
+not after conditioning on the basin already selected by the original model.*
+The arenas are never aggregated into one test, and the arena is never chosen
+after seeing the data.
+
+The final population is not made primary, because doing so conditions the
+primary on the control arm before scoring begins.
+
+### Primary outcome
+
+Per snapshot, per arm, on the iteration-0 candidate tensor:
+
+1. score all 300 candidates with the arm's model cost;
+2. take the 30 lowest-cost elites;
+3. form the CEM update `elite_mean = topk_candidates.mean(dim=1)` -- this is the
+   deployed operation (`cem.py`: `batch_mean = topk_candidates.mean(dim=1)`,
+   `outputs['actions'] = mean`), i.e. the plan that is actually executed, not
+   the top-1 candidate;
+4. restore the simulator to the recorded start state and execute `elite_mean`;
+5. outcome = physical goal distance in metres at the end of execution.
+
+**Contrast**: `continuation - original`, continuation being the mean over the
+three already-trained seeds, paired by snapshot, snapshot-clustered bootstrap.
+**PASS** if the point estimate is `< 0` and the 95% CI excludes zero.
+
+### Secondaries, computed in both arenas
+
+- physical cost of the top-1 candidate by model cost (top-1 ranking);
+- mean physical cost of the 30 elites (selection quality);
+- rank correlation between model cost and physical cost over all 300
+  candidates (whole-population ordering).
+
+These answer three different questions and none of them substitutes for the
+primary: in a non-convex landscape the mean of 30 individually good actions
+need not itself be good, which is precisely the property under test.
+
+### Pre-registered risks and scope limits
+
+- Iteration 0 is the **first** CEM update from an isotropic proposal, not
+  converged CEM. The claim is scoped to one update on an unbiased population.
+- Averaging 30 quasi-random elites shrinks the action magnitude, so absolute
+  physical outcomes may be poor for **both** arms and a floor could compress the
+  contrast. Absolute per-arm distances are recorded so a floor is diagnosable;
+  a null accompanied by both arms at the floor is reported as uninformative,
+  not as a refutation.
+- The elite mean may leave the action bounds and is clipped exactly as the
+  environment clips it; the clipping rate is recorded per arm.
+
+### Guards
+
+- No seed or checkpoint selection by any planner metric. All three continuation
+  seeds enter under the fixed rule.
+- Every arm scores the identical candidate tensors; a hash of the candidate
+  array is recorded per snapshot and checked equal across arms.
+- Only if the iteration-0 primary passes is the full per-arm closed-loop CEM
+  endpoint run, where each arm generates its own population over 30 iterations.
+  That endpoint, not this test, is what may be called a planning improvement.
