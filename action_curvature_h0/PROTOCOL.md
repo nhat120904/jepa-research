@@ -1757,3 +1757,50 @@ the authors' own eval path, never our scorer. Apply the rule above.
 manifest is not generated before then. `TD-JEPA + d_psi` stays secondary and
 exploratory; if it happens to be stronger that is worth knowing, but it may not
 redefine the baseline after the fact.
+
+### Nineteenth amendment, addendum (2026-08-26): protocol read from the authors' own locked artifacts
+
+The repository was cloned at pinned commit
+`b4c17ca4649c9bf47272fa66c38da7a684f2a020` (2026-07-29) to
+`diagnosis/external/td-jepa`. It ships `results/paper_locked/`, which specifies
+their evaluation far more precisely than the abstract does. The criterion is
+tightened to match it **before any training**.
+
+Their locked Cube cost matrix, training seed 3072, epoch 10:
+
+| cost | mean success | std |
+|---|---:|---:|
+| latent L2 | **82.2%** | 2.9 |
+| blend `alpha=0.10` | 81.2% | 3.0 |
+| `d_psi` | 77.0% | 1.7 |
+
+`d_psi` is worse than latent L2 by `5.2` points, paired `p = 0.0015`. This
+independently confirms the arm assignment of the eighteenth amendment: latent L2
+is the primary baseline on Cube and `d_psi` is secondary. Note also that
+`config/train/ogb_train.yaml` sets `planning_cost_mse_blend: 0.10`, which is the
+in-training monitor, not the cost of the reported result; every arm's cost is
+set explicitly at evaluation.
+
+**Their evaluation protocol, adopted verbatim:**
+
+- Ten locked plan seeds `[20260714, 7, 11, 13, 17, 19, 23, 29, 31, 37]`.
+- A locked 50-episode validation manifest
+  (`eval_manifests/ogbench_cube_single_expert_val_seed20260714_n50.json`), so
+  the episode set is **identical** across plan seeds and across arms. Their
+  across-seed spread is planner stochasticity on a fixed episode set, not
+  episode sampling, and the comparison against our control is therefore paired
+  on episodes.
+- Solver for Cube: `num_samples 300`, `n_steps 10`, `topk 30` -- "CEM-10", not
+  the `stable_worldmodel` default of 30 iterations.
+- Training seeds `3072, 3073, 3074`, matching their own multi-seed set.
+
+**Consequences for the locked criterion.** The eighteenth/nineteenth amendment's
+"three eval seeds pooled" is replaced by their ten locked plan seeds, and the
+three training seeds are theirs rather than ours. Both changes make the test
+more faithful and lower its noise: the standard error of a per-checkpoint mean
+is about `2.9/sqrt(10) = 0.9` points, and of the paired gain about `1.2` points,
+against which the locked `>= 11.4` point bar has power near `0.99` if the
+reported `14.2` is real. **The bar itself is unchanged.**
+
+The control is still our own run of the released `quentinll/lewm-cube` through
+this same path; their LeWM number is not assumed.
