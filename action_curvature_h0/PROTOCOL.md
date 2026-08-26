@@ -1575,3 +1575,124 @@ measurable, it responds to an intervention, and it still does not move the
 planner. The incidental finding above suggests where the remaining loss sits:
 the elite-averaging update, which no change to the cost landscape's local
 curvature can repair.
+
+## Eighteenth amendment (2026-08-26): TD-JEPA novelty gate, preregistered
+
+A gate on whether a new method direction is worth developing, not a claim about
+any model. Locked before any TD-JEPA checkpoint exists on this cluster.
+
+### Why this gate exists
+
+The seventeenth amendment closed the geometry branch. Post-hoc measurement on
+the spent orders 64-127 then located the remaining loss, and none of it is where
+the previous program looked:
+
+| branch | available headroom |
+|---|---:|
+| false valleys (refuted intervention) | `0 mm` |
+| CEM update operator, oracle gate over always-top-1 | `4 mm` |
+| candidate **ranking** (model top-1 vs oracle best) | `55 mm` |
+
+The model's cost recovers about `12%` of the achievable gap (Spearman `0.112`),
+and blending its ranking toward the true ranking converts smoothly into physical
+quality with no floor. That makes ranking the only branch with headroom.
+
+**All of these numbers are exploratory and post-hoc on spent data. They motivate
+a hypothesis; none of them may appear in a paper as evidence.**
+
+A curvature-gated aggregation operator was screened and **rejected before being
+proposed**: angular curvature does predict the elite-averaging penalty
+(Spearman `+0.520`, while the false-valley rate does not, `-0.070`), but the
+oracle per-snapshot gate beats always-top-1 by only `4.2 mm`, and a curvature
+threshold fit on that same data (`0.1256 m`) is *worse* than always-top-1
+(`0.1243 m`). Best-action execution is also prior art -- iCEM's `return_mean`
+flag, present in the vendored `planning/solver/icem.py`. Branch closed.
+
+### The question
+
+> Can TD-JEPA's temporally trained LeWM representation already solve same-state
+> counterfactual candidate ranking on OGB-Cube, despite never receiving
+> same-state counterfactual supervision?
+
+TD-JEPA (arXiv 2607.25337) shares the LeWM backbone and targets the same
+diagnosis. Its supervision is same-trajectory temporal order as positives and
+cross-trajectory pairs as negatives. CEM must rank 300 counterfactual action
+sequences from **one** start state, which is a different negative distribution.
+Whether temporal supervision transfers to it is an empirical question.
+
+### Arms, fixed
+
+1. `lewm_original` + latent L2 -- control.
+2. `td_jepa` + latent L2 -- **primary baseline**; the paper's own deployed
+   OGB-Cube mode is latent L2 on the temporally trained checkpoint.
+3. `td_jepa` + mined temporal cost `d_psi` -- secondary, exploratory only; not
+   the paper's Cube configuration.
+
+### Arena
+
+Fresh snapshot manifest. Iteration-0 population, `N = 300`, `H = 5`,
+`action_block = 5`, `var_scale = 1`. Every arm scores the identical candidate
+tensor, hash-checked equal as in the fifteenth amendment.
+
+Iteration 0 is **provably model-independent here**, not merely shared: with no
+actor warm-start the initial mean is zero and the initial std is `var_scale`, so
+`candidates = randn(generator) * var_scale` depends only on the RNG seed. Both
+facts are asserted by `check_population_index0.py`. No arm runs its own CEM,
+which would confound ranking quality with search trajectory.
+
+### Primary and secondary
+
+**Primary**: physical goal distance of each arm's **top-1 candidate by model
+cost**, paired by snapshot, snapshot-clustered bootstrap. The hypothesis is
+about ranking, so the test reads the ranking directly. The CEM elite-mean is
+excluded from this gate: the seventeenth amendment showed it is a large
+arm-independent downstream distortion and it would only add noise here.
+
+**Mandatory secondary**: Spearman(model cost, physical cost) over all 300
+candidates. Reported always, and explicitly **not** a kill criterion on its own,
+because rank correlation can rise while the top of the ranking stays poor.
+
+### Decision statistic and rule, locked
+
+Fraction of oracle headroom recovered, on paired per-snapshot means:
+
+    R = (J_lewm - J_td_jepa) / (J_lewm - J_oracle)
+
+where `J_oracle` is the best candidate in the shared population. Bootstrap CI on
+both `R` and on `J_lewm - J_td_jepa`.
+
+| outcome | verdict | consequence |
+|---|---|---|
+| `R >= 0.50` and CI on `J_lewm - J_td_jepa` excludes 0 | `TD_JEPA_CLOSES_RANKING_GAP` | Counterfactual Action-Ranking is at high risk of being incremental; pivot or rethink. |
+| `R < 0.25` | `RANKING_GAP_OPEN` | The gap survives temporal supervision; the method is worth developing. |
+| `0.25 <= R < 0.50` | `GRAY_ZONE` | Method may proceed but must later beat TD-JEPA head to head. |
+
+`w ~ 0.6` from the exploratory blend is **not** used as a threshold; `w` has no
+fixed physical meaning outside that simulation.
+
+### Reproduction-fidelity gate, mandatory, before the comparison
+
+No public TD-JEPA checkpoint was found: the README points to LeWM's Hugging Face
+release, and neither the cluster nor the HF cache holds one. The baseline must
+therefore be reproduction-trained, which creates the single largest threat to
+this gate -- **an undertrained baseline would manufacture a favourable gap for
+us**.
+
+Guards, locked:
+
+- Train per the paper protocol: `--config-name=ogb_train data=ogb
+  variant=td_jepa`, 10 epochs, `ogbench/cube_single_expert.h5`.
+- Train **three seeds**, not the single published seed.
+- Admit a checkpoint to the arena only if the authors' own eval path
+  approximately reproduces their reported OGB-Cube gain over LeWM. If no seed
+  reproduces it, the gate is **inconclusive** and no novelty claim is made in
+  either direction.
+- Among reproducing seeds, carry the **best** TD-JEPA seed by the authors' own
+  metric into the arena. Selecting the baseline favourably to itself makes any
+  gap we report conservative.
+
+### Data discipline
+
+Orders 64-127 are spent. They may be used for triage only, and **no number
+derived from them enters the paper**. Any claim requires a fresh manifest
+generated before scoring.
