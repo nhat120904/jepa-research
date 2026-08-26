@@ -1827,3 +1827,54 @@ fail for the right reason.
 Should our within-codebase LeWM and the released checkpoint differ materially
 under the identical eval path, that difference is recorded as a finding about
 reproduction, and the Phase-1 arena still uses the release.
+
+### Nineteenth amendment, third addendum (2026-08-26): Phase-0 cost, measured
+
+Smoke `46891` failed on an environment mismatch and `46892` measured the recipe.
+Both are recorded because the first one is a warning about this gate's failure
+mode.
+
+**Environment.** This checkout of `stable-worldmodel` (`9a66d7d`, 2026-08-10) is
+NEWER than TD-JEPA (`b4c17ca`, 2026-07-29) and no longer accepts
+`rdcc_nbytes` / `rdcc_w0` as kwargs; it hardcodes `rdcc_nbytes = 256 MiB`, the
+identical value the config requests, leaving only `rdcc_w0` (1.0 vs h5py's
+0.75). Both are h5py chunk-CACHE knobs: they change read speed, never the bytes
+returned. They are removed via Hydra (`~data.dataset.rdcc_nbytes`), so the
+vendored repository stays pristine.
+
+The alternative -- installing the older `stable-worldmodel` for TD-JEPA only --
+was **rejected**: it would place TD-JEPA and our LeWM control in different
+environments, a far worse confound than a cache policy. One
+`stable-worldmodel` serves TD-JEPA, the LeWM control and the Phase-1 arena.
+
+**Note against ourselves**: `rdcc_w0` is a read-cache tuning knob, so calling it
+"harmless" is correct about the data and possibly wrong about throughput. The
+measured rate below may be depressed by its removal.
+
+**Measured cost.** `11390` steps per epoch at a stable `0.7 it/s` (H100, `mig`
+partition, a `3g.40gb` slice):
+
+| | |
+|---|---:|
+| one epoch | `4.5 h` |
+| one 10-epoch run | `45 h` |
+| six runs (3 `td_jepa` + 3 `lewm`) | **`271 GPU-h`** |
+
+At batch 128 that is about 90 images/s for a hidden-192 ViT on an H100, which
+indicates the loader, not the GPU. `config/train/lewm.yaml` sets
+`num_workers: 2`.
+
+**`num_workers` is part of the official recipe and may not be changed on
+convenience.** The fidelity gate is the one place a recipe deviation is
+unacceptable. It is permitted only if proven not to change the computation:
+job `46893` runs the identical 200 steps at `num_workers` 2 and 8 and compares
+the logged losses step by step. Identical losses prove the knob is pure I/O;
+any divergence and the deviation is refused and the recipe runs unchanged.
+
+**Reducing the three seeds to two is refused**: the locked power calculation
+assumes three, and cutting them to save compute would weaken the gate rather
+than the budget question it is standing in for.
+
+**Standing caveat for the budget decision.** Phase 0 only builds a baseline. Its
+best possible outcome is "the gap is still open, the direction is worth
+pursuing" -- it answers no scientific question on its own.
