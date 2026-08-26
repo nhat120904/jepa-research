@@ -234,3 +234,20 @@ contemporaneous record. Each job's exact command is the corresponding
 | `46568` | `slurm_dev_eval.sh` | **FAILED** | `NameError`: `state_dict_meta` not threaded into `write_outputs`. Second instance of the same bug class; `check_undefined_names.py` written in response. |
 | `46598` | `slurm_dev_eval.sh` | COMPLETED | 16-arm fixed-manifest dev eval. **Gate 1 fails for every lambda**; cosine AS closed as a mechanism-backed negative. |
 | `46650` | `slurm_heldout.sh` | COMPLETED | Held-out orders 64-127, 4 arms x 4 chunks, 4096 valid records. **Both gates pass**, `CONFIRMED_CONTINUATION_LOWERS_FALSE_VALLEYS` (fourteenth amendment). |
+
+## CEM-interaction test (2026-08-26)
+
+| UTC | Job ID | Stage | State | Result |
+|---|---:|---|---|---|
+| 08-26 14:21 | `46673` | collect smoke | **FAILED** | `--record-step` argparse append-to-default gave `[0, 11, 0, 29]`. Failed before GPU work. Fixed in `collect_populations.py`. |
+| 08-26 14:27 | `46674` | collect smoke | COMPLETED | 80 s/snapshot at 300/30/30. All 8 index-0 pre-refit assertions PASS. |
+| 08-26 14:35 | `46676` | population regeneration, array `64-127%2` | COMPLETED | 64/64 shards, deployed budget, original checkpoint only, shared by all arms. |
+| 08-26 14:41 | `46681` | scorer smoke | COMPLETED | Validated `score_cem_arms.py`; partially unblinded snapshot 064 (later excluded by the viability filter). |
+| 08-26 15:02 | `46755` | viability | COMPLETED | 39 viable / 25 already-successful. Disagrees with the executed-steps classification on 9 snapshots, one-sided. |
+| 08-26 15:04 | `46756` | arm scoring, array `64-127%2` | COMPLETED | 64/64; candidate-hash equality across arms passed on every snapshot. |
+
+Analysis: `scripts/cem_analysis.py` -> `outputs/cem_result.json`.
+**`NOT_CONFIRMED`**: primary `+0.00147 m`, CI `[-0.00228, +0.00454]`. Informative
+null, not a floor (no clipping, full-length execution, `0.157 m` population
+spread). Seventeenth amendment records the full reading. The closed-loop CEM
+endpoint is **not** run, per the locked rule.

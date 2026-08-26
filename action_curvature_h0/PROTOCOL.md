@@ -1460,3 +1460,118 @@ the contamination is immaterial.
 Primary outcome, test statistic, `K = 30`, both arenas, and the arena roles are
 exactly as locked in the fifteenth amendment. Only the analysis population is
 narrowed, by an arm-independent validity rule fixed before scoring.
+
+## Seventeenth amendment (2026-08-26): CEM-interaction result -- NOT CONFIRMED
+
+Jobs `46676` (population regeneration, 64/64, all index-0 gates PASS), `46755`
+(viability), `46756` (arm scoring, 64/64). All four arms scored byte-identical
+candidate tensors; the per-arena hash equality check passed on every snapshot.
+
+**Verdict: `NOT_CONFIRMED`. The primary is a null.**
+
+### Viability: the two classifications disagree, and the locked one is stricter
+
+| filter | viable | excluded |
+|---|---:|---:|
+| start-state predicate (locked, sixteenth amendment) | **39** | **25** |
+| `max(executed_steps) > 1` (corroboration only) | 48 | 16 |
+
+Nine snapshots -- `64, 70, 72, 89, 96, 100, 101, 114, 121` -- are kept by the
+executed-steps classification but excluded by the locked predicate, and the
+disagreement is one-sided. Mechanism: those start states are *already*
+successful, but the first action knocks the cube out of the goal region, so the
+episode does not terminate and more than one step executes. The executed-steps
+criterion therefore under-excludes exactly the already-solved states. Choosing
+the start-state predicate, as locked, was the correct call and it changed `n`
+from 48 to 39.
+
+The filter is not a knob: excluded snapshots have start distance at most
+`0.0327 m`, viable ones at least `0.0416 m`, a clean gap around the `0.04`
+threshold. Snapshot 064 is excluded by this general rule, so the partial
+unblinding recorded in the sixteenth amendment is moot; the sensitivity
+excluding it is identical to the primary by construction and is reported as such.
+
+### Primary, arena 0: null
+
+| | mean elite-mean physical distance (m) |
+|---|---:|
+| original | `0.15848` |
+| continuation, mean of 3 seeds | `0.15995` |
+
+Paired difference `+0.00147 m` (continuation nominally *worse*), 95% CI
+`[-0.00228, +0.00454]`, does not exclude zero. Lower on 9 of 39, tied on 8.
+Per-seed means `0.1613 / 0.1597 / 0.1589`: no seed lottery in either direction.
+
+### This is an informative null, not the pre-registered floor case
+
+The fifteenth amendment reserved the reading "both arms at the floor, therefore
+uninformative". That escape does not apply and is not used:
+
+- arena-0 population spread, median `0.157 m` -- ample room to discriminate;
+- elite-mean out-of-bounds fraction `0.000` for every arm -- no clipping;
+- executed steps median `25` for every arm -- every plan runs to completion.
+
+The CI is tight relative to the effect it would need to detect: `+/- ~4.5 mm`
+around a mean of `158 mm`. A continuation benefit of the size the mechanism
+would predict is excluded, not merely unresolved.
+
+### Secondary arena and all secondaries: also null
+
+Arena 1 (the original CEM's own final population): `+0.00050 m`, CI
+`[-0.00096, +0.00182]`. Secondaries, none excluding zero:
+
+| arena | metric | difference | 95% CI |
+|---:|---|---:|---|
+| 0 | top-1 physical | `+0.00351` | `[-0.00478, +0.01185]` |
+| 0 | mean of elite physical | `+0.00004` | `[-0.00090, +0.00098]` |
+| 0 | rank correlation | `+0.00782` | `[-0.00286, +0.01943]` |
+| 1 | top-1 physical | `-0.00723` | `[-0.01874, +0.00223]` |
+| 1 | mean of elite physical | `+0.00112` | `[-0.00096, +0.00344]` |
+| 1 | rank correlation | `+0.00400` | `[-0.03470, +0.04110]` |
+
+Arena-1 rank correlation drops 2 of 39 snapshots where every candidate has an
+identical physical distance, so the statistic is undefined; the count is
+reported rather than letting a nan propagate through a mean.
+
+### Incidental, arm-independent: the CEM update is itself the lossy step
+
+On arena 0 for the **original** model, averaged over the 39 viable snapshots:
+
+| quantity | mean distance (m) |
+|---|---:|
+| executed top-30 elite **mean** | `0.1585` |
+| mean of the 30 elites' own distances | `0.1279` |
+| top-1 candidate | `0.1219` |
+| population best | `0.0767` |
+| population **median** | `0.1281` |
+
+The action CEM actually executes is worse than the elites individually on 24 of
+39 snapshots, and worse than a *typical random candidate* on 20 of 39. This is
+the non-convexity the primary was chosen to probe: averaging thirty individually
+good action sequences produces an action that is not good. It holds for the
+original checkpoint, so it is a property of the deployed CEM update on this
+landscape, not an artifact of the contrast and not an explanation of the null in
+either arm's favour.
+
+### Consequence for the chain and for the paper
+
+The locked chain stops here. Per the fifteenth amendment, the full per-arm
+closed-loop CEM endpoint is run only if this primary passes; it does not, so it
+is **not** run and no planning claim is made.
+
+What survives, on mutually disjoint samples:
+
+1. high angular curvature <-> high false-valley rate -- confirmed (orders 8-63);
+2. continuation -> angular curvature down -- confirmed (orders 64-127);
+3. continuation -> false valleys down -- confirmed (orders 64-127);
+4. continuation -> better CEM refit on a shared population -- **refuted** at the
+   deployed budget, on an unbiased proposal, with a tight CI.
+
+The supported conclusion is the one the preregistration named in advance:
+**false valleys are a local pathology of the cost landscape that is not shown to
+be the planning bottleneck.** Link 4 failing after links 1-3 succeeded is a
+sharper result than never having tested it -- the mechanism is real and
+measurable, it responds to an intervention, and it still does not move the
+planner. The incidental finding above suggests where the remaining loss sits:
+the elite-averaging update, which no change to the cost landscape's local
+curvature can repair.

@@ -1,0 +1,641 @@
+{
+  "success_threshold_m": 0.04,
+  "n_snapshots": 64,
+  "n_viable": 39,
+  "n_excluded_already_successful": 25,
+  "viable_snapshots": [
+    65,
+    67,
+    69,
+    71,
+    76,
+    77,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    87,
+    90,
+    91,
+    93,
+    94,
+    95,
+    97,
+    98,
+    99,
+    102,
+    103,
+    105,
+    106,
+    108,
+    109,
+    111,
+    112,
+    113,
+    115,
+    116,
+    117,
+    118,
+    122,
+    123,
+    125,
+    126,
+    127
+  ],
+  "corroboration_max_executed_steps_gt_1": {
+    "n": 48,
+    "agrees_with_start_state_filter": false,
+    "only_in_start_state_filter": [],
+    "only_in_executed_steps_filter": [
+      64,
+      70,
+      72,
+      89,
+      96,
+      100,
+      101,
+      114,
+      121
+    ]
+  },
+  "rows": [
+    {
+      "snapshot": 64,
+      "episode": 4609,
+      "start_cube_distance_m": 0.03001392259253523,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.12093816839087268
+    },
+    {
+      "snapshot": 65,
+      "episode": 4711,
+      "start_cube_distance_m": 0.3165368191464792,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.3067291128151423
+    },
+    {
+      "snapshot": 66,
+      "episode": 4845,
+      "start_cube_distance_m": 3.927528687918888e-05,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 1,
+      "corroborating_population_spread_m": 0.0
+    },
+    {
+      "snapshot": 67,
+      "episode": 4888,
+      "start_cube_distance_m": 0.2199900127616736,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.274346203263006
+    },
+    {
+      "snapshot": 68,
+      "episode": 4933,
+      "start_cube_distance_m": 0.0,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 1,
+      "corroborating_population_spread_m": 0.0
+    },
+    {
+      "snapshot": 69,
+      "episode": 4964,
+      "start_cube_distance_m": 0.14470015052451082,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.15743831702039057
+    },
+    {
+      "snapshot": 70,
+      "episode": 5030,
+      "start_cube_distance_m": 0.021282071111600808,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.11977420299491749
+    },
+    {
+      "snapshot": 71,
+      "episode": 5133,
+      "start_cube_distance_m": 0.17408340524796523,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.21344669342071795
+    },
+    {
+      "snapshot": 72,
+      "episode": 5236,
+      "start_cube_distance_m": 0.016627712616678177,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.08150654667929083
+    },
+    {
+      "snapshot": 73,
+      "episode": 5458,
+      "start_cube_distance_m": 3.927528687918888e-05,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 1,
+      "corroborating_population_spread_m": 0.0
+    },
+    {
+      "snapshot": 74,
+      "episode": 5489,
+      "start_cube_distance_m": 7.528699885739343e-16,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 1,
+      "corroborating_population_spread_m": 0.0
+    },
+    {
+      "snapshot": 75,
+      "episode": 5729,
+      "start_cube_distance_m": 0.0,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 1,
+      "corroborating_population_spread_m": 0.0
+    },
+    {
+      "snapshot": 76,
+      "episode": 6133,
+      "start_cube_distance_m": 0.08505635029254205,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.03312025358882438
+    },
+    {
+      "snapshot": 77,
+      "episode": 6298,
+      "start_cube_distance_m": 0.17945062227622693,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.10715980629672286
+    },
+    {
+      "snapshot": 78,
+      "episode": 6344,
+      "start_cube_distance_m": 0.0012499380955007095,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 1,
+      "corroborating_population_spread_m": 0.0
+    },
+    {
+      "snapshot": 79,
+      "episode": 6405,
+      "start_cube_distance_m": 0.17794242258192372,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.05626894684786171
+    },
+    {
+      "snapshot": 80,
+      "episode": 6426,
+      "start_cube_distance_m": 0.04619055327607647,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.013381261457418435
+    },
+    {
+      "snapshot": 81,
+      "episode": 6443,
+      "start_cube_distance_m": 0.37117920129166937,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.29677734046183535
+    },
+    {
+      "snapshot": 82,
+      "episode": 6767,
+      "start_cube_distance_m": 0.1149781067779946,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.02931579977381006
+    },
+    {
+      "snapshot": 83,
+      "episode": 6853,
+      "start_cube_distance_m": 0.18643241254185028,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.12789054659568797
+    },
+    {
+      "snapshot": 84,
+      "episode": 6961,
+      "start_cube_distance_m": 0.15717144172722095,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.21516562077628817
+    },
+    {
+      "snapshot": 85,
+      "episode": 7010,
+      "start_cube_distance_m": 1.0609036277080203e-13,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 1,
+      "corroborating_population_spread_m": 0.0034470464683137455
+    },
+    {
+      "snapshot": 86,
+      "episode": 7094,
+      "start_cube_distance_m": 6.192116198452645e-12,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 1,
+      "corroborating_population_spread_m": 0.0017263845221534887
+    },
+    {
+      "snapshot": 87,
+      "episode": 7107,
+      "start_cube_distance_m": 0.16208027887891518,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.20973123988536194
+    },
+    {
+      "snapshot": 88,
+      "episode": 7122,
+      "start_cube_distance_m": 0.0,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 1,
+      "corroborating_population_spread_m": 0.0
+    },
+    {
+      "snapshot": 89,
+      "episode": 7353,
+      "start_cube_distance_m": 0.02003160039870762,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.06948877902601966
+    },
+    {
+      "snapshot": 90,
+      "episode": 7367,
+      "start_cube_distance_m": 0.09774195610676388,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.16829075715717715
+    },
+    {
+      "snapshot": 91,
+      "episode": 7393,
+      "start_cube_distance_m": 0.1088185333819134,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.0038862463905681155
+    },
+    {
+      "snapshot": 92,
+      "episode": 7443,
+      "start_cube_distance_m": 1.1553945454059677e-11,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 1,
+      "corroborating_population_spread_m": 0.005178129555554309
+    },
+    {
+      "snapshot": 93,
+      "episode": 7585,
+      "start_cube_distance_m": 0.19924416993517052,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.1759668877342565
+    },
+    {
+      "snapshot": 94,
+      "episode": 7637,
+      "start_cube_distance_m": 0.24930222076975922,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.046375955058065216
+    },
+    {
+      "snapshot": 95,
+      "episode": 7810,
+      "start_cube_distance_m": 0.1581657847097188,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.27826193065924
+    },
+    {
+      "snapshot": 96,
+      "episode": 7895,
+      "start_cube_distance_m": 0.015745246784379743,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 3,
+      "corroborating_population_spread_m": 0.03608307371185968
+    },
+    {
+      "snapshot": 97,
+      "episode": 7985,
+      "start_cube_distance_m": 0.07857097656847593,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.02709519076890446
+    },
+    {
+      "snapshot": 98,
+      "episode": 7990,
+      "start_cube_distance_m": 0.041584035790868334,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.08274123799487484
+    },
+    {
+      "snapshot": 99,
+      "episode": 8098,
+      "start_cube_distance_m": 0.25971936501199666,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.13828640433149958
+    },
+    {
+      "snapshot": 100,
+      "episode": 8107,
+      "start_cube_distance_m": 0.03274250523445487,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.15340413132872066
+    },
+    {
+      "snapshot": 101,
+      "episode": 8236,
+      "start_cube_distance_m": 0.022368252194903973,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 7,
+      "corroborating_population_spread_m": 0.03648452181839312
+    },
+    {
+      "snapshot": 102,
+      "episode": 8245,
+      "start_cube_distance_m": 0.2878774548646512,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.12980915286811676
+    },
+    {
+      "snapshot": 103,
+      "episode": 8303,
+      "start_cube_distance_m": 0.07140293579117808,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.022983504978487376
+    },
+    {
+      "snapshot": 104,
+      "episode": 8317,
+      "start_cube_distance_m": 0.028823837651768443,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 1,
+      "corroborating_population_spread_m": 0.0
+    },
+    {
+      "snapshot": 105,
+      "episode": 8352,
+      "start_cube_distance_m": 0.2822248061645036,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.1362434834994666
+    },
+    {
+      "snapshot": 106,
+      "episode": 8425,
+      "start_cube_distance_m": 0.062416643572572664,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.17568519624684814
+    },
+    {
+      "snapshot": 107,
+      "episode": 8435,
+      "start_cube_distance_m": 0.0,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 1,
+      "corroborating_population_spread_m": 0.0
+    },
+    {
+      "snapshot": 108,
+      "episode": 8600,
+      "start_cube_distance_m": 0.0951100117282758,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.22129295479399205
+    },
+    {
+      "snapshot": 109,
+      "episode": 8789,
+      "start_cube_distance_m": 0.2779015618649976,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.12344115160264207
+    },
+    {
+      "snapshot": 110,
+      "episode": 8826,
+      "start_cube_distance_m": 3.469446951953614e-18,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 1,
+      "corroborating_population_spread_m": 0.0
+    },
+    {
+      "snapshot": 111,
+      "episode": 8845,
+      "start_cube_distance_m": 0.11129395641054164,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.14526170730631982
+    },
+    {
+      "snapshot": 112,
+      "episode": 8858,
+      "start_cube_distance_m": 0.1690622464611853,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.01860818528433819
+    },
+    {
+      "snapshot": 113,
+      "episode": 8872,
+      "start_cube_distance_m": 0.27325618378377986,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.2693613108591803
+    },
+    {
+      "snapshot": 114,
+      "episode": 9168,
+      "start_cube_distance_m": 0.01429304494824043,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.053985532540851346
+    },
+    {
+      "snapshot": 115,
+      "episode": 9203,
+      "start_cube_distance_m": 0.22080766591038953,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.12848787024460628
+    },
+    {
+      "snapshot": 116,
+      "episode": 9222,
+      "start_cube_distance_m": 0.10880523420891927,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.1775864019578548
+    },
+    {
+      "snapshot": 117,
+      "episode": 9239,
+      "start_cube_distance_m": 0.14301355650504477,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.23723268903373748
+    },
+    {
+      "snapshot": 118,
+      "episode": 9357,
+      "start_cube_distance_m": 0.15605327679834613,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.031667740578544795
+    },
+    {
+      "snapshot": 119,
+      "episode": 9550,
+      "start_cube_distance_m": 0.005873381925211118,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 1,
+      "corroborating_population_spread_m": 0.032402033579074924
+    },
+    {
+      "snapshot": 120,
+      "episode": 9566,
+      "start_cube_distance_m": 1.9946411789533093e-10,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 1,
+      "corroborating_population_spread_m": 0.010906433494517774
+    },
+    {
+      "snapshot": 121,
+      "episode": 9606,
+      "start_cube_distance_m": 0.025789034164764038,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.06834469092582378
+    },
+    {
+      "snapshot": 122,
+      "episode": 9630,
+      "start_cube_distance_m": 0.2820781031238671,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.2949271011742295
+    },
+    {
+      "snapshot": 123,
+      "episode": 9646,
+      "start_cube_distance_m": 0.2007425701463713,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.26867121999141724
+    },
+    {
+      "snapshot": 124,
+      "episode": 9671,
+      "start_cube_distance_m": 0.005732204177583658,
+      "start_state_already_successful": true,
+      "viable": false,
+      "corroborating_max_executed_steps": 1,
+      "corroborating_population_spread_m": 0.03446948287088454
+    },
+    {
+      "snapshot": 125,
+      "episode": 9675,
+      "start_cube_distance_m": 0.39258781728675746,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.31555191403238814
+    },
+    {
+      "snapshot": 126,
+      "episode": 9697,
+      "start_cube_distance_m": 0.17576968442563765,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.21306940717418146
+    },
+    {
+      "snapshot": 127,
+      "episode": 9862,
+      "start_cube_distance_m": 0.2936049627866524,
+      "start_state_already_successful": false,
+      "viable": true,
+      "corroborating_max_executed_steps": 25,
+      "corroborating_population_spread_m": 0.3190286661349091
+    }
+  ]
+}
