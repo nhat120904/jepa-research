@@ -1696,3 +1696,64 @@ Guards, locked:
 Orders 64-127 are spent. They may be used for triage only, and **no number
 derived from them enters the paper**. Any claim requires a fresh manifest
 generated before scoring.
+
+### Nineteenth amendment (2026-08-26): reproduction-fidelity criterion made numeric
+
+The eighteenth amendment said "approximately reproduces", which would let us
+decide after seeing three seeds which one counts. Replaced with a fixed number,
+locked before the repository is cloned.
+
+**Official metric**: OGB-Cube **success rate (%)** from the authors' own
+`eval.py --config-name=cube`. Their reported result is `+14.2` points over LeWM;
+LeWM's published OGB-Cube success rate is about `74%`.
+
+**Control**: the released `quentinll/lewm-cube` checkpoint evaluated through the
+**same** official path, on this cluster. The criterion is expressed against our
+own control rather than against their absolute number, so any environment or
+version difference on this cluster cancels.
+
+**Why not an absolute tolerance.** `cube.yaml` sets `num_eval: 50`. At
+`p ~ 0.74` the binomial standard deviation of a 50-episode gain is `7.7 pp`, so
+a `+/-5 pp` absolute window sits *inside* the noise and would fail by chance
+rather than by fidelity. Eval noise is instead reduced by pooling.
+
+**Locked criterion.**
+
+- Train three seeds with the official recipe: `--config-name=ogb_train data=ogb
+  variant=td_jepa`, 10 epochs, `ogbench/cube_single_expert.h5`.
+- Evaluate every checkpoint, and the LeWM control, on **three eval seeds pooled
+  (150 episodes)**. Pooled `SD` of the gain is then `4.4 pp`.
+- **PASS** iff at least one of the three training seeds reaches a pooled gain of
+  **`>= 11.4` percentage points** over our LeWM control, i.e. `>= 80%` of the
+  reported `14.2`.
+- If `0/3` pass: **`TD_JEPA_REPRODUCTION_INCONCLUSIVE`**. Stop. No novelty claim
+  is made in either direction, and a weak TD-JEPA is never used to argue that a
+  ranking gap exists.
+
+Power of this rule if the reported effect is real: `0.74` per seed, `0.98` for
+at least one of three.
+
+**Selection**: among passing seeds, carry forward the highest **official success
+rate**. *Seed selection uses only the authors' reproduction metric, never our
+same-state ranking metric.* No quantity from the Phase-1 arena may influence
+which checkpoint enters it.
+
+### Two different measurements, not to be conflated
+
+The fidelity gate reads **closed-loop success rate** under the authors' full
+receding-horizon planning. The Phase-1 arena reads **open-loop top-1 physical
+distance** on a shared one-shot population. A method can move one without moving
+the other -- that is precisely the gate's question -- so neither number may be
+quoted as evidence about the other.
+
+### Phase order, locked
+
+**Phase 0, fidelity only.** Clone the repository at a pinned commit; record the
+commit hash, the fully resolved config, the dataset path and hash, and the
+checkpoint metadata. Train three seeds on the official recipe. Evaluate through
+the authors' own eval path, never our scorer. Apply the rule above.
+
+**Phase 1, ranking arena.** Opened only on a Phase-0 PASS. The fresh ranking
+manifest is not generated before then. `TD-JEPA + d_psi` stays secondary and
+exploratory; if it happens to be stronger that is worth knowing, but it may not
+redefine the baseline after the fact.
