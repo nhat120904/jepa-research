@@ -206,3 +206,31 @@ Not yet submitted, gated on the smoke being inspected and passed:
    biases the same-mode vs cross-mode comparison and requires a smaller sigma.
 4. `scaling_fits` contain finite `alpha` with sensible `r_squared`, and
    `excluded_below_floor` is not consuming the whole sweep.
+
+## Catch-up entry (2026-08-26), reconstructed from `sacct`
+
+**Provenance lapse, recorded as such.** The table above stops at `46141`.
+Jobs `46171` through `46650` were not logged at submission time, contrary to
+this file's own rule. The entries below are reconstructed after the fact from
+`sacct` and the output directories, and are weaker evidence than a
+contemporaneous record. Each job's exact command is the corresponding
+`slurm_*.sh` at the commit that submitted it.
+
+| Job ID | Script | State | What it established |
+|---:|---|---|---|
+| `46171`/`46172` | `slurm_probe_snapshots.sh` | COMPLETED | Pixel diagnostic: rasterization resolution floor, `alpha_span ~ 0.5`, `d2/span ~ 1`. |
+| `46200` | `slurm_probe_h1.sh` | COMPLETED | `H=1` control on the same snapshots/sigmas; floor is not open-loop compounding. |
+| `46378`, `46380` | `slurm_precision.sh` | **FAILED** | Upstream `Embedder.forward` hardcodes `x = x.float()`; dtype mismatch at `Conv1d`. |
+| `46382` | `slurm_precision.sh` | COMPLETED | With the guarded runtime monkeypatch, float64 gives `alpha = 2.000`, `R^2 = 1.000`: the model map is exactly smooth, and the float32 floor was numerical. |
+| `46383` | `slurm_probe_calib.sh` | COMPLETED | Gate A affine probe, 120 disjoint episodes, `R^2 ~ 0.98`, median error 13.7mm. |
+| `46386` | `slurm_bridge.sh` | COMPLETED | Gates B/C **fail** (ratio 4.20 object, 5.44 effector, threshold 0.25). Linear physical-state bridge closed. No MLP fallback, per protocol. |
+| `46395` | `slurm_ordinal.sh` | **FAILED** | Crash before any record. |
+| `46404` | `slurm_ordinal.sh` | COMPLETED | Ordinal pilot, orders 0-7. Circular-predictor bug found and fixed before reporting (`model_ratio` vs `VALLEY` share a definition); predictor switched to `k_model_self`. |
+| `46412` | `slurm_ordinal.sh` | CANCELLED | Accidental duplicate of `46404` from misreading an `sbatch` foreground timeout as a failure. Cancelled; `46404` shards verified intact (16 dirs, 512 records). |
+| `46416` | `slurm_confirm.sh` | COMPLETED | Confirmatory, orders 8-63: `false_valley` contrast `+0.1729`, CI `[+0.1213, +0.2347]`. |
+| `46505` | `slurm_train_smoke.sh` | **FAILED** | `get_column_normalizer` import path wrong. |
+| `46506` | `slurm_train_smoke.sh` | COMPLETED | Training path runs; frozen encoder, matched graph verified. |
+| `46508` | `slurm_dev_sweep.sh` | COMPLETED | 5 lambda x 3 seeds, 1000 steps each. |
+| `46568` | `slurm_dev_eval.sh` | **FAILED** | `NameError`: `state_dict_meta` not threaded into `write_outputs`. Second instance of the same bug class; `check_undefined_names.py` written in response. |
+| `46598` | `slurm_dev_eval.sh` | COMPLETED | 16-arm fixed-manifest dev eval. **Gate 1 fails for every lambda**; cosine AS closed as a mechanism-backed negative. |
+| `46650` | `slurm_heldout.sh` | COMPLETED | Held-out orders 64-127, 4 arms x 4 chunks, 4096 valid records. **Both gates pass**, `CONFIRMED_CONTINUATION_LOWERS_FALSE_VALLEYS` (fourteenth amendment). |

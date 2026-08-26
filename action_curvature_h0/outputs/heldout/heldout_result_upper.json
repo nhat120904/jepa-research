@@ -1,0 +1,24 @@
+{
+  "n_snapshots": 47,
+  "degenerate_policy": "upper",
+  "n_degenerate_records": 3,
+  "n_records": 1744,
+  "gate1_manipulation_check": {
+    "median_angular_original": 0.021511007959312302,
+    "median_angular_continuation": 0.018675036340011386,
+    "median_paired_delta": -0.0008242247110180779,
+    "n_snapshots_lower": 33,
+    "pass": true
+  },
+  "gate2_primary": {
+    "mean_false_valley_original": 0.15053840958096273,
+    "mean_false_valley_continuation": 0.05853674497291519,
+    "paired_mean_difference": -0.0920016646080476,
+    "ci_low": -0.15178031164068398,
+    "ci_high": -0.03746661927512992,
+    "excludes_zero": true,
+    "n_snapshots_lower": 19,
+    "pass": true
+  },
+  "verdict": "CONFIRMED_CONTINUATION_LOWERS_FALSE_VALLEYS"
+}

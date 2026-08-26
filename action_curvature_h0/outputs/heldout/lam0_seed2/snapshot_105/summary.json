@@ -1,0 +1,175 @@
+{
+  "snapshot": {
+    "order": 105,
+    "episode": 8352,
+    "start_step": 110,
+    "storage_row": 1678862,
+    "reset_seed": 20360924
+  },
+  "action_source": "dataset",
+  "population_index": 1,
+  "n_snapshots_preregistered": 128,
+  "horizons": [
+    5
+  ],
+  "sigmas": [
+    0.00125,
+    0.0025,
+    0.005,
+    0.01,
+    0.025,
+    0.05,
+    0.1,
+    0.2
+  ],
+  "n_directions": 2,
+  "seed": 20260824,
+  "checkpoint": "quentinll/lewm-cube",
+  "dataset": "ogbench/cube_single_expert.h5",
+  "visual_signature": "add82fdd0218b4f63c1da71f49d69b2f8e650d5c28540e52d8798d15d91cf93b",
+  "contact_resolution": {
+    "body_names": {
+      "0": "world",
+      "1": "ur5e/",
+      "2": "ur5e/base",
+      "3": "ur5e/shoulder_link",
+      "4": "ur5e/upper_arm_link",
+      "5": "ur5e/forearm_link",
+      "6": "ur5e/wrist_1_link",
+      "7": "ur5e/wrist_2_link",
+      "8": "ur5e/wrist_3_link",
+      "9": "ur5e/robotiq/",
+      "10": "ur5e/robotiq/base_mount",
+      "11": "ur5e/robotiq/base",
+      "12": "ur5e/robotiq/right_driver",
+      "13": "ur5e/robotiq/right_coupler",
+      "14": "ur5e/robotiq/right_spring_link",
+      "15": "ur5e/robotiq/right_follower",
+      "16": "ur5e/robotiq/right_pad",
+      "17": "ur5e/robotiq/right_silicone_pad",
+      "18": "ur5e/robotiq/left_driver",
+      "19": "ur5e/robotiq/left_coupler",
+      "20": "ur5e/robotiq/left_spring_link",
+      "21": "ur5e/robotiq/left_follower",
+      "22": "ur5e/robotiq/left_pad",
+      "23": "ur5e/robotiq/left_silicone_pad",
+      "24": "object_0",
+      "25": "object_target_0"
+    },
+    "joint_id": 14,
+    "cube_body_id": 24,
+    "cube_body_name": "object_0",
+    "cube_geom_ids": [
+      62
+    ],
+    "cube_geom_names": [
+      "object_0"
+    ],
+    "n_world_geoms": 5,
+    "n_geoms_total": 64
+  },
+  "embedder_float32_patch_applied": true,
+  "probe_path": null,
+  "state_dict": "/home/nhatnc129/nhat.nc/jepa-research/action_curvature_h0/outputs/dev/lam0_seed2/checkpoint.pt",
+  "state_dict_meta": {
+    "lambda_as": 0.0,
+    "seed": 2,
+    "steps": 1000
+  },
+  "direction_feasibility": [
+    {
+      "direction": 0,
+      "masked_fraction": 0.112,
+      "shrink": 1.0,
+      "feasible": 1.0,
+      "margin_diagnostics": {
+        "margin_min": 1.1102230246251565e-16,
+        "margin_max": 0.998441023984924,
+        "cap_min": 2.7755575615628914e-16,
+        "cap_max": 2.49610255996231,
+        "centre_clipped_dims": 0,
+        "denom_min": 0.4,
+        "denom_max": 0.4
+      }
+    },
+    {
+      "direction": 1,
+      "masked_fraction": 0.112,
+      "shrink": 1.0,
+      "feasible": 1.0
+    }
+  ],
+  "centre_clipping": {
+    "clipped_fraction": 0.0,
+    "max_clip_raw": 0.0,
+    "mean_clip_raw": 0.0
+  },
+  "clip_diagnostic": null,
+  "code_sha256": "c35a162687aab473cb9cf5ce61e167eaac0011d88e6b6fa14ef6688434887689",
+  "floor": {
+    "repeat_floor": 0.0,
+    "repeats": 2
+  },
+  "scaling_fits": [
+    {
+      "horizon": 5,
+      "direction": 0,
+      "alpha": 0.32600938761529663,
+      "r_squared": 0.7472168877577461,
+      "n_used": 8,
+      "excluded_below_floor": 0
+    },
+    {
+      "horizon": 5,
+      "direction": 1,
+      "alpha": 0.29179583033836437,
+      "r_squared": 0.952693056389396,
+      "n_used": 8,
+      "excluded_below_floor": 0
+    }
+  ],
+  "pixel_scaling_fits": [
+    {
+      "horizon": 5,
+      "direction": 0,
+      "alpha": 0.33312425739352364,
+      "r_squared": 0.7721893534595512,
+      "n_used": 8,
+      "excluded_below_floor": 0,
+      "max_abs_diff_at_largest_sigma": 189.0,
+      "max_abs_diff_at_smallest_sigma": 65.0,
+      "nonzero_diff_fraction_at_smallest_sigma": 0.014342846513605442
+    },
+    {
+      "horizon": 5,
+      "direction": 1,
+      "alpha": 0.24910566504939285,
+      "r_squared": 0.8073559770430576,
+      "n_used": 8,
+      "excluded_below_floor": 0,
+      "max_abs_diff_at_largest_sigma": 178.0,
+      "max_abs_diff_at_smallest_sigma": 79.0,
+      "nonzero_diff_fraction_at_smallest_sigma": 0.017252604166666668
+    }
+  ],
+  "pixel_dtype": "uint8",
+  "pixel_value_max": 255.0,
+  "discard_by_mode": {
+    "same_mode_contact": {
+      "total": 15,
+      "discarded": 0
+    },
+    "cross_mode": {
+      "total": 1,
+      "discarded": 0
+    }
+  },
+  "n_records": 16,
+  "npz_skipped_non_scalar_keys": [
+    "mode",
+    "ordinal_model_shape",
+    "ordinal_physical_shape",
+    "pixel_dtype",
+    "touched_bodies"
+  ]
+}

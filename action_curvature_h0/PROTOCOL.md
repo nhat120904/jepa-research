@@ -1191,3 +1191,113 @@ defensible claim is therefore not the training scheme but the mechanism:
 
 That moves the paper from a method contribution to a mechanism/diagnostic
 contribution with a simple intervention, which is what the evidence supports.
+
+## Fourteenth amendment (2026-08-26): held-out result, orders 64-127
+
+The preregistration in the thirteenth amendment was locked in commit `972852d`
+before any shard under `outputs/heldout/` existed. Job `46650` (4 arms x 4
+chunks, orders 64-127) produced 4096 valid records, 1744 of which survive the
+`ordinal_physical_cost_spread >= 1e-4` filter across 47 snapshots shared by all
+four arms. Both gates pass.
+
+**Verdict: `CONFIRMED_CONTINUATION_LOWERS_FALSE_VALLEYS`.**
+
+### Numerical correction applied before the result was accepted
+
+The first run of `heldout_test.py` reported `GATE1_FAILED`. That was not a
+scientific result. `model_angular_fraction = angular / (radial + angular)` is
+`0/0` when the total second-difference energy falls to or below `EPS = 1e-12`,
+i.e. where the map is locally straight to numerical precision; 3 of the 1744
+analysed records (1 in each continuation seed, 0 in the original) were
+undefined, and a single one propagated NaN through a per-snapshot median and
+failed the gate arithmetically.
+
+The metric was given a well-defined zero-curvature treatment rather than a
+patch. Angular curvature per record is defined directly as
+
+    k_angular = sqrt(angular_energy) / (span + EPS)
+
+which equals `k_model_self * sqrt(model_angular_fraction)` wherever the fraction
+is defined and does not require it. Because `angular_energy <= ||D2||^2 <= EPS`
+in the degenerate case, the zero-curvature limit is `k_angular = 0`. That is the
+locked default (`--degenerate-policy zero`). Two sensitivity runs were made: the
+worst-case upper bound (`upper`, all the vanishing energy attributed to the
+angular part) and the earlier drop behaviour (`drop`). **All three return
+bit-identical gate numbers**, because each affected snapshot contributes one
+degenerate record out of roughly nine to a median. Results are in
+`outputs/heldout/heldout_result_{zero,upper,drop}.json`; the invalid first run
+is kept at `heldout_result_v1_drop_policy.json`.
+
+### Gate 1, manipulation check: PASS
+
+Continuation lowers angular curvature, on 33 of 47 snapshots. Three summaries
+of the same comparison, which must not be quoted interchangeably:
+
+| summary | value |
+|---|---|
+| A. difference of medians | `0.021511 -> 0.018675`, `-13.2%` of the median |
+| B. median of paired per-snapshot deltas | `-0.000824` (absolute, units of `k_angular`) |
+| C. median of paired *relative* deltas | `-5.6%` |
+
+The gate is defined on B, which is `< 0`. A and C differ because the median of
+differences is not the difference of medians. The dev-sweep figure of `~13%`
+was a ratio of arm-level aggregates, i.e. an A-type summary, so the held-out
+A-type value of `-13.2%` reproduces it; the paired C-type summary is smaller at
+`-5.6%`. **Held-out effect stated as A reproduces dev; stated as a paired
+statistic it is roughly half that.** Quoting `-3.8%` (the B numerator over the
+A denominator) mixes the two and is wrong.
+
+### Gate 2, primary: PASS
+
+| | mean `false_valley` |
+|---|---:|
+| original | `0.1505` |
+| continuation, mean of 3 seeds | `0.0585` |
+
+Paired difference `-0.0920`, snapshot-clustered bootstrap 95% CI
+`[-0.1518, -0.0375]`, excludes zero. A `61%` reduction in the mean rate.
+Per-seed means `0.0608 / 0.0598 / 0.0551` -- the seed spread is far smaller
+than the effect, so this is not a continuation lottery.
+
+### The effect is heterogeneous, and the claim is limited accordingly
+
+Marginally the split is `19` lower, `14` tied, `14` higher out of 47, which
+understates the effect because `22/47` snapshots already have
+`false_valley = 0` at the original and cannot improve. Conditioning on whether
+there is a failure to fix:
+
+| group | n | mean paired diff | lower | higher |
+|---|---:|---:|---:|---:|
+| original `false_valley > 0` | 25 | `-0.2084` | 19 | 3 |
+| original `false_valley = 0` | 22 | `+0.0402` | 0 | 11 |
+
+Decomposition of the `-0.0920`: `-0.1108` from the first group, `+0.0188` from
+the second. Best improvement `-0.7143`, worst regression `+0.1515`.
+
+**Continuation removes false valleys where they exist (19 of 25, mean `-0.21`)
+and introduces small ones in about half the states that had none.** The claim
+is a large mean reduction concentrated on failing states, *not* that
+continuation improves nearly every state. The regression on clean states is a
+real cost and is reported as one.
+
+### Status of the causal chain
+
+On mutually disjoint samples:
+
+1. high angular curvature <-> high false-valley rate -- confirmed, orders 8-63.
+2. multi-step continuation -> angular curvature down -- Gate 1, orders 64-127.
+3. multi-step continuation -> false valleys down -- Gate 2, orders 64-127.
+
+This is stronger than correlation: a preregistered intervention moved the
+predicted mediator and the predicted downstream failure on untouched data.
+It is **not** a proven mediation -- that curvature reduction is what *causes*
+the false-valley reduction remains unshown, and the heterogeneity above is
+consistent with a partly separate pathway.
+
+Gates 1 and 2 having passed, the thirteenth amendment permits the CEM/planning
+step. Its outcomes and decision rule must be locked before those numbers are
+read. Orders 64-127 are now used; the planner evaluation runs on the same
+snapshots but its metrics are preregistered before being computed. If CEM and
+planning improve, the chain closes. If they do not, the conclusion is that
+false valleys are a local pathology that is not yet shown to be the planning
+bottleneck.
