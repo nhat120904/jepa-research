@@ -1,0 +1,850 @@
+# Action-Space Curvature Mismatch — locked diagnostic protocol
+
+Locked before any measurement is executed: 2026-08-24 UTC.
+
+Stage 1 of this program is a **no-training diagnostic** and is written to
+publication standard, not as a gate for a method.  Stage 2 (the regularizer)
+is an intervention used to test causality on whatever Stage 1 finds.  A null
+in Stage 2 does not invalidate Stage 1.
+
+## Question
+
+> Do latent world models distort the local action geometry of the environment,
+> particularly in regions visited by planning, and does correcting that
+> distortion improve control?
+
+## Stage 1 scope (declared before any measurement, 2026-08-24)
+
+- Environment: **OGBench-Cube only**.  Push-T is deferred until an exact
+  full-state reset harness for it is verified; Stage 1 conclusions are not
+  generalized beyond Cube.
+- Checkpoint: released `quentinll/lewm-cube` (the same checkpoint used by the
+  GFPR and PFCG pilots), frozen.
+- Dataset: `ogbench/cube_single_expert.h5`.
+- Reset and true rollout: `diagnosis/scripts/76_ogb_true_endpoint_corrected.py`,
+  which restores `qpos`/`qvel` and realigns `_prev_qpos`/`_prev_qvel` before
+  stepping, and renders under the controlled renderer path.
+
+### Declared task-state subset for the state anchor
+
+Two 3-vectors, both in metres, reported **separately** rather than concatenated:
+
+- `object_pos`   = `raw_env._data.joint("object_joint_0").qpos[:3]`
+                   (the accessor behind `cube_distance`,
+                   `diagnosis/scripts/72_ogb_stage0_candidate_audit.py:189`)
+- `effector_pos` = `raw_env._data.site_xpos[raw_env._pinch_site_id]`
+                   (`pinch_position`, `diagnosis/scripts/84_ogb_matched_refit.py:124`;
+                   OGBench reports this as `proprio/effector_pos`)
+
+**No per-dimension std normalization.**  Both quantities are positions in
+metres, so the units are already commensurable and raw metres are the natural
+isotropic chart.  Std normalization would rescale x/y/z by their dataset spread,
+which is itself an arbitrary change of chart — the exact confound this protocol
+is built to avoid.  Std normalization is reinstated only if a future subset
+mixes units.
+
+Reporting the two separately removes any relative-weighting choice and supplies
+a built-in pipeline control:
+
+- `K_true_state_effector` is the curvature of the arm kinematics under action
+  perturbation.  It is directly actuated and is expected to be low.  A high
+  value indicates a defect in the measurement pipeline (reset, action scaling,
+  triplet construction), not a property of the physics, and blocks the run.
+- `K_true_state_object` is the contact-mediated component and is the quantity of
+  scientific interest.
+
+**Excluded by declaration:** gripper aperture (the finger DOF) is not part of
+the anchor, because it is not a position and would reintroduce the unit-mixing
+problem.  Grasp and release therefore enter the analysis only through
+`object_pos` and through the contact-pattern mode label, never through the
+anchor.  Aperture is logged as a covariate alongside the mode label.
+
+## Objects
+
+For a start observation `o_t` with exact simulator state `s_t`, an action chunk
+`a = (a_t,...,a_{t+H-1})`, and a perturbation `delta`:
+
+- Model map:      `Phi_H(a) = F^H(E(o_t), a)`            (predicted latent)
+- Realized map:   `Psi_H(a) = E(o_H^sim(s_t, a))`        (encode of true rollout)
+- Second differences: `D2Phi = Phi(a+d) - 2Phi(a) + Phi(a-d)`, likewise `D2Psi`
+- First differences:  `v+ = Phi(a+d) - Phi(a)`, `v- = Phi(a) - Phi(a-d)`
+
+Both maps live in the **same latent chart** (same frozen encoder `E`), so their
+difference is type-correct.
+
+## Metrics
+
+1. `K_model  = ||D2Phi|| / (||Phi(a+d) - Phi(a-d)|| + eps)`
+2. `K_true   = ||D2Psi|| / (||Psi(a+d) - Psi(a-d)|| + eps)`
+3. `E_K      = ||D2Phi - D2Psi|| / (||Psi(a+d) - Psi(a-d)|| + eps)`   **primary**
+4. `G_K      = K_model - K_true`                                       (signed gap)
+5. `A_K      = cos(D2Phi, D2Psi)`                                      (alignment)
+6. `S_sens_model = ||Phi(a+d) - Phi(a-d)|| / (2||d||)`, and `S_sens_true` likewise
+7. Radial/angular decomposition of every curvature quantity, using the exact identity
+
+       ||D2Phi||^2 = (||v+|| - ||v-||)^2 + 2||v+||*||v-||*(1 - cos(v-, v+))
+                     \______radial______/   \_________angular_____________/
+
+   Report `E_K` split into radial and angular parts.  If the mismatch is almost
+   entirely radial, a cosine (angular) regularizer targets the wrong component
+   and Stage 2 must be redesigned before any training run.
+
+**Denominators use TRUE sensitivity, never model sensitivity.**  Normalizing by
+the model's own response would reward an action-insensitive model.
+
+### What `E_K` is and is not
+
+`D2Phi - D2Psi = D2(eps)` where `eps(a) = Phi_H(a) - Psi_H(a)`.  `E_K` therefore
+measures the **nonlinear action-dependence of the model's error**, not rollout
+MSE: it removes constant and locally affine components of the prediction error
+*along the probed action direction*.  This identity holds only for an exactly
+symmetric, unclipped triplet (see the clipping rule below).
+
+### Chart dependence — binding constraint on Stage 2
+
+Curvature is **not** coordinate-invariant: under a smooth invertible
+reparameterization `z = g(s)`, `d2(g o h) = g''(h')^2 + g' h''`.  Consequences,
+both locked here:
+
+- `K_true_state` and `K_true_latent` are **never** compared in absolute terms.
+  The simulator-state chart is one arbitrary chart (and a heterogeneous one:
+  positions, velocities, quaternions).
+- Stage 1 is safe because it uses a **single frozen checkpoint** = a single chart.
+- Stage 2 compares arms with **different encoders = different charts**.  A raw
+  cross-arm `E_K` comparison is therefore not a meaningful statement on its own.
+  The primary cross-arm metric MUST be chart-invariant: **rank agreement between
+  the model-induced ordering and the true ordering over the same candidate set**
+  (Spearman rho and top-k recall, reusing the CEM preselection audit).  `E_K` is
+  reported as a secondary mechanistic quantity.
+
+## Perturbation and validity rules
+
+- Symmetric triplets only: `a-d`, `a`, `a+d`.
+- **Clipping discard.**  Any triplet where either arm is clipped by the action
+  bounds is discarded, not corrected: asymmetric spacing `h+ != h-` contaminates
+  the second difference with a first-order term `f'(a)(h+ - h-)`, which is exactly
+  the affine component the diagnostic relies on cancelling.
+- **Discard rate is logged per stratum.**  Actions near the bounds are not
+  uniformly distributed across contact strata, so a differential discard rate
+  biases the same-mode vs cross-mode comparison.  If rates differ materially
+  across strata, shrink sigma until they balance and report both settings.
+- Scale sweep: `sigma in {0.025, 0.05, 0.10, 0.20} x normalized action range`.
+- Horizon sweep: `H in {1, 3, 5, 10}`.
+- All differences computed in **float64**.
+
+## Numerical floor
+
+With a deterministic simulator reset and a deterministic encoder, repeated
+`Psi` evaluation gives a floor of exactly zero.  **That is a false all-clear.**
+The binding small-`delta` limit is catastrophic cancellation: `D2` subtracts
+`O(1)` quantities to obtain an `O(delta^2)` result.  The locked floor test is
+therefore twofold:
+
+1. Repeat-evaluation floor `||Psi^(1) - Psi^(2)||` at `delta = 0` (detects any
+   nondeterminism in reset, physics, renderer, or encoder — must be reported
+   even when zero).
+2. Existence of a clean `delta^2` regime in `D2(delta)`.  Any scale at which
+   `D2` flattens or becomes erratic at the low end is excluded from the fit.
+
+## Boundary detection
+
+Two independent detectors, reported against each other:
+
+- **Counterfactual mode change** (simulator): contact patterns `m-`, `m0`, `m+`
+  from the three true rollouts.  A perturbation is `cross-mode` if `m- != m0`
+  or `m+ != m0`.  This is a property of the *perturbation*, not of the logged
+  state.  Contact pattern is a documented **proxy** for dynamics mode; it misses
+  non-contact mode changes (slip/roll transitions, joint limits).
+- **Scaling exponent** (latent, label-free): fit `log D2(delta) = alpha log|delta| + c`
+  on the **raw** second difference.  `alpha ~ 2` smooth, `alpha ~ 1` kink,
+  `alpha ~ 0` jump.  Never estimate `alpha` from the normalized `K`: at a
+  symmetric kink `Psi+ = Psi-`, the denominator vanishes while `D2` is large.
+  Report fit residual/R^2; assign no `alpha` to samples not described by a
+  single slope across the sweep.
+
+Strata: `same-mode non-contact`, `same-mode contact`, `cross-mode`.
+
+## Region comparison: offline vs planner-visited
+
+Cached CEM populations (`physical_search_distillation/outputs/h0/populations`,
+`counterfactual_flow/outputs/ogbench_cube_phase0/locked_shards`) supply the
+planner-visited region.  Two variants, both required, because a single fixed
+`delta` confounds location shift with exploration scale:
+
+- `K_fixed`: same `sigma` as the offline measurement -> isolates **location** shift.
+- `K_local`: `delta ~ N(0, alpha^2 Sigma_k)` from the CEM covariance at iteration
+  `k` -> geometry at the scale the planner actually queries.  Late-iteration
+  `Sigma_k` is narrow; report the realized `||delta||` against the numerical floor
+  and exclude scales below it.
+
+Claiming "the planner enters highly curved regions" requires `K_local` to move,
+not only `K_fixed`.
+
+## State-space anchor (mechanism localization only)
+
+Computed on the declared subset above, in raw metres, separately for object and
+effector:
+
+    K_true_state_X = ||X_H^+ - 2 X_H^0 + X_H^-|| / (||X_H^+ - X_H^-|| + eps)
+
+Used **only** to localize mechanism in Stage 2, never to adjudicate correctness:
+
+- `K_true_latent` unchanged, `E_K` down  -> predictor repair.
+- `K_true_latent` down, `K_true_state_object` unchanged -> representation reshaping.
+
+Representation reshaping is **not** by itself a defect: a learned encoder is
+entitled to choose a coordinate system in which the dynamics manifold is
+straighter.  It is called harmful only if task-relevant fidelity degrades at the
+same time — CRA_eff, boundary-blindness, physical probes, action sensitivity.
+
+## Stage 1 readouts
+
+1. `K_model` and `K_true_latent`, per stratum.
+2. `E_K` (primary), radial/angular split.
+3. `G_K` signed gap and `A_K` alignment.
+4. `S_sens_model` and `S_sens_true` versus `H`.
+5. `K_model(H)` and `K_true_latent(H)` on shared axes.
+6. `delta`-sweep, log-log exponent `alpha`, numerical floor.
+7. Counterfactual mode stratification.
+8. Agreement between the contact-pattern and scaling-exponent detectors.
+9. Offline vs CEM region, `K_fixed` and `K_local`.
+10. State-space anchor, object and effector separately (effector doubles as
+    the pipeline sanity control).
+
+Trajectory-clustered bootstrap CIs on every reported statistic.
+
+## Stage 1 decision rule
+
+**Kill** if any of:
+- same-mode `E_K` is small **and** does not increase in the planner-visited region;
+- every large mismatch is accounted for by genuine mode boundaries (`alpha < 2`)
+  or by the numerical floor;
+- `K_model` is low everywhere while `S_sens_model` is also low (the model is
+  action-deaf, a different defect that this program does not address).
+
+**Green light** (strongest form): `E_K` large on same-mode samples, with
+`E_K_CEM > E_K_offline`, while the true dynamics in those same samples have
+`alpha ~ 2` — i.e. the planner queries a region that is physically smooth but
+whose model-error geometry is nonlinear.
+
+## Stage 2 arms (frozen now, executed only if Stage 1 greenlights)
+
+1. `LeWM`
+2. `+ open-loop multi-step prediction`   (matches the AS computational graph:
+   backprop through `H` unrolled steps, no teacher forcing)
+3. `+ open-loop multi-step prediction + AS`      `L_AS = 1 - cos(v-, v+)`
+4. `+ open-loop multi-step prediction + norm-symmetry`  `L_norm = (||v+|| - ||v-||)^2`
+
+Arms 3 and 4 are the **angular and radial halves of the same curvature identity**,
+not treatment and placebo.  Their `lambda` values are matched by gradient norm.
+
+Secondary ablation, not a control: independent-`delta` symmetry breaking
+`(a+d1, a, a-d2)`.  It is *not* a null — forcing `cos(v+, v-) -> 1` across
+independent directions pressures `J` toward a rank-1 response — so it is read as
+a symmetry stress test only.
+
+Guard metrics on every arm: CRA_eff and boundary-blindness, contact-stratified;
+prediction loss; action sensitivity; `K_true_latent` and `K_true_state`.
+
+Cross-arm primary metric is the chart-invariant rank agreement defined above.
+
+## Claim boundary
+
+Stage 1 licenses claims about the action geometry of the frozen
+`quentinll/lewm-cube` checkpoint on OGBench-Cube at the tested perturbation
+scales and horizons.  Nothing here is a claim about Push-T, about other
+checkpoints, or about real-robot data.  It does not
+establish that curvature mismatch causes planning failure; only Stage 2 can
+address that, and only for the arms actually run.
+
+## Pre-execution amendment (2026-08-24, before any measurement)
+
+Two defects in the metric section above were found while implementing `core.py`
+and are corrected here.  No measurement had been run, so no result could have
+influenced these changes.
+
+**1. Inconsistent denominators.**  Metric 1 defined `K_model` against the
+model's own span while the note below the list required true sensitivity in all
+denominators.  Both cannot hold, and `G_K = K_model - K_true` was meaningless as
+written because it subtracted two differently-normalized quantities.  Locked
+resolution — three quantities, all reported:
+
+- `K_model_self = ||D2Phi|| / (||Phi+ - Phi-|| + eps)`  — intrinsic shape of the
+  model map, the like-for-like counterpart of `K_true`.
+- `K_model_true = ||D2Phi|| / (||Psi+ - Psi-|| + eps)`  — used for every
+  cross-map comparison; immune to rewarding an action-deaf model.
+- `G_K = K_model_true - K_true`, i.e. a common denominator on both terms.
+- `E_K` keeps the true-span denominator, unchanged.
+
+The three are exactly related by `K_model_self / K_model_true = S_true / S_model`,
+so the sensitivity ratio is reported alongside them and none may be omitted.
+
+**2. Radial/angular split is reported as fractions.**  The identity is stated on
+the unnormalized `||D2||^2`; under any common denominator both components scale
+together, so the split is reported as `radial_fraction + angular_fraction = 1`
+plus the normalized magnitudes.  For `E_K` the same decomposition is applied to
+the error map with `v+_eps = v+_Phi - v+_Psi` and `v-_eps = v-_Phi - v-_Psi`.
+
+**3. R^2 convention in the jump regime.**  Found by the unit tests before any
+measurement.  When `||D2||` is constant across scales the response IS the
+`alpha = 0` jump regime, but the ordinary `R^2 = 1 - ss_res/ss_tot` is `0/0`
+there.  Returning NaN would make the fit-quality filter discard exactly the
+discontinuity samples the detector exists to find.  Locked convention: when the
+total sum of squares vanishes, `R^2 = 1` if the residual also vanishes (a flat
+line is an exact fit) and `0` otherwise.
+
+## Stage 1 sample size and measurement conventions (preregistered 2026-08-24)
+
+**n = 64 snapshots: orders 0-63 of the locked PERD manifest**
+(`physical_search_distillation/outputs/h0/manifest.json`, 128 rows).  Taken by
+order, no selection.  This manifest rather than a fresh one because readout 9
+needs the cached CEM populations, which are keyed to it
+(`.../outputs/h0/populations/snapshot_000..063`); a fresh manifest would turn a
+free measurement into a new collection job.  Nothing is trained and no outcome
+is consulted, so manifest reuse cannot leak.
+
+Bootstrap is clustered on snapshot, which is the indivisible group.
+
+**Perturbation scale.**  `--sigmas` are fractions of the **raw** action range
+`high - low`.  The normalized space is unbounded and has no "range"; directions
+are drawn isotropically in raw action units and converted through the
+StandardScaler so the model and the simulator receive the same physical
+perturbation.  For `cem_local` the same ratios (0.125, 0.25, 0.5, 1.0 of the top
+scale) are expressed in units of the recorded CEM `proposal_std`.
+
+**Clip validity is decided in raw action space**, where the bounds live, on every
+one of the `horizon x action_block` primitive actions in the chunk.
+
+**Contact pattern is the union over the whole rollout**, not the terminal
+instant: a perturbation that makes contact mid-rollout and then separates has
+still crossed a dynamics mode.  Pattern elements are unordered MuJoCo geom-id
+pairs.
+
+**Centre action.**  `dataset` source: the logged action chunk at the snapshot's
+`storage_row`, read from the **unfiltered** action array (the finite-row mask
+used to fit the scaler renumbers rows).  `cem_fixed` / `cem_local`: a uniformly
+drawn elite of the recorded population, since elites are the candidates the
+planner retains and refits around.
+
+## Second pre-execution amendment (2026-08-24, still before any measurement)
+
+An external review found further defects in the protocol and in the aggregation
+code. Nothing had run, so no result could have influenced these changes. Job
+`45646` was cancelled while `PENDING`; see `JOB_LEDGER.md`.
+
+### A. Horizon sweep is `{1, 3, 5}`, not `{1, 3, 5, 10}`
+
+The frozen planning configuration is `PlanConfig(horizon=5, action_block=5)` and
+the cached CEM populations are `(2, 96, 5, 25)`. `H = 10` is unreachable without
+changing the planning configuration the checkpoint was released with, which
+would break comparability with every other result in this repository. The
+protocol was wrong, not the array.
+
+### B. Declared thresholds
+
+These label rows of descriptive tables and gate fit quality. Every CI-backed
+claim rests on continuous quantities, not on these cut-points.
+
+| name | value | role |
+|---|---:|---|
+| `curvature_high` | 0.25 | taxonomy cross-tab cut-point |
+| `mismatch_high` | 0.25 | taxonomy cross-tab cut-point |
+| `effector_gate` | 0.25 | pipeline gate on `K_true_state_effector` |
+| `smooth_alpha_low` | 1.5 | `alpha` at or above this counts as the smooth regime |
+| `min_r2` | 0.90 | below this, no `alpha` is assigned |
+| `min_sensitivity_quantile` | 0.10 | see C |
+
+### C. Minimum true-sensitivity gate
+
+`E_K`'s denominator `||Psi+ - Psi-||` vanishes not only at a symmetric kink but
+at any stationary point or null direction of the realized Jacobian. There a
+tiny second-order error yields an unbounded `E_K` while the map is perfectly
+smooth (`alpha ~ 2`) — which would satisfy the previous strong green-light
+condition. Two corrections:
+
+1. A record enters the `E_K` statistics only if its realized sensitivity
+   `S_true` is at least `min_sensitivity_quantile` times the median `S_true`
+   within its own `(source, horizon, sigma)` cell. The rule is fixed in advance
+   and computed from the data; the number of records it removes is reported.
+2. Two denominator-free companions are reported alongside `E_K` always:
+   `e_k_absolute = ||D2 eps|| / ||d||^2` and
+   `e_k_pathlen = ||D2 eps|| / (||v-_Psi|| + ||v+_Psi||)`.
+
+Normalized curvature depends on the perturbation scale even in a smooth regime,
+so **sigmas are never pooled**.
+
+### D. Fit-quality gate
+
+`R^2` is now used, not merely reported: no `alpha` is assigned when
+`R^2 < min_r2`, and `alpha` is counted **once per fit**, keyed by
+`(snapshot, source, horizon, direction)`, not once per record in the sigma
+sweep.
+
+### E. Primary contrast
+
+One preregistered cell carries the confirmatory claim. Everything else is a
+response curve.
+
+    Delta E_K = E_K[cem_fixed, H=5, sigma=0.10] - E_K[dataset, H=5, sigma=0.10]
+
+Computed **paired by snapshot**: the per-snapshot median over directions within
+the cell for each source, then the per-snapshot difference, then a
+snapshot-clustered bootstrap CI over those differences. The previous rule
+compared unpaired point estimates and took a `max` over CEM sources, which is a
+selection bias; `cem_local` is a secondary, separately reported contrast.
+
+### F. Two new readouts
+
+- `E_J = ||(Phi+ - Phi-) - (Psi+ - Psi-)|| / (||Psi+ - Psi-|| + eps)`, the
+  first-order mismatch. `E_K` annihilates every affine error component, which
+  is its headline property and equally its blind spot: an affine Jacobian error
+  can reorder the planner's candidates completely. Nothing may be attributed to
+  curvature without `E_J` held as a covariate.
+- The exact scalar-cost decomposition, on the quantity CEM actually ranks by:
+
+      D2 C = 2<r0, v+ - v-> + ||v+||^2 + ||v-||^2
+             \___residual___/  \____Gauss-Newton___/
+
+  reported for the model cost and for the realized cost under the same goal
+  embedding, with local concavity flagged by `ratio = residual / gn < -1`. This
+  is an identity, not an `O(d^4)` approximation, and it replaces the Hessian
+  argument as the analytical centrepiece. A linear map has `||D2 Phi|| = 0` yet
+  a nonzero cost curvature, so the vector curvature of `Phi` cannot be the whole
+  story for a planner that only ever sees the scalar.
+
+### G. Contact mode, redefined for Cube
+
+The previous rule — any geom-pair contact, unioned over the rollout — is void
+here. The cube rests on the table at essentially every step, so it would put
+every sample in the contact stratum and leave `same_mode_non_contact` empty.
+Replaced by:
+
+- Categories resolve from MuJoCo **body ids**, never geom names: the cube body
+  is the body of `object_joint_0`, the static scene is the world body, anything
+  else touching the cube is the robot. The run is refused if the cube body owns
+  no geoms.
+- Only **cube-robot** contact stratifies. Cube-table is a covariate.
+- Traces are **per step**, so contact onset is part of the mode signature; two
+  rollouts touching the same bodies at different moments are cross-mode when
+  their onsets differ by more than `onset_tolerance` (default 1 step).
+
+### H. Chart invariance of the Stage-2 cross-arm metric
+
+The first amendment required "rank agreement between the model-induced ordering
+and the true ordering" without naming the reference, which is ambiguous and only
+one reading is chart-invariant. Ranking is invariant to monotone transforms of a
+*scalar cost*, not to arbitrary nonlinear reparameterization of the latent
+space. The reference is therefore the **physical** task cost — object-to-goal
+distance in metres — which does not live in the latent chart at all. Ordering
+against true-endpoint latent L2 is **not** chart-invariant and may not be used
+for cross-arm comparison.
+
+### I. Precision caveat
+
+Model and encoder evaluations run in float32 inside the network; casting the
+outputs to float64 before differencing does not recover precision lost in the
+forward pass. The float64 rule therefore bounds the differencing error only.
+The binding small-`delta` check remains the existence of a clean `delta^2`
+regime in the raw second difference, and the reported `e_k_absolute` makes the
+scale explicit.
+
+### J. Stage-2 causal arm must match the measured estimand
+
+Stage 1 measures `||D2 Phi - D2 Psi||`, while a straightening loss drives
+`D2 Phi -> 0`. These coincide only where `D2 Psi` is small, and the previous
+green-light condition required only `alpha ~ 2`, i.e. smoothness — a strongly
+curved map is perfectly smooth and has `alpha = 2`. The estimand-matched
+intervention is added as the primary causal arm:
+
+    L_match = || D2 Phi - stopgrad(D2 Psi) ||^2
+
+It queries the simulator during training, so it is a mechanistic oracle rather
+than a deployable method — the same move the oracle-dynamics ladder made
+earlier in this project. The straightening losses become simulator-free
+surrogates, admissible only where Stage 1 has shown the realized curvature to be
+small on the training support. Green-lighting the surrogates additionally
+requires `K_model > K_true`, not merely a large `E_K`.
+
+## Third pre-execution amendment (2026-08-25, after smoke job 45863)
+
+Job `45863` completed the pipeline end to end and produced no scientific
+result, by design: it is a smoke run on one snapshot. It exposed three defects,
+all fixed here. No Stage-1 measurement has been consumed.
+
+### K. Perturbation directions are feasible by construction
+
+The all-or-nothing clip rule made `H=5` unmeasurable. A chunk spans
+`horizon * action_block` primitive actions -- 25 at `H=5` -- and expert and
+CEM-elite actions saturate their bounds often, so the probability that all 25
+stay interior under a random perturbation is negligible. Job `45863` recorded:
+
+| source | records | valid | valid horizons |
+|---|---:|---:|---|
+| dataset | 16 | 8 | `H=1` only |
+| cem_fixed | 16 | 0 | none |
+| cem_local | 16 | 0 | none |
+
+Both planner-visited sources yielded nothing, so readout 9 was unobtainable.
+
+Directions are now made feasible instead of drawn and rejected. For each
+component the headroom to the bounds gives a cap on `|base[i]|` at the top
+sigma; saturated components are masked out and the surviving vector is shrunk
+by a **single global factor**, never clipped per component, because the
+scaling-exponent fit requires the identical direction at every scale. The
+masked fraction and shrink factor are recorded per direction under
+`direction_feasibility`, and a fully saturated chunk is skipped and reported
+rather than silently dropped. The clip check is retained as a self-check: with
+feasible directions it must now pass, and a failure is a bug.
+
+### L. The scale sweep reaches two decades lower
+
+Job `45863` fitted `alpha = 0.30` and `0.44` with `R^2 = 0.42` and `0.23` over
+`sigma in {0.025 ... 0.20}`, and `e_k_absolute` fell as roughly `delta^-1.2`
+rather than staying flat. The probe was therefore **not in a local regime at
+any tested scale**: at those perturbations the realized endpoints are close to
+decorrelated. The sweep becomes
+
+    sigma in {0.00125, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.10, 0.20}
+
+spanning 2.2 decades. If no sub-window admits a `delta^2` regime at
+`R^2 >= min_r2`, then curvature is not well posed on this environment at any
+scale, and **that is the Stage-1 result to report** rather than a defect to
+work around.
+
+The `R^2` gate behaved correctly on first contact with real data: it rejected
+every fit, so `same_mode_alpha_is_smooth` returned `null` and the verdict was
+`INCONCLUSIVE_NO_USABLE_ALPHA`. Under the pre-amendment vacuous `all()` the
+same input would have green-lit on no evidence.
+
+### M. Contact bodies are recorded, not just the booleans
+
+Job `45863` resolved the cube cleanly -- body 24 `object_0`, one geom, 5 world
+geoms of 64 -- but reported `table_contact = False` on every record, while the
+cube is expected to rest on a table. Two readings fit that identically: the cube
+is grasped at this snapshot, or the table is not the world body and its contact
+is being labelled robot. Only body identity separates them, so the classifier
+now returns the set of bodies touching the cube, the per-record union is stored,
+and the body-id-to-name table is written into `contact_resolution`.
+
+### N. Preliminary observation, explicitly not a result
+
+On the 8 valid records of one snapshot at `H=1`, at scales now known to be
+outside any local regime, `K_true ~ 1.10` against `K_model ~ 0.024`: the
+realized map was some 46x more curved than the model map. That is the
+"model erases real nonlinearity" row of the taxonomy, not the "spurious model
+curvature" row the surrogate losses would target, and the verdict branch added
+in amendment J (`MISMATCH_BUT_MODEL_UNDER_TRUE`) fired on first contact with
+data. One snapshot, one horizon, eight records, invalid scales: this licenses
+no claim and is recorded only because it will look like confirmation if the
+same sign appears at `n=64` and must not be treated as a prediction that was
+made in advance.
+
+## Fourth pre-execution amendment (2026-08-25, resolution-floor investigation)
+
+Job `46142` (the corrected probe, all three prior bugs fixed, 256/256 valid)
+ran the primary contrast through the real `aggregate.py` pipeline and returned
+`KILL_NO_SAME_MODE_MISMATCH`, but on a thin evidence base: only 9/32 alpha fits
+cleared the `R^2 >= 0.90` gate, and same-mode `E_K`'s CI lower bound (0.226) sat
+just under `mismatch_high` (0.25). Before spending compute on `n=64` to sharpen
+that boundary, the resolution floor itself is investigated directly, per the
+user's framing: **compare the rendered frames at the same tiny action
+perturbations to see whether the change is lost at the rasterizer or at the
+encoder/patch tokenization.** If the image itself barely moves, more snapshots
+cannot rescue the measurement; the sigma range or the reference construction
+would need to change instead.
+
+**Method.** `measure_one` already renders the exact triplet the latent
+comparison uses; the pixel-space second difference is computed on those same
+frames at zero extra render cost, so the pixel and latent alphas are fit on
+literally the same data, not a separately-drawn comparison:
+
+    pixel_d2_norm = ||Triplet(frame(a-d), frame(a), frame(a+d)).d2||   (raw pixel space, flattened, float64)
+
+fit against `||d||` the same way as the latent alpha, with one difference: the
+floor is not the repeat-evaluation floor (pixel values are integer-quantized,
+typically 8-bit) but one raw grey-level step, `floor=1.0`, since that is the
+natural unit below which no render difference can be expressed at all.
+`pixel_max_abs_diff` and `pixel_nonzero_diff_fraction` are recorded per record
+as a direct, alpha-independent check for "did the render change at all."
+
+**Reading rule**, per the user's framing:
+
+- pixel span/`max_abs_diff` near zero even at the largest sigma -> the floor is
+  the **rasterizer**: sub-pixel motion at these action scales, and no snapshot
+  count fixes it. The sigma range or the observation itself needs to change.
+- pixel alpha close to 2 (image moves smoothly) while latent alpha stays flat
+  -> the floor is the **encoder / patch tokenization** (ViT-tiny, patch size
+  14, so an image displacement smaller than roughly one 14px patch may not move
+  a patch's embedding until a token boundary is crossed). This would be a
+  reportable finding in its own right, independent of the curvature-mismatch
+  question, and reframes what "local" means for this observation.
+
+Snapshot selection, sigma range, and horizon are unchanged (probe snapshots
+0-7, `H=5`, the same 8-point sweep); only the pixel-space fit is added.
+
+## Fifth pre-execution amendment (2026-08-25): the realized reference is not
+## well posed on rasterized observations
+
+Jobs `46172` (H=5) and `46200` (H=1) ran the identical snapshot set, sigma
+sweep, feasible-direction logic and centre, differing only in the measured
+horizon. Because base directions are drawn over the full chunk shape and then
+truncated, the H=1 perturbation is exactly the first row of the H=5
+perturbation: a clean horizon contrast.
+
+### The open-loop compounding hypothesis is refuted
+
+Pixel alpha is unchanged between horizons (median 0.47 at both H=5 and H=1),
+with `R^2` typically 0.97-1.00. Non-smoothness is fully present at a single
+action block; it does not accumulate over 25 open-loop primitive steps.
+
+### The mechanism, and why no sigma window can rescue it
+
+The stable value `alpha ~ 0.5` is not noise. A rasterized render is
+piecewise-constant in scene geometry: each pixel is a step function of object
+position. A translating sharp edge sweeps roughly `L * delta` newly-covered
+pixels, each flipping by an O(1) grey-level amount, so
+
+    ||Psi(a+d) - Psi(a-d)||_2  ~  sqrt(delta)          -> alpha ~ 0.5
+
+and because the pixel sets swept on the two sides are near-disjoint,
+`<v+, v-> ~ 0`, giving the second prediction
+
+    ||D2 Psi||  ~  sqrt(||v+||^2 + ||v-||^2)  ~  ||Psi+ - Psi-||   -> d2/span ~ 1
+
+Both were tested on all 32 configurations (2 horizons x 2 sources x 8
+snapshots): measured `alpha_span` median **0.52**, measured `d2/span` median
+**1.03**, tightly concentrated. The consequence is that the normalized latent
+curvature `K = ||D2|| / span` is approximately **1 regardless of delta** -- it
+measures edge-sweep geometry, not curvature.
+
+The latent inherits this: `alpha_latent` tracks `alpha_pixel` per snapshot, and
+the encoder is not the origin of the non-smoothness. Simulator **state** remains
+smooth (`alpha_object` reaches 2.03, 2.37, 3.09, 2.50 at H=1), confirming the
+physics is differentiable and only the observation path is not.
+
+**No delta window exists.** A clean `delta^2` regime requires the displacement
+to be much larger than the antialiasing width (~1 px) while remaining local
+relative to the dynamics nonlinearity. Measured object displacement spans
+4.5e-5 m to 7.1e-3 m across the whole sweep, i.e. roughly 0.01 to 1.6 pixels at
+224x224. The upper end of the entire admissible action range barely reaches one
+pixel of motion, so the window is empty. This is not fixable by sigma range,
+snapshot count, horizon, or encoder choice.
+
+### Consequence for the program
+
+The realized reference `Psi = E o render o sim`, which is the novel core of this
+diagnostic, is **not a valid curvature reference for pixel-based world models**.
+Stage 1 as specified cannot be run to a meaningful conclusion, and the `n=64`
+array is not submitted.
+
+Scope of the claim: 8 snapshots, OGBench-Cube, one renderer configuration at
+224x224, one frozen checkpoint. The argument for why no sigma window exists is
+geometric rather than statistical, but the pixel-scale numbers backing it are
+from this configuration only.
+
+What survives: curvature is well defined in simulator state space, where
+`alpha ~ 2` is measured directly. Any reformulation must either define the
+reference in a space where the observation map is differentiable, or abandon
+second-order quantities on rasterized observations.
+
+## Sixth pre-execution amendment (2026-08-25): the model map is exactly smooth;
+## the floor was numerical, the reference is not
+
+Job `46382` ran the identical snapshot, sweep, directions and centre at
+`--model-dtype float32` and `float64`, differing only in forward precision.
+
+**Result.** In float64, `||D2 Phi|| / ||d||^2 = 0.1875` at every one of the eight
+scales, constant to four significant figures across 2.2 decades:
+`alpha_model = 2.000`, `R^2 = 1.000`. In float32 the same quantity is floored at
+`~2e-3` and fits `alpha = 0.582`, `R^2 = 0.734`. The two agree only at the two
+largest scales, where float32 still has signal.
+
+The model map `Phi_H` is therefore **exactly smooth in the action sequence**, as
+a neural rollout should be, and `0.1875` is its curvature magnitude -- a
+well-defined quantity. The apparent non-smoothness of the model side was
+entirely an artifact of float32, i.e. the caveat recorded in amendment I and
+left unresolved until now.
+
+**Enabling the test required patching upstream.** `stable_worldmodel/wm/lewm/
+module.py:204` hardcodes `x = x.float()` in `Embedder.forward`, the only such
+downcast in that module, immediately before the action `Conv1d`. Left alone it
+silently defeats a float64 forward and raises at the Conv1d bias. It is patched
+at runtime, only under `--model-dtype float64`, guarded by an `inspect.getsource`
+check, and recorded per run as `embedder_float32_patch_applied`; the vendored
+checkout is untouched so every other pilot in this repo keeps its provenance,
+and float32 runs stay bit-identical to all earlier results.
+
+**Consequence: the diagnosis is now surgical.**
+
+| map | smooth? | measured |
+|---|---|---|
+| `Phi_H` (model rollout) | yes | `alpha = 2.000`, `R^2 = 1.000` (float64) |
+| simulator state | yes | `alpha ~ 2` |
+| `Psi_H = E o render o sim` | **no** | `alpha ~ 0.5`, `d2/span ~ 1`, mechanism confirmed |
+
+Only the reference is broken, and it is broken geometrically rather than
+numerically: no precision, sigma range, horizon, snapshot count or encoder
+choice repairs a rasterizer. This also explains the earlier `E_K` numbers
+mechanically: with `D2 Phi` clean and small and `D2 Psi` dominated by edge
+sweep, `E_K` reduces to `||D2 Psi|| / span ~ 1`, which is exactly the measured
+`d2/span` median of 1.03.
+
+**Every float32 measurement in this program is affected.** All earlier
+`k_model_*`, `g_k` and `e_k` values were computed with `D2 Phi` pinned at its
+numerical floor below `||d|| ~ 0.27`, so the model side was *over*estimated at
+small scales. The `KILL_NO_SAME_MODE_MISMATCH` verdict from job `46142` was
+computed on that data and is not a valid reading of the model. It is superseded,
+not confirmed, by this amendment.
+
+## Seventh amendment (2026-08-25): the linear physical-state bridge fails
+## Gates B and C; the reformulation is closed, not weakened
+
+Reformulation tested: replace the broken latent reference with a physical-state
+one. Train an affine probe `P(z) = ((z - mu)/sigma) W + b` on real observations,
+decode both the model rollout and the simulator truth to metres, and compare
+curvature there. Affine by construction, so `D2 (P o Phi) = W' . D2 Phi` exactly
+and the probe cannot manufacture curvature.
+
+**Gate A passed** (job `46383`, 480 states from 120 episodes disjoint from all
+128 manifest episodes, held out by episode): held-out `R^2` 0.977-0.988 for
+object XYZ, 0.946-0.977 for effector. But the held-out median error is
+**13.7 mm** against a median triplet displacement of **0.33 mm**, so Gate A only
+establishes that the latent carries cube position at workspace scale. It says
+nothing about local resolution, which is why Gates B and C decide.
+
+**Gates B and C both fail** (job `46386`, float64, 512 records, 345
+non-degenerate across 12 snapshot-source cells):
+
+| quantity | object | effector |
+|---|---:|---:|
+| `median ||D2 e||` | 6.03e-4 m | 5.93e-4 m |
+| `median ||D2 s_true||` | 1.43e-4 m | 1.09e-4 m |
+| **Gate B ratio** (threshold 0.25) | **4.20** | **5.44** |
+| **Gate C** | **0/12** | **0/12** |
+
+The effector control fails too, and it is the easiest possible case: the
+end-effector is directly actuated and nearly linear in the action.
+
+**Mechanism, confirmed rather than inferred.** The bridge *adds* curvature
+rather than losing it: `median ||D2 bridge|| = 5.05e-4 m` against
+`median ||D2 s_true|| = 1.43e-4 m`, a factor of 3.5. That is exactly the
+predicted inheritance -- `D2 (P o E o sim) = W . D2 Psi`, and `D2 Psi` is the
+rasterization edge-sweep term measured in the fifth amendment. Projecting
+192 dimensions down to 3 does **not** annihilate it.
+
+**The signal is hopeless against this floor.** The model's decoded curvature is
+`median ||D2 P(Phi)|| = 1.12e-6 m`, i.e. **128x smaller** than the true physical
+curvature and **540x smaller** than the bridge's own curvature error. Any
+mismatch computed here measures the bridge, not the model.
+
+**Consequence.** Every reference that reaches the model through
+`E o render` inherits the rasterizer, whether compared in latent space (fifth
+amendment) or decoded to metres (this one). Per the constraint fixed in advance
+and repeated in `train_probe.py`, the response is **not** a nonlinear probe: an
+MLP would manufacture curvature of its own and destroy the one property that
+made this comparison well posed. The linear-bridge reformulation is closed.
+
+What still stands, unchanged: `Phi_H` is exactly smooth (`alpha = 2.000`,
+`R^2 = 1.000`, sixth amendment) and simulator state is smooth. Both sides are
+individually well defined; what has no valid construction, so far, is a
+*comparison* between them that does not pass through a rasterizing renderer.
+
+## Eighth amendment (2026-08-25): ordinal endpoint runs clean; curvature does
+## not predict misranking on the pilot, with one borderline exception
+
+The ordinal reformulation removes the rasterizer from **both** sides for the
+first time in this program. The model cost `||Phi_H(a) - z_g||^2` depends on the
+action only through `F`: the encoder touches the initial observation and the
+goal, both shared across the triplet, so the renderer contributes constants that
+cancel from any comparison among the three. The physical cost is object-to-goal
+distance read straight from simulator state. Comparing only the *ordering* of
+three costs is invariant under any strictly increasing transform, so no shared
+units and no chart alignment are needed.
+
+**A design defect in the first run of the kill test, found and corrected before
+reporting.** The predictor was `model_ratio = residual / gn`, but
+`D2 C < 0 <=> ratio < -1` while `VALLEY` is defined as `D2 C > 0`, so small
+`|ratio|` implies a valley *by construction*. Predictor and outcome were
+partially circular, and that circular pairing produced the run's only CI-clean
+effect (`false_valley`, -0.25, in the direction opposite the hypothesis). Re-run
+with `k_model_self`, the curvature of the action-to-outcome **map**, which is
+goal-free and independent of the shape definition.
+
+**Result** (job `46404`, float64, 512 records, 193 usable after the
+physical-spread filter, 7 snapshots):
+
+| outcome | top-minus-bottom quantile | 95% CI | excludes 0 |
+|---|---:|---|---|
+| `shape_disagree` (primary) | -0.117 | [-0.291, +0.103] | no |
+| `argmin_wrong` | -0.198 | [-0.383, +0.027] | no |
+| `false_valley` | +0.163 | [+0.000, +0.382] | no (touches) |
+
+Spearman between curvature and disagreement: **-0.036**. The preregistered
+verdict keys on `shape_disagree` and returns
+`NO_CURVATURE_MISRANKING_LINK_KILL_AS`.
+
+**The one thing that is not simply null.** `false_valley` rises monotonically
+across all four curvature quantiles -- 0.021, 0.042, 0.104, 0.184, a factor of
+nine -- and it is the operationally meaningful outcome: the model reports a
+local minimum where physics has none, which is precisely what a planner acts on
+and settles into. Its CI touches zero, so on this evidence it is suggestive and
+nothing more.
+
+**Power.** This pilot has 7 snapshots against the preregistered Stage-1 `n = 64`,
+roughly a ninefold shortfall, and the spread filter discards 62% of triplets.
+
+**Disposition, and its limits.** `false_valley` was *not* the preregistered
+primary; promoting it now, after seeing these numbers, would not be a test but a
+restatement of them. The clean way to give it a fair hearing is a
+generation/confirmation split: this pilot generated the hypothesis on snapshots
+0-7, and it is confirmed or rejected on snapshots 8-63 of the same locked
+manifest, with `false_valley` fixed as primary **before** those shards are read.
+If it fails there, the curvature route is closed on its own terms rather than on
+an underpowered null.
+
+## Ninth amendment: CONFIRMATORY PREREGISTRATION, locked 2026-08-25 before any
+## snapshot 8-63 shard is generated or read
+
+The pilot (snapshots 0-7) generated a specific hypothesis it was not designed to
+test: **high model-side curvature produces false local minima** -- the model
+reports a valley where physics has none. Across the four curvature quantiles the
+rate rose 0.021, 0.042, 0.104, 0.184, monotone, but the CI touched zero on 7
+snapshots. Promoting it post hoc would restate the pilot rather than test it, so
+it is fixed here as the primary outcome of an independent confirmatory run on
+the 56 untouched snapshots.
+
+**Confirmatory sample.** Orders **8-63** of the locked manifest
+(`physical_search_distillation/outputs/h0/manifest.json`), 56 snapshots, none of
+which has been measured, inspected, or aggregated at any point in this program.
+Snapshots 0-7 are the generation set and are excluded from the confirmatory
+analysis entirely; they are not pooled in.
+
+**Primary outcome.** `false_valley` rate: the model's cost over the triplet has
+its minimum at the centre while the simulator's physical cost does not.
+
+**Predictor.** `k_model_self`, the normalized curvature of the action-to-outcome
+map, computed in float64. Goal-free and independent of the shape definition --
+chosen because the pilot's first predictor (`model_ratio`) was partially
+circular with this very outcome, as recorded in the eighth amendment.
+
+**Test statistic.** Top-minus-bottom contrast across four curvature quantiles,
+with a snapshot-clustered bootstrap 95% CI (10,000 resamples).
+
+**Decision rule, fixed now.**
+- **CONFIRMED** if the contrast is positive and its 95% CI excludes zero.
+- **NOT CONFIRMED** otherwise. AS loses its empirical justification and the
+  curvature route closes on its own terms.
+- Secondary, descriptive only, never decisive: monotonicity of the rate across
+  the four quantiles; `shape_disagree` and `argmin_wrong` contrasts.
+
+**Everything else is held identical to the pilot** and may not be retuned:
+sigmas `{0.00125, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.10, 0.20}`, horizons
+`{1, 5}`, 2 directions, both action sources, `--model-dtype float64` with the
+Embedder patch, physical-spread filter `1e-4` m, degeneracy rule as locked.
+
+**Power.** The pilot yielded 193 usable triplets from 7 snapshot clusters and a
+CI half-width of ~0.19. The confirmatory run has 56 clusters, roughly eight
+times more, so the CI should narrow by about a factor of 2.8. At the pilot's
+observed effect size (+0.163) that is comfortably enough to exclude zero. The
+test is therefore capable of detecting the effect it was built for, and a null
+here is informative rather than merely underpowered.
