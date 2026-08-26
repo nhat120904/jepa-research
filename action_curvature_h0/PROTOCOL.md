@@ -1046,3 +1046,41 @@ rescue an earlier failure.
 **Primary criterion.** AS must improve on **arm 2** consistently across paired
 seeds. Arm 1 is context -- it says what continuation and multi-step training do
 on their own -- not the comparison. The causal contrast for AS is arm 3 vs arm 2.
+
+### G. Development protocol, locked 2026-08-26 before the lambda sweep
+
+**Grid.** `lambda in {0, 0.01, 0.03, 0.1, 0.3}`, 3 paired seeds each = 15 runs.
+`lambda = 0` is arm 2 and is the paired control for every other lambda at the
+same seed.
+
+**Training budget, fixed now for every arm.** 1000 steps, batch 16, final
+checkpoint. No early stopping, and specifically no checkpoint selection by
+false-valley -- the rule is identical across arms, which is what makes the
+comparison a comparison. The budget is set by compute, not by any observed
+result.
+
+**Guards are measured on a FIXED diagnostic manifest, never from the training
+log.** Each training log point sits at a different sampled sigma and direction,
+so `action_sensitivity` there varies by more than an order of magnitude for
+reasons that have nothing to do with the arm. Every arm is therefore re-measured
+on identical snapshots, identical directions and identical sigmas: dev orders
+`{0, 5, 10, ..., 55}` (12 snapshots), `dataset` source, `H = 5`, the standard
+8-point sigma sweep, float64. Only then is `lambda = 0` versus AS a clean
+comparison.
+
+**Selection rule, applied in this order on orders 0-63 only.**
+1. Must lower angular curvature versus the paired `lambda = 0`.
+2. Reject if the base rollout loss is worse than the paired `lambda = 0` by
+   more than 10%.
+3. Reject if action sensitivity falls more than 20% below the paired
+   `lambda = 0`.
+4. Among survivors, take the lowest false-valley rate; ties go to the smaller
+   `lambda`.
+
+Orders 64-127 open only after `lambda`, the step count and the checkpoint rule
+are committed.
+
+**On the smoke result.** At `lambda = 0.1` both the AS term and the base loss
+fell relative to the paired `lambda = 0`. That shows the gradient reaches the
+predictor and moves it in the intended direction; over 20 steps it is not
+evidence that the method works, and is not recorded as such.
