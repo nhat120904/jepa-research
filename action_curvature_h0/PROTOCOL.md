@@ -1878,3 +1878,41 @@ than the budget question it is standing in for.
 **Standing caveat for the budget decision.** Phase 0 only builds a baseline. Its
 best possible outcome is "the gap is still open, the direction is worth
 pursuing" -- it answers no scientific question on its own.
+
+### Nineteenth amendment, fourth addendum (2026-08-26): num_workers deviation REFUSED
+
+Job `46895` ran the identical 200 steps at `num_workers` 2 and 8, same seed
+`3072`, same everything else, and the saved weights were compared directly --
+a stronger test than the loss-text comparison originally planned, which parsed
+nothing because metric logging is off when wandb is disabled.
+
+| | |
+|---|---:|
+| tensors compared | 309 |
+| tensors differing at all | **307** |
+| worst relative difference | **2.34** |
+
+That is not float or GPU-nondeterminism noise; it is a different computation.
+Raising `num_workers` changes how the HDF5 dataset is sharded across workers and
+therefore which samples land in which batch. **The deviation is refused**, per
+the rule locked before the test was run.
+
+The speedup was real and large -- `0.8 it/s` to `2.6 it/s`, about `3.3x`, which
+would have taken Phase 0 from `271` to roughly `82 GPU-h` -- and it is declined
+anyway. Recording that the tempting number was measured and not taken.
+
+**Note against myself**: I called this knob "almost certainly harmless" before
+testing it. It is not. The intuition that `num_workers` is pure I/O is wrong for
+this loader, and only the direct weight comparison established that.
+
+One could argue a changed data order is merely another randomization, and that
+three seeds already sample that distribution. That argument is declined as a
+post-hoc rationalization to save compute: the gate's entire purpose is to run
+*their* recipe, and the sample ordering is part of it.
+
+**Phase 0 therefore costs `271 GPU-h` at `num_workers: 2`.**
+
+Not yet tested, and order-preserving by construction if it helps:
+`prefetch_factor` (currently 2) and `pin_memory` control how far ahead each
+worker reads, not which sample goes where. Any such change must clear the same
+weight-comparison test before being used.

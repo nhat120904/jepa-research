@@ -23,14 +23,36 @@ echo "TDJEPA_COMMIT=$(git rev-parse HEAD)"
 # is PROVEN not to change the computation.  Run the identical 200 steps at
 # num_workers 2 and 8 and compare the logged losses step by step: identical
 # losses prove the knob is pure I/O and the speedup may be taken.
+OUT=/mnt/data/nhatnc129/jepa_runs/logs/tdj_wrk_${SLURM_JOB_ID:-manual}
 for NW in 2 8; do
   echo "=== num_workers=$NW start $(date -u +%FT%TZ) ==="
+  # Full output to a file, never through a pipe: a pipe both hides the traceback
+  # and, under `set -o pipefail`, kills the job before it can be read.
   OMP_NUM_THREADS=1 "$STAGE0_ROOT/.venv/bin/python" train.py --config-name=ogb_train \
     data=ogb variant=td_jepa seed=3072 \
     ~data.dataset.rdcc_nbytes ~data.dataset.rdcc_w0 \
     num_workers=$NW \
-    trainer.max_epochs=1 trainer.limit_train_batches=200 \
+    trainer.max_epochs=1 +trainer.limit_train_batches=200 \
     wandb.enabled=false planning_eval.enabled=false \
-    output_model_name=workers/nw${NW}_200steps 2>&1 | grep -E "step [0-9]+/|loss" | tail -40
+    output_model_name=workers/nw${NW}_200steps > "${OUT}_nw${NW}.log" 2>&1 || {
+      echo "num_workers=$NW FAILED; last 30 lines:"; tail -30 "${OUT}_nw${NW}.log"; exit 1; }
   echo "=== num_workers=$NW end   $(date -u +%FT%TZ) ==="
+  grep -E "step [0-9]+/|loss" "${OUT}_nw${NW}.log" | tail -10 || true
 done
+echo "=== step-by-step loss comparison ==="
+"$STAGE0_ROOT/.venv/bin/python" - "${OUT}_nw2.log" "${OUT}_nw8.log" <<'PYEOF'
+import re, sys
+def losses(path):
+    pat = re.compile(r"loss[\"'=:\s]+([0-9]*\.?[0-9]+)")
+    return [float(m.group(1)) for m in pat.finditer(open(path, errors="ignore").read())]
+a, b = losses(sys.argv[1]), losses(sys.argv[2])
+print(f"nw2 losses parsed: {len(a)}   nw8 losses parsed: {len(b)}")
+if not a or not b:
+    print("NO LOSSES PARSED - comparison inconclusive, deviation refused")
+    raise SystemExit(0)
+n = min(len(a), len(b))
+diff = max(abs(x - y) for x, y in zip(a[:n], b[:n]))
+print(f"compared {n} values, max |difference| = {diff:.3e}")
+print("IDENTICAL - num_workers is pure I/O" if diff == 0 else
+      ("WITHIN 1e-6" if diff < 1e-6 else "DIVERGES - deviation refused"))
+PYEOF
