@@ -640,7 +640,7 @@ def main() -> None:
 
     write_outputs(args, snapshot, records, floor, visual_hash, horizons, sigmas,
                   contact_info, feasibility, centre_clipping, clip_diagnostic,
-                  embedder_patched)
+                  embedder_patched, state_dict_meta)
 
 
 def resolve_centre(
@@ -882,6 +882,7 @@ def write_outputs(
     centre_clipping: dict[str, float],
     clip_diagnostic: dict[str, Any] | None,
     embedder_patched: bool,
+    state_dict_meta: dict[str, Any] | None,
 ) -> None:
     out_dir = args.out_dir
     out_dir.mkdir(parents=True, exist_ok=True)

@@ -1111,3 +1111,83 @@ sensitivity; only survivors of those have their `false_valley` looked at. The
 training logs already hint that AS may be too weak, but each of their points
 sits at a different sampled sigma and direction, so they are a warning and not
 evidence, and they are not consulted for the verdict.
+
+## Thirteenth amendment (2026-08-26): cosine AS closed with a mechanism;
+## continuation preregistered for held-out
+
+### Cosine AS fails Gate 1, and the decomposition says why
+
+Dev eval `46598`, 16 arms x 12 fixed snapshots, identical directions and sigmas.
+`NO_LAMBDA_SURVIVES_GATES`: angular curvature is *higher* than the paired
+`lambda = 0` at every lambda, monotonically (`+0.000125, +0.000110, +0.000765,
++0.001679`), and `lambda = 0.3` also fails the base-loss gate at 1.199.
+
+Decomposed in closed form from the stored quantities (self-consistency residual
+`1.5e-9`, so this is algebra, not reconstruction error): the failure is **not**
+an objective mismatch. `1 - cos`, the training objective itself, rises with
+lambda -- ratios `1.015, 1.013, 1.092, 1.209`. The gradient does not steer its
+own target.
+
+Against the original checkpoint the picture is sharper:
+
+| arm | `1 - cos` vs original | `k_angular` vs original |
+|---|---|---|
+| continuation (`lambda = 0`), 3 seeds | x0.791, x0.751, x0.710 | x0.890, x0.867, x0.843 |
+| `lambda = 0.3`, 3 seeds | x1.005, x0.856, x0.862 | x0.996, x0.926, x0.929 |
+
+**Open-loop multi-step continuation alone lowers angular curvature (~13% in
+`k_angular`, ~25% in `1 - cos`), 3/3 seeds. Adding the AS term cancels part of
+that, monotonically in lambda.** Consistent with the base-loss degradation:
+AS damages the multi-step fit, and the multi-step fit is what straightens the
+map. Physically coherent -- a better multi-step predictor is a more faithful
+one, and the physics is smooth (`alpha ~ 2`, measured).
+
+Recorded as a negative result with a mechanism: cosine AS not only fails to
+reduce `1 - cos`, it obstructs the straightening that ordinary multi-step
+fitting produces on its own.
+
+`false_valley` fell at `lambda = 0.03` and `0.1` on dev. Gate 1 failed, so under
+the locked reading order those numbers are exploratory clues and are not
+evidence. They are not used.
+
+### What is and is not established about continuation
+
+Established on dev: **continuation lowers angular curvature.**
+NOT established: **continuation lowers false valleys.** Calling continuation
+"the real lever" would be an overstatement; orders 64-127 exist to answer
+exactly that question and have not been opened.
+
+### PREREGISTRATION for the held-out test, locked before any 64-127 shard exists
+
+- **Intervention**: frozen encoder + `H=5` open-loop continuation, `lambda_AS = 0`,
+  final checkpoint at 1000 steps, the **three seeds already trained**. No further
+  training and no tuning.
+- **Control**: the original checkpoint.
+- **Held-out**: orders 64-127, never used to alter training or evaluation.
+- **Gate 1, manipulation check**: continuation's angular curvature must be below
+  the original's.
+- **Gate 2, primary, mechanism**: per snapshot, compute the `false_valley` rate
+  for the original and the mean rate across the three continuation seeds on the
+  identical triplets; bootstrap clustered on snapshot. **Confirmed** if
+  `continuation - original < 0` and the 95% CI excludes zero.
+- Only if Gates 1 and 2 both pass is CEM elite quality or planning success run
+  or claimed.
+- **No seed or checkpoint selection by dev false-valley.** All three seeds enter
+  the held-out analysis under the fixed rule.
+
+### Consequence for the paper's framing
+
+If continuation confirms, the method contribution is weak on its own: multi-step
+and open-loop training already exist in the literature -- RC-aux uses
+multi-horizon open-loop prediction against train/test mismatch, and "Closing the
+Train-Test Gap in World Models for Gradient-Based Planning" (2512.09929) targets
+the same gap between prediction training and action-sequence optimisation. The
+defensible claim is therefore not the training scheme but the mechanism:
+
+> We identify angular action-space curvature as a predictor of false local
+> minima, confirm that relationship on a held-out sample, and show that ordinary
+> multi-step world-model training mitigates the failure by straightening the
+> planner-facing action map.
+
+That moves the paper from a method contribution to a mechanism/diagnostic
+contribution with a simple intervention, which is what the evidence supports.
