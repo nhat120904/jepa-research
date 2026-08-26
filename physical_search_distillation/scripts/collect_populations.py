@@ -36,7 +36,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--num-samples", type=int, default=96)
     parser.add_argument("--cem-steps", type=int, default=12)
     parser.add_argument("--topk", type=int, default=10)
-    parser.add_argument("--record-step", type=int, action="append", default=[0, 11])
+    # No argparse default: action="append" appends to it rather than replacing
+    # it, so a caller-supplied pair silently became [0, 11, ...].  The
+    # fallback below reproduces the old default exactly at --cem-steps 12.
+    parser.add_argument("--record-step", type=int, action="append", default=None)
     parser.add_argument("--var-scale", type=float, default=1.0)
     parser.add_argument("--seed", type=int, default=20260819)
     parser.add_argument("--physical-atol", type=float, default=1e-5)
@@ -135,7 +138,8 @@ def main() -> None:
     args = parse_args()
     if not torch.cuda.is_available():
         raise RuntimeError("collection requires a GPU Slurm allocation")
-    record_steps = sorted(set(args.record_step))
+    record_steps = sorted(set(
+        args.record_step if args.record_step else [0, args.cem_steps - 1]))
     if record_steps != [0, args.cem_steps - 1]:
         raise ValueError("H0 protocol requires first and final CEM populations")
     if not 1 < args.topk <= args.num_samples:
