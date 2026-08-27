@@ -1,0 +1,58 @@
+{
+  "baseline": "A1",
+  "n_batches_hashed": 200,
+  "runs": {
+    "A1": {
+      "n_hashes": 200,
+      "batch_stream_identical": true,
+      "first_divergent_batch": null
+    },
+    "A2": {
+      "n_hashes": 200,
+      "batch_stream_identical": true,
+      "first_divergent_batch": null,
+      "weights_vs_A1": {
+        "comparable": true,
+        "n_tensors": 309,
+        "n_differing": 307,
+        "worst_relative": 24.68398698911158,
+        "worst_key": "encoder.encoder.layer.1.attention.output.dense.weight"
+      }
+    },
+    "B": {
+      "n_hashes": 200,
+      "batch_stream_identical": true,
+      "first_divergent_batch": null,
+      "weights_vs_A1": {
+        "comparable": true,
+        "n_tensors": 309,
+        "n_differing": 307,
+        "worst_relative": 2.1689364228293075,
+        "worst_key": "encoder.encoder.layer.0.layernorm_before.bias"
+      },
+      "accepted": true,
+      "reason": "equivalent to the recipe"
+    },
+    "C": {
+      "n_hashes": 200,
+      "batch_stream_identical": true,
+      "first_divergent_batch": null,
+      "weights_vs_A1": {
+        "comparable": true,
+        "n_tensors": 309,
+        "n_differing": 307,
+        "worst_relative": 2.1594660474739884,
+        "worst_key": "encoder.encoder.layer.4.attention.attention.key.bias"
+      },
+      "accepted": true,
+      "reason": "equivalent to the recipe"
+    }
+  },
+  "floor": 24.68398698911158,
+  "recipe_reproduces_bitwise": false,
+  "accepted": [
+    "B",
+    "C"
+  ],
+  "verdict": "ACCEPTED: ['B', 'C']"
+}

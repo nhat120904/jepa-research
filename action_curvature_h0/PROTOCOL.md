@@ -1916,3 +1916,46 @@ Not yet tested, and order-preserving by construction if it helps:
 `prefetch_factor` (currently 2) and `pin_memory` control how far ahead each
 worker reads, not which sample goes where. Any such change must clear the same
 weight-comparison test before being used.
+
+### Nineteenth amendment, fifth addendum (2026-08-27): the num_workers refusal was made on an invalid criterion
+
+Job `46938` ran the loader matrix the reviewer designed: `A1` (official recipe),
+`A2` (a bare repeat of `A1`, to measure the reproducibility floor), `B`
+(`prefetch_factor=8`), `C` (`pin_memory=false`). All four hashed the tensors
+their DataLoader actually yielded, for 200 batches.
+
+**Batch streams: all four identical to `A1`, 200/200.** The hypothesis that
+`prefetch_factor` and `pin_memory` preserve sample order is therefore measured,
+not assumed.
+
+**Weights carry no equivalence signal on this stack.**
+
+| pair | cosine | `\|\|dW\|\| / \|\|W\|\|` |
+|---|---:|---:|
+| `A1` vs `A2` -- identical config, identical batch stream | `0.989812` | `0.14968` |
+| `A1` vs `B` | `0.989844` | `0.14946` |
+| `nw2` vs `nw8` -- **the pair refused in the fourth addendum** | `0.989784` | `0.14986` |
+
+The three are indistinguishable. With a fixed seed and a byte-identical batch
+stream, this recipe still diverges run to run by `15%` in relative weight norm,
+so "the weights differ" cannot distinguish a configuration change from a repeat.
+
+**The fourth addendum's refusal is therefore withdrawn as unsupported.** It
+rejected `num_workers=8` on `worst_relative = 2.34`, and the measured floor from
+`A1` vs `A2` is `24.68` -- an order of magnitude above it. This is exactly the
+failure the reviewer predicted when requiring `A2`: without a floor, a weight
+difference is not evidence. The refusal was recorded in commit `051577e` and is
+corrected here rather than edited away.
+
+Note also that the fourth addendum's own accept/reject logic, applied to `B` and
+`C`, "accepts" them against a floor so large that it would accept nearly
+anything. What actually supports `B` and `C` is batch-stream identity, not the
+weight test.
+
+`B` and `C` are useless for the budget question regardless: both ran at
+`0.8 it/s`, identical to `A1`. Neither is adopted, since neither buys anything.
+
+**Still unmeasured, and decisive**: whether `num_workers=8` yields the same
+batch stream. That is the criterion that matters and it was never run; job
+`46962` runs it against `A1`'s stored hashes. Adoption of `num_workers=8`
+depends on that result alone, not on any weight comparison.
