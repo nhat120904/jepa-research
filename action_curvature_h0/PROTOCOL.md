@@ -1959,3 +1959,52 @@ weight test.
 batch stream. That is the criterion that matters and it was never run; job
 `46962` runs it against `A1`'s stored hashes. Adoption of `num_workers=8`
 depends on that result alone, not on any weight comparison.
+
+### Nineteenth amendment, sixth addendum (2026-08-27): num_workers=8 adopted, on batch-stream evidence only
+
+Two independent windows, hashing the tensors the DataLoader actually yields:
+
+| test | job | window | result |
+|---|---|---|---|
+| within epoch 0 | `46962` | 200 batches | `200/200` identical to `A1` |
+| **across an epoch boundary** | `46967` | 2 epochs x 50 batches | `100/100` identical |
+
+The second test carries its own discriminating-power check: epoch 0's and epoch
+1's batch sets overlap in `0 of 50` hashes, so a real reshuffle occurred inside
+the compared range. Without that check the test could have passed vacuously --
+the same failure mode as the checker that never caught its own bug class and the
+weight criterion that could not distinguish a repeat from a change.
+
+`num_workers=8` is therefore **adopted** for Phase 0.
+
+**What is and is not established.** The reviewer asked for equivalence in both
+batch stream *and* training trajectory. Only the first is measurable here: the
+fifth addendum showed this stack diverges by `15%` in relative weight norm
+between two runs of the *same* configuration on a byte-identical batch stream,
+so no weight-based trajectory comparison has any discriminating power. The
+adoption rests entirely on batch-stream identity plus an otherwise identical
+configuration. That is the strongest criterion available, and it is the one the
+reviewer designated primary, but it is weaker than what was asked for and is
+recorded as such.
+
+Nor is the full `11390 x 10` batch sequence proven identical -- two windows are,
+including one spanning a reshuffle.
+
+**Revised Phase-0 cost:**
+
+| configuration | per epoch | per run | six runs |
+|---|---:|---:|---:|
+| `num_workers=2` | `4.0 h` | `40 h` | `~242 GPU-h` |
+| **`num_workers=8`** | `1.2 h` | `12 h` | **`~75 GPU-h`** |
+
+(Startup is a fixed `~20 min` per run, included above; the earlier `271` figure
+used the `0.7 it/s` first reading rather than the settled `0.8`.)
+
+The `2.6 it/s` figure is from job `46895`, which ran without the hash probe. The
+probe itself costs throughput at `num_workers=8` -- job `46962` ran at
+`1.0 it/s` -- because once the loader stops being the bottleneck, hashing every
+pixel tensor on the main process becomes one. The probe is a measurement tool
+and is not used in Phase 0.
+
+Optimisation is closed here, as undertaken. No further loader knobs will be
+examined.
