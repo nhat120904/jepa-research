@@ -1,0 +1,406 @@
+/home/nhatnc129/nhat.nc/jepa-research/diagnosis/external/stable-worldmodel/stable_worldmodel/envs/__init__.py:215: UserWarning: ale-py not found; ALE/* envs are unavailable. Install with: pip install 'stable-worldmodel[env]' or pip install ale-py.
+  from stable_worldmodel.envs import ale  # noqa: F401
+[2026-08-28 10:44:06,093][OpenGL.acceleratesupport][INFO] - No OpenGL_accelerate module loaded: No module named 'OpenGL_accelerate'
+[2026-08-28 10:44:06,305][absl][INFO] - MUJOCO_GL=egl, attempting to import specified OpenGL backend.
+libEGL warning: failed to open /dev/dri/renderD135: Permission denied
+
+libEGL warning: failed to open /dev/dri/card8: Permission denied
+
+libEGL warning: failed to open /dev/dri/renderD134: Permission denied
+
+libEGL warning: failed to open /dev/dri/card7: Permission denied
+
+libEGL warning: failed to open /dev/dri/renderD133: Permission denied
+
+libEGL warning: failed to open /dev/dri/card6: Permission denied
+
+libEGL warning: failed to open /dev/dri/renderD132: Permission denied
+
+libEGL warning: failed to open /dev/dri/card5: Permission denied
+
+libEGL warning: failed to open /dev/dri/renderD131: Permission denied
+
+libEGL warning: failed to open /dev/dri/card4: Permission denied
+
+libEGL warning: failed to open /dev/dri/renderD130: Permission denied
+
+libEGL warning: failed to open /dev/dri/card3: Permission denied
+
+libEGL warning: failed to open /dev/dri/renderD129: Permission denied
+
+libEGL warning: failed to open /dev/dri/card2: Permission denied
+
+libEGL warning: failed to open /dev/dri/renderD128: Permission denied
+
+libEGL warning: failed to open /dev/dri/card1: Permission denied
+
+[2026-08-28 10:44:06,348][absl][INFO] - MuJoCo library version is: 3.11.0
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/envs/registration.py:729: UserWarning: [33mWARN: The environment is being initialised with render_mode='rgb_array' that is not in the possible render_modes ([]).[0m
+  logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:415: UserWarning: [33mWARN: Casting input x to numpy array.[0m
+  gym.logger.warn("Casting input x to numpy array.")
+10:44:43 | INFO  | atomic_chec~| [atomic_save] installed crash-safe checkpoint plugin (write to sibling .tmp + fsync + atomic rename)
+[2026-08-28 10:44:45,093][root][INFO] - Cached 'action' from '/mnt/data/nhatnc129/jepa/lewm_stage0/datasets/ogbench/cube_single_expert.h5'
+10:44:46 | INFO  | utils.py    | Loading checkpoint from folder /mnt/data/nhatnc129/jepa/lewm_stage0/checkpoints/acm_lam0_seed1...
+10:44:47 | INFO  | utils.py    | Created ViT-tiny from scratch with config: {'hidden_size': 192, 'num_hidden_layers': 12, 'num_attention_heads': 3, 'intermediate_size': 768, 'image_size': 224, 'patch_size': 14}
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:415: UserWarning: [33mWARN: Casting input x to numpy array.[0m
+  gym.logger.warn("Casting input x to numpy array.")
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+libEGL warning: failed to open /dev/dri/renderD135: Permission denied
+
+libEGL warning: failed to open /dev/dri/card8: Permission denied
+
+libEGL warning: failed to open /dev/dri/renderD134: Permission denied
+
+libEGL warning: failed to open /dev/dri/card7: Permission denied
+
+libEGL warning: failed to open /dev/dri/renderD133: Permission denied
+
+libEGL warning: failed to open /dev/dri/card6: Permission denied
+
+libEGL warning: failed to open /dev/dri/renderD132: Permission denied
+
+libEGL warning: failed to open /dev/dri/card5: Permission denied
+
+libEGL warning: failed to open /dev/dri/renderD131: Permission denied
+
+libEGL warning: failed to open /dev/dri/card4: Permission denied
+
+libEGL warning: failed to open /dev/dri/renderD130: Permission denied
+
+libEGL warning: failed to open /dev/dri/card3: Permission denied
+
+libEGL warning: failed to open /dev/dri/renderD129: Permission denied
+
+libEGL warning: failed to open /dev/dri/card2: Permission denied
+
+libEGL warning: failed to open /dev/dri/renderD128: Permission denied
+
+libEGL warning: failed to open /dev/dri/card1: Permission denied
+
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/lance/__init__.py:355: UserWarning: lance is not fork-safe. If you are using multiprocessing, use spawn or forkserver instead.
+  warnings.warn(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+/usr/lib/python3.10/subprocess.py:1796: RuntimeWarning: lancedb fork support is experimental: the internal async runtime has been reset in the forked child, but a small chance of deadlock remains if other state was mid-operation at fork time. The 'forkserver' or 'spawn' multiprocessing start method is likely a safer alternative.
+  self.pid = _posixsubprocess.fork_exec(
+1760000 valid starting points found for evaluation.
+[  10566   71697   88312  111608  230570  239332  264181  322022  432766
+  452655  512264  559621  572956  603305  609078  685451  686587  893949
+  894574  937111  940526  961056 1004532 1014119 1023968 1112495 1162318
+ 1170889 1231192 1250552 1256388 1375149 1407523 1446100 1559072 1593223
+ 1602066 1623376 1641054 1650634 1675589 1698597 1723456 1755795 1803330
+ 1834333 1899186 1987784 1990786 2000914]
+[eval] saving videos to /mnt/data/nhatnc129/jepa/lewm_stage0/checkpoints (one env_{i}.mp4 per env)
+CEM solve time: 29.1358 seconds
+CEM solve time: 11.0141 seconds
+{'success_rate': 68.0, 'episode_successes': array([ True, False,  True,  True, False, False,  True, False, False,
+        True,  True, False, False, False,  True,  True,  True, False,
+        True, False,  True,  True,  True,  True,  True,  True,  True,
+        True,  True,  True,  True, False,  True, False,  True, False,
+       False, False,  True, False,  True,  True,  True,  True,  True,
+        True,  True,  True,  True,  True]), 'seeds': None}
+[eval] videos saved to /mnt/data/nhatnc129/jepa/lewm_stage0/checkpoints

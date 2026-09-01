@@ -1,0 +1,16 @@
+{
+  "plan_seed": 7,
+  "paired": true,
+  "n_episodes": 50,
+  "success_rate": {
+    "acm_original": 64.0,
+    "acm_lam0_seed0": 62.0,
+    "acm_lam0_seed1": 68.0,
+    "acm_lam0_seed2": 56.00000000000001
+  },
+  "per_episode_agreement_with_original": {
+    "acm_lam0_seed0": 43,
+    "acm_lam0_seed1": 46,
+    "acm_lam0_seed2": 38
+  }
+}

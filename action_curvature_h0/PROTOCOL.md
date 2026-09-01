@@ -2008,3 +2008,68 @@ and is not used in Phase 0.
 
 Optimisation is closed here, as undertaken. No further loader knobs will be
 examined.
+
+## Twentieth amendment (2026-08-28): closed-loop OGBench-Cube -- continuation is a null on the field's own metric
+
+Every earlier measurement in this program used a proxy. This one does not: it is
+closed-loop task success rate on OGBench-Cube, through the **official**
+evaluator (`stable-worldmodel/scripts/plan/eval_wm.py --config-name=cube`),
+with nothing forked. Our checkpoints were rewritten into the released
+checkpoint's own container format so the control and the arms traverse an
+identical code path (`scripts/prepare_closedloop_ckpts.py`, which refuses to
+write an arm whose state dict is identical to the release).
+
+Ten plan seeds, 50 episodes each, all four arms at the same seed so they see the
+same episodes; `collect_closedloop.py` checks the episode lists equal and marks
+the seed unpaired otherwise. All 10 seeds paired.
+
+| arm | success rate |
+|---|---:|
+| original (released `lewm-cube`) | **62.6%** |
+| `lam0_seed0` | 62.2% |
+| `lam0_seed1` | 63.2% |
+| `lam0_seed2` | 61.8% |
+| continuation, mean of 3 | **62.4%** |
+
+**Paired difference `-0.20` points, 95% CI `[-2.47, +1.80]`, better on 5 of 10
+seeds.** The CI comfortably excludes the `+8` to `+14` point gains published on
+this task (PhyLatent `+8.1`, ProWorld `+9.67`, TD-JEPA `+14.2`).
+
+### Three things this settles
+
+**The cheap proxy was not the wrong measurement.** The seventeenth amendment's
+one-shot elite-mean arena reported a null; the closed-loop metric agrees. That
+arena costs about 1/20th as much and predicted the outcome correctly, so it
+stands as a valid screen for future candidates rather than as a discredited one.
+
+**Multi-step continuation is RC-aux's rollout term.** `variant/rc_aux.yaml` is
+`rollout_horizons: [1, 3, 5]`, `rollout_weight: 0.5`, `mse_weight: 0.0`, plus a
+reachability head. Our continuation is that rollout term at a single horizon,
+minus the head, as a frozen-encoder fine-tune. RC-aux reports ~`81.6%` on Cube
+against a LeWM baseline near `68%`; we get nothing. That is not a contradiction
+of their result -- it says the *fine-tune form* on a frozen encoder does not
+reproduce what their from-scratch recipe achieves, which is itself worth
+recording.
+
+**Planner noise is large relative to published effects.** The same arm ranges
+`54%` to `78%` across plan seeds, `sd = 6.7` points. A `+8` point gain measured
+on a single plan seed is inside that noise. This is an argument for the
+ten-plan-seed protocol, and a caution when reading any single-seed number in
+this literature.
+
+### Caveat on absolute numbers
+
+Our `62.6%` is not comparable to published figures: the evaluator draws 50
+episodes at random from 1.76M valid start points, whereas the published numbers
+use locked 50-episode manifests. Only the **arm-to-arm differences** reported
+here are meaningful. Any number intended for a paper must be re-run on the
+locked manifest.
+
+### Status of the intervention ladder
+
+Seven axes, each improving its own proxy, none converting to contact-rich
+planning: frozen post-hoc costs, encoder-LoRA (`0-2/16`), ensemble/disagreement,
+mode-gated straightening (random control ties or wins), cosine AS (failed its own
+manipulation check), curvature reduction (`false_valley -61%`, CEM null), the CF
+predictor (`CRA` x6.5, `AE -27%`, 4/4 seeds -- MetaWorld closed-loop `0/16`), and
+now multi-step continuation on the field's own metric.
