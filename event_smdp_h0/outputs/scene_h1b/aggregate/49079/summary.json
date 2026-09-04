@@ -1,0 +1,208 @@
+{
+  "contrasts": [
+    {
+      "budget": 14,
+      "event_only": 7,
+      "mcnemar_exact_p": 0.015625,
+      "n": 16,
+      "paired_ci95": [
+        0.1875,
+        0.6875
+      ],
+      "paired_difference": 0.4375,
+      "task_id": 0,
+      "task_label": "pooled",
+      "terminal_only": 0
+    },
+    {
+      "budget": 28,
+      "event_only": 12,
+      "mcnemar_exact_p": 0.00048828125,
+      "n": 16,
+      "paired_ci95": [
+        0.5,
+        0.9375
+      ],
+      "paired_difference": 0.75,
+      "task_id": 0,
+      "task_label": "pooled",
+      "terminal_only": 0
+    },
+    {
+      "budget": 14,
+      "event_only": 6,
+      "mcnemar_exact_p": 0.03125,
+      "n": 8,
+      "paired_ci95": [
+        0.375,
+        1.0
+      ],
+      "paired_difference": 0.75,
+      "task_id": 4,
+      "task_label": "task_4",
+      "terminal_only": 0
+    },
+    {
+      "budget": 28,
+      "event_only": 8,
+      "mcnemar_exact_p": 0.0078125,
+      "n": 8,
+      "paired_ci95": [
+        1.0,
+        1.0
+      ],
+      "paired_difference": 1.0,
+      "task_id": 4,
+      "task_label": "task_4",
+      "terminal_only": 0
+    },
+    {
+      "budget": 14,
+      "event_only": 1,
+      "mcnemar_exact_p": 1.0,
+      "n": 8,
+      "paired_ci95": [
+        0.0,
+        0.375
+      ],
+      "paired_difference": 0.125,
+      "task_id": 5,
+      "task_label": "task_5",
+      "terminal_only": 0
+    },
+    {
+      "budget": 28,
+      "event_only": 4,
+      "mcnemar_exact_p": 0.125,
+      "n": 8,
+      "paired_ci95": [
+        0.125,
+        0.875
+      ],
+      "paired_difference": 0.5,
+      "task_id": 5,
+      "task_label": "task_5",
+      "terminal_only": 0
+    }
+  ],
+  "primary_budget": 28,
+  "primary_contrast": {
+    "budget": 28,
+    "event_only": 12,
+    "mcnemar_exact_p": 0.00048828125,
+    "n": 16,
+    "paired_ci95": [
+      0.5,
+      0.9375
+    ],
+    "paired_difference": 0.75,
+    "task_id": 0,
+    "task_label": "pooled",
+    "terminal_only": 0
+  },
+  "primary_rate": {
+    "budget": 28,
+    "ci95": [
+      0.5,
+      0.9375
+    ],
+    "mean_replans": 6.625,
+    "n": 16,
+    "success_rate": 0.75,
+    "task_id": 0,
+    "task_label": "pooled"
+  },
+  "protocol": "scene_h1b_abstract_closure_v1",
+  "rates": [
+    {
+      "budget": 14,
+      "ci95": [
+        0.1875,
+        0.6875
+      ],
+      "mean_replans": 7.375,
+      "n": 16,
+      "success_rate": 0.4375,
+      "task_id": 0,
+      "task_label": "pooled"
+    },
+    {
+      "budget": 28,
+      "ci95": [
+        0.5,
+        0.9375
+      ],
+      "mean_replans": 6.625,
+      "n": 16,
+      "success_rate": 0.75,
+      "task_id": 0,
+      "task_label": "pooled"
+    },
+    {
+      "budget": 14,
+      "ci95": [
+        0.375,
+        1.0
+      ],
+      "mean_replans": 5.0,
+      "n": 8,
+      "success_rate": 0.75,
+      "task_id": 4,
+      "task_label": "task_4"
+    },
+    {
+      "budget": 28,
+      "ci95": [
+        1.0,
+        1.0
+      ],
+      "mean_replans": 4.0,
+      "n": 8,
+      "success_rate": 1.0,
+      "task_id": 4,
+      "task_label": "task_4"
+    },
+    {
+      "budget": 14,
+      "ci95": [
+        0.0,
+        0.375
+      ],
+      "mean_replans": 9.75,
+      "n": 8,
+      "success_rate": 0.125,
+      "task_id": 5,
+      "task_label": "task_5"
+    },
+    {
+      "budget": 28,
+      "ci95": [
+        0.125,
+        0.875
+      ],
+      "mean_replans": 9.25,
+      "n": 8,
+      "success_rate": 0.5,
+      "task_id": 5,
+      "task_label": "task_5"
+    }
+  ],
+  "scope": "post-H1 mechanism intervention; current event state remains simulator-monitored at physical replans and this result cannot be described as learned event perception",
+  "trace_audit": {
+    "h1_latent_contextual_event_time": {
+      "deployed_action_progress_rate": 0.296875,
+      "first_action_progress_rate": 0.5625,
+      "fraction_candidates_predicted_success": 0.11467633928571429,
+      "mean_predicted_reward": 0.6322516741071429,
+      "num_candidate_scores": 3584
+    },
+    "h1b_abstract_smdp": {
+      "deployed_action_progress_rate": 0.8490566037735849,
+      "first_action_progress_rate": 1.0,
+      "fraction_candidates_predicted_success": 0.0660377358490566,
+      "mean_predicted_reward": 0.5419238544474394,
+      "num_candidate_scores": 2968
+    }
+  },
+  "verdict": "H1B_ABSTRACT_CLOSURE_PASS"
+}

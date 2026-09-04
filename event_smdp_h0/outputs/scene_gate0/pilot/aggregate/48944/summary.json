@@ -1,0 +1,104 @@
+{
+  "groups": [
+    {
+      "budget": 14,
+      "event_only": 12,
+      "event_success_rate": 0.75,
+      "mcnemar_exact_p": 0.00048828125,
+      "n": 16,
+      "paired_ci95": [
+        0.5,
+        0.9375
+      ],
+      "paired_difference": 0.75,
+      "task_id": 4,
+      "task_label": "task_4",
+      "terminal_only": 0,
+      "terminal_success_rate": 0.0
+    },
+    {
+      "budget": 28,
+      "event_only": 14,
+      "event_success_rate": 0.9375,
+      "mcnemar_exact_p": 0.0001220703125,
+      "n": 16,
+      "paired_ci95": [
+        0.6875,
+        1.0
+      ],
+      "paired_difference": 0.875,
+      "task_id": 4,
+      "task_label": "task_4",
+      "terminal_only": 0,
+      "terminal_success_rate": 0.0625
+    },
+    {
+      "budget": 14,
+      "event_only": 7,
+      "event_success_rate": 0.4375,
+      "mcnemar_exact_p": 0.0703125,
+      "n": 16,
+      "paired_ci95": [
+        0.0625,
+        0.6875
+      ],
+      "paired_difference": 0.375,
+      "task_id": 5,
+      "task_label": "task_5",
+      "terminal_only": 1,
+      "terminal_success_rate": 0.0625
+    },
+    {
+      "budget": 28,
+      "event_only": 16,
+      "event_success_rate": 1.0,
+      "mcnemar_exact_p": 3.0517578125e-05,
+      "n": 16,
+      "paired_ci95": [
+        1.0,
+        1.0
+      ],
+      "paired_difference": 1.0,
+      "task_id": 5,
+      "task_label": "task_5",
+      "terminal_only": 0,
+      "terminal_success_rate": 0.0
+    },
+    {
+      "budget": 14,
+      "event_only": 19,
+      "event_success_rate": 0.59375,
+      "mcnemar_exact_p": 4.00543212890625e-05,
+      "n": 32,
+      "paired_ci95": [
+        0.375,
+        0.75
+      ],
+      "paired_difference": 0.5625,
+      "task_id": 0,
+      "task_label": "pooled",
+      "terminal_only": 1,
+      "terminal_success_rate": 0.03125
+    },
+    {
+      "budget": 28,
+      "event_only": 30,
+      "event_success_rate": 0.96875,
+      "mcnemar_exact_p": 1.862645149230957e-09,
+      "n": 32,
+      "paired_ci95": [
+        0.84375,
+        1.0
+      ],
+      "paired_difference": 0.9375,
+      "task_id": 0,
+      "task_label": "pooled",
+      "terminal_only": 0,
+      "terminal_success_rate": 0.03125
+    }
+  ],
+  "num_pairs": 64,
+  "num_shards": 32,
+  "protocol": "scene_skill_uct_h0_v1",
+  "verdict": "PILOT_GO_LEARNED_EVENT_WM"
+}

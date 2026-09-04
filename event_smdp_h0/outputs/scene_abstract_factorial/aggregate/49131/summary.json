@@ -1,0 +1,393 @@
+{
+  "checkpoint_sha256": "04fddf5f330694e4dc708c9bb25e860b10431fa3411e671c3a558de7bb6187d5",
+  "primary": {
+    "budget": 112,
+    "event_ci95": [
+      1.0,
+      1.0
+    ],
+    "event_only": 16,
+    "event_success_rate": 1.0,
+    "mcnemar_exact_p": 3.0517578125e-05,
+    "n": 16,
+    "paired_ci95": [
+      1.0,
+      1.0
+    ],
+    "paired_difference": 1.0,
+    "task_id": 0,
+    "task_label": "pooled",
+    "terminal_ci95": [
+      0.0,
+      0.0
+    ],
+    "terminal_only": 0,
+    "terminal_success_rate": 0.0
+  },
+  "primary_budget": 112,
+  "protocol": "scene_abstract_factorial_v1",
+  "rows": [
+    {
+      "budget": 7,
+      "event_ci95": [
+        0.0,
+        0.0
+      ],
+      "event_only": 0,
+      "event_success_rate": 0.0,
+      "mcnemar_exact_p": 1.0,
+      "n": 8,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 4,
+      "task_label": "task_4",
+      "terminal_ci95": [
+        0.0,
+        0.0
+      ],
+      "terminal_only": 0,
+      "terminal_success_rate": 0.0
+    },
+    {
+      "budget": 7,
+      "event_ci95": [
+        0.0,
+        0.0
+      ],
+      "event_only": 0,
+      "event_success_rate": 0.0,
+      "mcnemar_exact_p": 1.0,
+      "n": 8,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 5,
+      "task_label": "task_5",
+      "terminal_ci95": [
+        0.0,
+        0.0
+      ],
+      "terminal_only": 0,
+      "terminal_success_rate": 0.0
+    },
+    {
+      "budget": 7,
+      "event_ci95": [
+        0.0,
+        0.0
+      ],
+      "event_only": 0,
+      "event_success_rate": 0.0,
+      "mcnemar_exact_p": 1.0,
+      "n": 16,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 0,
+      "task_label": "pooled",
+      "terminal_ci95": [
+        0.0,
+        0.0
+      ],
+      "terminal_only": 0,
+      "terminal_success_rate": 0.0
+    },
+    {
+      "budget": 14,
+      "event_ci95": [
+        0.375,
+        1.0
+      ],
+      "event_only": 6,
+      "event_success_rate": 0.75,
+      "mcnemar_exact_p": 0.03125,
+      "n": 8,
+      "paired_ci95": [
+        0.375,
+        1.0
+      ],
+      "paired_difference": 0.75,
+      "task_id": 4,
+      "task_label": "task_4",
+      "terminal_ci95": [
+        0.0,
+        0.0
+      ],
+      "terminal_only": 0,
+      "terminal_success_rate": 0.0
+    },
+    {
+      "budget": 14,
+      "event_ci95": [
+        0.0,
+        0.375
+      ],
+      "event_only": 1,
+      "event_success_rate": 0.125,
+      "mcnemar_exact_p": 1.0,
+      "n": 8,
+      "paired_ci95": [
+        0.0,
+        0.375
+      ],
+      "paired_difference": 0.125,
+      "task_id": 5,
+      "task_label": "task_5",
+      "terminal_ci95": [
+        0.0,
+        0.0
+      ],
+      "terminal_only": 0,
+      "terminal_success_rate": 0.0
+    },
+    {
+      "budget": 14,
+      "event_ci95": [
+        0.1875,
+        0.6875
+      ],
+      "event_only": 7,
+      "event_success_rate": 0.4375,
+      "mcnemar_exact_p": 0.015625,
+      "n": 16,
+      "paired_ci95": [
+        0.1875,
+        0.6875
+      ],
+      "paired_difference": 0.4375,
+      "task_id": 0,
+      "task_label": "pooled",
+      "terminal_ci95": [
+        0.0,
+        0.0
+      ],
+      "terminal_only": 0,
+      "terminal_success_rate": 0.0
+    },
+    {
+      "budget": 28,
+      "event_ci95": [
+        1.0,
+        1.0
+      ],
+      "event_only": 8,
+      "event_success_rate": 1.0,
+      "mcnemar_exact_p": 0.0078125,
+      "n": 8,
+      "paired_ci95": [
+        1.0,
+        1.0
+      ],
+      "paired_difference": 1.0,
+      "task_id": 4,
+      "task_label": "task_4",
+      "terminal_ci95": [
+        0.0,
+        0.0
+      ],
+      "terminal_only": 0,
+      "terminal_success_rate": 0.0
+    },
+    {
+      "budget": 28,
+      "event_ci95": [
+        0.125,
+        0.875
+      ],
+      "event_only": 4,
+      "event_success_rate": 0.5,
+      "mcnemar_exact_p": 0.125,
+      "n": 8,
+      "paired_ci95": [
+        0.125,
+        0.875
+      ],
+      "paired_difference": 0.5,
+      "task_id": 5,
+      "task_label": "task_5",
+      "terminal_ci95": [
+        0.0,
+        0.0
+      ],
+      "terminal_only": 0,
+      "terminal_success_rate": 0.0
+    },
+    {
+      "budget": 28,
+      "event_ci95": [
+        0.5,
+        0.9375
+      ],
+      "event_only": 12,
+      "event_success_rate": 0.75,
+      "mcnemar_exact_p": 0.00048828125,
+      "n": 16,
+      "paired_ci95": [
+        0.5,
+        0.9375
+      ],
+      "paired_difference": 0.75,
+      "task_id": 0,
+      "task_label": "pooled",
+      "terminal_ci95": [
+        0.0,
+        0.0
+      ],
+      "terminal_only": 0,
+      "terminal_success_rate": 0.0
+    },
+    {
+      "budget": 56,
+      "event_ci95": [
+        1.0,
+        1.0
+      ],
+      "event_only": 8,
+      "event_success_rate": 1.0,
+      "mcnemar_exact_p": 0.0078125,
+      "n": 8,
+      "paired_ci95": [
+        1.0,
+        1.0
+      ],
+      "paired_difference": 1.0,
+      "task_id": 4,
+      "task_label": "task_4",
+      "terminal_ci95": [
+        0.0,
+        0.0
+      ],
+      "terminal_only": 0,
+      "terminal_success_rate": 0.0
+    },
+    {
+      "budget": 56,
+      "event_ci95": [
+        0.375,
+        1.0
+      ],
+      "event_only": 6,
+      "event_success_rate": 0.75,
+      "mcnemar_exact_p": 0.03125,
+      "n": 8,
+      "paired_ci95": [
+        0.375,
+        1.0
+      ],
+      "paired_difference": 0.75,
+      "task_id": 5,
+      "task_label": "task_5",
+      "terminal_ci95": [
+        0.0,
+        0.0
+      ],
+      "terminal_only": 0,
+      "terminal_success_rate": 0.0
+    },
+    {
+      "budget": 56,
+      "event_ci95": [
+        0.6875,
+        1.0
+      ],
+      "event_only": 14,
+      "event_success_rate": 0.875,
+      "mcnemar_exact_p": 0.0001220703125,
+      "n": 16,
+      "paired_ci95": [
+        0.6875,
+        1.0
+      ],
+      "paired_difference": 0.875,
+      "task_id": 0,
+      "task_label": "pooled",
+      "terminal_ci95": [
+        0.0,
+        0.0
+      ],
+      "terminal_only": 0,
+      "terminal_success_rate": 0.0
+    },
+    {
+      "budget": 112,
+      "event_ci95": [
+        1.0,
+        1.0
+      ],
+      "event_only": 8,
+      "event_success_rate": 1.0,
+      "mcnemar_exact_p": 0.0078125,
+      "n": 8,
+      "paired_ci95": [
+        1.0,
+        1.0
+      ],
+      "paired_difference": 1.0,
+      "task_id": 4,
+      "task_label": "task_4",
+      "terminal_ci95": [
+        0.0,
+        0.0
+      ],
+      "terminal_only": 0,
+      "terminal_success_rate": 0.0
+    },
+    {
+      "budget": 112,
+      "event_ci95": [
+        1.0,
+        1.0
+      ],
+      "event_only": 8,
+      "event_success_rate": 1.0,
+      "mcnemar_exact_p": 0.0078125,
+      "n": 8,
+      "paired_ci95": [
+        1.0,
+        1.0
+      ],
+      "paired_difference": 1.0,
+      "task_id": 5,
+      "task_label": "task_5",
+      "terminal_ci95": [
+        0.0,
+        0.0
+      ],
+      "terminal_only": 0,
+      "terminal_success_rate": 0.0
+    },
+    {
+      "budget": 112,
+      "event_ci95": [
+        1.0,
+        1.0
+      ],
+      "event_only": 16,
+      "event_success_rate": 1.0,
+      "mcnemar_exact_p": 3.0517578125e-05,
+      "n": 16,
+      "paired_ci95": [
+        1.0,
+        1.0
+      ],
+      "paired_difference": 1.0,
+      "task_id": 0,
+      "task_label": "pooled",
+      "terminal_ci95": [
+        0.0,
+        0.0
+      ],
+      "terminal_only": 0,
+      "terminal_success_rate": 0.0
+    }
+  ],
+  "scope": "same learned abstract transition checkpoint, UCT, skills, horizons, budgets, and reset seeds; arms differ only in event-progress versus terminal-probability feedback",
+  "verdict": "EVENT_FEEDBACK_CAUSAL_GAIN_UNDER_SHARED_MODEL"
+}

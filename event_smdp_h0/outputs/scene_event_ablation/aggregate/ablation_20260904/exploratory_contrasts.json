@@ -1,0 +1,84 @@
+{
+  "per_task": {
+    "4": {
+      "history_full-oracle_event": {
+        "ci_high_points": 3.125,
+        "ci_low_points": -4.6875,
+        "mean_points": -0.5208333333333334,
+        "n": 64
+      },
+      "obs_history_full-action_only_full": {
+        "ci_high_points": 1.5625,
+        "ci_low_points": -4.6875,
+        "mean_points": -1.0416666666666667,
+        "n": 64
+      },
+      "obs_history_full-openloop_transition": {
+        "ci_high_points": 1.5625,
+        "ci_low_points": -4.6875,
+        "mean_points": -1.0416666666666667,
+        "n": 64
+      },
+      "obs_history_full-oracle_event": {
+        "ci_high_points": 1.5625,
+        "ci_low_points": -4.6875,
+        "mean_points": -1.0416666666666667,
+        "n": 64
+      }
+    },
+    "5": {
+      "history_full-oracle_event": {
+        "ci_high_points": 16.145833333333332,
+        "ci_low_points": -2.083333333333335,
+        "mean_points": 6.770833333333333,
+        "n": 64
+      },
+      "obs_history_full-action_only_full": {
+        "ci_high_points": 36.97916666666667,
+        "ci_low_points": 16.666666666666664,
+        "mean_points": 26.5625,
+        "n": 64
+      },
+      "obs_history_full-openloop_transition": {
+        "ci_high_points": 37.5,
+        "ci_low_points": 16.666666666666664,
+        "mean_points": 27.083333333333332,
+        "n": 64
+      },
+      "obs_history_full-oracle_event": {
+        "ci_high_points": 22.395833333333332,
+        "ci_low_points": 4.166666666666666,
+        "mean_points": 13.020833333333332,
+        "n": 64
+      }
+    }
+  },
+  "pooled": {
+    "history_full-oracle_event": {
+      "ci_high_points": 8.59375,
+      "ci_low_points": -1.8229166666666672,
+      "mean_points": 3.1249999999999996,
+      "n": 128
+    },
+    "obs_history_full-action_only_full": {
+      "ci_high_points": 19.010416666666664,
+      "ci_low_points": 7.03125,
+      "mean_points": 12.760416666666666,
+      "n": 128
+    },
+    "obs_history_full-openloop_transition": {
+      "ci_high_points": 19.270833333333332,
+      "ci_low_points": 7.291666666666666,
+      "mean_points": 13.020833333333332,
+      "n": 128
+    },
+    "obs_history_full-oracle_event": {
+      "ci_high_points": 11.458333333333332,
+      "ci_low_points": 1.0416666666666665,
+      "mean_points": 5.989583333333333,
+      "n": 128
+    }
+  },
+  "protocol": "scene_event_ablation_exploratory_v1",
+  "scope": "exploratory contrasts, not part of the locked ablation gate; reported as exploratory and not used to license any decision"
+}

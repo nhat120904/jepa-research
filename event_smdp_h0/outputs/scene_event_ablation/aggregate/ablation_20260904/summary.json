@@ -1,0 +1,160 @@
+{
+  "ablation_invariance_verified_shards": 128,
+  "contrasts": {
+    "ACTIONS_GIVEN_VISION": {
+      "ci_high_points": 0.2604166666666664,
+      "ci_low_points": -6.25,
+      "left": "history_full",
+      "mean_points": -2.8645833333333335,
+      "right": "obs_history_full"
+    },
+    "ACTION_ONLY_VS_OPENLOOP": {
+      "ci_high_points": 1.8229166666666665,
+      "ci_low_points": -1.3020833333333335,
+      "left": "action_only_full",
+      "mean_points": 0.2604166666666666,
+      "right": "openloop_transition"
+    },
+    "HISTORY_FULL_VS_FRAME_FULL": {
+      "ci_high_points": 28.385416666666668,
+      "ci_low_points": 15.358072916666671,
+      "left": "history_full",
+      "mean_points": 21.614583333333336,
+      "right": "frame_full"
+    },
+    "OBS_HISTORY_VS_FRAME": {
+      "ci_high_points": 32.03125,
+      "ci_low_points": 17.447916666666668,
+      "left": "obs_history_full",
+      "mean_points": 24.479166666666668,
+      "right": "frame_full"
+    },
+    "OPENLOOP_VS_FRAME_FULL": {
+      "ci_high_points": 17.708333333333336,
+      "ci_low_points": 5.468750000000002,
+      "left": "openloop_transition",
+      "mean_points": 11.458333333333334,
+      "right": "frame_full"
+    },
+    "OPENLOOP_VS_HISTORY_FULL": {
+      "ci_high_points": -4.687499999999999,
+      "ci_low_points": -15.891927083333329,
+      "left": "openloop_transition",
+      "mean_points": -10.15625,
+      "right": "history_full"
+    },
+    "VISION_GIVEN_ACTIONS": {
+      "ci_high_points": 15.625,
+      "ci_low_points": 4.6875,
+      "left": "history_full",
+      "mean_points": 9.895833333333334,
+      "right": "action_only_full"
+    }
+  },
+  "gate": {
+    "dead_reckoning_tolerance_points": 5.0,
+    "history_full_beats_openloop_ci_low": 4.687499999999999,
+    "vision_given_actions_ci_low": 4.6875
+  },
+  "num_resets": 128,
+  "protocol": "scene_event_ablation_analysis_v1",
+  "rates": {
+    "abstract_terminal": {
+      "ci_high": 0.0546875,
+      "ci_low": 0.0,
+      "mean_success": 0.0234375,
+      "per_model_seed": null,
+      "per_task": {
+        "4": 0.0,
+        "5": 0.046875
+      }
+    },
+    "action_only_full": {
+      "ci_high": 0.8697916666666667,
+      "ci_low": 0.7395182291666667,
+      "mean_success": 0.8072916666666667,
+      "per_model_seed": {
+        "0": 0.8125,
+        "1": 0.796875,
+        "2": 0.8125
+      },
+      "per_task": {
+        "4": 0.984375,
+        "5": 0.6302083333333334
+      }
+    },
+    "frame_full": {
+      "ci_high": 0.7604166666666667,
+      "ci_low": 0.6119791666666667,
+      "mean_success": 0.6901041666666667,
+      "per_model_seed": {
+        "0": 0.671875,
+        "1": 0.71875,
+        "2": 0.6796875
+      },
+      "per_task": {
+        "4": 0.8385416666666666,
+        "5": 0.5416666666666666
+      }
+    },
+    "history_full": {
+      "ci_high": 0.9505208333333333,
+      "ci_low": 0.8567708333333333,
+      "mean_success": 0.90625,
+      "per_model_seed": {
+        "0": 0.8828125,
+        "1": 0.8984375,
+        "2": 0.9375
+      },
+      "per_task": {
+        "4": 0.9791666666666666,
+        "5": 0.8333333333333333
+      }
+    },
+    "obs_history_full": {
+      "ci_high": 0.9713541666666667,
+      "ci_low": 0.890625,
+      "mean_success": 0.9348958333333333,
+      "per_model_seed": {
+        "0": 0.9453125,
+        "1": 0.9296875,
+        "2": 0.9296875
+      },
+      "per_task": {
+        "4": 0.9739583333333333,
+        "5": 0.8958333333333333
+      }
+    },
+    "openloop_transition": {
+      "ci_high": 0.8671875,
+      "ci_low": 0.734375,
+      "mean_success": 0.8046875,
+      "per_model_seed": null,
+      "per_task": {
+        "4": 0.984375,
+        "5": 0.625
+      }
+    },
+    "oracle_event": {
+      "ci_high": 0.9296875,
+      "ci_low": 0.8125,
+      "mean_success": 0.875,
+      "per_model_seed": null,
+      "per_task": {
+        "4": 0.984375,
+        "5": 0.765625
+      }
+    }
+  },
+  "reproduction": {
+    "arms_checked": [
+      "frame_full",
+      "history_full"
+    ],
+    "exact": true,
+    "mismatches": [],
+    "rows_compared": 768
+  },
+  "scope": "input-ablation decomposition on the confirmatory reset band; the two reused arms are a determinism check, not a fresh measurement",
+  "verdict": "DEAD_RECKONING_REFUTED"
+}

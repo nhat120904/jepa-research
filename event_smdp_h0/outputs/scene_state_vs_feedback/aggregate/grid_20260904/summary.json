@@ -1,0 +1,124 @@
+{
+  "contrasts": {
+    "FEEDBACK_GAP_FRAME_FULL__task5": {
+      "ci_high_points": 54.6875,
+      "ci_low_points": 31.770833333333336,
+      "mean_points": 43.22916666666667
+    },
+    "FEEDBACK_GAP_OBS_HISTORY_FULL__task5": {
+      "ci_high_points": 94.79166666666666,
+      "ci_low_points": 79.16666666666667,
+      "mean_points": 87.5
+    },
+    "FEEDBACK_GAP_ORACLE__task5": {
+      "ci_high_points": 12.5,
+      "ci_low_points": -9.375,
+      "mean_points": 1.5625
+    },
+    "STATE_GAP_FRAME_FULL__automaton_potential": {
+      "ci_high_points": -31.250000000000007,
+      "ci_low_points": -47.395833333333336,
+      "mean_points": -39.32291666666667
+    },
+    "STATE_GAP_FRAME_FULL__event_progress": {
+      "ci_high_points": -12.5,
+      "ci_low_points": -25.0,
+      "mean_points": -18.489583333333336
+    },
+    "STATE_GAP_OBS_HISTORY_FULL__automaton_potential": {
+      "ci_high_points": -28.645833333333336,
+      "ci_low_points": -45.57291666666667,
+      "mean_points": -36.97916666666667
+    },
+    "STATE_GAP_OBS_HISTORY_FULL__event_progress": {
+      "ci_high_points": 11.197916666666666,
+      "ci_low_points": 1.3020833333333328,
+      "mean_points": 5.989583333333333
+    }
+  },
+  "gate": {
+    "feedback_also_matters": false,
+    "state_estimation_is_the_constraint": false
+  },
+  "num_resets": 128,
+  "protocol": "scene_state_vs_feedback_analysis_v1",
+  "rates": {
+    "frame_full__automaton_potential": {
+      "ci_high": 0.5546875,
+      "ci_low": 0.3958333333333333,
+      "feedback": "automaton_potential",
+      "mean_success": 0.47395833333333337,
+      "per_task": {
+        "4": 0.8385416666666666,
+        "5": 0.109375
+      },
+      "state_source": "frame_full"
+    },
+    "frame_full__event_progress": {
+      "ci_high": 0.7604166666666667,
+      "ci_low": 0.6119791666666667,
+      "feedback": "event_progress",
+      "mean_success": 0.6901041666666667,
+      "per_task": {
+        "4": 0.8385416666666666,
+        "5": 0.5416666666666666
+      },
+      "state_source": "frame_full"
+    },
+    "obs_history_full__automaton_potential": {
+      "ci_high": 0.5833333333333333,
+      "ci_low": 0.4114583333333333,
+      "feedback": "automaton_potential",
+      "mean_success": 0.49739583333333337,
+      "per_task": {
+        "4": 0.9739583333333333,
+        "5": 0.020833333333333332
+      },
+      "state_source": "obs_history_full"
+    },
+    "obs_history_full__event_progress": {
+      "ci_high": 0.9713541666666667,
+      "ci_low": 0.890625,
+      "feedback": "event_progress",
+      "mean_success": 0.9348958333333333,
+      "per_task": {
+        "4": 0.9739583333333333,
+        "5": 0.8958333333333333
+      },
+      "state_source": "obs_history_full"
+    },
+    "oracle__automaton_potential": {
+      "ci_high": 0.921875,
+      "ci_low": 0.8046875,
+      "feedback": "automaton_potential",
+      "mean_success": 0.8671875,
+      "per_task": {
+        "4": 0.984375,
+        "5": 0.75
+      },
+      "state_source": "oracle"
+    },
+    "oracle__event_progress": {
+      "ci_high": 0.9296875,
+      "ci_low": 0.8125,
+      "feedback": "event_progress",
+      "mean_success": 0.875,
+      "per_task": {
+        "4": 0.984375,
+        "5": 0.765625
+      },
+      "state_source": "oracle"
+    }
+  },
+  "reproduction": {
+    "exact": true,
+    "mismatches": [],
+    "rows_compared": 896
+  },
+  "scope": "3x2 grid on the ablation reset band; event_progress cells are exact reproductions, the feedback contrast is task-5 only",
+  "task4_feedback_identity": {
+    "holds": true,
+    "mismatches": []
+  },
+  "verdict": "INCONCLUSIVE"
+}

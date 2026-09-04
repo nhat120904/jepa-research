@@ -1,0 +1,7 @@
+arm,mean_success,ci_low,ci_high,seed0,seed1,seed2
+oracle_event,0.8750,0.8125,0.9297,nan,nan,nan
+abstract_terminal,0.0234,0.0000,0.0547,nan,nan,nan
+frame_canonical,0.7422,0.6667,0.8099,0.7969,0.7031,0.7266
+frame_full,0.6901,0.6120,0.7604,0.6719,0.7188,0.6797
+history_canonical,0.8229,0.7578,0.8802,0.8438,0.7891,0.8359
+history_full,0.9062,0.8568,0.9505,0.8828,0.8984,0.9375

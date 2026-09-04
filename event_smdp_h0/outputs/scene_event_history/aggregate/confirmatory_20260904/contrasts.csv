@@ -1,0 +1,9 @@
+contrast,left,right,mean_points,ci_low_points,ci_high_points
+COVERAGE,frame_full,frame_canonical,-5.21,-12.24,1.82
+HISTORY,history_full,frame_full,21.61,15.36,28.39
+HISTORY_UNDER_CANONICAL,history_canonical,frame_canonical,8.07,3.39,13.28
+COVERAGE_UNDER_HISTORY,history_full,history_canonical,8.33,2.34,14.58
+FRAME_FULL_VS_TERMINAL,frame_full,abstract_terminal,66.67,57.81,74.74
+HISTORY_FULL_VS_TERMINAL,history_full,abstract_terminal,88.28,81.77,93.75
+FRAME_FULL_VS_ORACLE,frame_full,oracle_event,-18.49,-25.00,-12.50
+HISTORY_FULL_VS_ORACLE,history_full,oracle_event,3.12,-1.82,8.33

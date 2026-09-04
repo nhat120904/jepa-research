@@ -1,0 +1,79 @@
+{
+  "contrasts_points": {
+    "action_only_full-openloop_transition": [
+      0.2604,
+      -1.3021,
+      1.8229
+    ],
+    "history_full-action_only_full": [
+      9.8958,
+      4.6875,
+      15.625
+    ],
+    "history_full-frame_full": [
+      21.6146,
+      15.3646,
+      28.3854
+    ],
+    "history_full-obs_history_full": [
+      -2.8646,
+      -6.25,
+      0.0
+    ],
+    "history_full-openloop_transition": [
+      10.1562,
+      4.6875,
+      16.1458
+    ],
+    "history_full-oracle_event": [
+      3.125,
+      -1.8229,
+      8.5937
+    ],
+    "obs_history_full-frame_full": [
+      24.4792,
+      17.4479,
+      31.7708
+    ]
+  },
+  "num_resets": 128,
+  "rates_percent": {
+    "abstract_terminal": [
+      2.3438,
+      0.0,
+      5.4688
+    ],
+    "action_only_full": [
+      80.7292,
+      73.9583,
+      87.2396
+    ],
+    "frame_full": [
+      69.0104,
+      61.1979,
+      76.5625
+    ],
+    "history_full": [
+      90.625,
+      85.6771,
+      95.0521
+    ],
+    "obs_history_full": [
+      93.4896,
+      89.0625,
+      97.1354
+    ],
+    "openloop_transition": [
+      80.4688,
+      73.4375,
+      87.5
+    ],
+    "oracle_event": [
+      87.5,
+      81.25,
+      92.9688
+    ]
+  },
+  "reproduction_mismatches": 0,
+  "shared_cells_vs_factorial": 1024
+}

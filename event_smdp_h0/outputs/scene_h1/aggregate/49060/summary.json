@@ -1,0 +1,934 @@
+{
+  "contrasts": [
+    {
+      "budget": 14,
+      "event_head": "event_bce",
+      "event_only": 0,
+      "feature_view": "latent",
+      "mcnemar_exact_p": 1.0,
+      "n": 8,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 4,
+      "task_label": "task_4",
+      "terminal_only": 0
+    },
+    {
+      "budget": 28,
+      "event_head": "event_bce",
+      "event_only": 0,
+      "feature_view": "latent",
+      "mcnemar_exact_p": 1.0,
+      "n": 8,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 4,
+      "task_label": "task_4",
+      "terminal_only": 0
+    },
+    {
+      "budget": 14,
+      "event_head": "event_bce",
+      "event_only": 0,
+      "feature_view": "latent",
+      "mcnemar_exact_p": 1.0,
+      "n": 8,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 5,
+      "task_label": "task_5",
+      "terminal_only": 0
+    },
+    {
+      "budget": 28,
+      "event_head": "event_bce",
+      "event_only": 1,
+      "feature_view": "latent",
+      "mcnemar_exact_p": 1.0,
+      "n": 8,
+      "paired_ci95": [
+        0.0,
+        0.375
+      ],
+      "paired_difference": 0.125,
+      "task_id": 5,
+      "task_label": "task_5",
+      "terminal_only": 0
+    },
+    {
+      "budget": 14,
+      "event_head": "event_bce",
+      "event_only": 0,
+      "feature_view": "latent",
+      "mcnemar_exact_p": 1.0,
+      "n": 16,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 0,
+      "task_label": "pooled",
+      "terminal_only": 0
+    },
+    {
+      "budget": 28,
+      "event_head": "event_bce",
+      "event_only": 1,
+      "feature_view": "latent",
+      "mcnemar_exact_p": 1.0,
+      "n": 16,
+      "paired_ci95": [
+        0.0,
+        0.1875
+      ],
+      "paired_difference": 0.0625,
+      "task_id": 0,
+      "task_label": "pooled",
+      "terminal_only": 0
+    },
+    {
+      "budget": 14,
+      "event_head": "event_time",
+      "event_only": 0,
+      "feature_view": "latent",
+      "mcnemar_exact_p": 1.0,
+      "n": 8,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 4,
+      "task_label": "task_4",
+      "terminal_only": 0
+    },
+    {
+      "budget": 28,
+      "event_head": "event_time",
+      "event_only": 0,
+      "feature_view": "latent",
+      "mcnemar_exact_p": 1.0,
+      "n": 8,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 4,
+      "task_label": "task_4",
+      "terminal_only": 0
+    },
+    {
+      "budget": 14,
+      "event_head": "event_time",
+      "event_only": 0,
+      "feature_view": "latent",
+      "mcnemar_exact_p": 1.0,
+      "n": 8,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 5,
+      "task_label": "task_5",
+      "terminal_only": 0
+    },
+    {
+      "budget": 28,
+      "event_head": "event_time",
+      "event_only": 0,
+      "feature_view": "latent",
+      "mcnemar_exact_p": 1.0,
+      "n": 8,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 5,
+      "task_label": "task_5",
+      "terminal_only": 0
+    },
+    {
+      "budget": 14,
+      "event_head": "event_time",
+      "event_only": 0,
+      "feature_view": "latent",
+      "mcnemar_exact_p": 1.0,
+      "n": 16,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 0,
+      "task_label": "pooled",
+      "terminal_only": 0
+    },
+    {
+      "budget": 28,
+      "event_head": "event_time",
+      "event_only": 0,
+      "feature_view": "latent",
+      "mcnemar_exact_p": 1.0,
+      "n": 16,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 0,
+      "task_label": "pooled",
+      "terminal_only": 0
+    },
+    {
+      "budget": 14,
+      "event_head": "event_bce",
+      "event_only": 0,
+      "feature_view": "privileged",
+      "mcnemar_exact_p": 1.0,
+      "n": 8,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 4,
+      "task_label": "task_4",
+      "terminal_only": 0
+    },
+    {
+      "budget": 28,
+      "event_head": "event_bce",
+      "event_only": 0,
+      "feature_view": "privileged",
+      "mcnemar_exact_p": 1.0,
+      "n": 8,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 4,
+      "task_label": "task_4",
+      "terminal_only": 0
+    },
+    {
+      "budget": 14,
+      "event_head": "event_bce",
+      "event_only": 0,
+      "feature_view": "privileged",
+      "mcnemar_exact_p": 1.0,
+      "n": 8,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 5,
+      "task_label": "task_5",
+      "terminal_only": 0
+    },
+    {
+      "budget": 28,
+      "event_head": "event_bce",
+      "event_only": 0,
+      "feature_view": "privileged",
+      "mcnemar_exact_p": 1.0,
+      "n": 8,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 5,
+      "task_label": "task_5",
+      "terminal_only": 0
+    },
+    {
+      "budget": 14,
+      "event_head": "event_bce",
+      "event_only": 0,
+      "feature_view": "privileged",
+      "mcnemar_exact_p": 1.0,
+      "n": 16,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 0,
+      "task_label": "pooled",
+      "terminal_only": 0
+    },
+    {
+      "budget": 28,
+      "event_head": "event_bce",
+      "event_only": 0,
+      "feature_view": "privileged",
+      "mcnemar_exact_p": 1.0,
+      "n": 16,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 0,
+      "task_label": "pooled",
+      "terminal_only": 0
+    },
+    {
+      "budget": 14,
+      "event_head": "event_time",
+      "event_only": 0,
+      "feature_view": "privileged",
+      "mcnemar_exact_p": 1.0,
+      "n": 8,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 4,
+      "task_label": "task_4",
+      "terminal_only": 0
+    },
+    {
+      "budget": 28,
+      "event_head": "event_time",
+      "event_only": 0,
+      "feature_view": "privileged",
+      "mcnemar_exact_p": 1.0,
+      "n": 8,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 4,
+      "task_label": "task_4",
+      "terminal_only": 0
+    },
+    {
+      "budget": 14,
+      "event_head": "event_time",
+      "event_only": 0,
+      "feature_view": "privileged",
+      "mcnemar_exact_p": 1.0,
+      "n": 8,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 5,
+      "task_label": "task_5",
+      "terminal_only": 0
+    },
+    {
+      "budget": 28,
+      "event_head": "event_time",
+      "event_only": 0,
+      "feature_view": "privileged",
+      "mcnemar_exact_p": 1.0,
+      "n": 8,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 5,
+      "task_label": "task_5",
+      "terminal_only": 0
+    },
+    {
+      "budget": 14,
+      "event_head": "event_time",
+      "event_only": 0,
+      "feature_view": "privileged",
+      "mcnemar_exact_p": 1.0,
+      "n": 16,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 0,
+      "task_label": "pooled",
+      "terminal_only": 0
+    },
+    {
+      "budget": 28,
+      "event_head": "event_time",
+      "event_only": 0,
+      "feature_view": "privileged",
+      "mcnemar_exact_p": 1.0,
+      "n": 16,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 0,
+      "task_label": "pooled",
+      "terminal_only": 0
+    }
+  ],
+  "num_rows": 192,
+  "num_shards": 16,
+  "primary_budget": 28,
+  "primary_contrasts": {
+    "latent": {
+      "budget": 28,
+      "event_head": "event_bce",
+      "event_only": 1,
+      "feature_view": "latent",
+      "mcnemar_exact_p": 1.0,
+      "n": 16,
+      "paired_ci95": [
+        0.0,
+        0.1875
+      ],
+      "paired_difference": 0.0625,
+      "task_id": 0,
+      "task_label": "pooled",
+      "terminal_only": 0
+    },
+    "privileged": {
+      "budget": 28,
+      "event_head": "event_bce",
+      "event_only": 0,
+      "feature_view": "privileged",
+      "mcnemar_exact_p": 1.0,
+      "n": 16,
+      "paired_ci95": [
+        0.0,
+        0.0
+      ],
+      "paired_difference": 0.0,
+      "task_id": 0,
+      "task_label": "pooled",
+      "terminal_only": 0
+    }
+  },
+  "protocol": "scene_h1_learnability_v1",
+  "rates": [
+    {
+      "budget": 14,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "latent",
+      "head": "event_bce",
+      "mean_replans": 8.0,
+      "n": 16,
+      "success_rate": 0.0,
+      "task_id": 0,
+      "task_label": "pooled"
+    },
+    {
+      "budget": 28,
+      "ci95": [
+        0.0,
+        0.1875
+      ],
+      "feature_view": "latent",
+      "head": "event_bce",
+      "mean_replans": 7.875,
+      "n": 16,
+      "success_rate": 0.0625,
+      "task_id": 0,
+      "task_label": "pooled"
+    },
+    {
+      "budget": 14,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "latent",
+      "head": "event_bce",
+      "mean_replans": 6.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 4,
+      "task_label": "task_4"
+    },
+    {
+      "budget": 28,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "latent",
+      "head": "event_bce",
+      "mean_replans": 6.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 4,
+      "task_label": "task_4"
+    },
+    {
+      "budget": 14,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "latent",
+      "head": "event_bce",
+      "mean_replans": 10.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 5,
+      "task_label": "task_5"
+    },
+    {
+      "budget": 28,
+      "ci95": [
+        0.0,
+        0.375
+      ],
+      "feature_view": "latent",
+      "head": "event_bce",
+      "mean_replans": 9.75,
+      "n": 8,
+      "success_rate": 0.125,
+      "task_id": 5,
+      "task_label": "task_5"
+    },
+    {
+      "budget": 14,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "latent",
+      "head": "event_time",
+      "mean_replans": 8.0,
+      "n": 16,
+      "success_rate": 0.0,
+      "task_id": 0,
+      "task_label": "pooled"
+    },
+    {
+      "budget": 28,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "latent",
+      "head": "event_time",
+      "mean_replans": 8.0,
+      "n": 16,
+      "success_rate": 0.0,
+      "task_id": 0,
+      "task_label": "pooled"
+    },
+    {
+      "budget": 14,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "latent",
+      "head": "event_time",
+      "mean_replans": 6.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 4,
+      "task_label": "task_4"
+    },
+    {
+      "budget": 28,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "latent",
+      "head": "event_time",
+      "mean_replans": 6.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 4,
+      "task_label": "task_4"
+    },
+    {
+      "budget": 14,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "latent",
+      "head": "event_time",
+      "mean_replans": 10.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 5,
+      "task_label": "task_5"
+    },
+    {
+      "budget": 28,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "latent",
+      "head": "event_time",
+      "mean_replans": 10.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 5,
+      "task_label": "task_5"
+    },
+    {
+      "budget": 14,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "latent",
+      "head": "terminal",
+      "mean_replans": 8.0,
+      "n": 16,
+      "success_rate": 0.0,
+      "task_id": 0,
+      "task_label": "pooled"
+    },
+    {
+      "budget": 28,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "latent",
+      "head": "terminal",
+      "mean_replans": 8.0,
+      "n": 16,
+      "success_rate": 0.0,
+      "task_id": 0,
+      "task_label": "pooled"
+    },
+    {
+      "budget": 14,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "latent",
+      "head": "terminal",
+      "mean_replans": 6.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 4,
+      "task_label": "task_4"
+    },
+    {
+      "budget": 28,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "latent",
+      "head": "terminal",
+      "mean_replans": 6.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 4,
+      "task_label": "task_4"
+    },
+    {
+      "budget": 14,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "latent",
+      "head": "terminal",
+      "mean_replans": 10.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 5,
+      "task_label": "task_5"
+    },
+    {
+      "budget": 28,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "latent",
+      "head": "terminal",
+      "mean_replans": 10.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 5,
+      "task_label": "task_5"
+    },
+    {
+      "budget": 14,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "privileged",
+      "head": "event_bce",
+      "mean_replans": 8.0,
+      "n": 16,
+      "success_rate": 0.0,
+      "task_id": 0,
+      "task_label": "pooled"
+    },
+    {
+      "budget": 28,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "privileged",
+      "head": "event_bce",
+      "mean_replans": 8.0,
+      "n": 16,
+      "success_rate": 0.0,
+      "task_id": 0,
+      "task_label": "pooled"
+    },
+    {
+      "budget": 14,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "privileged",
+      "head": "event_bce",
+      "mean_replans": 6.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 4,
+      "task_label": "task_4"
+    },
+    {
+      "budget": 28,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "privileged",
+      "head": "event_bce",
+      "mean_replans": 6.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 4,
+      "task_label": "task_4"
+    },
+    {
+      "budget": 14,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "privileged",
+      "head": "event_bce",
+      "mean_replans": 10.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 5,
+      "task_label": "task_5"
+    },
+    {
+      "budget": 28,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "privileged",
+      "head": "event_bce",
+      "mean_replans": 10.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 5,
+      "task_label": "task_5"
+    },
+    {
+      "budget": 14,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "privileged",
+      "head": "event_time",
+      "mean_replans": 8.0,
+      "n": 16,
+      "success_rate": 0.0,
+      "task_id": 0,
+      "task_label": "pooled"
+    },
+    {
+      "budget": 28,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "privileged",
+      "head": "event_time",
+      "mean_replans": 8.0,
+      "n": 16,
+      "success_rate": 0.0,
+      "task_id": 0,
+      "task_label": "pooled"
+    },
+    {
+      "budget": 14,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "privileged",
+      "head": "event_time",
+      "mean_replans": 6.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 4,
+      "task_label": "task_4"
+    },
+    {
+      "budget": 28,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "privileged",
+      "head": "event_time",
+      "mean_replans": 6.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 4,
+      "task_label": "task_4"
+    },
+    {
+      "budget": 14,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "privileged",
+      "head": "event_time",
+      "mean_replans": 10.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 5,
+      "task_label": "task_5"
+    },
+    {
+      "budget": 28,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "privileged",
+      "head": "event_time",
+      "mean_replans": 10.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 5,
+      "task_label": "task_5"
+    },
+    {
+      "budget": 14,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "privileged",
+      "head": "terminal",
+      "mean_replans": 8.0,
+      "n": 16,
+      "success_rate": 0.0,
+      "task_id": 0,
+      "task_label": "pooled"
+    },
+    {
+      "budget": 28,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "privileged",
+      "head": "terminal",
+      "mean_replans": 8.0,
+      "n": 16,
+      "success_rate": 0.0,
+      "task_id": 0,
+      "task_label": "pooled"
+    },
+    {
+      "budget": 14,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "privileged",
+      "head": "terminal",
+      "mean_replans": 6.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 4,
+      "task_label": "task_4"
+    },
+    {
+      "budget": 28,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "privileged",
+      "head": "terminal",
+      "mean_replans": 6.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 4,
+      "task_label": "task_4"
+    },
+    {
+      "budget": 14,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "privileged",
+      "head": "terminal",
+      "mean_replans": 10.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 5,
+      "task_label": "task_5"
+    },
+    {
+      "budget": 28,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "feature_view": "privileged",
+      "head": "terminal",
+      "mean_replans": 10.0,
+      "n": 8,
+      "success_rate": 0.0,
+      "task_id": 5,
+      "task_label": "task_5"
+    }
+  ],
+  "scope": "pilot gate with one or more learned seeds; current event state is an oracle monitor at real replans, and duration is auxiliary when duration_cost=0",
+  "verdict": "H1_NO_LEARNED_EVENT_ADVANTAGE"
+}

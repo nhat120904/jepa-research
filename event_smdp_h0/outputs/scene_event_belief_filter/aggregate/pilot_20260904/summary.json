@@ -1,0 +1,210 @@
+{
+  "aggregate": [
+    {
+      "filtered_ci95": [
+        0.875,
+        1.0
+      ],
+      "filtered_mean_success": 0.9583333333333333,
+      "fresh_mean_success": 0.9166666666666666,
+      "gain_ci95": [
+        -0.0625,
+        0.1875
+      ],
+      "n_resets": 16,
+      "oracle_success": 1.0,
+      "paired_gain": 0.04166666666666667,
+      "task_id": 4,
+      "task_label": "task_4",
+      "terminal_success": 0.0
+    },
+    {
+      "filtered_ci95": [
+        0.4375,
+        0.875
+      ],
+      "filtered_mean_success": 0.6666666666666666,
+      "fresh_mean_success": 0.625,
+      "gain_ci95": [
+        -0.08333333333333331,
+        0.14583333333333334
+      ],
+      "n_resets": 16,
+      "oracle_success": 0.9375,
+      "paired_gain": 0.04166666666666668,
+      "task_id": 5,
+      "task_label": "task_5",
+      "terminal_success": 0.0
+    },
+    {
+      "filtered_ci95": [
+        0.6770833333333333,
+        0.9270833333333334
+      ],
+      "filtered_mean_success": 0.8125,
+      "fresh_mean_success": 0.7708333333333333,
+      "gain_ci95": [
+        -0.04166666666666666,
+        0.12500000000000003
+      ],
+      "n_resets": 32,
+      "oracle_success": 0.96875,
+      "paired_gain": 0.04166666666666668,
+      "task_id": 0,
+      "task_label": "pooled",
+      "terminal_success": 0.0
+    }
+  ],
+  "checks": {
+    "every_filtered_seed_pooled_success_ge_75pct": true,
+    "filtered_task5_mean_success_ge_75pct": false,
+    "seed1_task5_gain_ge_25pct": true,
+    "task5_gain_ge_15pct_and_ci_above_zero": false
+  },
+  "observer_sha256": {
+    "0": "72d2b3d96462f88de9acaf7d1cd9b9b7d6a5ecbc057c772393d86b2eb734334d",
+    "1": "b9a04561c4b8253eb9fe2f838fb8bfe9e1ba312dd3730d8235aa9620a91f84de",
+    "2": "7ef05584f564007ccd142626ca26cdea3f68ab9efae1e58fe04c8544b6267d0b"
+  },
+  "per_seed": [
+    {
+      "filtered_observation_q_accuracy": 0.9393939393939394,
+      "filtered_planning_q_accuracy": 0.9545454545454546,
+      "filtered_success": 1.0,
+      "fresh_success": 0.875,
+      "gain_ci95": [
+        0.0,
+        0.3125
+      ],
+      "n": 16,
+      "observer_seed": 0,
+      "paired_gain": 0.125,
+      "task_id": 4,
+      "task_label": "task_4"
+    },
+    {
+      "filtered_observation_q_accuracy": 0.7357142857142858,
+      "filtered_planning_q_accuracy": 0.8142857142857143,
+      "filtered_success": 0.625,
+      "fresh_success": 0.6875,
+      "gain_ci95": [
+        -0.1875,
+        0.0
+      ],
+      "n": 16,
+      "observer_seed": 0,
+      "paired_gain": -0.0625,
+      "task_id": 5,
+      "task_label": "task_5"
+    },
+    {
+      "filtered_observation_q_accuracy": 0.8009708737864077,
+      "filtered_planning_q_accuracy": 0.8592233009708737,
+      "filtered_success": 0.8125,
+      "fresh_success": 0.78125,
+      "gain_ci95": [
+        -0.0625,
+        0.125
+      ],
+      "n": 32,
+      "observer_seed": 0,
+      "paired_gain": 0.03125,
+      "task_id": 0,
+      "task_label": "pooled"
+    },
+    {
+      "filtered_observation_q_accuracy": 0.9545454545454546,
+      "filtered_planning_q_accuracy": 0.9545454545454546,
+      "filtered_success": 0.9375,
+      "fresh_success": 0.9375,
+      "gain_ci95": [
+        -0.1875,
+        0.1875
+      ],
+      "n": 16,
+      "observer_seed": 1,
+      "paired_gain": 0.0,
+      "task_id": 4,
+      "task_label": "task_4"
+    },
+    {
+      "filtered_observation_q_accuracy": 0.7681159420289855,
+      "filtered_planning_q_accuracy": 0.855072463768116,
+      "filtered_success": 0.6875,
+      "fresh_success": 0.4375,
+      "gain_ci95": [
+        0.0625,
+        0.4375
+      ],
+      "n": 16,
+      "observer_seed": 1,
+      "paired_gain": 0.25,
+      "task_id": 5,
+      "task_label": "task_5"
+    },
+    {
+      "filtered_observation_q_accuracy": 0.8284313725490197,
+      "filtered_planning_q_accuracy": 0.8872549019607843,
+      "filtered_success": 0.8125,
+      "fresh_success": 0.6875,
+      "gain_ci95": [
+        0.0,
+        0.28125
+      ],
+      "n": 32,
+      "observer_seed": 1,
+      "paired_gain": 0.125,
+      "task_id": 0,
+      "task_label": "pooled"
+    },
+    {
+      "filtered_observation_q_accuracy": 0.9545454545454546,
+      "filtered_planning_q_accuracy": 0.9545454545454546,
+      "filtered_success": 0.9375,
+      "fresh_success": 0.9375,
+      "gain_ci95": [
+        -0.1875,
+        0.1875
+      ],
+      "n": 16,
+      "observer_seed": 2,
+      "paired_gain": 0.0,
+      "task_id": 4,
+      "task_label": "task_4"
+    },
+    {
+      "filtered_observation_q_accuracy": 0.7608695652173914,
+      "filtered_planning_q_accuracy": 0.855072463768116,
+      "filtered_success": 0.6875,
+      "fresh_success": 0.75,
+      "gain_ci95": [
+        -0.1875,
+        0.0
+      ],
+      "n": 16,
+      "observer_seed": 2,
+      "paired_gain": -0.0625,
+      "task_id": 5,
+      "task_label": "task_5"
+    },
+    {
+      "filtered_observation_q_accuracy": 0.8235294117647058,
+      "filtered_planning_q_accuracy": 0.8872549019607843,
+      "filtered_success": 0.8125,
+      "fresh_success": 0.84375,
+      "gain_ci95": [
+        -0.15625,
+        0.0625
+      ],
+      "n": 32,
+      "observer_seed": 2,
+      "paired_gain": -0.03125,
+      "task_id": 0,
+      "task_label": "pooled"
+    }
+  ],
+  "protocol": "scene_event_belief_filter_pilot_v1",
+  "scope": "post-diagnostic but preregistered fresh-reset pilot; a PASS licenses a larger confirmatory filter evaluation only",
+  "transition_sha256": "04fddf5f330694e4dc708c9bb25e860b10431fa3411e671c3a558de7bb6187d5",
+  "verdict": "EVENT_BELIEF_FILTER_PILOT_FAIL"
+}

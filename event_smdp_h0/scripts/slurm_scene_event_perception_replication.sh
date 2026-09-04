@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+#SBATCH --job-name=scene_event_perception_repl
+#SBATCH --partition=main
+#SBATCH --gres=gpu:1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=32G
+#SBATCH --time=02:00:00
+#SBATCH --array=0-127%8
+#SBATCH --output=/mnt/data/nhatnc129/jepa_runs/logs/scene_event_perception_repl_%A_%a.out
+set -euo pipefail
+
+REPO=/home/nhatnc129/nhat.nc/jepa-research
+PROJECT="$REPO/event_smdp_h0"
+RUNTIME=/mnt/data/nhatnc129/jepa/lewm_stage0
+INDEX=${SLURM_ARRAY_TASK_ID:?}
+if (( INDEX < 64 )); then TASK=4; LOCAL=$INDEX; else TASK=5; LOCAL=$((INDEX - 64)); fi
+RESET_SEED=$((84000 + 100 * TASK + LOCAL))
+RUN_ID=${RUN_ID:-${SLURM_ARRAY_JOB_ID:?}}
+OUT="$PROJECT/outputs/scene_event_perception_replication/eval/${RUN_ID}/${INDEX}"
+export STABLEWM_HOME="$RUNTIME"
+export MUJOCO_GL=egl PYOPENGL_PLATFORM=egl
+export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
+
+cd "$REPO"
+echo "HOST=$(hostname) JOB=${SLURM_JOB_ID} ARRAY=${SLURM_ARRAY_JOB_ID} INDEX=$INDEX TASK=$TASK SEED=$RESET_SEED RUN=$RUN_ID $(date -u +%FT%TZ)"
+sha256sum "$PROJECT/scene_core.py" "$PROJECT/scene_abstract_smdp.py" \
+  "$PROJECT/scene_event_perception.py" \
+  "$PROJECT/scripts/eval_scene_event_perception_replication.py" \
+  "$PROJECT/scripts/slurm_scene_event_perception_replication.sh"
+nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+"$RUNTIME/.venv/bin/python" "$PROJECT/scripts/eval_scene_event_perception_replication.py" \
+  --task-id "$TASK" --reset-seed "$RESET_SEED" --observer-seeds 0,1,2 \
+  --observer-root "$PROJECT/outputs/scene_event_perception/checkpoints" \
+  --transition-checkpoint "$PROJECT/outputs/scene_h1b/checkpoints/seed0/abstract_smdp.pt" \
+  --budget 112 --horizon 4 --out-dir "$OUT"

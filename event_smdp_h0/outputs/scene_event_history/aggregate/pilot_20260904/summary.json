@@ -1,0 +1,286 @@
+{
+  "contrasts": {
+    "COVERAGE": {
+      "ci_high_points": 8.333333333333334,
+      "ci_low_points": -20.833333333333332,
+      "left": "frame_full",
+      "mean_points": -6.25,
+      "right": "frame_canonical"
+    },
+    "COVERAGE_UNDER_HISTORY": {
+      "ci_high_points": 10.416666666666666,
+      "ci_low_points": -11.458333333333332,
+      "left": "history_full",
+      "mean_points": -6.938893903907228e-16,
+      "right": "history_canonical"
+    },
+    "FRAME_FULL_VS_ORACLE": {
+      "ci_high_points": -7.291666666666667,
+      "ci_low_points": -31.25,
+      "left": "frame_full",
+      "mean_points": -18.75,
+      "right": "oracle_event"
+    },
+    "FRAME_FULL_VS_TERMINAL": {
+      "ci_high_points": 83.33333333333333,
+      "ci_low_points": 53.125,
+      "left": "frame_full",
+      "mean_points": 68.75,
+      "right": "abstract_terminal"
+    },
+    "HISTORY": {
+      "ci_high_points": 31.25,
+      "ci_low_points": 8.333333333333332,
+      "left": "history_full",
+      "mean_points": 18.75,
+      "right": "frame_full"
+    },
+    "HISTORY_FULL_VS_ORACLE": {
+      "ci_high_points": 9.375,
+      "ci_low_points": -9.375,
+      "left": "history_full",
+      "mean_points": -6.938893903907228e-16,
+      "right": "oracle_event"
+    },
+    "HISTORY_FULL_VS_TERMINAL": {
+      "ci_high_points": 96.875,
+      "ci_low_points": 76.04166666666666,
+      "left": "history_full",
+      "mean_points": 87.5,
+      "right": "abstract_terminal"
+    },
+    "HISTORY_UNDER_CANONICAL": {
+      "ci_high_points": 23.958333333333336,
+      "ci_low_points": 3.125,
+      "left": "history_canonical",
+      "mean_points": 12.500000000000004,
+      "right": "frame_canonical"
+    }
+  },
+  "gate": {
+    "frame_full_mean_bar": 0.85,
+    "frame_full_passes": false,
+    "history_adds_value": true,
+    "history_effect_bar_points": 5.0,
+    "history_full_passes_same_bar": true,
+    "per_model_seed_bar": 0.75
+  },
+  "history_distribution": {
+    "beyond_trained_history": 0,
+    "learned_decisions": 2508
+  },
+  "num_observer_checkpoints": 12,
+  "num_resets": 32,
+  "protocol": "scene_event_history_analysis_v1",
+  "rates": {
+    "abstract_terminal": {
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "mean_success": 0.0,
+      "per_model_seed": null,
+      "per_task": {
+        "4": 0.0,
+        "5": 0.0
+      }
+    },
+    "frame_canonical": {
+      "ci_high": 0.875,
+      "ci_low": 0.6145833333333333,
+      "mean_success": 0.75,
+      "per_model_seed": {
+        "0": 0.84375,
+        "1": 0.65625,
+        "2": 0.75
+      },
+      "per_task": {
+        "4": 1.0,
+        "5": 0.49999999999999994
+      }
+    },
+    "frame_full": {
+      "ci_high": 0.8333333333333333,
+      "ci_low": 0.53125,
+      "mean_success": 0.6875,
+      "per_model_seed": {
+        "0": 0.625,
+        "1": 0.75,
+        "2": 0.6875
+      },
+      "per_task": {
+        "4": 0.875,
+        "5": 0.5
+      }
+    },
+    "history_canonical": {
+      "ci_high": 0.96875,
+      "ci_low": 0.7604166666666666,
+      "mean_success": 0.875,
+      "per_model_seed": {
+        "0": 0.875,
+        "1": 0.84375,
+        "2": 0.90625
+      },
+      "per_task": {
+        "4": 1.0,
+        "5": 0.75
+      }
+    },
+    "history_full": {
+      "ci_high": 0.96875,
+      "ci_low": 0.7604166666666666,
+      "mean_success": 0.875,
+      "per_model_seed": {
+        "0": 0.875,
+        "1": 0.875,
+        "2": 0.875
+      },
+      "per_task": {
+        "4": 1.0,
+        "5": 0.75
+      }
+    },
+    "oracle_event": {
+      "ci_high": 0.96875,
+      "ci_low": 0.75,
+      "mean_success": 0.875,
+      "per_model_seed": null,
+      "per_task": {
+        "4": 1.0,
+        "5": 0.75
+      }
+    }
+  },
+  "resets": [
+    [
+      4,
+      86400
+    ],
+    [
+      4,
+      86401
+    ],
+    [
+      4,
+      86402
+    ],
+    [
+      4,
+      86403
+    ],
+    [
+      4,
+      86404
+    ],
+    [
+      4,
+      86405
+    ],
+    [
+      4,
+      86406
+    ],
+    [
+      4,
+      86407
+    ],
+    [
+      4,
+      86408
+    ],
+    [
+      4,
+      86409
+    ],
+    [
+      4,
+      86410
+    ],
+    [
+      4,
+      86411
+    ],
+    [
+      4,
+      86412
+    ],
+    [
+      4,
+      86413
+    ],
+    [
+      4,
+      86414
+    ],
+    [
+      4,
+      86415
+    ],
+    [
+      5,
+      86500
+    ],
+    [
+      5,
+      86501
+    ],
+    [
+      5,
+      86502
+    ],
+    [
+      5,
+      86503
+    ],
+    [
+      5,
+      86504
+    ],
+    [
+      5,
+      86505
+    ],
+    [
+      5,
+      86506
+    ],
+    [
+      5,
+      86507
+    ],
+    [
+      5,
+      86508
+    ],
+    [
+      5,
+      86509
+    ],
+    [
+      5,
+      86510
+    ],
+    [
+      5,
+      86511
+    ],
+    [
+      5,
+      86512
+    ],
+    [
+      5,
+      86513
+    ],
+    [
+      5,
+      86514
+    ],
+    [
+      5,
+      86515
+    ]
+  ],
+  "scope": "paired fresh-reset planning success at K=112 under a frozen abstract transition model; learned arms never read simulator q",
+  "transition_sha256": "04fddf5f330694e4dc708c9bb25e860b10431fa3411e671c3a558de7bb6187d5",
+  "verdict": "HISTORY_REQUIRED_CONFIRMED"
+}

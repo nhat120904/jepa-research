@@ -1,0 +1,47 @@
+{
+  "best_under_learned": {
+    "feedback": "branch_w030",
+    "learned_success": 0.9270833333333333,
+    "oracle_success": 0.9375
+  },
+  "best_under_oracle": {
+    "feedback": "branch_w070",
+    "learned_rank_from_worst": 1,
+    "learned_success": 0.08854166666666666,
+    "oracle_success": 0.984375
+  },
+  "feedbacks": [
+    "anti_livelock",
+    "branch_w030",
+    "branch_w040",
+    "branch_w050",
+    "branch_w056",
+    "branch_w062",
+    "branch_w070",
+    "shaped_gamma09"
+  ],
+  "learned_success": {
+    "anti_livelock": 0.859375,
+    "branch_w030": 0.9270833333333333,
+    "branch_w040": 0.9270833333333333,
+    "branch_w050": 0.8958333333333333,
+    "branch_w056": 0.25,
+    "branch_w062": 0.020833333333333332,
+    "branch_w070": 0.08854166666666666,
+    "shaped_gamma09": 0.921875
+  },
+  "oracle_success": {
+    "anti_livelock": 0.71875,
+    "branch_w030": 0.9375,
+    "branch_w040": 0.953125,
+    "branch_w050": 0.765625,
+    "branch_w056": 0.40625,
+    "branch_w062": 0.75,
+    "branch_w070": 0.984375,
+    "shaped_gamma09": 0.921875
+  },
+  "pearson_correlation": 0.3168947607827429,
+  "protocol": "scene_feedback_rank_inversion_v1",
+  "scope": "exploratory, not preregistered; n=8 feedbacks",
+  "spearman_rank_correlation": 0.3571428571428572
+}

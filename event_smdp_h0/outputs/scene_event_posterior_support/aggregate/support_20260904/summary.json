@@ -1,0 +1,64 @@
+{
+  "num_resets": 64,
+  "num_visits": 573,
+  "primary": {
+    "mean_true_probability": 0.004351521829120817,
+    "median_rank": 20.0,
+    "median_true_probability": 1.5723811239243654e-07,
+    "n": 197,
+    "rank_p90": 23.0,
+    "subset": "hard_map_errors",
+    "top1_coverage": 0.0,
+    "top2_coverage": 0.01015228426395939,
+    "top3_coverage": 0.01015228426395939
+  },
+  "protocol": "scene_event_posterior_support_v1",
+  "scope": "diagnostic replay of completed seed-1 task-5 trajectories; no new success-rate claim",
+  "summaries": [
+    {
+      "mean_true_probability": 0.6557876692451162,
+      "median_rank": 1.0,
+      "median_true_probability": 0.9989112781222196,
+      "n": 573,
+      "rank_p90": 22.0,
+      "subset": "all_visits",
+      "top1_coverage": 0.6561954624781849,
+      "top2_coverage": 0.6596858638743456,
+      "top3_coverage": 0.6596858638743456
+    },
+    {
+      "mean_true_probability": 0.004351521829120817,
+      "median_rank": 20.0,
+      "median_true_probability": 1.5723811239243654e-07,
+      "n": 197,
+      "rank_p90": 23.0,
+      "subset": "hard_map_errors",
+      "top1_coverage": 0.0,
+      "top2_coverage": 0.01015228426395939,
+      "top3_coverage": 0.01015228426395939
+    },
+    {
+      "mean_true_probability": 1.3566675922426142e-06,
+      "median_rank": 21.0,
+      "median_true_probability": 1.5257113042231783e-07,
+      "n": 179,
+      "rank_p90": 23.0,
+      "subset": "true_q_1_2",
+      "top1_coverage": 0.0,
+      "top2_coverage": 0.0,
+      "top3_coverage": 0.0
+    },
+    {
+      "mean_true_probability": 1.3566675922426142e-06,
+      "median_rank": 21.0,
+      "median_true_probability": 1.5257113042231783e-07,
+      "n": 179,
+      "rank_p90": 23.0,
+      "subset": "true_q_1_2_hard_errors",
+      "top1_coverage": 0.0,
+      "top2_coverage": 0.0,
+      "top3_coverage": 0.0
+    }
+  ],
+  "verdict": "HISTORY_REQUIRED"
+}

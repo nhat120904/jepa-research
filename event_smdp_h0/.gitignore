@@ -1,0 +1,11 @@
+# Raw per-shard evaluation output, datasets and trained checkpoints are large
+# (~280 MB) and fully reproducible: every job is recorded in docs/JOB_LEDGER.md,
+# and the evaluation was verified bit-reproducible three times (768/768, 896/896
+# and 896/896 rows re-executed identically). Only the artifacts the write-ups
+# cite are tracked.
+outputs/**
+!outputs/**/
+!outputs/**/aggregate/**
+!outputs/**/diagnostic/**
+!outputs/**/training_summary.json
+__pycache__/

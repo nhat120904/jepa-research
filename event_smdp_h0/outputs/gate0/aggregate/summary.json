@@ -1,0 +1,148 @@
+{
+  "bootstrap": {
+    "draws": 20000,
+    "seed": 20260904
+  },
+  "by_budget": {
+    "16": {
+      "discordant": {
+        "event_only_success": 0,
+        "exact_mcnemar_one_sided_p": 1.0,
+        "terminal_only_success": 0
+      },
+      "event_minus_terminal_final_distance_m": {
+        "ci_high": 0.004140635442130538,
+        "ci_low": 2.4768922840843077e-05,
+        "mean": 0.0020823765800804792
+      },
+      "event_minus_terminal_final_stage": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "mean": 0.0
+      },
+      "event_minus_terminal_success": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "mean": 0.0
+      },
+      "event_success": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "mean": 1.0
+      },
+      "terminal_success": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "mean": 1.0
+      }
+    },
+    "32": {
+      "discordant": {
+        "event_only_success": 0,
+        "exact_mcnemar_one_sided_p": 1.0,
+        "terminal_only_success": 0
+      },
+      "event_minus_terminal_final_distance_m": {
+        "ci_high": 0.002681458879285591,
+        "ci_low": -0.002004821298334905,
+        "mean": 0.0003482219275146812
+      },
+      "event_minus_terminal_final_stage": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "mean": 0.0
+      },
+      "event_minus_terminal_success": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "mean": 0.0
+      },
+      "event_success": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "mean": 1.0
+      },
+      "terminal_success": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "mean": 1.0
+      }
+    },
+    "64": {
+      "discordant": {
+        "event_only_success": 0,
+        "exact_mcnemar_one_sided_p": 1.0,
+        "terminal_only_success": 0
+      },
+      "event_minus_terminal_final_distance_m": {
+        "ci_high": 0.0010270760379135911,
+        "ci_low": -0.0027929844388113077,
+        "mean": -0.000870668066741935
+      },
+      "event_minus_terminal_final_stage": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "mean": 0.0
+      },
+      "event_minus_terminal_success": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "mean": 0.0
+      },
+      "event_success": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "mean": 1.0
+      },
+      "terminal_success": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "mean": 1.0
+      }
+    }
+  },
+  "indices": [
+    1,
+    64
+  ],
+  "locked_config": {
+    "action_block": 5,
+    "branching": 5,
+    "budgets": [
+      16,
+      32,
+      64
+    ],
+    "depth": 5,
+    "exploration": 0.65,
+    "goal_offset": 25,
+    "near_tolerance_m": 0.08,
+    "noise_rho": 0.6,
+    "noise_scale": [
+      0.24,
+      0.24,
+      0.18,
+      0.16,
+      0.1
+    ],
+    "seed": 20260903,
+    "settle_steps": 3,
+    "stable_dwell": 3,
+    "success_tolerance_m": 0.04
+  },
+  "n_snapshots": 64,
+  "nominal_support_success": {
+    "ci_high": 1.0,
+    "ci_low": 1.0,
+    "mean": 1.0
+  },
+  "primary": {
+    "budget": 64,
+    "effect_pass": false,
+    "minimum_material_effect": 0.1,
+    "search_intensity_degradation_gt_5pp": false,
+    "significance_pass": false
+  },
+  "scope": "Paired oracle-interface H0. A GO licenses a learned event-head/action-prior experiment; it is not evidence that Hazard-JEPA itself improves success.",
+  "verdict": "STOP_NO_MATERIAL_CAUSAL_ROOM"
+}

@@ -1,0 +1,25 @@
+feature_view,event_head,task_id,task_label,budget,n,paired_difference,paired_ci95,event_only,terminal_only,mcnemar_exact_p
+latent,event_bce,4,task_4,14,8,0.0,"[0.0, 0.0]",0,0,1.0
+latent,event_bce,4,task_4,28,8,0.0,"[0.0, 0.0]",0,0,1.0
+latent,event_bce,5,task_5,14,8,0.0,"[0.0, 0.0]",0,0,1.0
+latent,event_bce,5,task_5,28,8,0.125,"[0.0, 0.375]",1,0,1.0
+latent,event_bce,0,pooled,14,16,0.0,"[0.0, 0.0]",0,0,1.0
+latent,event_bce,0,pooled,28,16,0.0625,"[0.0, 0.1875]",1,0,1.0
+latent,event_time,4,task_4,14,8,0.0,"[0.0, 0.0]",0,0,1.0
+latent,event_time,4,task_4,28,8,0.0,"[0.0, 0.0]",0,0,1.0
+latent,event_time,5,task_5,14,8,0.0,"[0.0, 0.0]",0,0,1.0
+latent,event_time,5,task_5,28,8,0.0,"[0.0, 0.0]",0,0,1.0
+latent,event_time,0,pooled,14,16,0.0,"[0.0, 0.0]",0,0,1.0
+latent,event_time,0,pooled,28,16,0.0,"[0.0, 0.0]",0,0,1.0
+privileged,event_bce,4,task_4,14,8,0.0,"[0.0, 0.0]",0,0,1.0
+privileged,event_bce,4,task_4,28,8,0.0,"[0.0, 0.0]",0,0,1.0
+privileged,event_bce,5,task_5,14,8,0.0,"[0.0, 0.0]",0,0,1.0
+privileged,event_bce,5,task_5,28,8,0.0,"[0.0, 0.0]",0,0,1.0
+privileged,event_bce,0,pooled,14,16,0.0,"[0.0, 0.0]",0,0,1.0
+privileged,event_bce,0,pooled,28,16,0.0,"[0.0, 0.0]",0,0,1.0
+privileged,event_time,4,task_4,14,8,0.0,"[0.0, 0.0]",0,0,1.0
+privileged,event_time,4,task_4,28,8,0.0,"[0.0, 0.0]",0,0,1.0
+privileged,event_time,5,task_5,14,8,0.0,"[0.0, 0.0]",0,0,1.0
+privileged,event_time,5,task_5,28,8,0.0,"[0.0, 0.0]",0,0,1.0
+privileged,event_time,0,pooled,14,16,0.0,"[0.0, 0.0]",0,0,1.0
+privileged,event_time,0,pooled,28,16,0.0,"[0.0, 0.0]",0,0,1.0

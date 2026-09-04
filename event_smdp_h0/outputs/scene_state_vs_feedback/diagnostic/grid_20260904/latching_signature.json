@@ -1,0 +1,139 @@
+{
+  "protocol": "scene_latching_signature_v1",
+  "rates": {
+    "frame_full__automaton_potential": {
+      "cube_exact_control": {
+        "after_regressor": 1314,
+        "n": 1851,
+        "rate": 0.7098865478119936
+      },
+      "cube_over_read": {
+        "after_regressor": 358,
+        "n": 358,
+        "rate": 1.0
+      },
+      "cube_under_read": {
+        "after_regressor": 530,
+        "n": 530,
+        "rate": 1.0
+      },
+      "window_exact_control": {
+        "after_regressor": 839,
+        "n": 2013,
+        "rate": 0.4167908594138102
+      },
+      "window_over_read": {
+        "after_regressor": 208,
+        "n": 208,
+        "rate": 1.0
+      },
+      "window_under_read": {
+        "after_regressor": 518,
+        "n": 518,
+        "rate": 1.0
+      }
+    },
+    "frame_full__event_progress": {
+      "cube_exact_control": {
+        "after_regressor": 1406,
+        "n": 2246,
+        "rate": 0.6260017809439002
+      },
+      "cube_over_read": {
+        "after_regressor": 155,
+        "n": 155,
+        "rate": 1.0
+      },
+      "cube_under_read": {
+        "after_regressor": 154,
+        "n": 154,
+        "rate": 1.0
+      },
+      "window_exact_control": {
+        "after_regressor": 1111,
+        "n": 2134,
+        "rate": 0.520618556701031
+      },
+      "window_over_read": {
+        "after_regressor": 97,
+        "n": 97,
+        "rate": 1.0
+      },
+      "window_under_read": {
+        "after_regressor": 324,
+        "n": 324,
+        "rate": 1.0
+      }
+    },
+    "obs_history_full__automaton_potential": {
+      "cube_exact_control": {
+        "after_regressor": 1042,
+        "n": 1579,
+        "rate": 0.6599113362887904
+      },
+      "cube_over_read": {
+        "after_regressor": 11,
+        "n": 11,
+        "rate": 1.0
+      },
+      "cube_under_read": {
+        "after_regressor": 1104,
+        "n": 1104,
+        "rate": 1.0
+      },
+      "window_exact_control": {
+        "after_regressor": 1286,
+        "n": 2405,
+        "rate": 0.5347193347193347
+      },
+      "window_over_read": {
+        "after_regressor": 114,
+        "n": 114,
+        "rate": 1.0
+      },
+      "window_under_read": {
+        "after_regressor": 175,
+        "n": 175,
+        "rate": 1.0
+      }
+    },
+    "obs_history_full__event_progress": {
+      "cube_exact_control": {
+        "after_regressor": 1396,
+        "n": 2272,
+        "rate": 0.6144366197183099
+      },
+      "cube_over_read": {
+        "after_regressor": 1,
+        "n": 1,
+        "rate": 1.0
+      },
+      "cube_under_read": {
+        "after_regressor": 138,
+        "n": 138,
+        "rate": 1.0
+      },
+      "window_exact_control": {
+        "after_regressor": 1411,
+        "n": 2383,
+        "rate": 0.5921107847251363
+      },
+      "window_under_read": {
+        "after_regressor": 28,
+        "n": 28,
+        "rate": 1.0
+      }
+    }
+  },
+  "regressing_skills": {
+    "cube": [
+      "drawer_close",
+      "toggle_button_0"
+    ],
+    "window": [
+      "window_close",
+      "toggle_button_1"
+    ]
+  },
+  "scope": "descriptive audit of a completed run; exploratory, not preregistered"
+}

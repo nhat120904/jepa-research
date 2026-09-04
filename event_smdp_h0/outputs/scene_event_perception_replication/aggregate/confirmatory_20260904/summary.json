@@ -1,0 +1,298 @@
+{
+  "aggregate_rows": [
+    {
+      "gain_ci95_reset_clustered": [
+        0.890625,
+        0.9947916666666667
+      ],
+      "learned_ci95_reset_clustered": [
+        0.890625,
+        0.9947916666666666
+      ],
+      "mean_gain_over_terminal": 0.9479166666666667,
+      "mean_gap_to_oracle_q": -0.052083333333333336,
+      "mean_learned_success": 0.9479166666666667,
+      "n_observer_seeds": 3,
+      "n_resets": 64,
+      "oracle_gap_ci95_reset_clustered": [
+        -0.109375,
+        -0.005208333333333334
+      ],
+      "oracle_success": 1.0,
+      "task_id": 4,
+      "task_label": "task_4",
+      "terminal_success": 0.0
+    },
+    {
+      "gain_ci95_reset_clustered": [
+        0.59375,
+        0.8020833333333333
+      ],
+      "learned_ci95_reset_clustered": [
+        0.6458333333333333,
+        0.8177083333333333
+      ],
+      "mean_gain_over_terminal": 0.703125,
+      "mean_gap_to_oracle_q": -0.031250000000000014,
+      "mean_learned_success": 0.734375,
+      "n_observer_seeds": 3,
+      "n_resets": 64,
+      "oracle_gap_ci95_reset_clustered": [
+        -0.13020833333333337,
+        0.06770833333333331
+      ],
+      "oracle_success": 0.765625,
+      "task_id": 5,
+      "task_label": "task_5",
+      "terminal_success": 0.03125
+    },
+    {
+      "gain_ci95_reset_clustered": [
+        0.7604166666666666,
+        0.8854166666666665
+      ],
+      "learned_ci95_reset_clustered": [
+        0.7864583333333333,
+        0.890625
+      ],
+      "mean_gain_over_terminal": 0.8255208333333333,
+      "mean_gap_to_oracle_q": -0.04166666666666667,
+      "mean_learned_success": 0.8411458333333333,
+      "n_observer_seeds": 3,
+      "n_resets": 128,
+      "oracle_gap_ci95_reset_clustered": [
+        -0.09895833333333334,
+        0.013020833333333327
+      ],
+      "oracle_success": 0.8828125,
+      "task_id": 0,
+      "task_label": "pooled",
+      "terminal_success": 0.015625
+    }
+  ],
+  "budget": 112,
+  "checks": {
+    "each_task_mean_success_ge_65pct": true,
+    "every_seed_oracle_gap_within_25pct": true,
+    "every_seed_pooled_success_ge_75pct": false,
+    "pooled_gain_ge_50pct_and_ci_above_zero": true
+  },
+  "observer_sha256": {
+    "0": "72d2b3d96462f88de9acaf7d1cd9b9b7d6a5ecbc057c772393d86b2eb734334d",
+    "1": "b9a04561c4b8253eb9fe2f838fb8bfe9e1ba312dd3730d8235aa9620a91f84de",
+    "2": "7ef05584f564007ccd142626ca26cdea3f68ab9efae1e58fe04c8544b6267d0b"
+  },
+  "protocol": "scene_event_perception_replication_v1",
+  "scope": "three latent observer initializations, one frozen abstract transition, and 128 fresh physical resets; inference still uses a hand-specified event automaton",
+  "seed_rows": [
+    {
+      "gain_ci95": [
+        0.890625,
+        1.0
+      ],
+      "gain_over_terminal": 0.953125,
+      "gap_to_oracle_q": -0.046875,
+      "mcnemar_vs_terminal_p": 8.673617379884035e-19,
+      "n": 64,
+      "observer_seed": 0,
+      "oracle_gap_ci95": [
+        -0.109375,
+        0.0
+      ],
+      "success_ci95": [
+        0.890625,
+        1.0
+      ],
+      "success_rate": 0.953125,
+      "task_id": 4,
+      "task_label": "task_4",
+      "visited_exact_q_accuracy": 0.9619771863117871
+    },
+    {
+      "gain_ci95": [
+        0.734375,
+        0.9375
+      ],
+      "gain_over_terminal": 0.84375,
+      "gap_to_oracle_q": 0.109375,
+      "mcnemar_vs_terminal_p": 1.582067810090848e-15,
+      "n": 64,
+      "observer_seed": 0,
+      "oracle_gap_ci95": [
+        -0.015625,
+        0.234375
+      ],
+      "success_ci95": [
+        0.78125,
+        0.953125
+      ],
+      "success_rate": 0.875,
+      "task_id": 5,
+      "task_label": "task_5",
+      "visited_exact_q_accuracy": 0.8768939393939394
+    },
+    {
+      "gain_ci95": [
+        0.8359375,
+        0.953125
+      ],
+      "gain_over_terminal": 0.8984375,
+      "gap_to_oracle_q": 0.03125,
+      "mcnemar_vs_terminal_p": 1.4203733339855864e-33,
+      "n": 128,
+      "observer_seed": 0,
+      "oracle_gap_ci95": [
+        -0.0390625,
+        0.1015625
+      ],
+      "success_ci95": [
+        0.859375,
+        0.9609375
+      ],
+      "success_rate": 0.9140625,
+      "task_id": 0,
+      "task_label": "pooled",
+      "visited_exact_q_accuracy": 0.9051833122629582
+    },
+    {
+      "gain_ci95": [
+        0.875,
+        0.984375
+      ],
+      "gain_over_terminal": 0.9375,
+      "gap_to_oracle_q": -0.0625,
+      "mcnemar_vs_terminal_p": 1.734723475976807e-18,
+      "n": 64,
+      "observer_seed": 1,
+      "oracle_gap_ci95": [
+        -0.125,
+        -0.015625
+      ],
+      "success_ci95": [
+        0.875,
+        0.984375
+      ],
+      "success_rate": 0.9375,
+      "task_id": 4,
+      "task_label": "task_4",
+      "visited_exact_q_accuracy": 0.9509433962264151
+    },
+    {
+      "gain_ci95": [
+        0.375,
+        0.65625
+      ],
+      "gain_over_terminal": 0.515625,
+      "gap_to_oracle_q": -0.21875,
+      "mcnemar_vs_terminal_p": 1.0244548320770264e-08,
+      "n": 64,
+      "observer_seed": 1,
+      "oracle_gap_ci95": [
+        -0.328125,
+        -0.109375
+      ],
+      "success_ci95": [
+        0.421875,
+        0.671875
+      ],
+      "success_rate": 0.546875,
+      "task_id": 5,
+      "task_label": "task_5",
+      "visited_exact_q_accuracy": 0.6561954624781849
+    },
+    {
+      "gain_ci95": [
+        0.640625,
+        0.8046875
+      ],
+      "gain_over_terminal": 0.7265625,
+      "gap_to_oracle_q": -0.140625,
+      "mcnemar_vs_terminal_p": 6.000391589473104e-26,
+      "n": 128,
+      "observer_seed": 1,
+      "oracle_gap_ci95": [
+        -0.203125,
+        -0.078125
+      ],
+      "success_ci95": [
+        0.6640625,
+        0.8125
+      ],
+      "success_rate": 0.7421875,
+      "task_id": 0,
+      "task_label": "pooled",
+      "visited_exact_q_accuracy": 0.7494033412887828
+    },
+    {
+      "gain_ci95": [
+        0.890625,
+        1.0
+      ],
+      "gain_over_terminal": 0.953125,
+      "gap_to_oracle_q": -0.046875,
+      "mcnemar_vs_terminal_p": 8.673617379884035e-19,
+      "n": 64,
+      "observer_seed": 2,
+      "oracle_gap_ci95": [
+        -0.109375,
+        0.0
+      ],
+      "success_ci95": [
+        0.890625,
+        1.0
+      ],
+      "success_rate": 0.953125,
+      "task_id": 4,
+      "task_label": "task_4",
+      "visited_exact_q_accuracy": 0.9619771863117871
+    },
+    {
+      "gain_ci95": [
+        0.625,
+        0.859375
+      ],
+      "gain_over_terminal": 0.75,
+      "gap_to_oracle_q": 0.015625,
+      "mcnemar_vs_terminal_p": 6.123990203832363e-13,
+      "n": 64,
+      "observer_seed": 2,
+      "oracle_gap_ci95": [
+        -0.09375,
+        0.125
+      ],
+      "success_ci95": [
+        0.671875,
+        0.875
+      ],
+      "success_rate": 0.78125,
+      "task_id": 5,
+      "task_label": "task_5",
+      "visited_exact_q_accuracy": 0.7881508078994613
+    },
+    {
+      "gain_ci95": [
+        0.78125,
+        0.9140625
+      ],
+      "gain_over_terminal": 0.8515625,
+      "gap_to_oracle_q": -0.015625,
+      "mcnemar_vs_terminal_p": 1.2406840701742573e-30,
+      "n": 128,
+      "observer_seed": 2,
+      "oracle_gap_ci95": [
+        -0.078125,
+        0.046875
+      ],
+      "success_ci95": [
+        0.8046875,
+        0.921875
+      ],
+      "success_rate": 0.8671875,
+      "task_id": 0,
+      "task_label": "pooled",
+      "visited_exact_q_accuracy": 0.8439024390243902
+    }
+  ],
+  "transition_sha256": "04fddf5f330694e4dc708c9bb25e860b10431fa3411e671c3a558de7bb6187d5",
+  "verdict": "LEARNED_EVENT_PERCEPTION_REPLICATION_FAIL"
+}
