@@ -242,3 +242,28 @@ preserves but does not beat plain `branch_w050` (85.94% against 89.58%), so
 robustness came from the branch weighting rather than from an explicit
 repetition penalty; and `branch_w040` reaches 92.71% yet misses the preserve gate
 on CI width alone, which was not reclassified after the fact.
+
+The mechanism finally makes a preregistered directional prediction that can fail
+(`docs/SCENE_SKILL_FAILURE_PROTOCOL.md`): injecting silent skill failures - an
+attempt executed and then rolled back, so it costs time and changes nothing -
+should hurt arms that infer progress from the attempt far more than one that
+reads the scene.  The decision budget is scaled as `ceil(10/(1-p))` so the sweep
+measures mis-inference rather than budget exhaustion; that compensation also
+pushes the history arms past their trained history length, handicapping the
+hypothesis rather than helping it.
+
+The verdict is `MECHANISM_CONFIRMED`.  From `p = 0` to `p = 0.30`,
+`obs_history_full` falls 89.58% -> 78.65% while `action_only_full` falls
+63.02% -> 3.12% and the untrained `openloop_transition` 62.50% -> 3.12%; the
+extra degradation is +48.96 (CI [+34.38, +63.02]) and +48.44 (CI [+33.33,
++63.02]).  The named mediator moves only where predicted: mean over-reads per
+episode rise 1.89 -> 11.66 in the dead-reckoning arms, stay flat at 0.98 -> 1.36
+in the frame control that never sees the attempt, and stay at 0.01 -> 0.20 in
+`obs_history_full`.  Under-reads are flat everywhere.
+
+This also turns the action-token liability from a correlation into a
+dose-response: `history_full`, the same architecture with the action prefix
+added, degrades by +45.83 points and its over-reads rise from 0.01 to 3.54.
+What `obs_history_full` does lose (+10.94, CI-clean) is not mis-inference - its
+exact-q holds at 91.2% - but timeouts rising from 10.4% to 21.4%, that is,
+episodes spent on wasted attempts.
