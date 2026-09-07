@@ -1,0 +1,753 @@
+{
+  "arm_summary": {
+    "action_diverse": {
+      "anchor_physical_distance_m": {
+        "ci_high": 0.07074617173206037,
+        "ci_low": 0.03976675463728087,
+        "mean": 0.05447114271488322,
+        "n": 128
+      },
+      "anchor_success": {
+        "ci_high": 0.8515625,
+        "ci_low": 0.7109375,
+        "mean": 0.78125,
+        "n": 128
+      },
+      "any_success_gain": {
+        "ci_high": 0.0859375,
+        "ci_low": 0.015625,
+        "mean": 0.046875,
+        "n": 128
+      },
+      "auxiliary_prefers_fraction": {
+        "ci_high": 0.365234375,
+        "ci_low": 0.2919921875,
+        "mean": 0.328125,
+        "n": 128
+      },
+      "best_any_advantage_m": {
+        "ci_high": 0.015248073085235297,
+        "ci_low": 0.007300254336096014,
+        "mean": 0.010955268513310357,
+        "n": 128
+      },
+      "best_corrective_advantage_m": {
+        "ci_high": 0.012279918611158304,
+        "ci_low": 0.0041972268301106895,
+        "mean": 0.007944449705038936,
+        "n": 128
+      },
+      "best_improvement_per_query_m": {
+        "ci_high": 0.001895287895975121,
+        "ci_low": 0.0009067871866218155,
+        "mean": 0.0013694085641637946,
+        "n": 128
+      },
+      "best_selected_distance_m": {
+        "ci_high": 0.05796716592176448,
+        "ci_low": 0.030730242897021857,
+        "mean": 0.04365132441055064,
+        "n": 128
+      },
+      "directional_positive_fraction": {
+        "ci_high": 0.3642578125,
+        "ci_low": 0.291015625,
+        "mean": 0.3271484375,
+        "n": 128
+      },
+      "inversion_hit": {
+        "ci_high": 0.203125,
+        "ci_low": 0.0859375,
+        "mean": 0.140625,
+        "n": 128
+      },
+      "mean_action_distance_from_anchor": {
+        "ci_high": 6.249126060378214,
+        "ci_low": 5.834968732179792,
+        "mean": 6.034995704792335,
+        "n": 128
+      },
+      "mean_auxiliary_rank_fraction": {
+        "ci_high": 0.5283465983072916,
+        "ci_low": 0.49476554361979164,
+        "mean": 0.5115234375000001,
+        "n": 128
+      },
+      "mean_crod_score": {
+        "ci_high": 0.047442940809461806,
+        "ci_low": 0.033401420627170136,
+        "mean": 0.040244129774305554,
+        "n": 128
+      },
+      "mean_native_rank_fraction": {
+        "ci_high": 0.5714881184895833,
+        "ci_low": 0.5375843098958334,
+        "mean": 0.5546223958333334,
+        "n": 128
+      },
+      "native_rejected_fraction": {
+        "ci_high": 1.0,
+        "ci_low": 0.9970703125,
+        "mean": 0.9990234375,
+        "n": 128
+      },
+      "selected_success_any": {
+        "ci_high": 0.890625,
+        "ci_low": 0.7578125,
+        "mean": 0.828125,
+        "n": 128
+      }
+    },
+    "crod_directional": {
+      "anchor_physical_distance_m": {
+        "ci_high": 0.07044975225537763,
+        "ci_low": 0.039899446594540686,
+        "mean": 0.05447114271488322,
+        "n": 128
+      },
+      "anchor_success": {
+        "ci_high": 0.8515625,
+        "ci_low": 0.7109375,
+        "mean": 0.78125,
+        "n": 128
+      },
+      "any_success_gain": {
+        "ci_high": 0.078125,
+        "ci_low": 0.0078125,
+        "mean": 0.0390625,
+        "n": 128
+      },
+      "auxiliary_prefers_fraction": {
+        "ci_high": 1.0,
+        "ci_low": 0.984375,
+        "mean": 0.994140625,
+        "n": 128
+      },
+      "best_any_advantage_m": {
+        "ci_high": 0.014850145915298058,
+        "ci_low": 0.005992826912342766,
+        "mean": 0.009948119040948972,
+        "n": 128
+      },
+      "best_corrective_advantage_m": {
+        "ci_high": 0.012494610851376119,
+        "ci_low": 0.0035068679281232617,
+        "mean": 0.007463597370059095,
+        "n": 128
+      },
+      "best_improvement_per_query_m": {
+        "ci_high": 0.0018637333662605308,
+        "ci_low": 0.0007457842725333307,
+        "mean": 0.0012435148801186215,
+        "n": 128
+      },
+      "best_selected_distance_m": {
+        "ci_high": 0.05885206937851189,
+        "ci_low": 0.032139222118579044,
+        "mean": 0.04483698881644156,
+        "n": 128
+      },
+      "directional_positive_fraction": {
+        "ci_high": 1.0,
+        "ci_low": 0.984375,
+        "mean": 0.994140625,
+        "n": 128
+      },
+      "inversion_hit": {
+        "ci_high": 0.1953125,
+        "ci_low": 0.078125,
+        "mean": 0.1328125,
+        "n": 128
+      },
+      "mean_action_distance_from_anchor": {
+        "ci_high": 4.999452546279758,
+        "ci_low": 4.710644645120156,
+        "mean": 4.850321924241145,
+        "n": 128
+      },
+      "mean_auxiliary_rank_fraction": {
+        "ci_high": 0.048430989583333334,
+        "ci_low": 0.037578125000000004,
+        "mean": 0.04241861979166667,
+        "n": 128
+      },
+      "mean_crod_score": {
+        "ci_high": 0.28106509467230895,
+        "ci_low": 0.23014689154730902,
+        "mean": 0.2554972764756944,
+        "n": 128
+      },
+      "mean_native_rank_fraction": {
+        "ci_high": 0.8023601888020834,
+        "ci_low": 0.7449014485677083,
+        "mean": 0.7745182291666667,
+        "n": 128
+      },
+      "native_rejected_fraction": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "mean": 1.0,
+        "n": 128
+      },
+      "selected_success_any": {
+        "ci_high": 0.8828125,
+        "ci_low": 0.75,
+        "mean": 0.8203125,
+        "n": 128
+      }
+    },
+    "dino_best_rejected": {
+      "anchor_physical_distance_m": {
+        "ci_high": 0.0706630903265849,
+        "ci_low": 0.039792821048242374,
+        "mean": 0.05447114271488322,
+        "n": 128
+      },
+      "anchor_success": {
+        "ci_high": 0.8515625,
+        "ci_low": 0.7109375,
+        "mean": 0.78125,
+        "n": 128
+      },
+      "any_success_gain": {
+        "ci_high": 0.078125,
+        "ci_low": 0.0078125,
+        "mean": 0.0390625,
+        "n": 128
+      },
+      "auxiliary_prefers_fraction": {
+        "ci_high": 1.0,
+        "ci_low": 0.984375,
+        "mean": 0.994140625,
+        "n": 128
+      },
+      "best_any_advantage_m": {
+        "ci_high": 0.015702462029194515,
+        "ci_low": 0.006729801529761475,
+        "mean": 0.01072895545705306,
+        "n": 128
+      },
+      "best_corrective_advantage_m": {
+        "ci_high": 0.012364933514942956,
+        "ci_low": 0.0032052614893701994,
+        "mean": 0.007244082625198915,
+        "n": 128
+      },
+      "best_improvement_per_query_m": {
+        "ci_high": 0.0019579710354162955,
+        "ci_low": 0.0008385502741690987,
+        "mean": 0.0013411194321316326,
+        "n": 128
+      },
+      "best_selected_distance_m": {
+        "ci_high": 0.058444587292128904,
+        "ci_low": 0.03126147865777861,
+        "mean": 0.04417412821975286,
+        "n": 128
+      },
+      "directional_positive_fraction": {
+        "ci_high": 1.0,
+        "ci_low": 0.984375,
+        "mean": 0.994140625,
+        "n": 128
+      },
+      "inversion_hit": {
+        "ci_high": 0.1640625,
+        "ci_low": 0.0625,
+        "mean": 0.109375,
+        "n": 128
+      },
+      "mean_action_distance_from_anchor": {
+        "ci_high": 4.981151664736555,
+        "ci_low": 4.697585101281716,
+        "mean": 4.836771224285121,
+        "n": 128
+      },
+      "mean_auxiliary_rank_fraction": {
+        "ci_high": 0.011861979166666665,
+        "ci_low": 0.011676432291666667,
+        "mean": 0.0117578125,
+        "n": 128
+      },
+      "mean_crod_score": {
+        "ci_high": 0.21855001247829856,
+        "ci_low": 0.17346896945529516,
+        "mean": 0.19620531684027778,
+        "n": 128
+      },
+      "mean_native_rank_fraction": {
+        "ci_high": 0.5641572265625,
+        "ci_low": 0.49189412434895835,
+        "mean": 0.5278548177083333,
+        "n": 128
+      },
+      "native_rejected_fraction": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "mean": 1.0,
+        "n": 128
+      },
+      "selected_success_any": {
+        "ci_high": 0.8828125,
+        "ci_low": 0.75,
+        "mean": 0.8203125,
+        "n": 128
+      }
+    },
+    "native_uncertainty_diverse": {
+      "anchor_physical_distance_m": {
+        "ci_high": 0.070413766115029,
+        "ci_low": 0.03971536453807441,
+        "mean": 0.05447114271488322,
+        "n": 128
+      },
+      "anchor_success": {
+        "ci_high": 0.8515625,
+        "ci_low": 0.7109375,
+        "mean": 0.78125,
+        "n": 128
+      },
+      "any_success_gain": {
+        "ci_high": 0.0859375,
+        "ci_low": 0.015625,
+        "mean": 0.046875,
+        "n": 128
+      },
+      "auxiliary_prefers_fraction": {
+        "ci_high": 0.4033203125,
+        "ci_low": 0.3232421875,
+        "mean": 0.36328125,
+        "n": 128
+      },
+      "best_any_advantage_m": {
+        "ci_high": 0.017157443562921454,
+        "ci_low": 0.008315886497207835,
+        "mean": 0.012373770176270978,
+        "n": 128
+      },
+      "best_corrective_advantage_m": {
+        "ci_high": 0.013859251829875264,
+        "ci_low": 0.004791150779119696,
+        "mean": 0.009017047504595263,
+        "n": 128
+      },
+      "best_improvement_per_query_m": {
+        "ci_high": 0.00214409920018325,
+        "ci_low": 0.001036351074196164,
+        "mean": 0.0015467212720338722,
+        "n": 128
+      },
+      "best_selected_distance_m": {
+        "ci_high": 0.056230533767350134,
+        "ci_low": 0.02990249483094911,
+        "mean": 0.042347229729933655,
+        "n": 128
+      },
+      "directional_positive_fraction": {
+        "ci_high": 0.404296875,
+        "ci_low": 0.3232421875,
+        "mean": 0.36328125,
+        "n": 128
+      },
+      "inversion_hit": {
+        "ci_high": 0.2109375,
+        "ci_low": 0.09375,
+        "mean": 0.1484375,
+        "n": 128
+      },
+      "mean_action_distance_from_anchor": {
+        "ci_high": 5.763771363166518,
+        "ci_low": 5.4106430936898775,
+        "mean": 5.582675095440794,
+        "n": 128
+      },
+      "mean_auxiliary_rank_fraction": {
+        "ci_high": 0.4900684407552084,
+        "ci_low": 0.451405517578125,
+        "mean": 0.470771484375,
+        "n": 128
+      },
+      "mean_crod_score": {
+        "ci_high": 0.04550729465060764,
+        "ci_low": 0.030100695529513888,
+        "mean": 0.03753191189236111,
+        "n": 128
+      },
+      "mean_native_rank_fraction": {
+        "ci_high": 0.4707587890624999,
+        "ci_low": 0.41437158203124996,
+        "mean": 0.442001953125,
+        "n": 128
+      },
+      "native_rejected_fraction": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "mean": 1.0,
+        "n": 128
+      },
+      "selected_success_any": {
+        "ci_high": 0.890625,
+        "ci_low": 0.7578125,
+        "mean": 0.828125,
+        "n": 128
+      }
+    },
+    "random_rejected": {
+      "anchor_physical_distance_m": {
+        "ci_high": 0.0707946486545357,
+        "ci_low": 0.039737423328644265,
+        "mean": 0.05447114271488322,
+        "n": 128
+      },
+      "anchor_success": {
+        "ci_high": 0.8515625,
+        "ci_low": 0.7109375,
+        "mean": 0.78125,
+        "n": 128
+      },
+      "any_success_gain": {
+        "ci_high": 0.0859375,
+        "ci_low": 0.015625,
+        "mean": 0.046875,
+        "n": 128
+      },
+      "auxiliary_prefers_fraction": {
+        "ci_high": 0.400390625,
+        "ci_low": 0.3271484375,
+        "mean": 0.36328125,
+        "n": 128
+      },
+      "best_any_advantage_m": {
+        "ci_high": 0.016089968149066432,
+        "ci_low": 0.0073968325621149985,
+        "mean": 0.011364608776747687,
+        "n": 128
+      },
+      "best_corrective_advantage_m": {
+        "ci_high": 0.013737054992387844,
+        "ci_low": 0.0048778548860270495,
+        "mean": 0.008951076448149315,
+        "n": 128
+      },
+      "best_improvement_per_query_m": {
+        "ci_high": 0.0020101038582308827,
+        "ci_low": 0.0009152129115464863,
+        "mean": 0.0014205760970934609,
+        "n": 128
+      },
+      "best_selected_distance_m": {
+        "ci_high": 0.05783628924759935,
+        "ci_low": 0.03078247550929035,
+        "mean": 0.043497601814649164,
+        "n": 128
+      },
+      "directional_positive_fraction": {
+        "ci_high": 0.400390625,
+        "ci_low": 0.326171875,
+        "mean": 0.36328125,
+        "n": 128
+      },
+      "inversion_hit": {
+        "ci_high": 0.2265625,
+        "ci_low": 0.1015625,
+        "mean": 0.1640625,
+        "n": 128
+      },
+      "mean_action_distance_from_anchor": {
+        "ci_high": 4.857788152471294,
+        "ci_low": 4.6035451030300685,
+        "mean": 4.725718148095156,
+        "n": 128
+      },
+      "mean_auxiliary_rank_fraction": {
+        "ci_high": 0.5157877604166666,
+        "ci_low": 0.48023380533854165,
+        "mean": 0.4982291666666667,
+        "n": 128
+      },
+      "mean_crod_score": {
+        "ci_high": 0.04499335611979167,
+        "ci_low": 0.031206457248263885,
+        "mean": 0.03787880859375001,
+        "n": 128
+      },
+      "mean_native_rank_fraction": {
+        "ci_high": 0.5364851888020833,
+        "ci_low": 0.5043359375,
+        "mean": 0.5204524739583334,
+        "n": 128
+      },
+      "native_rejected_fraction": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "mean": 1.0,
+        "n": 128
+      },
+      "selected_success_any": {
+        "ci_high": 0.890625,
+        "ci_low": 0.7578125,
+        "mean": 0.828125,
+        "n": 128
+      }
+    },
+    "rejected_action_diverse": {
+      "anchor_physical_distance_m": {
+        "ci_high": 0.0705967002458275,
+        "ci_low": 0.03996088230786116,
+        "mean": 0.05447114271488322,
+        "n": 128
+      },
+      "anchor_success": {
+        "ci_high": 0.8515625,
+        "ci_low": 0.7109375,
+        "mean": 0.78125,
+        "n": 128
+      },
+      "any_success_gain": {
+        "ci_high": 0.0859375,
+        "ci_low": 0.015625,
+        "mean": 0.046875,
+        "n": 128
+      },
+      "auxiliary_prefers_fraction": {
+        "ci_high": 0.365234375,
+        "ci_low": 0.2919921875,
+        "mean": 0.328125,
+        "n": 128
+      },
+      "best_any_advantage_m": {
+        "ci_high": 0.015115335677198314,
+        "ci_low": 0.007222781301447393,
+        "mean": 0.010955268513310357,
+        "n": 128
+      },
+      "best_corrective_advantage_m": {
+        "ci_high": 0.012353397570589082,
+        "ci_low": 0.004196391464879274,
+        "mean": 0.007944449705038936,
+        "n": 128
+      },
+      "best_improvement_per_query_m": {
+        "ci_high": 0.001903751849740436,
+        "ci_low": 0.0009027520183341274,
+        "mean": 0.0013694085641637946,
+        "n": 128
+      },
+      "best_selected_distance_m": {
+        "ci_high": 0.05784573632408661,
+        "ci_low": 0.030733608303186378,
+        "mean": 0.04365132441055064,
+        "n": 128
+      },
+      "directional_positive_fraction": {
+        "ci_high": 0.365234375,
+        "ci_low": 0.2919921875,
+        "mean": 0.328125,
+        "n": 128
+      },
+      "inversion_hit": {
+        "ci_high": 0.203125,
+        "ci_low": 0.0859375,
+        "mean": 0.140625,
+        "n": 128
+      },
+      "mean_action_distance_from_anchor": {
+        "ci_high": 6.244472454608622,
+        "ci_low": 5.836319162458732,
+        "mean": 6.0353430361024145,
+        "n": 128
+      },
+      "mean_auxiliary_rank_fraction": {
+        "ci_high": 0.528170654296875,
+        "ci_low": 0.4949834798177083,
+        "mean": 0.511484375,
+        "n": 128
+      },
+      "mean_crod_score": {
+        "ci_high": 0.04759253200954861,
+        "ci_low": 0.033400807834201386,
+        "mean": 0.040280935329861114,
+        "n": 128
+      },
+      "mean_native_rank_fraction": {
+        "ci_high": 0.5723701985677083,
+        "ci_low": 0.5376919759114583,
+        "mean": 0.5550846354166667,
+        "n": 128
+      },
+      "native_rejected_fraction": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "mean": 1.0,
+        "n": 128
+      },
+      "selected_success_any": {
+        "ci_high": 0.890625,
+        "ci_low": 0.7578125,
+        "mean": 0.828125,
+        "n": 128
+      }
+    }
+  },
+  "config": {
+    "action_block": 5,
+    "alternatives": 8,
+    "auxiliary_checkpoint": "crod_dinowm_cube_seed42/weights_epoch_10.pt",
+    "auxiliary_representation": "frozen DINOv2-Small, action-only predictor",
+    "bootstrap_draws": 20000,
+    "bootstrap_seed": 20260820,
+    "cem_steps": 30,
+    "dataset": "ogbench/cube_single_expert.h5",
+    "goal_offset": 25,
+    "horizon": 5,
+    "min_physical_gap_m": 0.02,
+    "n_snapshots": 128,
+    "native_checkpoint": "quentinll/lewm-cube",
+    "num_samples": 300,
+    "physical_budget_per_arm": 9,
+    "seed": 20260820,
+    "topk": 30
+  },
+  "gate": "GO only if the paired 95% bootstrap CI lower bound for CROD minus action diversity is above zero on corrective hit rate and the mean best-corrective-advantage contrast is positive.",
+  "paired_contrasts": {
+    "crod_directional_minus_action_diverse": {
+      "any_success_gain": {
+        "ci_high": 0.015625,
+        "ci_low": -0.0390625,
+        "mean": -0.0078125,
+        "n": 128
+      },
+      "best_corrective_advantage_m": {
+        "ci_high": 0.0023633251761863024,
+        "ci_low": -0.0032238814408066512,
+        "mean": -0.00048085233497984197,
+        "n": 128
+      },
+      "best_improvement_per_query_m": {
+        "ci_high": 0.00019380813581745316,
+        "ci_low": -0.0004314205421049258,
+        "mean": -0.00012589368404517318,
+        "n": 128
+      },
+      "inversion_hit": {
+        "ci_high": 0.0390625,
+        "ci_low": -0.0546875,
+        "mean": -0.0078125,
+        "n": 128
+      }
+    },
+    "crod_directional_minus_dino_best_rejected": {
+      "any_success_gain": {
+        "ci_high": 0.0234375,
+        "ci_low": -0.0234375,
+        "mean": 0.0,
+        "n": 128
+      },
+      "best_corrective_advantage_m": {
+        "ci_high": 0.0022455884033505996,
+        "ci_low": -0.0019343496133693385,
+        "mean": 0.00021951474486018,
+        "n": 128
+      },
+      "best_improvement_per_query_m": {
+        "ci_high": 0.00010146255625656178,
+        "ci_low": -0.0003106746193348905,
+        "mean": -9.760455201301109e-05,
+        "n": 128
+      },
+      "inversion_hit": {
+        "ci_high": 0.0703125,
+        "ci_low": -0.0234375,
+        "mean": 0.0234375,
+        "n": 128
+      }
+    },
+    "crod_directional_minus_native_uncertainty_diverse": {
+      "any_success_gain": {
+        "ci_high": 0.0,
+        "ci_low": -0.0234375,
+        "mean": -0.0078125,
+        "n": 128
+      },
+      "best_corrective_advantage_m": {
+        "ci_high": 0.0004031632000018756,
+        "ci_low": -0.003846746427026092,
+        "mean": -0.0015534501345361698,
+        "n": 128
+      },
+      "best_improvement_per_query_m": {
+        "ci_high": -8.134117697996664e-05,
+        "ci_low": -0.0005563038120956006,
+        "mean": -0.000303206391915251,
+        "n": 128
+      },
+      "inversion_hit": {
+        "ci_high": 0.0234375,
+        "ci_low": -0.0625,
+        "mean": -0.015625,
+        "n": 128
+      }
+    },
+    "crod_directional_minus_random_rejected": {
+      "any_success_gain": {
+        "ci_high": 0.015625,
+        "ci_low": -0.0390625,
+        "mean": -0.0078125,
+        "n": 128
+      },
+      "best_corrective_advantage_m": {
+        "ci_high": 0.0006743203835647087,
+        "ci_low": -0.004050078850512094,
+        "mean": -0.00148747907809022,
+        "n": 128
+      },
+      "best_improvement_per_query_m": {
+        "ci_high": 6.514499693528793e-05,
+        "ci_low": -0.0004618341807366648,
+        "mean": -0.0001770612169748395,
+        "n": 128
+      },
+      "inversion_hit": {
+        "ci_high": 0.0234375,
+        "ci_low": -0.0859375,
+        "mean": -0.03125,
+        "n": 128
+      }
+    },
+    "crod_directional_minus_rejected_action_diverse": {
+      "any_success_gain": {
+        "ci_high": 0.015625,
+        "ci_low": -0.0390625,
+        "mean": -0.0078125,
+        "n": 128
+      },
+      "best_corrective_advantage_m": {
+        "ci_high": 0.002307465350510678,
+        "ci_low": -0.003262587850139668,
+        "mean": -0.00048085233497984197,
+        "n": 128
+      },
+      "best_improvement_per_query_m": {
+        "ci_high": 0.00019017379504883284,
+        "ci_low": -0.0004334786029262579,
+        "mean": -0.00012589368404517318,
+        "n": 128
+      },
+      "inversion_hit": {
+        "ci_high": 0.0390625,
+        "ci_low": -0.0546875,
+        "mean": -0.0078125,
+        "n": 128
+      }
+    }
+  },
+  "population_diagnostics": {
+    "mean_directional_positive_candidates": 102.7265625,
+    "mean_native_rejected_candidates": 298.7265625
+  },
+  "primary_arm": "crod_directional",
+  "primary_control": "action_diverse",
+  "primary_metric": "corrective inversion-hit rate at a 2 cm physical margin",
+  "scope": "Fresh 128-state cohort, episode-disjoint from Phase 0/1a/1a-v2. All selectors are outcome-blind and charged nine branches per state.",
+  "verdict": "STOP_CROD_NO_GAIN_OVER_ACTION_DIVERSITY"
+}

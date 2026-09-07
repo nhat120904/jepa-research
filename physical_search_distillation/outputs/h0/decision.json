@@ -1,0 +1,72 @@
+{
+  "aggregate": {
+    "elite": {
+      "distance_mean_m": 0.05652487295553864,
+      "distance_median_m": 0.019773490461250917,
+      "solve_seconds_mean": 0.12639731675153598,
+      "success_rate": 0.75
+    },
+    "listwise": {
+      "distance_mean_m": 0.051552088796813916,
+      "distance_median_m": 0.021474844958731712,
+      "solve_seconds_mean": 0.1281213746406138,
+      "success_rate": 0.78125
+    },
+    "native": {
+      "distance_mean_m": 0.053760475279928895,
+      "distance_median_m": 0.028286377555921186,
+      "solve_seconds_mean": 0.4055989807820879,
+      "success_rate": 0.75
+    },
+    "operator": {
+      "distance_mean_m": 0.0583183504445879,
+      "distance_median_m": 0.025100517252293366,
+      "solve_seconds_mean": 0.12584147247252986,
+      "success_rate": 0.71875
+    },
+    "operator_metric": {
+      "distance_mean_m": 0.060626794286989194,
+      "distance_median_m": 0.02585387015522307,
+      "solve_seconds_mean": 0.13004217523848638,
+      "success_rate": 0.75
+    },
+    "pointwise": {
+      "distance_mean_m": 0.0546940233889461,
+      "distance_median_m": 0.019339885898545586,
+      "solve_seconds_mean": 0.21267847099807113,
+      "success_rate": 0.75
+    }
+  },
+  "decision": "STOP_OPERATOR_NOVELTY",
+  "interpretation": "operator does not improve the key matched ranking baseline; do not develop PERD claim",
+  "n_test_states": 32,
+  "paired_comparisons": {
+    "metric_vs_operator": {
+      "ci95_high_m": 0.008154208436379082,
+      "ci95_low_m": -0.011855676013382535,
+      "mean_improvement_m": -0.002308443842401301,
+      "n": 32,
+      "success_delta": 0.03125,
+      "ties": 14,
+      "wins": 7
+    },
+    "operator_vs_listwise": {
+      "ci95_high_m": 0.0013249711629954542,
+      "ci95_low_m": -0.01709377354654872,
+      "mean_improvement_m": -0.006766261647773976,
+      "n": 32,
+      "success_delta": -0.0625,
+      "ties": 14,
+      "wins": 8
+    },
+    "operator_vs_native": {
+      "ci95_high_m": 0.006775640312903194,
+      "ci95_low_m": -0.017578536959981995,
+      "mean_improvement_m": -0.004557875164658999,
+      "n": 32,
+      "success_delta": -0.03125,
+      "ties": 13,
+      "wins": 9
+    }
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "task": "exploration_search",
+  "target": "plug_pos",
+  "n_episodes": 108,
+  "success_thresh_m": 0.01,
+  "seeds": [
+    0
+  ],
+  "conditions": {
+    "LIN_proprio": {
+      "mean_err_cm": 1.699875831604004,
+      "mean_err_cm_ci": [
+        1.493149995803833,
+        1.909703016281128
+      ],
+      "median_err_cm": 1.3065314292907715,
+      "hit_at_thresh": 0.34635793535938253,
+      "hit_at_thresh_ci": [
+        0.284238912324999,
+        0.4036297771548118
+      ],
+      "per_seed_mean_cm": [
+        1.699875831604004
+      ]
+    },
+    "A_pc_now": {
+      "mean_err_cm": 3.7641026973724365,
+      "mean_err_cm_ci": [
+        3.2575637102127075,
+        4.292136058211327
+      ],
+      "median_err_cm": 3.0612504482269287,
+      "hit_at_thresh": 0.009165460684997588,
+      "hit_at_thresh_ci": [
+        0.0029952459370645524,
+        0.017062215724496396
+      ],
+      "per_seed_mean_cm": [
+        3.7641026973724365
+      ]
+    },
+    "B_pc_prop_now": {
+      "mean_err_cm": 1.3620408773422241,
+      "mean_err_cm_ci": [
+        1.1932604014873505,
+        1.5525911003351212
+      ],
+      "median_err_cm": 0.9620293974876404,
+      "hit_at_thresh": 0.5137481910274964,
+      "hit_at_thresh_ci": [
+        0.43600806556355043,
+        0.5839576637508244
+      ],
+      "per_seed_mean_cm": [
+        1.3620408773422241
+      ]
+    },
+    "C_pc_prop_hist": {
+      "mean_err_cm": 1.1219158172607422,
+      "mean_err_cm_ci": [
+        0.9897904470562935,
+        1.2733396142721176
+      ],
+      "median_err_cm": 0.7266196608543396,
+      "hit_at_thresh": 0.6348195329087049,
+      "hit_at_thresh_ci": [
+        0.5536141792367754,
+        0.7048147255043806
+      ],
+      "per_seed_mean_cm": [
+        1.1219158172607422
+      ]
+    },
+    "D_pc_prop_tac_hist": {
+      "mean_err_cm": 1.081337332725525,
+      "mean_err_cm_ci": [
+        0.9594857692718506,
+        1.2108218856155872
+      ],
+      "median_err_cm": 0.7811508178710938,
+      "hit_at_thresh": 0.6252653927813163,
+      "hit_at_thresh_ci": [
+        0.5605027361259245,
+        0.6823633362518858
+      ],
+      "per_seed_mean_cm": [
+        1.081337332725525
+      ]
+    },
+    "E_prop_tac_hist": {
+      "mean_err_cm": 1.0454216003417969,
+      "mean_err_cm_ci": [
+        0.9266671724617481,
+        1.1707252822816372
+      ],
+      "median_err_cm": 0.7078666090965271,
+      "hit_at_thresh": 0.6491507430997877,
+      "hit_at_thresh_ci": [
+        0.5798700046307418,
+        0.7122195042284911
+      ],
+      "per_seed_mean_cm": [
+        1.0454216003417969
+      ]
+    }
+  },
+  "tactile_effect_D_minus_C": {
+    "delta_mean_err_cm": -0.04057846963405609,
+    "delta_ci_cm": [
+      -0.12135477736592293,
+      0.04946860717609525
+    ],
+    "ci_excludes_zero": false,
+    "interpretation": "negative delta = tactile REDUCES hidden-state error"
+  }
+}

@@ -1,0 +1,365 @@
+{
+  "arm_summary": {
+    "action_diverse": {
+      "anchor_physical_distance_m": {
+        "ci_high": 0.10372527933329702,
+        "ci_low": 0.06805659536117521,
+        "mean": 0.08554343074447573,
+        "n": 128
+      },
+      "anchor_success": {
+        "ci_high": 0.703125,
+        "ci_low": 0.53125,
+        "mean": 0.6171875,
+        "n": 128
+      },
+      "any_success_gain": {
+        "ci_high": 0.171875,
+        "ci_low": 0.0625,
+        "mean": 0.1171875,
+        "n": 128
+      },
+      "best_any_advantage_m": {
+        "ci_high": 0.03694211441507289,
+        "ci_low": 0.017830190100479114,
+        "mean": 0.027000359738132182,
+        "n": 128
+      },
+      "best_corrective_advantage_m": {
+        "ci_high": 0.03453006777720725,
+        "ci_low": 0.015035621990479118,
+        "mean": 0.02412051765796059,
+        "n": 128
+      },
+      "best_selected_distance_m": {
+        "ci_high": 0.07448699684352231,
+        "ci_low": 0.044132776726615225,
+        "mean": 0.05867337385436056,
+        "n": 128
+      },
+      "inversion_hit": {
+        "ci_high": 0.3046875,
+        "ci_low": 0.15625,
+        "mean": 0.2265625,
+        "n": 128
+      },
+      "mean_action_distance_from_anchor": {
+        "ci_high": 6.116288471267843,
+        "ci_low": 5.781013556508096,
+        "mean": 5.945409214341057,
+        "n": 128
+      },
+      "mean_proxy_rank_fraction": {
+        "ci_high": 0.5684803021791388,
+        "ci_low": 0.5357897908392558,
+        "mean": 0.5522999843227425,
+        "n": 128
+      },
+      "proxy_rejected_fraction": {
+        "ci_high": 1.0,
+        "ci_low": 0.9951171875,
+        "mean": 0.998046875,
+        "n": 128
+      },
+      "selected_success_any": {
+        "ci_high": 0.8125,
+        "ci_low": 0.65625,
+        "mean": 0.734375,
+        "n": 128
+      }
+    },
+    "proxy_hard": {
+      "anchor_physical_distance_m": {
+        "ci_high": 0.10348538104101353,
+        "ci_low": 0.0682878342164005,
+        "mean": 0.08554343074447573,
+        "n": 128
+      },
+      "anchor_success": {
+        "ci_high": 0.703125,
+        "ci_low": 0.53125,
+        "mean": 0.6171875,
+        "n": 128
+      },
+      "any_success_gain": {
+        "ci_high": 0.1171875,
+        "ci_low": 0.03125,
+        "mean": 0.0703125,
+        "n": 128
+      },
+      "best_any_advantage_m": {
+        "ci_high": 0.027886158397893483,
+        "ci_low": 0.011868732084939177,
+        "mean": 0.01928649802748996,
+        "n": 128
+      },
+      "best_corrective_advantage_m": {
+        "ci_high": 0.025901033691347962,
+        "ci_low": 0.009679825418210117,
+        "mean": 0.017134795366742582,
+        "n": 128
+      },
+      "best_selected_distance_m": {
+        "ci_high": 0.08311855434227257,
+        "ci_low": 0.05117520598524447,
+        "mean": 0.06672724881172887,
+        "n": 128
+      },
+      "inversion_hit": {
+        "ci_high": 0.25,
+        "ci_low": 0.1171875,
+        "mean": 0.1796875,
+        "n": 128
+      },
+      "mean_action_distance_from_anchor": {
+        "ci_high": 5.028643048071149,
+        "ci_low": 4.758600511830754,
+        "mean": 4.890773935136858,
+        "n": 128
+      },
+      "mean_proxy_rank_fraction": {
+        "ci_high": 0.9882943143812709,
+        "ci_low": 0.9882943143812709,
+        "mean": 0.9882943143812709,
+        "n": 128
+      },
+      "proxy_rejected_fraction": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "mean": 1.0,
+        "n": 128
+      },
+      "selected_success_any": {
+        "ci_high": 0.7578125,
+        "ci_low": 0.59375,
+        "mean": 0.6796875,
+        "n": 128
+      }
+    },
+    "proxy_rejected_stratified_diverse": {
+      "anchor_physical_distance_m": {
+        "ci_high": 0.10405664680291567,
+        "ci_low": 0.0682440682654275,
+        "mean": 0.08554343074447573,
+        "n": 128
+      },
+      "anchor_success": {
+        "ci_high": 0.703125,
+        "ci_low": 0.53125,
+        "mean": 0.6171875,
+        "n": 128
+      },
+      "any_success_gain": {
+        "ci_high": 0.1640625,
+        "ci_low": 0.0546875,
+        "mean": 0.109375,
+        "n": 128
+      },
+      "best_any_advantage_m": {
+        "ci_high": 0.034718322559439733,
+        "ci_low": 0.015949772998554997,
+        "mean": 0.02478635678640985,
+        "n": 128
+      },
+      "best_corrective_advantage_m": {
+        "ci_high": 0.032134308813449225,
+        "ci_low": 0.013113967274871916,
+        "mean": 0.022153622141577012,
+        "n": 128
+      },
+      "best_selected_distance_m": {
+        "ci_high": 0.0766983040779625,
+        "ci_low": 0.04602086193602222,
+        "mean": 0.06109264875396435,
+        "n": 128
+      },
+      "inversion_hit": {
+        "ci_high": 0.2734375,
+        "ci_low": 0.1328125,
+        "mean": 0.203125,
+        "n": 128
+      },
+      "mean_action_distance_from_anchor": {
+        "ci_high": 6.61581929183649,
+        "ci_low": 6.164472822856378,
+        "mean": 6.382896726510069,
+        "n": 128
+      },
+      "mean_proxy_rank_fraction": {
+        "ci_high": 0.5046999111622074,
+        "ci_low": 0.5003559227372492,
+        "mean": 0.5025377560618729,
+        "n": 128
+      },
+      "proxy_rejected_fraction": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "mean": 1.0,
+        "n": 128
+      },
+      "selected_success_any": {
+        "ci_high": 0.8046875,
+        "ci_low": 0.6484375,
+        "mean": 0.7265625,
+        "n": 128
+      }
+    },
+    "random_final_population": {
+      "anchor_physical_distance_m": {
+        "ci_high": 0.10354256846851305,
+        "ci_low": 0.06793635695149178,
+        "mean": 0.08554343074447573,
+        "n": 128
+      },
+      "anchor_success": {
+        "ci_high": 0.703125,
+        "ci_low": 0.53125,
+        "mean": 0.6171875,
+        "n": 128
+      },
+      "any_success_gain": {
+        "ci_high": 0.1484375,
+        "ci_low": 0.046875,
+        "mean": 0.09375,
+        "n": 128
+      },
+      "best_any_advantage_m": {
+        "ci_high": 0.027125040956603817,
+        "ci_low": 0.011062568871057004,
+        "mean": 0.018549079462089432,
+        "n": 128
+      },
+      "best_corrective_advantage_m": {
+        "ci_high": 0.024491992489427142,
+        "ci_low": 0.00848962619987658,
+        "mean": 0.015984802788164214,
+        "n": 128
+      },
+      "best_selected_distance_m": {
+        "ci_high": 0.08416295579291996,
+        "ci_low": 0.05126893942812092,
+        "mean": 0.06728528962875033,
+        "n": 128
+      },
+      "inversion_hit": {
+        "ci_high": 0.21875,
+        "ci_low": 0.09375,
+        "mean": 0.15625,
+        "n": 128
+      },
+      "mean_action_distance_from_anchor": {
+        "ci_high": 4.811502985684723,
+        "ci_low": 4.592401450418372,
+        "mean": 4.702073256756127,
+        "n": 128
+      },
+      "mean_proxy_rank_fraction": {
+        "ci_high": 0.5160727816680601,
+        "ci_low": 0.4767222937134197,
+        "mean": 0.49649221362876256,
+        "n": 128
+      },
+      "proxy_rejected_fraction": {
+        "ci_high": 1.0,
+        "ci_low": 0.9931640625,
+        "mean": 0.9970703125,
+        "n": 128
+      },
+      "selected_success_any": {
+        "ci_high": 0.78125,
+        "ci_low": 0.625,
+        "mean": 0.703125,
+        "n": 128
+      }
+    }
+  },
+  "config": {
+    "action_block": 5,
+    "alternatives": 8,
+    "bootstrap_draws": 10000,
+    "bootstrap_seed": 20260818,
+    "cem_steps": 30,
+    "checkpoint": "quentinll/lewm-cube",
+    "dataset": "ogbench/cube_single_expert.h5",
+    "goal_offset": 25,
+    "horizon": 5,
+    "min_physical_gap_m": 0.02,
+    "n_snapshots": 128,
+    "num_samples": 300,
+    "physical_budget_per_arm": 9,
+    "seed": 20260818,
+    "topk": 30,
+    "var_scale": 1.0
+  },
+  "controls": [
+    "random_final_population",
+    "proxy_hard",
+    "action_diverse"
+  ],
+  "paired_contrasts": {
+    "proxy_rejected_stratified_diverse_minus_action_diverse": {
+      "best_corrective_advantage_gain_m": {
+        "ci_high": 0.0010824483117993502,
+        "ci_low": -0.0060302164110966365,
+        "mean": -0.001966895516383575,
+        "n": 128
+      },
+      "inversion_hit_gain": {
+        "ci_high": 0.0234375,
+        "ci_low": -0.0703125,
+        "mean": -0.0234375,
+        "n": 128
+      },
+      "success_gain_gain": {
+        "ci_high": 0.0234375,
+        "ci_low": -0.046875,
+        "mean": -0.0078125,
+        "n": 128
+      }
+    },
+    "proxy_rejected_stratified_diverse_minus_proxy_hard": {
+      "best_corrective_advantage_gain_m": {
+        "ci_high": 0.011194016789765494,
+        "ci_low": 0.0004566724833174642,
+        "mean": 0.00501882677483443,
+        "n": 128
+      },
+      "inversion_hit_gain": {
+        "ci_high": 0.0703125,
+        "ci_low": -0.03125,
+        "mean": 0.0234375,
+        "n": 128
+      },
+      "success_gain_gain": {
+        "ci_high": 0.078125,
+        "ci_low": 0.0,
+        "mean": 0.0390625,
+        "n": 128
+      }
+    },
+    "proxy_rejected_stratified_diverse_minus_random_final_population": {
+      "best_corrective_advantage_gain_m": {
+        "ci_high": 0.013418413117396734,
+        "ci_low": -5.057222683247522e-05,
+        "mean": 0.0061688193534128015,
+        "n": 128
+      },
+      "inversion_hit_gain": {
+        "ci_high": 0.1015625,
+        "ci_low": -0.0078125,
+        "mean": 0.046875,
+        "n": 128
+      },
+      "success_gain_gain": {
+        "ci_high": 0.0546875,
+        "ci_low": -0.0234375,
+        "mean": 0.015625,
+        "n": 128
+      }
+    }
+  },
+  "primary_arm": "proxy_rejected_stratified_diverse",
+  "scope": "Fresh episode-disjoint OGBench-Cube snapshots. Each arm chooses K alternatives before physics and is charged K+1 physical branches including the CEM-returned anchor.",
+  "selection_rule": "primary arm partitions proxy-rejected final-CEM candidates into K proxy-rank strata and selects the most action-novel candidate in each stratum; no physical labels enter selection",
+  "verdict": "HOLD_NO_CI_CLEAN_ACQUISITION_GAIN_VS_RANDOM"
+}

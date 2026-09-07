@@ -1,0 +1,17 @@
+{
+  "models": [
+    "native",
+    "multistep_expert_seed11",
+    "multistep_expert_seed23",
+    "multistep_expert_seed47",
+    "multistep_offpolicy_seed11",
+    "multistep_offpolicy_seed23",
+    "multistep_offpolicy_seed47",
+    "one_step_expert_seed11",
+    "one_step_expert_seed23",
+    "one_step_expert_seed47"
+  ],
+  "output": "/home/nhatnc129/nhat.nc/jepa-research/rollout_repair_gate/outputs/stage1/fixed_eval/snapshot_124.npz",
+  "snapshot": 124,
+  "split": "test"
+}

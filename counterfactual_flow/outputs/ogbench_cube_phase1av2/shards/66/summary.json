@@ -1,0 +1,199 @@
+{
+  "anchor": {
+    "actions_raw_sha256": "30fd0ac90bd0d53bfffb839a4b1b046901e6ce7d909af6ade1ca6287a422793b",
+    "executed_steps": 1,
+    "physical_distance_m": 1.1846647526722601e-05,
+    "proxy_cost": 0.6763812899589539,
+    "success": 1
+  },
+  "arms": {
+    "action_diverse": {
+      "accounted_physical_queries": 9,
+      "any_success_gain": 0,
+      "best_any_advantage_m": 0.0,
+      "best_corrective_advantage_m": 0.0,
+      "best_selected_distance_m": 1.1846647526722601e-05,
+      "inversion_hit": 0,
+      "mean_action_distance_from_anchor": 5.459972325978307,
+      "mean_cem_disagreement": -0.26714046822742477,
+      "mean_proxy_instability": 0.22837477169094828,
+      "mean_proxy_rank_fraction": 0.5501672240802675,
+      "n_alternatives": 8,
+      "proxy_rejected_fraction": 1.0,
+      "selected_indices": [
+        91,
+        155,
+        140,
+        39,
+        289,
+        174,
+        164,
+        25
+      ],
+      "selected_success_any": 1
+    },
+    "cem_disagreement_diverse": {
+      "accounted_physical_queries": 9,
+      "any_success_gain": 0,
+      "best_any_advantage_m": 0.0,
+      "best_corrective_advantage_m": 0.0,
+      "best_selected_distance_m": 1.1846647526722601e-05,
+      "inversion_hit": 0,
+      "mean_action_distance_from_anchor": 4.792983189001161,
+      "mean_cem_disagreement": 0.48494983277591974,
+      "mean_proxy_instability": 0.1642078170984023,
+      "mean_proxy_rank_fraction": 0.7959866220735785,
+      "n_alternatives": 8,
+      "proxy_rejected_fraction": 1.0,
+      "selected_indices": [
+        100,
+        159,
+        16,
+        267,
+        160,
+        181,
+        95,
+        24
+      ],
+      "selected_success_any": 1
+    },
+    "proxy_instability_diverse": {
+      "accounted_physical_queries": 9,
+      "any_success_gain": 0,
+      "best_any_advantage_m": 0.0,
+      "best_corrective_advantage_m": 0.0,
+      "best_selected_distance_m": 1.1846647526722601e-05,
+      "inversion_hit": 0,
+      "mean_action_distance_from_anchor": 5.14187876713639,
+      "mean_cem_disagreement": -0.2938963210702341,
+      "mean_proxy_instability": 0.3198118942847634,
+      "mean_proxy_rank_fraction": 0.41555183946488294,
+      "n_alternatives": 8,
+      "proxy_rejected_fraction": 1.0,
+      "selected_indices": [
+        178,
+        47,
+        164,
+        25,
+        119,
+        216,
+        117,
+        144
+      ],
+      "selected_success_any": 1
+    },
+    "random_final_population": {
+      "accounted_physical_queries": 9,
+      "any_success_gain": 0,
+      "best_any_advantage_m": 0.0,
+      "best_corrective_advantage_m": 0.0,
+      "best_selected_distance_m": 1.1846647526722601e-05,
+      "inversion_hit": 0,
+      "mean_action_distance_from_anchor": 5.1420213033024,
+      "mean_cem_disagreement": -0.31020066889632103,
+      "mean_proxy_instability": 0.22894368917094465,
+      "mean_proxy_rank_fraction": 0.4122073578595318,
+      "n_alternatives": 8,
+      "proxy_rejected_fraction": 1.0,
+      "selected_indices": [
+        13,
+        27,
+        175,
+        189,
+        192,
+        225,
+        237,
+        271
+      ],
+      "selected_success_any": 1
+    }
+  },
+  "config": {
+    "action_block": 5,
+    "alternatives": 8,
+    "cem_steps": 30,
+    "checkpoint": "quentinll/lewm-cube",
+    "dataset": "ogbench/cube_single_expert.h5",
+    "goal_offset": 25,
+    "horizon": 5,
+    "instability_repeats": 4,
+    "jitter_scale": 0.25,
+    "min_physical_gap_m": 0.02,
+    "num_samples": 300,
+    "physical_budget_per_arm": 9,
+    "seed": 20260819,
+    "selector_pool_frac": 0.25,
+    "topk": 30,
+    "var_scale": 1.0
+  },
+  "diagnostics": {
+    "mean_abs_cem_disagreement": 0.294180602006689,
+    "mean_proxy_instability": 0.19118138947401958,
+    "median_proposal_scale": 0.24050579965114594
+  },
+  "episode": 4840,
+  "repeat_gate": {
+    "executed_max_abs": 0.0,
+    "pass": true,
+    "physical_max_abs": 0.0,
+    "success_disagreements": 0
+  },
+  "scope": "All selectors use frozen model/CEM quantities only and are locked before physics. Every arm is charged the same returned-anchor-plus-K branch budget.",
+  "snapshot": 66,
+  "start_step": 0,
+  "visual_signature": "add82fdd0218b4f63c1da71f49d69b2f8e650d5c28540e52d8798d15d91cf93b",
+  "visual_signature_shapes": {
+    "cam_fovy": [
+      4
+    ],
+    "cam_mat0": [
+      4,
+      9
+    ],
+    "cam_pos": [
+      4,
+      3
+    ],
+    "cam_quat": [
+      4,
+      4
+    ],
+    "geom_rgba": [
+      64,
+      4
+    ],
+    "light_ambient": [
+      2,
+      3
+    ],
+    "light_diffuse": [
+      2,
+      3
+    ],
+    "light_dir": [
+      2,
+      3
+    ],
+    "light_pos": [
+      2,
+      3
+    ],
+    "light_specular": [
+      2,
+      3
+    ],
+    "mat_rgba": [
+      10,
+      4
+    ],
+    "tex_adr": [
+      2
+    ],
+    "tex_height": [
+      2
+    ],
+    "tex_width": [
+      2
+    ]
+  }
+}

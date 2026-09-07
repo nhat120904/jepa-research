@@ -1,0 +1,38 @@
+{
+  "task": "insertion_usb",
+  "ckpt": "/mnt/data/nhatnc129/contactworld/ContactWorld/logs/ckpts/insertion_usb/pointcloud/vc/tactile_force_field_right/concat/100000.ckpt",
+  "latent_dim": 576,
+  "target": "plug_pos",
+  "use_tactile": true,
+  "success_thresh_m": 0.01,
+  "readouts": {
+    "linear": {
+      "mean_err_cm": 0.8044877052307129,
+      "mean_err_cm_ci": [
+        0.7525107823312283,
+        0.8620543405413628
+      ],
+      "median_err_cm": 0.6644010543823242,
+      "hit_at_thresh": 0.7670990566037735,
+      "per_seed_mean_cm": [
+        0.7596887350082397,
+        0.8985813856124878,
+        0.7526990175247192
+      ]
+    },
+    "mlp": {
+      "mean_err_cm": 0.6377336978912354,
+      "mean_err_cm_ci": [
+        0.5899013485759497,
+        0.694665452465415
+      ],
+      "median_err_cm": 0.45103123784065247,
+      "hit_at_thresh": 0.839622641509434,
+      "per_seed_mean_cm": [
+        0.6259503364562988,
+        0.6929737329483032,
+        0.5929162502288818
+      ]
+    }
+  }
+}

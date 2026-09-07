@@ -1,0 +1,198 @@
+{
+  "config": {
+    "bootstrap_draws": 10000,
+    "bootstrap_seed": 20260817,
+    "min_physical_gap_m": 0.02,
+    "n_snapshots": 32,
+    "top_frac": 0.1
+  },
+  "definitions": {
+    "elite": "lowest 10% proxy-cost candidates",
+    "paired_delta": "final population metric minus initial population metric within snapshot",
+    "selected_verified_inversion": "proxy argmin has at least 2 cm physical regret and a same-population, proxy-rejected candidate that is physically better by at least 2 cm"
+  },
+  "paired_final_minus_initial": {
+    "elite_excess_regret_m": {
+      "ci_high": 0.011396509715057884,
+      "ci_low": 0.001602554407169151,
+      "mean": 0.006532692492932554,
+      "n_finite": 32
+    },
+    "elite_false_rate_above_physical_median": {
+      "ci_high": 0.08958333333333333,
+      "ci_low": -0.016666666666666673,
+      "mean": 0.03645833333333333,
+      "n_finite": 32
+    },
+    "elite_mean_physical_regret_m": {
+      "ci_high": 0.03206049786894838,
+      "ci_low": -0.006585717273126729,
+      "mean": 0.011745203575921723,
+      "n_finite": 32
+    },
+    "elite_physical_top_recall": {
+      "ci_high": -0.016666666666666663,
+      "ci_low": -0.09062500000000001,
+      "mean": -0.053125000000000006,
+      "n_finite": 32
+    },
+    "proxy_physical_inversion_fraction": {
+      "ci_high": 0.06521119022244086,
+      "ci_low": 0.016335827994674496,
+      "mean": 0.04011501719280853,
+      "n_finite": 28
+    },
+    "selected_physical_distance_m": {
+      "ci_high": 0.021423102933387894,
+      "ci_low": -0.02887756591180425,
+      "mean": -0.003880490301548059,
+      "n_finite": 32
+    },
+    "selected_physical_rank_fraction": {
+      "ci_high": 0.33737458193979936,
+      "ci_low": 0.015779159698996653,
+      "mean": 0.17694397993311037,
+      "n_finite": 32
+    },
+    "selected_physical_regret_m": {
+      "ci_high": 0.05279461599793639,
+      "ci_low": -0.0010936690246759206,
+      "mean": 0.025096951118079514,
+      "n_finite": 32
+    },
+    "selected_verified_inversion": {
+      "ci_high": 0.0625,
+      "ci_low": -0.3125,
+      "mean": -0.125,
+      "n_finite": 32
+    }
+  },
+  "scope": "post-hoc population-level audit of persisted Phase-0 candidates. The selected action is proxy argmin within a recorded population, not the unpersisted CEM proposal mean.",
+  "source_summary": {
+    "cem_final": {
+      "elite_excess_regret_m": {
+        "ci_high": 0.0025222452380063167,
+        "ci_low": -0.004386201318538507,
+        "mean": -0.0009170627550317739,
+        "n_finite": 32
+      },
+      "elite_false_rate_above_physical_median": {
+        "ci_high": 0.4583333333333333,
+        "ci_low": 0.3302083333333333,
+        "mean": 0.396875,
+        "n_finite": 32
+      },
+      "elite_mean_physical_regret_m": {
+        "ci_high": 0.10170013369560142,
+        "ci_low": 0.048212653150923095,
+        "mean": 0.07356936005978548,
+        "n_finite": 32
+      },
+      "elite_physical_top_recall": {
+        "ci_high": 0.12291666666666666,
+        "ci_low": 0.08645833333333333,
+        "mean": 0.10416666666666667,
+        "n_finite": 32
+      },
+      "proxy_physical_inversion_fraction": {
+        "ci_high": 0.5085775370417578,
+        "ci_low": 0.4877680992978499,
+        "mean": 0.4979736811445506,
+        "n_finite": 28
+      },
+      "selected_physical_distance_m": {
+        "ci_high": 0.15929584769849944,
+        "ci_low": 0.08446321576927368,
+        "mean": 0.12109520263633042,
+        "n_finite": 32
+      },
+      "selected_physical_rank_fraction": {
+        "ci_high": 0.6270903010033444,
+        "ci_low": 0.42997491638795987,
+        "mean": 0.5301003344481605,
+        "n_finite": 32
+      },
+      "selected_physical_regret_m": {
+        "ci_high": 0.11017172125575764,
+        "ci_low": 0.048151864109952126,
+        "mean": 0.07798551016030314,
+        "n_finite": 32
+      },
+      "selected_success": {
+        "ci_high": 0.6875,
+        "ci_low": 0.34375,
+        "mean": 0.5,
+        "n_finite": 32
+      },
+      "selected_verified_inversion": {
+        "ci_high": 0.75,
+        "ci_low": 0.40625,
+        "mean": 0.59375,
+        "n_finite": 32
+      }
+    },
+    "cem_initial": {
+      "elite_excess_regret_m": {
+        "ci_high": -0.004119644101543259,
+        "ci_low": -0.010963816073428613,
+        "mean": -0.007449755247964328,
+        "n_finite": 32
+      },
+      "elite_false_rate_above_physical_median": {
+        "ci_high": 0.41875,
+        "ci_low": 0.2989583333333333,
+        "mean": 0.3604166666666667,
+        "n_finite": 32
+      },
+      "elite_mean_physical_regret_m": {
+        "ci_high": 0.07673940158751526,
+        "ci_low": 0.04757024994729911,
+        "mean": 0.061824156483863746,
+        "n_finite": 32
+      },
+      "elite_physical_top_recall": {
+        "ci_high": 0.18958333333333333,
+        "ci_low": 0.128125,
+        "mean": 0.15729166666666666,
+        "n_finite": 32
+      },
+      "proxy_physical_inversion_fraction": {
+        "ci_high": 0.4814625910577382,
+        "ci_low": 0.434461528983769,
+        "mean": 0.4582310340518318,
+        "n_finite": 29
+      },
+      "selected_physical_distance_m": {
+        "ci_high": 0.16176816387820708,
+        "ci_low": 0.08966655988148964,
+        "mean": 0.12497569293787847,
+        "n_finite": 32
+      },
+      "selected_physical_rank_fraction": {
+        "ci_high": 0.44889475334448153,
+        "ci_low": 0.2640024038461538,
+        "mean": 0.3531563545150501,
+        "n_finite": 32
+      },
+      "selected_physical_regret_m": {
+        "ci_high": 0.06583144572572718,
+        "ci_low": 0.04028175571034476,
+        "mean": 0.05288855904222363,
+        "n_finite": 32
+      },
+      "selected_success": {
+        "ci_high": 0.5625,
+        "ci_low": 0.21875,
+        "mean": 0.375,
+        "n_finite": 32
+      },
+      "selected_verified_inversion": {
+        "ci_high": 0.875,
+        "ci_low": 0.5625,
+        "mean": 0.71875,
+        "n_finite": 32
+      }
+    }
+  },
+  "verdict": "NO_CI_CLEAN_FINAL_POOL_SELECTION_REGRET_ENRICHMENT"
+}

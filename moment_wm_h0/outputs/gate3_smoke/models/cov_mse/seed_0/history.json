@@ -1,0 +1,18 @@
+[
+  {
+    "epoch": 1,
+    "train_objective": 26.292892054507607,
+    "validation_loss": 26.250320434570312,
+    "validation_forward_raw_mse": 126.85208129882812,
+    "validation_forward_objective": 26.250320434570312,
+    "validation_backward_mse": 0.0
+  },
+  {
+    "epoch": 2,
+    "train_objective": 25.19042085346423,
+    "validation_loss": 25.644227981567383,
+    "validation_forward_raw_mse": 124.89561462402344,
+    "validation_forward_objective": 25.644227981567383,
+    "validation_backward_mse": 0.0
+  }
+]

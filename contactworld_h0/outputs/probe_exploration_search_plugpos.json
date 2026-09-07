@@ -1,0 +1,166 @@
+{
+  "task": "exploration_search",
+  "target": "plug_pos",
+  "n_episodes": 108,
+  "success_thresh_m": 0.01,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "conditions": {
+    "LIN_proprio": {
+      "mean_err_cm": 1.8400754928588867,
+      "mean_err_cm_ci": [
+        1.6876908019185066,
+        2.006988972425461
+      ],
+      "median_err_cm": 1.421534776687622,
+      "hit_at_thresh": 0.3127993393889348,
+      "hit_at_thresh_ci": [
+        0.27702184490415094,
+        0.3481986506534008
+      ],
+      "per_seed_mean_cm": [
+        1.699875831604004,
+        1.951349139213562,
+        1.8734849691390991
+      ]
+    },
+    "A_pc_now": {
+      "mean_err_cm": 3.8145482540130615,
+      "mean_err_cm_ci": [
+        3.5226739943027496,
+        4.112939164042473
+      ],
+      "median_err_cm": 3.3560659885406494,
+      "hit_at_thresh": 0.007762180016515277,
+      "hit_at_thresh_ci": [
+        0.004236698165635099,
+        0.011770568669018653
+      ],
+      "per_seed_mean_cm": [
+        3.758683443069458,
+        3.665797472000122,
+        4.0274577140808105
+      ]
+    },
+    "B_pc_prop_now": {
+      "mean_err_cm": 1.4757367372512817,
+      "mean_err_cm_ci": [
+        1.337502896785736,
+        1.6317060217261314
+      ],
+      "median_err_cm": 1.0017249584197998,
+      "hit_at_thresh": 0.49942196531791905,
+      "hit_at_thresh_ci": [
+        0.4539011898003119,
+        0.5426926430058915
+      ],
+      "per_seed_mean_cm": [
+        1.3499274253845215,
+        1.677093267440796,
+        1.4007916450500488
+      ]
+    },
+    "C_pc_prop_hist": {
+      "mean_err_cm": 1.22369384765625,
+      "mean_err_cm_ci": [
+        1.0937540791928768,
+        1.3806388713419437
+      ],
+      "median_err_cm": 0.7703871130943298,
+      "hit_at_thresh": 0.6040415073730202,
+      "hit_at_thresh_ci": [
+        0.5541656340833945,
+        0.6500209120345385
+      ],
+      "per_seed_mean_cm": [
+        1.1250625848770142,
+        1.374831199645996,
+        1.1721068620681763
+      ]
+    },
+    "D_pc_prop_tac_hist": {
+      "mean_err_cm": 1.2325825691223145,
+      "mean_err_cm_ci": [
+        1.1115552857518196,
+        1.3759252615272999
+      ],
+      "median_err_cm": 0.8100349307060242,
+      "hit_at_thresh": 0.5887493173129438,
+      "hit_at_thresh_ci": [
+        0.5405639997104235,
+        0.6329143038346464
+      ],
+      "per_seed_mean_cm": [
+        1.1576073169708252,
+        1.293672800064087,
+        1.2490164041519165
+      ]
+    },
+    "E_prop_tac_hist": {
+      "mean_err_cm": 1.2627406120300293,
+      "mean_err_cm_ci": [
+        1.131187193095684,
+        1.4181343838572502
+      ],
+      "median_err_cm": 0.7854105830192566,
+      "hit_at_thresh": 0.590387766247952,
+      "hit_at_thresh_ci": [
+        0.5410686007664293,
+        0.6367319829207213
+      ],
+      "per_seed_mean_cm": [
+        1.131951093673706,
+        1.4042739868164062,
+        1.2552400827407837
+      ]
+    },
+    "F_prop_hist": {
+      "mean_err_cm": 1.232228398323059,
+      "mean_err_cm_ci": [
+        1.0965206660330296,
+        1.394389197230339
+      ],
+      "median_err_cm": 0.7714399099349976,
+      "hit_at_thresh": 0.6029492080830148,
+      "hit_at_thresh_ci": [
+        0.5508954736514222,
+        0.6507378485418901
+      ],
+      "per_seed_mean_cm": [
+        1.1339783668518066,
+        1.3952736854553223,
+        1.1679185628890991
+      ]
+    }
+  },
+  "tactile_effect_D_minus_C": {
+    "delta_mean_err_cm": 0.008888822048902512,
+    "delta_ci_cm": [
+      -0.04494565655477345,
+      0.057237339206039906
+    ],
+    "ci_excludes_zero": false,
+    "interpretation": "negative delta = tactile REDUCES hidden-state error"
+  },
+  "tactile_effect_E_minus_F": {
+    "delta_mean_err_cm": 0.03051217645406723,
+    "delta_ci_cm": [
+      -0.020397598564159125,
+      0.07833996787667274
+    ],
+    "ci_excludes_zero": false,
+    "interpretation": "negative = tactile adds information over proprio history alone (no vision)"
+  },
+  "vision_effect_C_minus_F": {
+    "delta_mean_err_cm": -0.008534640073776245,
+    "delta_ci_cm": [
+      -0.04868877294939011,
+      0.03056088462471962
+    ],
+    "ci_excludes_zero": false,
+    "interpretation": "negative = pointcloud adds information over proprio history alone"
+  }
+}

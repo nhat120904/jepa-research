@@ -1,0 +1,48 @@
+{
+  "arms": {
+    "latent_l2": {
+      "amplification": {
+        "elite_rate": 0.30142696809363473,
+        "paired_difference": {
+          "hi": 0.07142857142857142,
+          "lo": -0.7857142857142858,
+          "mean": -0.3841269841269842,
+          "n": 5
+        },
+        "random_init_rate": 0.6062830687830688,
+        "ratio": 0.49717200366267666
+      },
+      "artifact": "/home/nhatnc129/nhat.nc/jepa-research/scene_progress_wm/outputs/elite_optimism/diagnostic/elite_optimism_20260904/latent_l2_off100_seed90200_shard0.json",
+      "censoring": 0.04838709677419355,
+      "contributing_replans": 5,
+      "decisive_pairs_total_min_stratum": 40,
+      "reason": "decisive pairs 40 < 200 in some stratum; only 5 replans contribute a paired rate (< 30)",
+      "repeat_probe_max_spread": 0.0,
+      "verdict": "INSTRUMENT_UNUSABLE"
+    },
+    "prog_ssl": {
+      "amplification": {
+        "elite_rate": 0.4692743764172335,
+        "paired_difference": {
+          "hi": 0.3593992812742804,
+          "lo": -0.23121219058719059,
+          "mean": 0.051295926295926296,
+          "n": 11
+        },
+        "random_init_rate": 0.4668274318274318,
+        "ratio": 1.0052416469619683
+      },
+      "artifact": "/home/nhatnc129/nhat.nc/jepa-research/scene_progress_wm/outputs/elite_optimism/diagnostic/elite_optimism_20260904/prog_ssl_off100_seed90200_shard0.json",
+      "censoring": 0.059895833333333336,
+      "contributing_replans": 11,
+      "decisive_pairs_total_min_stratum": 93,
+      "reason": "decisive pairs 93 < 200 in some stratum; only 11 replans contribute a paired rate (< 30)",
+      "repeat_probe_max_spread": 0.0,
+      "verdict": "INSTRUMENT_UNUSABLE"
+    }
+  },
+  "primary_arm": "latent_l2",
+  "protocol": "scene_progress_wm_elite_optimism_analysis_v1",
+  "verdict": "INSTRUMENT_UNUSABLE",
+  "verdict_delta": 25.0
+}

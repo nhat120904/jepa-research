@@ -1,0 +1,170 @@
+{
+  "args": {
+    "arm": "multistep_offpolicy",
+    "batch_size": 64,
+    "checkpoint": "quentinll/lewm-cube",
+    "expert_dir": "/home/nhatnc129/nhat.nc/jepa-research/rollout_repair_gate/outputs/stage1/expert_cache",
+    "grad_clip": 1.0,
+    "history_size": 3,
+    "log_every": 100,
+    "lr": 1e-05,
+    "offpolicy_dir": "/home/nhatnc129/nhat.nc/jepa-research/rollout_repair_gate/outputs/stage1/intermediates",
+    "out_dir": "/home/nhatnc129/nhat.nc/jepa-research/rollout_repair_gate/outputs/stage1/checkpoints",
+    "seed": 23,
+    "steps": 2000,
+    "weight_decay": 0.001
+  },
+  "arm": "multistep_offpolicy",
+  "base_checkpoint": "quentinll/lewm-cube",
+  "batch_size": 64,
+  "encoder_frozen": true,
+  "final_dynamics_sha256": "19ceec1cb4e9c2efdd15b01618bf89d97b258c621f5e441a8287c68492543fc0",
+  "history": [
+    {
+      "grad_norm": 1.908616304397583,
+      "step": 1,
+      "train_loss": 0.4989390969276428
+    },
+    {
+      "grad_norm": 1.3490338325500488,
+      "step": 100,
+      "train_loss": 0.3867393434047699
+    },
+    {
+      "grad_norm": 1.1714876890182495,
+      "step": 200,
+      "train_loss": 0.37320148944854736
+    },
+    {
+      "grad_norm": 1.0537689924240112,
+      "step": 300,
+      "train_loss": 0.3376289904117584
+    },
+    {
+      "grad_norm": 1.024924397468567,
+      "step": 400,
+      "train_loss": 0.26655444502830505
+    },
+    {
+      "grad_norm": 1.151708722114563,
+      "offpolicy_val_loss": 1.7365341467148192,
+      "step": 500,
+      "train_loss": 0.2359292209148407
+    },
+    {
+      "grad_norm": 1.0547959804534912,
+      "step": 600,
+      "train_loss": 0.31239715218544006
+    },
+    {
+      "grad_norm": 1.0753185749053955,
+      "step": 700,
+      "train_loss": 0.3390042185783386
+    },
+    {
+      "grad_norm": 1.0570389032363892,
+      "step": 800,
+      "train_loss": 0.3067273497581482
+    },
+    {
+      "grad_norm": 0.9241417050361633,
+      "step": 900,
+      "train_loss": 0.22500386834144592
+    },
+    {
+      "grad_norm": 1.24683678150177,
+      "offpolicy_val_loss": 1.7187794793062283,
+      "step": 1000,
+      "train_loss": 0.27907437086105347
+    },
+    {
+      "grad_norm": 1.1923564672470093,
+      "step": 1100,
+      "train_loss": 0.2689262330532074
+    },
+    {
+      "grad_norm": 0.9346766471862793,
+      "step": 1200,
+      "train_loss": 0.25352227687835693
+    },
+    {
+      "grad_norm": 1.1305830478668213,
+      "step": 1300,
+      "train_loss": 0.30114907026290894
+    },
+    {
+      "grad_norm": 0.9933840036392212,
+      "step": 1400,
+      "train_loss": 0.25815388560295105
+    },
+    {
+      "grad_norm": 0.9966099858283997,
+      "offpolicy_val_loss": 1.7065514990942063,
+      "step": 1500,
+      "train_loss": 0.24854999780654907
+    },
+    {
+      "grad_norm": 1.0723991394042969,
+      "step": 1600,
+      "train_loss": 0.3215947449207306
+    },
+    {
+      "grad_norm": 1.2712708711624146,
+      "step": 1700,
+      "train_loss": 0.26205500960350037
+    },
+    {
+      "grad_norm": 1.0516985654830933,
+      "step": 1800,
+      "train_loss": 0.2959979772567749
+    },
+    {
+      "grad_norm": 1.0968074798583984,
+      "step": 1900,
+      "train_loss": 0.25095391273498535
+    },
+    {
+      "grad_norm": 1.2506705522537231,
+      "offpolicy_val_loss": 1.706867104563676,
+      "step": 2000,
+      "train_loss": 0.33394086360931396
+    }
+  ],
+  "initial_dynamics_sha256": "204a87a489db9bb36fd553a8bfed564f715a76e1a7af585479ef2219d0355252",
+  "optimizer_steps": 2000,
+  "prediction_calls_per_sequence": 5,
+  "same_compute_signature": {
+    "batch_size": 64,
+    "horizon": 5,
+    "sequence_count": 15360,
+    "steps": 2000,
+    "supervised_targets_per_horizon": [
+      15360,
+      10210,
+      9481,
+      9048,
+      8783
+    ],
+    "supervised_targets_total": 52882,
+    "trainable_parameters": 11740484,
+    "valid_mask_sha256": "26923373ac84313e0fcb77506f54e266dfda10265c1f1871268815d6b06c495c"
+  },
+  "seed": 23,
+  "sequences_available": 15360,
+  "supervised_targets_per_horizon": [
+    15360,
+    10210,
+    9481,
+    9048,
+    8783
+  ],
+  "supervised_targets_total": 52882,
+  "trainable_modules": [
+    "action_encoder",
+    "predictor",
+    "pred_proj"
+  ],
+  "trainable_parameters": 11740484,
+  "training_mask_source": "native off-policy train mask",
+  "valid_mask_sha256": "26923373ac84313e0fcb77506f54e266dfda10265c1f1871268815d6b06c495c"
+}

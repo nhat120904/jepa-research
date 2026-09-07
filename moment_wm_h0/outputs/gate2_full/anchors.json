@@ -1,0 +1,30 @@
+{
+  "dataset": "/home/nhatnc129/nhat.nc/jepa-research/moment_wm_h0/outputs/gate2_full/glides.pt",
+  "dino_feature_shape": [
+    2400,
+    17,
+    4,
+    4,
+    384
+  ],
+  "dino_model": "facebook/dinov2-small",
+  "dino_pooling": "spatial adaptive average pool to 4x4; no temporal pooling",
+  "episodes": 2400,
+  "flow_feature_shape": [
+    2400,
+    16,
+    16,
+    16,
+    2
+  ],
+  "flow_input_preprocessing": "native 64x64 frames bilinearly resized to RAFT-required 128x128",
+  "flow_model": "Raft_Small_Weights.C_T_V2",
+  "flow_pooling": "bilinear spatial resize to 16x16; no temporal pooling",
+  "frames_per_episode": 17,
+  "hostname": "worker-mig-3g40gb-0",
+  "output": "/home/nhatnc129/nhat.nc/jepa-research/moment_wm_h0/outputs/gate2_full/anchors.pt",
+  "pixel_centroid_uses_simulator_state": false,
+  "schema_version": 1,
+  "slurm_job_id": "48236",
+  "source_sha256": "31655eff7f6643e2dc4fcd40a7cff00693650f339e5e55543d2f46de6a6f5c4f"
+}

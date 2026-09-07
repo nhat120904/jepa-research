@@ -1,0 +1,187 @@
+{
+  "anchor": {
+    "actions_raw_sha256": "032a0a428be6d6b072a28d29f78bf68aa67672ac31d278ba24f2235818e7b885",
+    "executed_steps": 25,
+    "physical_distance_m": 0.06578274128224121,
+    "proxy_cost": 4.680751800537109,
+    "success": 0
+  },
+  "arms": {
+    "action_diverse": {
+      "accounted_physical_queries": 9,
+      "all_proxy_rejected": 1,
+      "any_success_gain": 1,
+      "best_any_advantage_m": 0.05556405885996034,
+      "best_corrective_advantage_m": 0.05556405885996034,
+      "best_selected_distance_m": 0.010218682422280873,
+      "inversion_hit": 1,
+      "mean_action_distance_from_anchor": 5.950066625263972,
+      "mean_proxy_rank_fraction": 0.48536789297658867,
+      "n_alternatives": 8,
+      "proxy_rejected_fraction": 1.0,
+      "selected_indices": [
+        59,
+        278,
+        47,
+        54,
+        239,
+        123,
+        32,
+        188
+      ],
+      "selected_success_any": 1
+    },
+    "proxy_hard": {
+      "accounted_physical_queries": 9,
+      "all_proxy_rejected": 1,
+      "any_success_gain": 1,
+      "best_any_advantage_m": 0.053704371165713874,
+      "best_corrective_advantage_m": 0.053704371165713874,
+      "best_selected_distance_m": 0.012078370116527331,
+      "inversion_hit": 1,
+      "mean_action_distance_from_anchor": 4.927621063837549,
+      "mean_proxy_rank_fraction": 0.9882943143812709,
+      "n_alternatives": 8,
+      "proxy_rejected_fraction": 1.0,
+      "selected_indices": [
+        14,
+        48,
+        117,
+        132,
+        41,
+        1,
+        118,
+        196
+      ],
+      "selected_success_any": 1
+    },
+    "proxy_rejected_stratified_diverse": {
+      "accounted_physical_queries": 9,
+      "all_proxy_rejected": 1,
+      "any_success_gain": 1,
+      "best_any_advantage_m": 0.062366945241156,
+      "best_corrective_advantage_m": 0.062366945241156,
+      "best_selected_distance_m": 0.0034157960410852095,
+      "inversion_hit": 1,
+      "mean_action_distance_from_anchor": 6.3247035243638035,
+      "mean_proxy_rank_fraction": 0.5058528428093646,
+      "n_alternatives": 8,
+      "proxy_rejected_fraction": 1.0,
+      "selected_indices": [
+        9,
+        59,
+        192,
+        156,
+        103,
+        108,
+        177,
+        278
+      ],
+      "selected_success_any": 1
+    },
+    "random_final_population": {
+      "accounted_physical_queries": 9,
+      "all_proxy_rejected": 1,
+      "any_success_gain": 1,
+      "best_any_advantage_m": 0.062366945241156,
+      "best_corrective_advantage_m": 0.062366945241156,
+      "best_selected_distance_m": 0.0034157960410852095,
+      "inversion_hit": 1,
+      "mean_action_distance_from_anchor": 5.35544461656498,
+      "mean_proxy_rank_fraction": 0.6580267558528428,
+      "n_alternatives": 8,
+      "proxy_rejected_fraction": 1.0,
+      "selected_indices": [
+        103,
+        106,
+        115,
+        129,
+        177,
+        252,
+        266,
+        291
+      ],
+      "selected_success_any": 1
+    }
+  },
+  "config": {
+    "action_block": 5,
+    "alternatives": 8,
+    "cem_steps": 30,
+    "checkpoint": "quentinll/lewm-cube",
+    "dataset": "ogbench/cube_single_expert.h5",
+    "goal_offset": 25,
+    "horizon": 5,
+    "min_physical_gap_m": 0.02,
+    "num_samples": 300,
+    "physical_budget_per_arm": 9,
+    "seed": 20260818,
+    "topk": 30,
+    "var_scale": 1.0
+  },
+  "episode": 1493,
+  "repeat_gate": {
+    "executed_max_abs": 0.0,
+    "pass": true,
+    "physical_max_abs": 0.0,
+    "success_disagreements": 0
+  },
+  "scope": "Selections are locked from frozen CEM/model quantities before any physical replay. Every arm is charged the same returned-plan-plus-K physical-query budget.",
+  "snapshot": 16,
+  "start_step": 135,
+  "visual_signature": "add82fdd0218b4f63c1da71f49d69b2f8e650d5c28540e52d8798d15d91cf93b",
+  "visual_signature_shapes": {
+    "cam_fovy": [
+      4
+    ],
+    "cam_mat0": [
+      4,
+      9
+    ],
+    "cam_pos": [
+      4,
+      3
+    ],
+    "cam_quat": [
+      4,
+      4
+    ],
+    "geom_rgba": [
+      64,
+      4
+    ],
+    "light_ambient": [
+      2,
+      3
+    ],
+    "light_diffuse": [
+      2,
+      3
+    ],
+    "light_dir": [
+      2,
+      3
+    ],
+    "light_pos": [
+      2,
+      3
+    ],
+    "light_specular": [
+      2,
+      3
+    ],
+    "mat_rgba": [
+      10,
+      4
+    ],
+    "tex_adr": [
+      2
+    ],
+    "tex_height": [
+      2
+    ],
+    "tex_width": [
+      2
+    ]
+  }
+}

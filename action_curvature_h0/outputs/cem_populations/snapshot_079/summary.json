@@ -1,0 +1,93 @@
+{
+  "candidate_rollouts": 600,
+  "config": {
+    "action_block": 5,
+    "cem_steps": 30,
+    "checkpoint": "quentinll/lewm-cube",
+    "dataset": "ogbench/cube_single_expert.h5",
+    "goal_offset": 25,
+    "horizon": 5,
+    "manifest": "/home/nhatnc129/nhat.nc/jepa-research/physical_search_distillation/outputs/h0/manifest.json",
+    "num_samples": 300,
+    "out_dir": "/home/nhatnc129/nhat.nc/jepa-research/action_curvature_h0/outputs/cem_populations",
+    "physical_atol": 1e-05,
+    "record_step": [
+      0,
+      29
+    ],
+    "seed": 20260819,
+    "snapshot_index": 79,
+    "topk": 30,
+    "var_scale": 1.0
+  },
+  "episode": 6405,
+  "native_returned_distance_m": 0.17794242258192372,
+  "native_returned_success": 0,
+  "record_steps": [
+    0,
+    29
+  ],
+  "repeat_gate": true,
+  "returned_action_sha256": "16d46c725f36f7637fb346b648292635e84c5ff4425da6c07c718f6c509cefb8",
+  "snapshot": 79,
+  "split": "train",
+  "teacher_best_distance_m": [
+    0.16767566498665554,
+    0.17794242258192372
+  ],
+  "visual_signature": "add82fdd0218b4f63c1da71f49d69b2f8e650d5c28540e52d8798d15d91cf93b",
+  "visual_signature_shapes": {
+    "cam_fovy": [
+      4
+    ],
+    "cam_mat0": [
+      4,
+      9
+    ],
+    "cam_pos": [
+      4,
+      3
+    ],
+    "cam_quat": [
+      4,
+      4
+    ],
+    "geom_rgba": [
+      64,
+      4
+    ],
+    "light_ambient": [
+      2,
+      3
+    ],
+    "light_diffuse": [
+      2,
+      3
+    ],
+    "light_dir": [
+      2,
+      3
+    ],
+    "light_pos": [
+      2,
+      3
+    ],
+    "light_specular": [
+      2,
+      3
+    ],
+    "mat_rgba": [
+      10,
+      4
+    ],
+    "tex_adr": [
+      2
+    ],
+    "tex_height": [
+      2
+    ],
+    "tex_width": [
+      2
+    ]
+  }
+}

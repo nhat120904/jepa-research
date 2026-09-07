@@ -1,0 +1,25 @@
+{
+  "context": "17-frame free glide under the same episode gamma",
+  "direct_target_horizons": [
+    7,
+    14,
+    27,
+    28
+  ],
+  "episodes": 2400,
+  "hostname": "worker-mig-3g40gb-0",
+  "output": "/home/nhatnc129/nhat.nc/jepa-research/moment_wm_h0/outputs/gate3_full/control.pt",
+  "queries_per_episode": 12,
+  "query": "smooth two-knot finger-force program, 28 control steps",
+  "samples": 28800,
+  "schema_version": 1,
+  "seed": 260904,
+  "slurm_job_id": "48242",
+  "source_sha256": "b708ca27d8878da03c461d1a2543ae3f69baa4652b42641d77cfe31af243da81",
+  "split_counts_episodes": {
+    "test": 480,
+    "train": 1440,
+    "validation": 480
+  },
+  "targeted_action_fraction": 0.75
+}

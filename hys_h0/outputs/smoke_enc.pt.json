@@ -1,0 +1,32 @@
+{
+  "gate": "switch",
+  "seed": 0,
+  "tasks": [
+    "mw-push"
+  ],
+  "lora_r": 16,
+  "switch_rate": 0.06443298969072164,
+  "lambda_curve": 10.0,
+  "lambda_preserve": 0.05,
+  "frozen_baseline": {
+    "curv": 1.2309058631459873,
+    "obj_decode_median_cm": 6.620331910554918,
+    "eff_rank": 39.37510681152344
+  },
+  "final": {
+    "epoch": 0,
+    "curv": 0.6017697677016258,
+    "obj_decode_median_cm": 4.067717419064142,
+    "eff_rank": 16.38471031188965,
+    "train_curve": 0.7164945647768353
+  },
+  "history": [
+    {
+      "epoch": 0,
+      "curv": 0.6017697677016258,
+      "obj_decode_median_cm": 4.067717419064142,
+      "eff_rank": 16.38471031188965,
+      "train_curve": 0.7164945647768353
+    }
+  ]
+}

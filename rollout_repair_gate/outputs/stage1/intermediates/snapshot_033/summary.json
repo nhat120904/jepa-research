@@ -1,0 +1,93 @@
+{
+  "arrays_sha256": {
+    "future_embeddings": "57db0f607aee78576842d4cf596f76953650d22fe55c97cccd9feeb474e91867",
+    "physical": "7f6e9285296068d28ca5999284418ef28a4dfcb30a926d8edfbf4f85c778f111",
+    "true_frames": "65927773cc856728fd39d73ceee04efa831277c126dd7fbf77d53c7286598423"
+  },
+  "config": {
+    "action_block": 5,
+    "checkpoint": "quentinll/lewm-cube",
+    "dataset": "ogbench/cube_single_expert.h5",
+    "encode_batch": 64,
+    "goal_offset": 25,
+    "horizon": 5,
+    "latent_atol": 0.0002,
+    "manifest": "/home/nhatnc129/nhat.nc/jepa-research/physical_search_distillation/outputs/h0/manifest.json",
+    "out_dir": "/home/nhatnc129/nhat.nc/jepa-research/rollout_repair_gate/outputs/stage1/intermediates",
+    "population_dir": "/home/nhatnc129/nhat.nc/jepa-research/physical_search_distillation/outputs/h0/populations",
+    "snapshot_index": 33
+  },
+  "episode": 2643,
+  "frame_boundaries": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "num_candidates": 96,
+  "num_populations": 2,
+  "physical_replay_max_abs": 1.4816810500750677e-08,
+  "primitive_frames_persisted": false,
+  "rollout_replay_max_abs": 0.0,
+  "snapshot": 33,
+  "source": "/home/nhatnc129/nhat.nc/jepa-research/physical_search_distillation/outputs/h0/populations/snapshot_033/populations.npz",
+  "source_sha256": "b2c1351ed9628381a485fd75bf94356fe78375e4dd1123817d622835d189925d",
+  "split": "train",
+  "valid_target_fraction": 1.0,
+  "visual_signature": "add82fdd0218b4f63c1da71f49d69b2f8e650d5c28540e52d8798d15d91cf93b",
+  "visual_signature_shapes": {
+    "cam_fovy": [
+      4
+    ],
+    "cam_mat0": [
+      4,
+      9
+    ],
+    "cam_pos": [
+      4,
+      3
+    ],
+    "cam_quat": [
+      4,
+      4
+    ],
+    "geom_rgba": [
+      64,
+      4
+    ],
+    "light_ambient": [
+      2,
+      3
+    ],
+    "light_diffuse": [
+      2,
+      3
+    ],
+    "light_dir": [
+      2,
+      3
+    ],
+    "light_pos": [
+      2,
+      3
+    ],
+    "light_specular": [
+      2,
+      3
+    ],
+    "mat_rgba": [
+      10,
+      4
+    ],
+    "tex_adr": [
+      2
+    ],
+    "tex_height": [
+      2
+    ],
+    "tex_width": [
+      2
+    ]
+  }
+}

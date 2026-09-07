@@ -1,0 +1,109 @@
+{
+  "chosen_anchor": null,
+  "criterion": {
+    "at_least_one_frozen_anchor_recurrent_r2_gte_0.40": false,
+    "raw_pixel_recurrent_r2_gte_0.40": false
+  },
+  "gate": "anchor_recoverability_certificate",
+  "interpretation": "A passing frozen-anchor probe is an information/recoverability certificate, not evidence that a world-model objective will retain or functionally use drag.",
+  "modalities": {
+    "frozen_dinov2": {
+      "ensemble_mae": 0.7571800947189331,
+      "ensemble_r2": -0.023447871208190918,
+      "ensemble_r2_ci95": [
+        -0.3477772831916809,
+        0.0038371488451957756
+      ],
+      "per_seed": [
+        {
+          "best_validation_mse_standardized": 0.8384117484092712,
+          "epochs_ran": 2,
+          "mae": 0.7571800947189331,
+          "r2": -0.023447871208190918,
+          "seed": 0
+        }
+      ]
+    },
+    "frozen_raft": {
+      "ensemble_mae": 0.6696773767471313,
+      "ensemble_r2": 0.1638985276222229,
+      "ensemble_r2_ci95": [
+        -0.49762456119060516,
+        0.5256112486124039
+      ],
+      "per_seed": [
+        {
+          "best_validation_mse_standardized": 0.6757123470306396,
+          "epochs_ran": 2,
+          "mae": 0.6696773767471313,
+          "r2": 0.1638985276222229,
+          "seed": 0
+        }
+      ]
+    },
+    "pixel_centroid": {
+      "ensemble_mae": 0.8365468978881836,
+      "ensemble_r2": -0.24511969089508057,
+      "ensemble_r2_ci95": [
+        -0.7856751620769501,
+        -0.04532615840435023
+      ],
+      "per_seed": [
+        {
+          "best_validation_mse_standardized": 0.9844182729721069,
+          "epochs_ran": 2,
+          "mae": 0.8365468978881836,
+          "r2": -0.24511969089508057,
+          "seed": 0
+        }
+      ]
+    },
+    "privileged_state_analytic": {
+      "ensemble_mae": 5.453824769574567e-07,
+      "ensemble_r2": 1.0,
+      "ensemble_r2_ci95": [
+        1.0,
+        1.0
+      ],
+      "per_seed": []
+    },
+    "raw_pixels": {
+      "ensemble_mae": 0.7544859647750854,
+      "ensemble_r2": -0.015571832656860352,
+      "ensemble_r2_ci95": [
+        -0.33147737979888914,
+        0.004286810755729676
+      ],
+      "per_seed": [
+        {
+          "best_validation_mse_standardized": 0.8411429524421692,
+          "epochs_ran": 2,
+          "mae": 0.7544859647750854,
+          "r2": -0.015571832656860352,
+          "seed": 0
+        }
+      ]
+    }
+  },
+  "protocol": {
+    "bootstrap_draws": 200,
+    "certificate_threshold_r2": 0.4,
+    "episode_split": "60/20/20 train/validation/test",
+    "probe": "2-layer width-96 GRU after modality-specific per-frame projection",
+    "seeds": [
+      0
+    ],
+    "selection": "early stopping on validation episodes only",
+    "test": "held out until one final evaluation"
+  },
+  "run": {
+    "dataset": "/home/nhatnc129/nhat.nc/jepa-research/moment_wm_h0/outputs/gate2_smoke/glides.pt",
+    "device": "cuda",
+    "features": "/home/nhatnc129/nhat.nc/jepa-research/moment_wm_h0/outputs/gate2_smoke/anchors.pt",
+    "hostname": "worker-mig-3g40gb-0",
+    "slurm_job_id": "48234",
+    "source_sha256": "8b779f73b9a945cdb2fd3cf788985ad6aa7cfb92f7cfed7764d3df339594051a"
+  },
+  "schema_version": 1,
+  "status": "STOP"
+}

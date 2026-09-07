@@ -1,0 +1,94 @@
+{
+  "cache_dir": "/mnt/data/nhatnc129/jepa/scene_progress_wm/cache/val",
+  "context_blocks": 48,
+  "feature_dims": {
+    "frame_latent": 192,
+    "ps_frame": 256,
+    "ps_jepa": 256
+  },
+  "held_out_episodes": 25,
+  "job_id": "49618",
+  "probes": {
+    "frame_latent": {
+      "button_0": {
+        "balanced_accuracy": 0.9983074329636945,
+        "n_train": 11415,
+        "n_val": 3805,
+        "positive_rate": 0.547700394218134
+      },
+      "button_1": {
+        "balanced_accuracy": 0.9978885340531745,
+        "n_train": 11415,
+        "n_val": 3805,
+        "positive_rate": 0.49198423127463864
+      },
+      "drawer_open": {
+        "balanced_accuracy": 0.9887096529201793,
+        "n_train": 11415,
+        "n_val": 3805,
+        "positive_rate": 0.3495400788436268
+      },
+      "window_open": {
+        "balanced_accuracy": 0.9848000647120883,
+        "n_train": 11415,
+        "n_val": 3805,
+        "positive_rate": 0.4134034165571616
+      }
+    },
+    "ps_frame": {
+      "button_0": {
+        "balanced_accuracy": 0.9986991728016006,
+        "n_train": 11415,
+        "n_val": 3805,
+        "positive_rate": 0.547700394218134
+      },
+      "button_1": {
+        "balanced_accuracy": 0.9992155754086691,
+        "n_train": 11415,
+        "n_val": 3805,
+        "positive_rate": 0.49198423127463864
+      },
+      "drawer_open": {
+        "balanced_accuracy": 0.9884126984126984,
+        "n_train": 11415,
+        "n_val": 3805,
+        "positive_rate": 0.3495400788436268
+      },
+      "window_open": {
+        "balanced_accuracy": 0.984258186420943,
+        "n_train": 11415,
+        "n_val": 3805,
+        "positive_rate": 0.4134034165571616
+      }
+    },
+    "ps_jepa": {
+      "button_0": {
+        "balanced_accuracy": 0.9979794031278962,
+        "n_train": 11415,
+        "n_val": 3805,
+        "positive_rate": 0.547700394218134
+      },
+      "button_1": {
+        "balanced_accuracy": 0.9981724855302196,
+        "n_train": 11415,
+        "n_val": 3805,
+        "positive_rate": 0.49198423127463864
+      },
+      "drawer_open": {
+        "balanced_accuracy": 0.9864205969469128,
+        "n_train": 11415,
+        "n_val": 3805,
+        "positive_rate": 0.3495400788436268
+      },
+      "window_open": {
+        "balanced_accuracy": 0.9839403224667154,
+        "n_train": 11415,
+        "n_val": 3805,
+        "positive_rate": 0.4134034165571616
+      }
+    }
+  },
+  "protocol": "scene_progress_wm_history_swap_v1",
+  "samples": 15220,
+  "train_episodes": 75
+}

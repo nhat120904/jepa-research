@@ -22,8 +22,18 @@ nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
 # planning_eval is disabled here: it would add a full CEM eval per epoch and
 # this smoke measures training throughput, not planning.
 echo "--- train start $(date -u +%FT%TZ) ---"
+# ~data.dataset.rdcc_{nbytes,w0}: this checkout of stable-worldmodel
+# (9a66d7d, 2026-08-10) is NEWER than TD-JEPA (2026-07-29) and no longer takes
+# these as kwargs -- it hardcodes rdcc_nbytes=256MiB, the identical value the
+# config asks for, leaving only rdcc_w0 (1.0 vs h5py's 0.75).  Both are h5py
+# chunk-CACHE knobs: they change read speed, never the bytes returned.  Removing
+# them via Hydra keeps the vendored repo pristine and, more importantly, keeps
+# TD-JEPA, our LeWM control and the Phase-1 arena on ONE stable-worldmodel.
+# Giving TD-JEPA a different upstream version would put the arms in different
+# environments, which is a far worse confound than a cache policy.
 "$STAGE0_ROOT/.venv/bin/python" train.py --config-name=ogb_train \
   data=ogb variant=td_jepa seed=3072 \
+  ~data.dataset.rdcc_nbytes ~data.dataset.rdcc_w0 \
   trainer.max_epochs=1 wandb.enabled=false planning_eval.enabled=false \
   output_model_name=smoke/td_jepa/seed_3072_1ep
 echo "--- train end $(date -u +%FT%TZ) ---"

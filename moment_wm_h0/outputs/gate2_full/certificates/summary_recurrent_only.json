@@ -1,0 +1,167 @@
+{
+  "chosen_anchor": "frozen_dinov2",
+  "criterion": {
+    "at_least_one_frozen_anchor_recurrent_r2_gte_0.40": true,
+    "raw_pixel_recurrent_r2_gte_0.40": true
+  },
+  "gate": "anchor_recoverability_certificate",
+  "interpretation": "A passing frozen-anchor probe is an information/recoverability certificate, not evidence that a world-model objective will retain or functionally use drag.",
+  "modalities": {
+    "frozen_dinov2": {
+      "ensemble_mae": 0.24764178693294525,
+      "ensemble_r2": 0.9023669362068176,
+      "ensemble_r2_ci95": [
+        0.8857452884316445,
+        0.9164470717310905
+      ],
+      "per_seed": [
+        {
+          "best_validation_mse_standardized": 0.08974764496088028,
+          "epochs_ran": 60,
+          "mae": 0.25906792283058167,
+          "r2": 0.8938912749290466,
+          "seed": 0
+        },
+        {
+          "best_validation_mse_standardized": 0.08800376951694489,
+          "epochs_ran": 60,
+          "mae": 0.2476188987493515,
+          "r2": 0.901324987411499,
+          "seed": 1
+        },
+        {
+          "best_validation_mse_standardized": 0.08904053270816803,
+          "epochs_ran": 60,
+          "mae": 0.2511115074157715,
+          "r2": 0.8997553586959839,
+          "seed": 2
+        }
+      ]
+    },
+    "frozen_raft": {
+      "ensemble_mae": 0.32462507486343384,
+      "ensemble_r2": 0.8223905563354492,
+      "ensemble_r2_ci95": [
+        0.789798018336296,
+        0.8503481805324554
+      ],
+      "per_seed": [
+        {
+          "best_validation_mse_standardized": 0.1936420500278473,
+          "epochs_ran": 21,
+          "mae": 0.36360645294189453,
+          "r2": 0.7856911420822144,
+          "seed": 0
+        },
+        {
+          "best_validation_mse_standardized": 0.1819416731595993,
+          "epochs_ran": 39,
+          "mae": 0.3292551040649414,
+          "r2": 0.8174112439155579,
+          "seed": 1
+        },
+        {
+          "best_validation_mse_standardized": 0.19742107391357422,
+          "epochs_ran": 30,
+          "mae": 0.34763801097869873,
+          "r2": 0.7959285378456116,
+          "seed": 2
+        }
+      ]
+    },
+    "pixel_centroid": {
+      "ensemble_mae": 0.11961828917264938,
+      "ensemble_r2": 0.9747858643531799,
+      "ensemble_r2_ci95": [
+        0.9696229487657547,
+        0.9791330844163895
+      ],
+      "per_seed": [
+        {
+          "best_validation_mse_standardized": 0.029582826420664787,
+          "epochs_ran": 60,
+          "mae": 0.1366410106420517,
+          "r2": 0.9690977931022644,
+          "seed": 0
+        },
+        {
+          "best_validation_mse_standardized": 0.0281706340610981,
+          "epochs_ran": 60,
+          "mae": 0.12775011360645294,
+          "r2": 0.9710023999214172,
+          "seed": 1
+        },
+        {
+          "best_validation_mse_standardized": 0.027668286114931107,
+          "epochs_ran": 60,
+          "mae": 0.1368819922208786,
+          "r2": 0.967943012714386,
+          "seed": 2
+        }
+      ]
+    },
+    "privileged_state_analytic": {
+      "ensemble_mae": 4.934767616759927e-07,
+      "ensemble_r2": 1.0,
+      "ensemble_r2_ci95": [
+        1.0,
+        1.0
+      ],
+      "per_seed": []
+    },
+    "raw_pixels": {
+      "ensemble_mae": 0.08366866409778595,
+      "ensemble_r2": 0.98758864402771,
+      "ensemble_r2_ci95": [
+        0.9849882155656815,
+        0.989762632548809
+      ],
+      "per_seed": [
+        {
+          "best_validation_mse_standardized": 0.013382580131292343,
+          "epochs_ran": 60,
+          "mae": 0.09275679290294647,
+          "r2": 0.9851428866386414,
+          "seed": 0
+        },
+        {
+          "best_validation_mse_standardized": 0.012861877679824829,
+          "epochs_ran": 60,
+          "mae": 0.09158781170845032,
+          "r2": 0.9847499132156372,
+          "seed": 1
+        },
+        {
+          "best_validation_mse_standardized": 0.011762414127588272,
+          "epochs_ran": 60,
+          "mae": 0.09029412269592285,
+          "r2": 0.9861041903495789,
+          "seed": 2
+        }
+      ]
+    }
+  },
+  "protocol": {
+    "bootstrap_draws": 10000,
+    "certificate_threshold_r2": 0.4,
+    "episode_split": "60/20/20 train/validation/test",
+    "probe": "2-layer width-96 GRU after modality-specific per-frame projection",
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "selection": "early stopping on validation episodes only",
+    "test": "held out until one final evaluation"
+  },
+  "run": {
+    "dataset": "/home/nhatnc129/nhat.nc/jepa-research/moment_wm_h0/outputs/gate2_full/glides.pt",
+    "device": "cuda",
+    "features": "/home/nhatnc129/nhat.nc/jepa-research/moment_wm_h0/outputs/gate2_full/anchors.pt",
+    "hostname": "worker-mig-3g40gb-0",
+    "slurm_job_id": "48237",
+    "source_sha256": "117a89e68d93d9cd2c8e79ad42203f10d8aaa6d01fafb9543c769c990a08f996"
+  },
+  "schema_version": 1,
+  "status": "GO"
+}

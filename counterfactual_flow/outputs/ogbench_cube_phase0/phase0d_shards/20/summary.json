@@ -1,0 +1,104 @@
+{
+  "config": {
+    "action_block": 5,
+    "cem_steps": 30,
+    "checkpoint": "quentinll/lewm-cube",
+    "dataset": "ogbench/cube_single_expert.h5",
+    "goal_offset": 25,
+    "horizon": 5,
+    "num_samples": 300,
+    "seed": 20260810,
+    "topk": 30,
+    "var_scale": 1.0
+  },
+  "episode": 6997,
+  "final_population": {
+    "n_candidates": 300,
+    "physical_oracle_candidate": 214,
+    "physical_oracle_distance_m": 0.0168060980766503,
+    "physical_oracle_success": 1,
+    "proxy_better_than_returned_fraction": 0.0,
+    "returned_selection_regret_m": 0.08427329399898892,
+    "returned_success_gap": 1
+  },
+  "repeat_gate": {
+    "executed_max_abs": 0.0,
+    "pass": true,
+    "physical_max_abs": 0.0,
+    "success_disagreements": 0
+  },
+  "returned": {
+    "actions_raw_sha256": "9f1dd2a43038fd0fd3a6359b9113b321c0f3436f10b2ac356df0fd5d131bb522",
+    "executed_steps": 25,
+    "physical_distance_m": 0.10107939207563922,
+    "proxy_cost": 0.9670976400375366,
+    "success": 0
+  },
+  "scope": "CEM-returned final proposal mean replayed from a complete MuJoCo state; simulator outcomes are post-hoc and were not exposed to CEM.",
+  "snapshot": 20,
+  "start_step": 12,
+  "verified_proxy_rejected_corrective": {
+    "candidate": 214,
+    "criterion": "final candidate has strictly higher frozen proxy cost than the returned CEM mean and at least 2.0 cm lower physical distance",
+    "exists": 1,
+    "physical_advantage_m": 0.08427329399898892,
+    "physical_distance_m": 0.0168060980766503,
+    "proxy_cost": 7.969421863555908,
+    "success": 1
+  },
+  "visual_signature": "add82fdd0218b4f63c1da71f49d69b2f8e650d5c28540e52d8798d15d91cf93b",
+  "visual_signature_shapes": {
+    "cam_fovy": [
+      4
+    ],
+    "cam_mat0": [
+      4,
+      9
+    ],
+    "cam_pos": [
+      4,
+      3
+    ],
+    "cam_quat": [
+      4,
+      4
+    ],
+    "geom_rgba": [
+      64,
+      4
+    ],
+    "light_ambient": [
+      2,
+      3
+    ],
+    "light_diffuse": [
+      2,
+      3
+    ],
+    "light_dir": [
+      2,
+      3
+    ],
+    "light_pos": [
+      2,
+      3
+    ],
+    "light_specular": [
+      2,
+      3
+    ],
+    "mat_rgba": [
+      10,
+      4
+    ],
+    "tex_adr": [
+      2
+    ],
+    "tex_height": [
+      2
+    ],
+    "tex_width": [
+      2
+    ]
+  }
+}

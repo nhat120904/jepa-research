@@ -1,0 +1,416 @@
+{
+  "arm_summary": {
+    "action_diverse": {
+      "anchor_physical_distance_m": {
+        "ci_high": 0.09691332594576316,
+        "ci_low": 0.0595242254217429,
+        "mean": 0.07725676371367665,
+        "n": 128
+      },
+      "anchor_success": {
+        "ci_high": 0.71875,
+        "ci_low": 0.546875,
+        "mean": 0.6328125,
+        "n": 128
+      },
+      "any_success_gain": {
+        "ci_high": 0.1640625,
+        "ci_low": 0.0625,
+        "mean": 0.109375,
+        "n": 128
+      },
+      "best_any_advantage_m": {
+        "ci_high": 0.02993691399358105,
+        "ci_low": 0.013362037324042704,
+        "mean": 0.02105052962244602,
+        "n": 128
+      },
+      "best_corrective_advantage_m": {
+        "ci_high": 0.027727688192648706,
+        "ci_low": 0.010698314842572896,
+        "mean": 0.01857196355760067,
+        "n": 128
+      },
+      "best_selected_distance_m": {
+        "ci_high": 0.07406499367983897,
+        "ci_low": 0.04169386025485811,
+        "mean": 0.0565145590876371,
+        "n": 128
+      },
+      "inversion_hit": {
+        "ci_high": 0.3125,
+        "ci_low": 0.1640625,
+        "mean": 0.234375,
+        "n": 128
+      },
+      "mean_action_distance_from_anchor": {
+        "ci_high": 6.042644884303284,
+        "ci_low": 5.7349796512615985,
+        "mean": 5.8870352068127705,
+        "n": 128
+      },
+      "mean_cem_disagreement": {
+        "ci_high": -0.16437277905518394,
+        "ci_low": -0.20403958834134614,
+        "mean": -0.18426003344481606,
+        "n": 128
+      },
+      "mean_proxy_instability": {
+        "ci_high": 0.18600100516157325,
+        "ci_low": 0.160877428851034,
+        "mean": 0.1736003789887559,
+        "n": 128
+      },
+      "mean_proxy_rank_fraction": {
+        "ci_high": 0.5736537971624165,
+        "ci_low": 0.5366935194136706,
+        "mean": 0.5547626201923077,
+        "n": 128
+      },
+      "proxy_rejected_fraction": {
+        "ci_high": 1.0,
+        "ci_low": 0.9970703125,
+        "mean": 0.9990234375,
+        "n": 128
+      },
+      "selected_success_any": {
+        "ci_high": 0.8125,
+        "ci_low": 0.65625,
+        "mean": 0.734375,
+        "n": 128
+      }
+    },
+    "cem_disagreement_diverse": {
+      "anchor_physical_distance_m": {
+        "ci_high": 0.09657314313273536,
+        "ci_low": 0.059717991788776084,
+        "mean": 0.07725676371367665,
+        "n": 128
+      },
+      "anchor_success": {
+        "ci_high": 0.71875,
+        "ci_low": 0.546875,
+        "mean": 0.6328125,
+        "n": 128
+      },
+      "any_success_gain": {
+        "ci_high": 0.17988281249999716,
+        "ci_low": 0.0703125,
+        "mean": 0.125,
+        "n": 128
+      },
+      "best_any_advantage_m": {
+        "ci_high": 0.028584403327689703,
+        "ci_low": 0.013105727821659672,
+        "mean": 0.02020473611757,
+        "n": 128
+      },
+      "best_corrective_advantage_m": {
+        "ci_high": 0.02490642942678683,
+        "ci_low": 0.00933578230915212,
+        "mean": 0.01661888554719622,
+        "n": 128
+      },
+      "best_selected_distance_m": {
+        "ci_high": 0.07454694594271156,
+        "ci_low": 0.04178483079016884,
+        "mean": 0.05724522234358019,
+        "n": 128
+      },
+      "inversion_hit": {
+        "ci_high": 0.2578125,
+        "ci_low": 0.125,
+        "mean": 0.1875,
+        "n": 128
+      },
+      "mean_action_distance_from_anchor": {
+        "ci_high": 5.298315195610099,
+        "ci_low": 5.040705317892403,
+        "mean": 5.16630853889824,
+        "n": 128
+      },
+      "mean_cem_disagreement": {
+        "ci_high": 0.4250500529107442,
+        "ci_low": 0.4065829784176422,
+        "mean": 0.41575107127926425,
+        "n": 128
+      },
+      "mean_proxy_instability": {
+        "ci_high": 0.1556432297451015,
+        "ci_low": 0.13698525577450474,
+        "mean": 0.1465495099132562,
+        "n": 128
+      },
+      "mean_proxy_rank_fraction": {
+        "ci_high": 0.8112948924801421,
+        "ci_low": 0.7926779858643395,
+        "mean": 0.8020517610785953,
+        "n": 128
+      },
+      "proxy_rejected_fraction": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "mean": 1.0,
+        "n": 128
+      },
+      "selected_success_any": {
+        "ci_high": 0.828125,
+        "ci_low": 0.6796875,
+        "mean": 0.7578125,
+        "n": 128
+      }
+    },
+    "proxy_instability_diverse": {
+      "anchor_physical_distance_m": {
+        "ci_high": 0.09620066859763134,
+        "ci_low": 0.05989587462756987,
+        "mean": 0.07725676371367665,
+        "n": 128
+      },
+      "anchor_success": {
+        "ci_high": 0.7109375,
+        "ci_low": 0.546875,
+        "mean": 0.6328125,
+        "n": 128
+      },
+      "any_success_gain": {
+        "ci_high": 0.171875,
+        "ci_low": 0.0625,
+        "mean": 0.1171875,
+        "n": 128
+      },
+      "best_any_advantage_m": {
+        "ci_high": 0.03021214339005811,
+        "ci_low": 0.013247644961794038,
+        "mean": 0.021039561024525116,
+        "n": 128
+      },
+      "best_corrective_advantage_m": {
+        "ci_high": 0.027832807715466278,
+        "ci_low": 0.010537809255253203,
+        "mean": 0.01856160436541959,
+        "n": 128
+      },
+      "best_selected_distance_m": {
+        "ci_high": 0.07327716032537943,
+        "ci_low": 0.04152833890293066,
+        "mean": 0.05644173854291765,
+        "n": 128
+      },
+      "inversion_hit": {
+        "ci_high": 0.3125,
+        "ci_low": 0.1640625,
+        "mean": 0.234375,
+        "n": 128
+      },
+      "mean_action_distance_from_anchor": {
+        "ci_high": 5.618846712186453,
+        "ci_low": 5.344887920519476,
+        "mean": 5.480042603274081,
+        "n": 128
+      },
+      "mean_cem_disagreement": {
+        "ci_high": -0.20471885451505017,
+        "ci_low": -0.25732601510242475,
+        "mean": -0.2311154368729097,
+        "n": 128
+      },
+      "mean_proxy_instability": {
+        "ci_high": 0.3240029644943536,
+        "ci_low": 0.2821073718994819,
+        "mean": 0.30305719597978287,
+        "n": 128
+      },
+      "mean_proxy_rank_fraction": {
+        "ci_high": 0.44724676329954016,
+        "ci_low": 0.3907979397470736,
+        "mean": 0.4185893081103679,
+        "n": 128
+      },
+      "proxy_rejected_fraction": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "mean": 1.0,
+        "n": 128
+      },
+      "selected_success_any": {
+        "ci_high": 0.8203125,
+        "ci_low": 0.671875,
+        "mean": 0.75,
+        "n": 128
+      }
+    },
+    "random_final_population": {
+      "anchor_physical_distance_m": {
+        "ci_high": 0.0961155770315796,
+        "ci_low": 0.05959089517445603,
+        "mean": 0.07725676371367665,
+        "n": 128
+      },
+      "anchor_success": {
+        "ci_high": 0.71875,
+        "ci_low": 0.546875,
+        "mean": 0.6328125,
+        "n": 128
+      },
+      "any_success_gain": {
+        "ci_high": 0.1484375,
+        "ci_low": 0.046875,
+        "mean": 0.09375,
+        "n": 128
+      },
+      "best_any_advantage_m": {
+        "ci_high": 0.028539836640416677,
+        "ci_low": 0.011539593905611012,
+        "mean": 0.019434340216870048,
+        "n": 128
+      },
+      "best_corrective_advantage_m": {
+        "ci_high": 0.026426045425683588,
+        "ci_low": 0.009406793704739975,
+        "mean": 0.017200260242952653,
+        "n": 128
+      },
+      "best_selected_distance_m": {
+        "ci_high": 0.07551850328547347,
+        "ci_low": 0.04322182104810403,
+        "mean": 0.05862007876882805,
+        "n": 128
+      },
+      "inversion_hit": {
+        "ci_high": 0.265625,
+        "ci_low": 0.125,
+        "mean": 0.1953125,
+        "n": 128
+      },
+      "mean_action_distance_from_anchor": {
+        "ci_high": 4.73308111287021,
+        "ci_low": 4.528268887299862,
+        "mean": 4.628152142257052,
+        "n": 128
+      },
+      "mean_cem_disagreement": {
+        "ci_high": 0.007603959813963204,
+        "ci_low": -0.03773989470108696,
+        "mean": -0.014955450459866224,
+        "n": 128
+      },
+      "mean_proxy_instability": {
+        "ci_high": 0.194868237761381,
+        "ci_low": 0.16890488699920864,
+        "mean": 0.18201525056791407,
+        "n": 128
+      },
+      "mean_proxy_rank_fraction": {
+        "ci_high": 0.503334846624164,
+        "ci_low": 0.46814536410430607,
+        "mean": 0.4858610733695652,
+        "n": 128
+      },
+      "proxy_rejected_fraction": {
+        "ci_high": 0.9990234375,
+        "ci_low": 0.990234375,
+        "mean": 0.9951171875,
+        "n": 128
+      },
+      "selected_success_any": {
+        "ci_high": 0.796875,
+        "ci_low": 0.640625,
+        "mean": 0.71875,
+        "n": 128
+      }
+    }
+  },
+  "config": {
+    "action_block": 5,
+    "alternatives": 8,
+    "bootstrap_draws": 10000,
+    "bootstrap_seed": 20260819,
+    "cem_steps": 30,
+    "checkpoint": "quentinll/lewm-cube",
+    "dataset": "ogbench/cube_single_expert.h5",
+    "goal_offset": 25,
+    "horizon": 5,
+    "instability_repeats": 4,
+    "jitter_scale": 0.25,
+    "min_physical_gap_m": 0.02,
+    "n_snapshots": 128,
+    "num_samples": 300,
+    "physical_budget_per_arm": 9,
+    "seed": 20260819,
+    "selector_pool_frac": 0.25,
+    "topk": 30,
+    "var_scale": 1.0
+  },
+  "controls": [
+    "action_diverse",
+    "random_final_population",
+    "cem_disagreement_diverse"
+  ],
+  "gate": "primary inversion-hit and corrective-advantage gains must both have CI_low>0 against random and pure action diversity",
+  "paired_contrasts": {
+    "proxy_instability_diverse_minus_action_diverse": {
+      "best_corrective_advantage_gain_m": {
+        "ci_high": 0.006815626218601441,
+        "ci_low": -0.006769731978904875,
+        "mean": -1.0359192181082395e-05,
+        "n": 128
+      },
+      "inversion_hit_gain": {
+        "ci_high": 0.0625,
+        "ci_low": -0.0625,
+        "mean": 0.0,
+        "n": 128
+      },
+      "success_gain_gain": {
+        "ci_high": 0.0390625,
+        "ci_low": -0.0234375,
+        "mean": 0.0078125,
+        "n": 128
+      }
+    },
+    "proxy_instability_diverse_minus_cem_disagreement_diverse": {
+      "best_corrective_advantage_gain_m": {
+        "ci_high": 0.008023071359515715,
+        "ci_low": -0.0031633213411737015,
+        "mean": 0.00194271881822337,
+        "n": 128
+      },
+      "inversion_hit_gain": {
+        "ci_high": 0.1015625,
+        "ci_low": -0.0078125,
+        "mean": 0.046875,
+        "n": 128
+      },
+      "success_gain_gain": {
+        "ci_high": 0.015625,
+        "ci_low": -0.0390625,
+        "mean": -0.0078125,
+        "n": 128
+      }
+    },
+    "proxy_instability_diverse_minus_random_final_population": {
+      "best_corrective_advantage_gain_m": {
+        "ci_high": 0.00577944114197497,
+        "ci_low": -0.0032656938772026387,
+        "mean": 0.0013613441224669355,
+        "n": 128
+      },
+      "inversion_hit_gain": {
+        "ci_high": 0.0859375,
+        "ci_low": -0.0078125,
+        "mean": 0.0390625,
+        "n": 128
+      },
+      "success_gain_gain": {
+        "ci_high": 0.0625,
+        "ci_low": -0.015625,
+        "mean": 0.0234375,
+        "n": 128
+      }
+    }
+  },
+  "primary_arm": "proxy_instability_diverse",
+  "scope": "Locked test on a fresh cohort episode-disjoint from both Phase 0d and Phase 1a. All selectors are frozen-model-only and use nine accounted physical branches/state.",
+  "verdict": "STOP_NO_ROBUST_MODEL_SIGNAL_BEYOND_DIVERSITY"
+}

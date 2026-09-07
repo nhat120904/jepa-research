@@ -1,0 +1,6 @@
+outputs/**
+!outputs/**/
+!outputs/**/aggregate/**
+!outputs/**/diagnostic/**
+!outputs/**/training_summary.json
+__pycache__/

@@ -1,0 +1,20 @@
+{
+  "arm": "mse",
+  "best_epoch": 59,
+  "best_validation_objective": 6.200958082411025,
+  "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/moment_wm_h0/outputs/gate3_full/models/mse/seed_1/checkpoint.pt",
+  "epochs_ran": 60,
+  "features": "/home/nhatnc129/nhat.nc/jepa-research/moment_wm_h0/outputs/gate3_full/features.pt",
+  "hostname": "worker-mig-3g40gb-0",
+  "parameter_count": 436720,
+  "schema_version": 1,
+  "seed": 1,
+  "slurm_job_id": "48247",
+  "source_sha256": "fc7eb29f565d7ef732b6bb5b97ecfd2c034e2bd4cfd1252e585f26867a7a57c1",
+  "test": {
+    "backward_mse": 0.0,
+    "forward_objective": 6.51631399790446,
+    "forward_raw_mse": 6.51631399790446,
+    "loss": 6.51631399790446
+  }
+}

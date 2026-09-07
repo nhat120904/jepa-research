@@ -1,0 +1,38 @@
+{
+  "task": "exploration_search",
+  "ckpt": "/mnt/data/nhatnc129/contactworld/ContactWorld/logs/ckpts/exploration_search/pointcloud/vc/tactile_force_field_right/concat/100000.ckpt",
+  "latent_dim": 576,
+  "target": "plug_pos",
+  "use_tactile": true,
+  "success_thresh_m": 0.01,
+  "readouts": {
+    "linear": {
+      "mean_err_cm": 3.5210518836975098,
+      "mean_err_cm_ci": [
+        3.224487230181694,
+        3.8230448961257935
+      ],
+      "median_err_cm": 3.26525616645813,
+      "hit_at_thresh": 0.1014037985136251,
+      "per_seed_mean_cm": [
+        3.420903205871582,
+        3.4096405506134033,
+        3.742250442504883
+      ]
+    },
+    "mlp": {
+      "mean_err_cm": 3.7895050048828125,
+      "mean_err_cm_ci": [
+        3.52359302341938,
+        4.062164202332497
+      ],
+      "median_err_cm": 3.3589582443237305,
+      "hit_at_thresh": 0.11676300578034682,
+      "per_seed_mean_cm": [
+        3.711392402648926,
+        3.6438755989074707,
+        4.0227437019348145
+      ]
+    }
+  }
+}

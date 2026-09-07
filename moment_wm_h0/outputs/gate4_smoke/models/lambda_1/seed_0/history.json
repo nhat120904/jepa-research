@@ -1,0 +1,22 @@
+[
+  {
+    "epoch": 1,
+    "train_raw_mse": 129.8684844970703,
+    "train_mmr_u": 2.648607075214386,
+    "train_objective": 132.51708984375,
+    "validation_raw_mse": 125.30798574594351,
+    "validation_mmr_u": 2.5684661315037656,
+    "validation_objective": 127.87644841120793,
+    "validation_endpoint": 0.3605714990542485
+  },
+  {
+    "epoch": 2,
+    "train_raw_mse": 126.433349609375,
+    "train_mmr_u": 2.3073768615722656,
+    "train_objective": 128.7407283782959,
+    "validation_raw_mse": 122.65421823354868,
+    "validation_mmr_u": 2.352062848898081,
+    "validation_objective": 125.00628309983473,
+    "validation_endpoint": 0.3605536680955153
+  }
+]

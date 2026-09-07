@@ -1,0 +1,21 @@
+{
+  "snapshot": 78,
+  "n_candidates": 12,
+  "n_steps_total": 24,
+  "latent_dim": 192,
+  "cost_ranks": [
+    0,
+    27,
+    54,
+    81,
+    108,
+    135,
+    163,
+    190,
+    217,
+    244,
+    271,
+    299
+  ],
+  "population_index": 1
+}

@@ -1,0 +1,16 @@
+{
+  "action_shape": [
+    960,
+    5,
+    25
+  ],
+  "embedding_shape": [
+    960,
+    6,
+    192
+  ],
+  "num_sequences": 960,
+  "num_shards": 16,
+  "output": "/home/nhatnc129/nhat.nc/jepa-research/rollout_repair_gate/outputs/stage1/expert_cache/expert_shard_11.npz",
+  "shard": 11
+}

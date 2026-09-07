@@ -1,0 +1,96 @@
+{
+  "episode": 7795,
+  "goal_offset": 25,
+  "group": {
+    "control_index": null,
+    "control_relaxed": null,
+    "deceptive_index": null,
+    "has_deceptive": false,
+    "positive_index": 240
+  },
+  "n_candidates": 600,
+  "pool_physical_best_m": 0.009229809625173844,
+  "pool_sha256": "1e2a2d22156d79931a54ddafe05dd7e589250207ba9b41a68613174f6718c2d2",
+  "pool_success_available": 1,
+  "repeat_gate": {
+    "executed_max_abs": 0.0,
+    "pass": true,
+    "physical_max_abs": 0.0,
+    "success_disagreements": 0
+  },
+  "snapshot": 22,
+  "source_metrics": {
+    "cem_final": {
+      "best_physical_distance_m": 0.014315792771166947,
+      "mean_physical_distance_m": 0.01630077732345087,
+      "n": 300,
+      "success_available": 1
+    },
+    "cem_initial": {
+      "best_physical_distance_m": 0.009229809625173844,
+      "mean_physical_distance_m": 0.030971752166064615,
+      "n": 300,
+      "success_available": 1
+    }
+  },
+  "start_step": 152,
+  "thresholds": {
+    "min_regret_m": 0.02,
+    "proxy_top_frac": 0.1
+  },
+  "visual_signature": "add82fdd0218b4f63c1da71f49d69b2f8e650d5c28540e52d8798d15d91cf93b",
+  "visual_signature_shapes": {
+    "cam_fovy": [
+      4
+    ],
+    "cam_mat0": [
+      4,
+      9
+    ],
+    "cam_pos": [
+      4,
+      3
+    ],
+    "cam_quat": [
+      4,
+      4
+    ],
+    "geom_rgba": [
+      64,
+      4
+    ],
+    "light_ambient": [
+      2,
+      3
+    ],
+    "light_diffuse": [
+      2,
+      3
+    ],
+    "light_dir": [
+      2,
+      3
+    ],
+    "light_pos": [
+      2,
+      3
+    ],
+    "light_specular": [
+      2,
+      3
+    ],
+    "mat_rgba": [
+      10,
+      4
+    ],
+    "tex_adr": [
+      2
+    ],
+    "tex_height": [
+      2
+    ],
+    "tex_width": [
+      2
+    ]
+  }
+}

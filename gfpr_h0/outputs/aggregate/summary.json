@@ -1,0 +1,269 @@
+{
+  "arms": {
+    "action_diverse_oracle8": {
+      "corrective_rate": 0.28125,
+      "corrective_rate_ci": [
+        0.125,
+        0.4375
+      ],
+      "harmful_switch_rate_among_switches": 0.0,
+      "harmful_switches": 0,
+      "physical_distance_m": 0.0845704629476548,
+      "physical_gain_cm": 2.908167379775156,
+      "physical_gain_cm_ci": [
+        1.3330098768218084,
+        4.831429487586825
+      ],
+      "success_gain_vs_native": 0.0625,
+      "success_gain_vs_native_ci": [
+        0.0,
+        0.15625
+      ],
+      "success_rate": 0.59375,
+      "success_rate_ci": [
+        0.4375,
+        0.75
+      ],
+      "switches": 27
+    },
+    "action_only_gated": {
+      "corrective_rate": 0.125,
+      "corrective_rate_ci": [
+        0.03125,
+        0.25
+      ],
+      "harmful_switch_rate_among_switches": 0.18181818181818182,
+      "harmful_switches": 2,
+      "physical_distance_m": 0.11566633593765417,
+      "physical_gain_cm": -0.20141991922478197,
+      "physical_gain_cm_ci": [
+        -1.754047719133292,
+        0.8377611290253876
+      ],
+      "success_gain_vs_native": -0.03125,
+      "success_gain_vs_native_ci": [
+        -0.125,
+        0.0625
+      ],
+      "success_rate": 0.5,
+      "success_rate_ci": [
+        0.3125,
+        0.65625
+      ],
+      "switches": 11
+    },
+    "action_only_ungated": {
+      "corrective_rate": 0.1875,
+      "corrective_rate_ci": [
+        0.0625,
+        0.34375
+      ],
+      "harmful_switch_rate_among_switches": 0.0625,
+      "harmful_switches": 2,
+      "physical_distance_m": 0.10978173202933433,
+      "physical_gain_cm": 0.3870404716072022,
+      "physical_gain_cm_ci": [
+        -1.4664380138040547,
+        2.0618722209460993
+      ],
+      "success_gain_vs_native": -0.03125,
+      "success_gain_vs_native_ci": [
+        -0.125,
+        0.0625
+      ],
+      "success_rate": 0.5,
+      "success_rate_ci": [
+        0.3125,
+        0.65625
+      ],
+      "switches": 32
+    },
+    "dino_best": {
+      "corrective_rate": 0.1875,
+      "corrective_rate_ci": [
+        0.0625,
+        0.34375
+      ],
+      "harmful_switch_rate_among_switches": 0.0625,
+      "harmful_switches": 2,
+      "physical_distance_m": 0.1189350403707639,
+      "physical_gain_cm": -0.5282903625357549,
+      "physical_gain_cm_ci": [
+        -2.998520526482563,
+        1.6903860592916866
+      ],
+      "success_gain_vs_native": 0.03125,
+      "success_gain_vs_native_ci": [
+        -0.09375,
+        0.15625
+      ],
+      "success_rate": 0.5625,
+      "success_rate_ci": [
+        0.40625,
+        0.71875
+      ],
+      "switches": 32
+    },
+    "latent_context_gated": {
+      "corrective_rate": 0.09375,
+      "corrective_rate_ci": [
+        0.0,
+        0.21875
+      ],
+      "harmful_switch_rate_among_switches": 0.09090909090909091,
+      "harmful_switches": 2,
+      "physical_distance_m": 0.1150781954416085,
+      "physical_gain_cm": -0.1426058696202142,
+      "physical_gain_cm_ci": [
+        -2.474367809380472,
+        2.224975103027095
+      ],
+      "success_gain_vs_native": 0.0,
+      "success_gain_vs_native_ci": [
+        -0.125,
+        0.125
+      ],
+      "success_rate": 0.53125,
+      "success_rate_ci": [
+        0.34375,
+        0.6875
+      ],
+      "switches": 22
+    },
+    "latent_context_ungated": {
+      "corrective_rate": 0.09375,
+      "corrective_rate_ci": [
+        0.0,
+        0.1875
+      ],
+      "harmful_switch_rate_among_switches": 0.0625,
+      "harmful_switches": 2,
+      "physical_distance_m": 0.11128290565432236,
+      "physical_gain_cm": 0.23692310910840042,
+      "physical_gain_cm_ci": [
+        -1.755544277445289,
+        2.283720358338688
+      ],
+      "success_gain_vs_native": 0.0,
+      "success_gain_vs_native_ci": [
+        -0.125,
+        0.125
+      ],
+      "success_rate": 0.53125,
+      "success_rate_ci": [
+        0.375,
+        0.6875
+      ],
+      "switches": 32
+    },
+    "native": {
+      "corrective_rate": 0.0,
+      "corrective_rate_ci": [
+        0.0,
+        0.0
+      ],
+      "harmful_switch_rate_among_switches": 0.0,
+      "harmful_switches": 0,
+      "physical_distance_m": 0.11365213674540636,
+      "physical_gain_cm": 0.0,
+      "physical_gain_cm_ci": [
+        0.0,
+        0.0
+      ],
+      "success_gain_vs_native": 0.0,
+      "success_gain_vs_native_ci": [
+        0.0,
+        0.0
+      ],
+      "success_rate": 0.53125,
+      "success_rate_ci": [
+        0.34375,
+        0.71875
+      ],
+      "switches": 0
+    },
+    "physical_oracle_full": {
+      "corrective_rate": 0.5,
+      "corrective_rate_ci": [
+        0.3125,
+        0.6875
+      ],
+      "harmful_switch_rate_among_switches": 0.0,
+      "harmful_switches": 0,
+      "physical_distance_m": 0.04310969247602728,
+      "physical_gain_cm": 7.054244426937909,
+      "physical_gain_cm_ci": [
+        4.242776000425853,
+        10.100346677243472
+      ],
+      "success_gain_vs_native": 0.25,
+      "success_gain_vs_native_ci": [
+        0.125,
+        0.40625
+      ],
+      "success_rate": 0.78125,
+      "success_rate_ci": [
+        0.625,
+        0.90625
+      ],
+      "switches": 28
+    },
+    "proxy_action_gated": {
+      "corrective_rate": 0.0625,
+      "corrective_rate_ci": [
+        0.0,
+        0.15625
+      ],
+      "harmful_switch_rate_among_switches": 0.2222222222222222,
+      "harmful_switches": 2,
+      "physical_distance_m": 0.11787115972402837,
+      "physical_gain_cm": -0.4219022978622018,
+      "physical_gain_cm_ci": [
+        -1.8617311707732407,
+        0.47272707311108664
+      ],
+      "success_gain_vs_native": -0.03125,
+      "success_gain_vs_native_ci": [
+        -0.125,
+        0.0625
+      ],
+      "success_rate": 0.5,
+      "success_rate_ci": [
+        0.34375,
+        0.6875
+      ],
+      "switches": 9
+    },
+    "proxy_action_ungated": {
+      "corrective_rate": 0.1875,
+      "corrective_rate_ci": [
+        0.0625,
+        0.3125
+      ],
+      "harmful_switch_rate_among_switches": 0.0625,
+      "harmful_switches": 2,
+      "physical_distance_m": 0.09961069029582756,
+      "physical_gain_cm": 1.4041446449578805,
+      "physical_gain_cm_ci": [
+        -0.9599095363088431,
+        3.8769389814181605
+      ],
+      "success_gain_vs_native": 0.03125,
+      "success_gain_vs_native_ci": [
+        -0.09375,
+        0.15625
+      ],
+      "success_rate": 0.5625,
+      "success_rate_ci": [
+        0.375,
+        0.71875
+      ],
+      "switches": 32
+    }
+  },
+  "bootstrap_draws": 10000,
+  "n_snapshots": 32,
+  "primary_arm": "latent_context_gated",
+  "scope": "Four-fold episode-held-out GFPR H0-A on 32 Phase-0d snapshots.",
+  "verdict": "STOP_GFPR_FORMULATION"
+}

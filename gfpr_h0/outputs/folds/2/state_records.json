@@ -1,0 +1,786 @@
+[
+  {
+    "anchor_success": 0,
+    "arms": {
+      "action_diverse_oracle8": {
+        "corrective": 0,
+        "gain_cm": 0.7846185419754736,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.2527445393498972,
+        "selected_index": 174,
+        "success": 0,
+        "switch": 1
+      },
+      "action_only_gated": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.26059072476965195,
+        "selected_index": -1,
+        "success": 0,
+        "switch": 0
+      },
+      "action_only_ungated": {
+        "corrective": 0,
+        "gain_cm": 0.09060981086205233,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.2596846266610314,
+        "selected_index": 165,
+        "success": 0,
+        "switch": 1
+      },
+      "dino_best": {
+        "corrective": 0,
+        "gain_cm": 0.13702594408219748,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.25922046532883,
+        "selected_index": 207,
+        "success": 0,
+        "switch": 1
+      },
+      "latent_context_gated": {
+        "corrective": 0,
+        "gain_cm": 0.19222550969071328,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.2586684696727448,
+        "selected_index": 10,
+        "success": 0,
+        "switch": 1
+      },
+      "latent_context_ungated": {
+        "corrective": 0,
+        "gain_cm": 0.19222550969071328,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.2586684696727448,
+        "selected_index": 10,
+        "success": 0,
+        "switch": 1
+      },
+      "native": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.26059072476965195,
+        "selected_index": -1,
+        "success": 0,
+        "switch": 0
+      },
+      "physical_oracle_full": {
+        "corrective": 0,
+        "gain_cm": 1.5379844139772392,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.24521088062987956,
+        "selected_index": 140,
+        "success": 0,
+        "switch": 1
+      },
+      "proxy_action_gated": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.26059072476965195,
+        "selected_index": -1,
+        "success": 0,
+        "switch": 0
+      },
+      "proxy_action_ungated": {
+        "corrective": 0,
+        "gain_cm": 0.07090197857038683,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.2598817049839481,
+        "selected_index": 208,
+        "success": 0,
+        "switch": 1
+      }
+    },
+    "episode": 309,
+    "outer_fold": 2,
+    "snapshot_index": 2
+  },
+  {
+    "anchor_success": 0,
+    "arms": {
+      "action_diverse_oracle8": {
+        "corrective": 1,
+        "gain_cm": 13.839527570973559,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.09315912648179896,
+        "selected_index": 299,
+        "success": 0,
+        "switch": 1
+      },
+      "action_only_gated": {
+        "corrective": 1,
+        "gain_cm": 3.799772245213942,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.19355667973939514,
+        "selected_index": 135,
+        "success": 0,
+        "switch": 1
+      },
+      "action_only_ungated": {
+        "corrective": 1,
+        "gain_cm": 3.799772245213942,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.19355667973939514,
+        "selected_index": 135,
+        "success": 0,
+        "switch": 1
+      },
+      "dino_best": {
+        "corrective": 1,
+        "gain_cm": 2.7955681483389423,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.20359872070814514,
+        "selected_index": 1,
+        "success": 0,
+        "switch": 1
+      },
+      "latent_context_gated": {
+        "corrective": 0,
+        "gain_cm": -1.3390923453448167,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.24494532564498273,
+        "selected_index": 74,
+        "success": 0,
+        "switch": 1
+      },
+      "latent_context_ungated": {
+        "corrective": 0,
+        "gain_cm": -1.3390923453448167,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.24494532564498273,
+        "selected_index": 74,
+        "success": 0,
+        "switch": 1
+      },
+      "native": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.23155440219153456,
+        "selected_index": -1,
+        "success": 0,
+        "switch": 0
+      },
+      "physical_oracle_full": {
+        "corrective": 1,
+        "gain_cm": 13.839527570973559,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.09315912648179896,
+        "selected_index": 299,
+        "success": 0,
+        "switch": 1
+      },
+      "proxy_action_gated": {
+        "corrective": 1,
+        "gain_cm": 3.799772245213942,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.19355667973939514,
+        "selected_index": 135,
+        "success": 0,
+        "switch": 1
+      },
+      "proxy_action_ungated": {
+        "corrective": 1,
+        "gain_cm": 3.799772245213942,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.19355667973939514,
+        "selected_index": 135,
+        "success": 0,
+        "switch": 1
+      }
+    },
+    "episode": 2155,
+    "outer_fold": 2,
+    "snapshot_index": 6
+  },
+  {
+    "anchor_success": 1,
+    "arms": {
+      "action_diverse_oracle8": {
+        "corrective": 0,
+        "gain_cm": 0.8352725115822566,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.028842091283751307,
+        "selected_index": 202,
+        "success": 1,
+        "switch": 1
+      },
+      "action_only_gated": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.03719481639957387,
+        "selected_index": -1,
+        "success": 1,
+        "switch": 0
+      },
+      "action_only_ungated": {
+        "corrective": 0,
+        "gain_cm": 0.7452666233484062,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.02974215016608981,
+        "selected_index": 232,
+        "success": 1,
+        "switch": 1
+      },
+      "dino_best": {
+        "corrective": 0,
+        "gain_cm": 0.03879961408995644,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.03680682025867431,
+        "selected_index": 122,
+        "success": 1,
+        "switch": 1
+      },
+      "latent_context_gated": {
+        "corrective": 0,
+        "gain_cm": 0.3774962034339094,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.03341985436523478,
+        "selected_index": 88,
+        "success": 1,
+        "switch": 1
+      },
+      "latent_context_ungated": {
+        "corrective": 0,
+        "gain_cm": 0.2553042774034661,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.03464177362553921,
+        "selected_index": 140,
+        "success": 1,
+        "switch": 1
+      },
+      "native": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.03719481639957387,
+        "selected_index": -1,
+        "success": 1,
+        "switch": 0
+      },
+      "physical_oracle_full": {
+        "corrective": 0,
+        "gain_cm": 1.858756749503947,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.018607248904534402,
+        "selected_index": 198,
+        "success": 1,
+        "switch": 1
+      },
+      "proxy_action_gated": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.03719481639957387,
+        "selected_index": -1,
+        "success": 1,
+        "switch": 0
+      },
+      "proxy_action_ungated": {
+        "corrective": 0,
+        "gain_cm": 0.3480202730462498,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.033714613669111375,
+        "selected_index": 256,
+        "success": 1,
+        "switch": 1
+      }
+    },
+    "episode": 3132,
+    "outer_fold": 2,
+    "snapshot_index": 10
+  },
+  {
+    "anchor_success": 1,
+    "arms": {
+      "action_diverse_oracle8": {
+        "corrective": 0,
+        "gain_cm": 1.1666453155883538,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.026745167431770998,
+        "selected_index": 89,
+        "success": 1,
+        "switch": 1
+      },
+      "action_only_gated": {
+        "corrective": 0,
+        "gain_cm": -20.56859435540826,
+        "harmful_switch": 1,
+        "physical_distance_m": 0.24409756414173714,
+        "selected_index": 6,
+        "success": 0,
+        "switch": 1
+      },
+      "action_only_ungated": {
+        "corrective": 0,
+        "gain_cm": -20.56859435540826,
+        "harmful_switch": 1,
+        "physical_distance_m": 0.24409756414173714,
+        "selected_index": 6,
+        "success": 0,
+        "switch": 1
+      },
+      "dino_best": {
+        "corrective": 0,
+        "gain_cm": 0.5732756470219689,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.03267886411743485,
+        "selected_index": 198,
+        "success": 1,
+        "switch": 1
+      },
+      "latent_context_gated": {
+        "corrective": 0,
+        "gain_cm": -20.017814739671334,
+        "harmful_switch": 1,
+        "physical_distance_m": 0.23858976798436787,
+        "selected_index": 162,
+        "success": 0,
+        "switch": 1
+      },
+      "latent_context_ungated": {
+        "corrective": 0,
+        "gain_cm": -20.017814739671334,
+        "harmful_switch": 1,
+        "physical_distance_m": 0.23858976798436787,
+        "selected_index": 162,
+        "success": 0,
+        "switch": 1
+      },
+      "native": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.03841162058765454,
+        "selected_index": -1,
+        "success": 1,
+        "switch": 0
+      },
+      "physical_oracle_full": {
+        "corrective": 0,
+        "gain_cm": 1.6713584889396,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.021698035698258535,
+        "selected_index": 108,
+        "success": 1,
+        "switch": 1
+      },
+      "proxy_action_gated": {
+        "corrective": 0,
+        "gain_cm": -20.56859435540826,
+        "harmful_switch": 1,
+        "physical_distance_m": 0.24409756414173714,
+        "selected_index": 6,
+        "success": 0,
+        "switch": 1
+      },
+      "proxy_action_ungated": {
+        "corrective": 0,
+        "gain_cm": -20.56859435540826,
+        "harmful_switch": 1,
+        "physical_distance_m": 0.24409756414173714,
+        "selected_index": 6,
+        "success": 0,
+        "switch": 1
+      }
+    },
+    "episode": 5469,
+    "outer_fold": 2,
+    "snapshot_index": 14
+  },
+  {
+    "anchor_success": 1,
+    "arms": {
+      "action_diverse_oracle8": {
+        "corrective": 0,
+        "gain_cm": 0.2696212920317326,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.029893424606458753,
+        "selected_index": 68,
+        "success": 1,
+        "switch": 1
+      },
+      "action_only_gated": {
+        "corrective": 0,
+        "gain_cm": -0.4745932000061355,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.037335569526837434,
+        "selected_index": 267,
+        "success": 1,
+        "switch": 1
+      },
+      "action_only_ungated": {
+        "corrective": 0,
+        "gain_cm": -0.4745932000061355,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.037335569526837434,
+        "selected_index": 267,
+        "success": 1,
+        "switch": 1
+      },
+      "dino_best": {
+        "corrective": 0,
+        "gain_cm": -19.933295337126523,
+        "harmful_switch": 1,
+        "physical_distance_m": 0.2319225908980413,
+        "selected_index": 240,
+        "success": 0,
+        "switch": 1
+      },
+      "latent_context_gated": {
+        "corrective": 0,
+        "gain_cm": -19.966334797243285,
+        "harmful_switch": 1,
+        "physical_distance_m": 0.23225298549920892,
+        "selected_index": 103,
+        "success": 0,
+        "switch": 1
+      },
+      "latent_context_ungated": {
+        "corrective": 0,
+        "gain_cm": 0.09825437879904739,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.031607093738785605,
+        "selected_index": 213,
+        "success": 1,
+        "switch": 1
+      },
+      "native": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.03258963752677608,
+        "selected_index": -1,
+        "success": 1,
+        "switch": 0
+      },
+      "physical_oracle_full": {
+        "corrective": 0,
+        "gain_cm": 1.4038893916415667,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.018550743610360413,
+        "selected_index": 198,
+        "success": 1,
+        "switch": 1
+      },
+      "proxy_action_gated": {
+        "corrective": 0,
+        "gain_cm": -0.006110006143175001,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.03265073758820783,
+        "selected_index": 229,
+        "success": 1,
+        "switch": 1
+      },
+      "proxy_action_ungated": {
+        "corrective": 0,
+        "gain_cm": -0.006110006143175001,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.03265073758820783,
+        "selected_index": 229,
+        "success": 1,
+        "switch": 1
+      }
+    },
+    "episode": 6671,
+    "outer_fold": 2,
+    "snapshot_index": 18
+  },
+  {
+    "anchor_success": 1,
+    "arms": {
+      "action_diverse_oracle8": {
+        "corrective": 0,
+        "gain_cm": 0.15513472866710132,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.014662910829868312,
+        "selected_index": 63,
+        "success": 1,
+        "switch": 1
+      },
+      "action_only_gated": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.016214258116539326,
+        "selected_index": -1,
+        "success": 1,
+        "switch": 0
+      },
+      "action_only_ungated": {
+        "corrective": 0,
+        "gain_cm": 0.02672761978895974,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.015946981918649728,
+        "selected_index": 136,
+        "success": 1,
+        "switch": 1
+      },
+      "dino_best": {
+        "corrective": 0,
+        "gain_cm": 0.012525590819525284,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.016089002208344073,
+        "selected_index": 167,
+        "success": 1,
+        "switch": 1
+      },
+      "latent_context_gated": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.016214258116539326,
+        "selected_index": -1,
+        "success": 1,
+        "switch": 0
+      },
+      "latent_context_ungated": {
+        "corrective": 0,
+        "gain_cm": 0.03166019148083225,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.015897656201731003,
+        "selected_index": 88,
+        "success": 1,
+        "switch": 1
+      },
+      "native": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.016214258116539326,
+        "selected_index": -1,
+        "success": 1,
+        "switch": 0
+      },
+      "physical_oracle_full": {
+        "corrective": 0,
+        "gain_cm": 0.18984653453723785,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.014315792771166947,
+        "selected_index": 148,
+        "success": 1,
+        "switch": 1
+      },
+      "proxy_action_gated": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.016214258116539326,
+        "selected_index": -1,
+        "success": 1,
+        "switch": 0
+      },
+      "proxy_action_ungated": {
+        "corrective": 0,
+        "gain_cm": -0.11305183201317792,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.017344776436671105,
+        "selected_index": 105,
+        "success": 1,
+        "switch": 1
+      }
+    },
+    "episode": 7795,
+    "outer_fold": 2,
+    "snapshot_index": 22
+  },
+  {
+    "anchor_success": 1,
+    "arms": {
+      "action_diverse_oracle8": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 1.9648904290461352e-15,
+        "selected_index": -1,
+        "success": 1,
+        "switch": 0
+      },
+      "action_only_gated": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 1.9648904290461352e-15,
+        "selected_index": -1,
+        "success": 1,
+        "switch": 0
+      },
+      "action_only_ungated": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 1.9648904290461352e-15,
+        "selected_index": 24,
+        "success": 1,
+        "switch": 1
+      },
+      "dino_best": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 1.9648904290461352e-15,
+        "selected_index": 31,
+        "success": 1,
+        "switch": 1
+      },
+      "latent_context_gated": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 1.9648904290461352e-15,
+        "selected_index": -1,
+        "success": 1,
+        "switch": 0
+      },
+      "latent_context_ungated": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 1.9648904290461352e-15,
+        "selected_index": 186,
+        "success": 1,
+        "switch": 1
+      },
+      "native": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 1.9648904290461352e-15,
+        "selected_index": -1,
+        "success": 1,
+        "switch": 0
+      },
+      "physical_oracle_full": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 1.9648904290461352e-15,
+        "selected_index": -1,
+        "success": 1,
+        "switch": 0
+      },
+      "proxy_action_gated": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 1.9648904290461352e-15,
+        "selected_index": -1,
+        "success": 1,
+        "switch": 0
+      },
+      "proxy_action_ungated": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 1.9648904290461352e-15,
+        "selected_index": 186,
+        "success": 1,
+        "switch": 1
+      }
+    },
+    "episode": 8908,
+    "outer_fold": 2,
+    "snapshot_index": 26
+  },
+  {
+    "anchor_success": 0,
+    "arms": {
+      "action_diverse_oracle8": {
+        "corrective": 1,
+        "gain_cm": 6.116944854228812,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.16346574699867794,
+        "selected_index": 205,
+        "success": 0,
+        "switch": 1
+      },
+      "action_only_gated": {
+        "corrective": 1,
+        "gain_cm": 5.683988808737195,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.1677953074535941,
+        "selected_index": 127,
+        "success": 0,
+        "switch": 1
+      },
+      "action_only_ungated": {
+        "corrective": 1,
+        "gain_cm": 3.8994341221705753,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.1856408543192603,
+        "selected_index": 170,
+        "success": 0,
+        "switch": 1
+      },
+      "dino_best": {
+        "corrective": 0,
+        "gain_cm": -15.673656698323585,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.3813717625242019,
+        "selected_index": 214,
+        "success": 0,
+        "switch": 1
+      },
+      "latent_context_gated": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.22463519554096606,
+        "selected_index": -1,
+        "success": 0,
+        "switch": 0
+      },
+      "latent_context_ungated": {
+        "corrective": 0,
+        "gain_cm": -6.1584909935331495,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.28622010547629756,
+        "selected_index": 10,
+        "success": 0,
+        "switch": 1
+      },
+      "native": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.22463519554096606,
+        "selected_index": -1,
+        "success": 0,
+        "switch": 0
+      },
+      "physical_oracle_full": {
+        "corrective": 1,
+        "gain_cm": 14.920094879915702,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.07543424674180903,
+        "selected_index": 33,
+        "success": 0,
+        "switch": 1
+      },
+      "proxy_action_gated": {
+        "corrective": 0,
+        "gain_cm": 0.0,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.22463519554096606,
+        "selected_index": -1,
+        "success": 0,
+        "switch": 0
+      },
+      "proxy_action_ungated": {
+        "corrective": 0,
+        "gain_cm": -2.824722113097955,
+        "harmful_switch": 0,
+        "physical_distance_m": 0.2528824166719456,
+        "selected_index": 208,
+        "success": 0,
+        "switch": 1
+      }
+    },
+    "episode": 9873,
+    "outer_fold": 2,
+    "snapshot_index": 30
+  }
+]

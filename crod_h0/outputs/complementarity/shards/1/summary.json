@@ -1,0 +1,19 @@
+{
+  "auxiliary_checkpoint": "crod_dinowm_cube_seed42/weights_epoch_10.pt",
+  "counts": {
+    "auxiliary_wrong": 157,
+    "both_wrong": 142,
+    "corrective": 198,
+    "corrective_in_directional_support": 56,
+    "directional_support": 85,
+    "disagreement": 71,
+    "informative": 242,
+    "native_rejected": 298,
+    "native_wrong": 198,
+    "native_wrong_and_disagreement": 56
+  },
+  "episode": 294,
+  "physical_margin_m": 0.02,
+  "scope": "Post-hoc DINO-WM rescore of a fully physics-labelled Phase-0d population.",
+  "snapshot": 1
+}

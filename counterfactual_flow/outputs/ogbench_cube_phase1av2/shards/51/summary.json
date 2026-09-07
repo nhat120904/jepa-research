@@ -1,0 +1,199 @@
+{
+  "anchor": {
+    "actions_raw_sha256": "bb848a70b3962e9b799ccc573000db41732b5197237ef8b24087ac06d95dad8e",
+    "executed_steps": 1,
+    "physical_distance_m": 0.0,
+    "proxy_cost": 0.7609512805938721,
+    "success": 1
+  },
+  "arms": {
+    "action_diverse": {
+      "accounted_physical_queries": 9,
+      "any_success_gain": 0,
+      "best_any_advantage_m": 0.0,
+      "best_corrective_advantage_m": 0.0,
+      "best_selected_distance_m": 0.0,
+      "inversion_hit": 0,
+      "mean_action_distance_from_anchor": 6.961818468391655,
+      "mean_cem_disagreement": -0.17056856187290972,
+      "mean_proxy_instability": 0.13703318565338685,
+      "mean_proxy_rank_fraction": 0.6375418060200669,
+      "n_alternatives": 8,
+      "proxy_rejected_fraction": 1.0,
+      "selected_indices": [
+        91,
+        288,
+        63,
+        101,
+        207,
+        285,
+        231,
+        64
+      ],
+      "selected_success_any": 1
+    },
+    "cem_disagreement_diverse": {
+      "accounted_physical_queries": 9,
+      "any_success_gain": 0,
+      "best_any_advantage_m": 0.0,
+      "best_corrective_advantage_m": 0.0,
+      "best_selected_distance_m": 0.0,
+      "inversion_hit": 0,
+      "mean_action_distance_from_anchor": 5.202976149303161,
+      "mean_cem_disagreement": 0.33570234113712377,
+      "mean_proxy_instability": 0.21218031482946836,
+      "mean_proxy_rank_fraction": 0.7558528428093646,
+      "n_alternatives": 8,
+      "proxy_rejected_fraction": 1.0,
+      "selected_indices": [
+        90,
+        49,
+        268,
+        222,
+        203,
+        188,
+        115,
+        96
+      ],
+      "selected_success_any": 1
+    },
+    "proxy_instability_diverse": {
+      "accounted_physical_queries": 9,
+      "any_success_gain": 0,
+      "best_any_advantage_m": 0.0,
+      "best_corrective_advantage_m": 0.0,
+      "best_selected_distance_m": 0.0,
+      "inversion_hit": 0,
+      "mean_action_distance_from_anchor": 5.619909887842997,
+      "mean_cem_disagreement": -0.2738294314381271,
+      "mean_proxy_instability": 0.38308977454438636,
+      "mean_proxy_rank_fraction": 0.2721571906354515,
+      "n_alternatives": 8,
+      "proxy_rejected_fraction": 1.0,
+      "selected_indices": [
+        229,
+        251,
+        183,
+        287,
+        186,
+        165,
+        265,
+        225
+      ],
+      "selected_success_any": 1
+    },
+    "random_final_population": {
+      "accounted_physical_queries": 9,
+      "any_success_gain": 0,
+      "best_any_advantage_m": 0.0,
+      "best_corrective_advantage_m": 0.0,
+      "best_selected_distance_m": 0.0,
+      "inversion_hit": 0,
+      "mean_action_distance_from_anchor": 5.152711132408911,
+      "mean_cem_disagreement": -0.10158862876254181,
+      "mean_proxy_instability": 0.22093939949732555,
+      "mean_proxy_rank_fraction": 0.5338628762541806,
+      "n_alternatives": 8,
+      "proxy_rejected_fraction": 1.0,
+      "selected_indices": [
+        9,
+        88,
+        112,
+        120,
+        189,
+        220,
+        228,
+        255
+      ],
+      "selected_success_any": 1
+    }
+  },
+  "config": {
+    "action_block": 5,
+    "alternatives": 8,
+    "cem_steps": 30,
+    "checkpoint": "quentinll/lewm-cube",
+    "dataset": "ogbench/cube_single_expert.h5",
+    "goal_offset": 25,
+    "horizon": 5,
+    "instability_repeats": 4,
+    "jitter_scale": 0.25,
+    "min_physical_gap_m": 0.02,
+    "num_samples": 300,
+    "physical_budget_per_arm": 9,
+    "seed": 20260819,
+    "selector_pool_frac": 0.25,
+    "topk": 30,
+    "var_scale": 1.0
+  },
+  "diagnostics": {
+    "mean_abs_cem_disagreement": 0.2755629877369008,
+    "mean_proxy_instability": 0.2169582971801239,
+    "median_proposal_scale": 0.3012140095233917
+  },
+  "episode": 4131,
+  "repeat_gate": {
+    "executed_max_abs": 0.0,
+    "pass": true,
+    "physical_max_abs": 0.0,
+    "success_disagreements": 0
+  },
+  "scope": "All selectors use frozen model/CEM quantities only and are locked before physics. Every arm is charged the same returned-anchor-plus-K branch budget.",
+  "snapshot": 51,
+  "start_step": 174,
+  "visual_signature": "add82fdd0218b4f63c1da71f49d69b2f8e650d5c28540e52d8798d15d91cf93b",
+  "visual_signature_shapes": {
+    "cam_fovy": [
+      4
+    ],
+    "cam_mat0": [
+      4,
+      9
+    ],
+    "cam_pos": [
+      4,
+      3
+    ],
+    "cam_quat": [
+      4,
+      4
+    ],
+    "geom_rgba": [
+      64,
+      4
+    ],
+    "light_ambient": [
+      2,
+      3
+    ],
+    "light_diffuse": [
+      2,
+      3
+    ],
+    "light_dir": [
+      2,
+      3
+    ],
+    "light_pos": [
+      2,
+      3
+    ],
+    "light_specular": [
+      2,
+      3
+    ],
+    "mat_rgba": [
+      10,
+      4
+    ],
+    "tex_adr": [
+      2
+    ],
+    "tex_height": [
+      2
+    ],
+    "tex_width": [
+      2
+    ]
+  }
+}

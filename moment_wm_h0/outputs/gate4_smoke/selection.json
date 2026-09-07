@@ -1,0 +1,26 @@
+{
+  "candidates": [
+    {
+      "lambda": 1.0,
+      "lambda_dir": "lambda_1",
+      "mean_validation_endpoint": 0.3605536680955153,
+      "per_seed": [
+        {
+          "seed": 0,
+          "validation_endpoint": 0.3605536680955153,
+          "validation_mmr_u": 2.352062848898081,
+          "validation_raw_mse": 122.65421823354868
+        }
+      ],
+      "std_validation_endpoint": 0.0
+    }
+  ],
+  "chosen_lambda": 1.0,
+  "chosen_lambda_dir": "lambda_1",
+  "hostname": "worker-mig-3g40gb-0",
+  "schema_version": 1,
+  "selection_metric": "mean decoded endpoint MAE across three seeds",
+  "selection_split": "validation episodes only",
+  "slurm_job_id": "48255",
+  "source_sha256": "9a9faedbf99b558671f60c739c6c1eb83316b167612576771be81226c0247581"
+}

@@ -1,0 +1,22 @@
+{
+  "covariance_weighting": "PCA-diagonal inverse variance of train-only future-minus-current targets, clipped at 20x and mean-normalized",
+  "dataset": "/home/nhatnc129/nhat.nc/jepa-research/moment_wm_h0/outputs/gate3_smoke/control.pt",
+  "dino_model": "facebook/dinov2-small",
+  "eval_context_seed": 260906,
+  "eval_task_seed": 260902,
+  "hostname": "worker-mig-3g40gb-0",
+  "output": "/home/nhatnc129/nhat.nc/jepa-research/moment_wm_h0/outputs/gate3_smoke/features.pt",
+  "pca_dim": 32,
+  "pca_fit_rows": 2000,
+  "pca_fit_split": "training episodes only",
+  "position_decoder_fit_split": "training episodes only",
+  "position_decoder_test": {
+    "mae_euclidean": 0.10959041863679886,
+    "median_euclidean": 0.06135781109333038,
+    "r2_coordinate": 0.7403604984283447
+  },
+  "raw_anchor_dim": 6144,
+  "schema_version": 1,
+  "slurm_job_id": "48241",
+  "source_sha256": "3ed1287acadf686f1c948935f4f7d7d39a151c9ddd1231ff48740ba4c4f7a1fc"
+}

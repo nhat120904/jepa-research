@@ -84,6 +84,10 @@ def _hashing_iter(self):
 DataLoader.__iter__ = _hashing_iter
 
 try:
+    # `python train.py` puts the script's directory first on sys.path;
+    # runpy.run_path does not, so train.py's sibling imports (compat_dm_control,
+    # jepa, losses, ...) would not resolve.
+    sys.path.insert(0, str(TRAIN.resolve().parent))
     sys.argv = [str(TRAIN)] + sys.argv[1:]
     runpy.run_path(str(TRAIN), run_name="__main__")
 finally:

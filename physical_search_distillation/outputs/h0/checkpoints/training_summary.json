@@ -1,0 +1,162 @@
+{
+  "elite": {
+    "11": {
+      "best_epoch": 0,
+      "best_val_loss": 0.3338637100532651,
+      "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/physical_search_distillation/outputs/h0/checkpoints/elite/seed_11.pt",
+      "student_temperature": 0.5,
+      "target_mean": 0.10147440433502197,
+      "target_std": 0.10293358564376831,
+      "teacher_temperature_m": 0.02,
+      "topk": 10
+    },
+    "23": {
+      "best_epoch": 1,
+      "best_val_loss": 0.33460028283298016,
+      "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/physical_search_distillation/outputs/h0/checkpoints/elite/seed_23.pt",
+      "student_temperature": 0.5,
+      "target_mean": 0.10147440433502197,
+      "target_std": 0.10293358564376831,
+      "teacher_temperature_m": 0.02,
+      "topk": 10
+    },
+    "47": {
+      "best_epoch": 0,
+      "best_val_loss": 0.33482965640723705,
+      "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/physical_search_distillation/outputs/h0/checkpoints/elite/seed_47.pt",
+      "student_temperature": 0.5,
+      "target_mean": 0.10147440433502197,
+      "target_std": 0.10293358564376831,
+      "teacher_temperature_m": 0.02,
+      "topk": 10
+    }
+  },
+  "listwise": {
+    "11": {
+      "best_epoch": 0,
+      "best_val_loss": 4.566943421959877,
+      "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/physical_search_distillation/outputs/h0/checkpoints/listwise/seed_11.pt",
+      "student_temperature": 0.5,
+      "target_mean": 0.10147440433502197,
+      "target_std": 0.10293358564376831,
+      "teacher_temperature_m": 0.02,
+      "topk": 10
+    },
+    "23": {
+      "best_epoch": 0,
+      "best_val_loss": 4.567188054323196,
+      "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/physical_search_distillation/outputs/h0/checkpoints/listwise/seed_23.pt",
+      "student_temperature": 0.5,
+      "target_mean": 0.10147440433502197,
+      "target_std": 0.10293358564376831,
+      "teacher_temperature_m": 0.02,
+      "topk": 10
+    },
+    "47": {
+      "best_epoch": 0,
+      "best_val_loss": 4.569152191281319,
+      "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/physical_search_distillation/outputs/h0/checkpoints/listwise/seed_47.pt",
+      "student_temperature": 0.5,
+      "target_mean": 0.10147440433502197,
+      "target_std": 0.10293358564376831,
+      "teacher_temperature_m": 0.02,
+      "topk": 10
+    }
+  },
+  "operator": {
+    "11": {
+      "best_epoch": 26,
+      "best_val_loss": 0.35654248017817736,
+      "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/physical_search_distillation/outputs/h0/checkpoints/operator/seed_11.pt",
+      "student_temperature": 0.5,
+      "target_mean": 0.10147440433502197,
+      "target_std": 0.10293358564376831,
+      "teacher_temperature_m": 0.02,
+      "topk": 10
+    },
+    "23": {
+      "best_epoch": 14,
+      "best_val_loss": 0.35842582769691944,
+      "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/physical_search_distillation/outputs/h0/checkpoints/operator/seed_23.pt",
+      "student_temperature": 0.5,
+      "target_mean": 0.10147440433502197,
+      "target_std": 0.10293358564376831,
+      "teacher_temperature_m": 0.02,
+      "topk": 10
+    },
+    "47": {
+      "best_epoch": 16,
+      "best_val_loss": 0.35507942363619804,
+      "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/physical_search_distillation/outputs/h0/checkpoints/operator/seed_47.pt",
+      "student_temperature": 0.5,
+      "target_mean": 0.10147440433502197,
+      "target_std": 0.10293358564376831,
+      "teacher_temperature_m": 0.02,
+      "topk": 10
+    }
+  },
+  "operator_metric": {
+    "11": {
+      "best_epoch": 179,
+      "best_val_loss": 3.0143518205732107,
+      "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/physical_search_distillation/outputs/h0/checkpoints/operator_metric/seed_11.pt",
+      "student_temperature": 0.5,
+      "target_mean": 0.10147440433502197,
+      "target_std": 0.10293358564376831,
+      "teacher_temperature_m": 0.02,
+      "topk": 10
+    },
+    "23": {
+      "best_epoch": 38,
+      "best_val_loss": 3.2704313499853015,
+      "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/physical_search_distillation/outputs/h0/checkpoints/operator_metric/seed_23.pt",
+      "student_temperature": 0.5,
+      "target_mean": 0.10147440433502197,
+      "target_std": 0.10293358564376831,
+      "teacher_temperature_m": 0.02,
+      "topk": 10
+    },
+    "47": {
+      "best_epoch": 138,
+      "best_val_loss": 3.021363031119108,
+      "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/physical_search_distillation/outputs/h0/checkpoints/operator_metric/seed_47.pt",
+      "student_temperature": 0.5,
+      "target_mean": 0.10147440433502197,
+      "target_std": 0.10293358564376831,
+      "teacher_temperature_m": 0.02,
+      "topk": 10
+    }
+  },
+  "pointwise": {
+    "11": {
+      "best_epoch": 20,
+      "best_val_loss": 0.30634924783953466,
+      "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/physical_search_distillation/outputs/h0/checkpoints/pointwise/seed_11.pt",
+      "student_temperature": 0.5,
+      "target_mean": 0.10147440433502197,
+      "target_std": 0.10293358564376831,
+      "teacher_temperature_m": 0.02,
+      "topk": 10
+    },
+    "23": {
+      "best_epoch": 42,
+      "best_val_loss": 0.29064348558313213,
+      "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/physical_search_distillation/outputs/h0/checkpoints/pointwise/seed_23.pt",
+      "student_temperature": 0.5,
+      "target_mean": 0.10147440433502197,
+      "target_std": 0.10293358564376831,
+      "teacher_temperature_m": 0.02,
+      "topk": 10
+    },
+    "47": {
+      "best_epoch": 0,
+      "best_val_loss": 0.2692691113334149,
+      "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/physical_search_distillation/outputs/h0/checkpoints/pointwise/seed_47.pt",
+      "student_temperature": 0.5,
+      "target_mean": 0.10147440433502197,
+      "target_std": 0.10293358564376831,
+      "teacher_temperature_m": 0.02,
+      "topk": 10
+    }
+  }
+}

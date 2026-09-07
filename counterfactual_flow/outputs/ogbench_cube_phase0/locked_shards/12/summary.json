@@ -1,0 +1,111 @@
+{
+  "deceptive": {
+    "physical_distance_m": 0.44861179174009574,
+    "physical_regret_m": 0.349501801379147,
+    "proxy_cost": 210.55909729003906,
+    "proxy_rank_fraction": 0.02671118530884808,
+    "success": 0
+  },
+  "episode": 4775,
+  "goal_offset": 25,
+  "group": {
+    "control_index": 78,
+    "control_relaxed": false,
+    "deceptive_index": 514,
+    "has_deceptive": true,
+    "positive_index": 306
+  },
+  "matched_control": {
+    "absolute_regret_gap_m": 1.876436295494832e-05,
+    "physical_distance_m": 0.4486305561030507,
+    "physical_regret_m": 0.34952056574210194,
+    "proxy_cost": 432.9691162109375,
+    "proxy_rank_fraction": 0.9515859766277128,
+    "success": 0
+  },
+  "n_candidates": 600,
+  "pool_physical_best_m": 0.09910999036094875,
+  "pool_sha256": "09b899e278295beda2b137b8e000b324b7b9e19f0654cbb928d7cdd39415e597",
+  "pool_success_available": 0,
+  "repeat_gate": {
+    "executed_max_abs": 0.0,
+    "pass": true,
+    "physical_max_abs": 0.0,
+    "success_disagreements": 0
+  },
+  "snapshot": 12,
+  "source_metrics": {
+    "cem_final": {
+      "best_physical_distance_m": 0.09910999036094875,
+      "mean_physical_distance_m": 0.3352699694841409,
+      "n": 300,
+      "success_available": 0
+    },
+    "cem_initial": {
+      "best_physical_distance_m": 0.23917023042218755,
+      "mean_physical_distance_m": 0.42091539393143657,
+      "n": 300,
+      "success_available": 0
+    }
+  },
+  "start_step": 43,
+  "thresholds": {
+    "min_regret_m": 0.02,
+    "proxy_top_frac": 0.1
+  },
+  "visual_signature": "add82fdd0218b4f63c1da71f49d69b2f8e650d5c28540e52d8798d15d91cf93b",
+  "visual_signature_shapes": {
+    "cam_fovy": [
+      4
+    ],
+    "cam_mat0": [
+      4,
+      9
+    ],
+    "cam_pos": [
+      4,
+      3
+    ],
+    "cam_quat": [
+      4,
+      4
+    ],
+    "geom_rgba": [
+      64,
+      4
+    ],
+    "light_ambient": [
+      2,
+      3
+    ],
+    "light_diffuse": [
+      2,
+      3
+    ],
+    "light_dir": [
+      2,
+      3
+    ],
+    "light_pos": [
+      2,
+      3
+    ],
+    "light_specular": [
+      2,
+      3
+    ],
+    "mat_rgba": [
+      10,
+      4
+    ],
+    "tex_adr": [
+      2
+    ],
+    "tex_height": [
+      2
+    ],
+    "tex_width": [
+      2
+    ]
+  }
+}

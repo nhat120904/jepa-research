@@ -1,72 +1,153 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## What this repo is
 
-CAI-JEPA research. A **go/no-go validation study**: quantitatively determine whether existing action-conditioned JEPA world models (DINO-WM, V-JEPA-2-AC, JEPA-WM/Terver) exhibit measurable **action-grounding failures** — i.e. they produce near-identical latent predictions for *different* actions from the same state, especially in contact-rich Franka manipulation. If failures are real → pursue the full paper; if not → pivot or abandon. The deliverable is `diagnosis/results/decision_report.md`.
+A single research programme on **JEPA-style latent world models for robot planning**:
+an encoder maps images to a latent, an action-conditioned predictor rolls that latent
+forward, a cost scores the imagined outcome, and a sampling planner (CEM and friends)
+picks actions. The question the whole repo circles is:
 
-`AGENTS.md` (for Codex) covers the same project; keep both roughly in sync when changing orientation facts.
+> When this stack fails at contact-rich manipulation, *which part* is actually broken?
 
-### Top-level layout
-- `diagnosis/` — the implemented diagnostic (all the code). **This is where you work.**
-- `cai_jepa_paper_proposal.md` — the research proposal: problem, the four diagnostic metrics, proposed training objectives.
-- `diagnostic_implementation_plan_v2.md` — phased validation plan. Section 12 records v2.1 adjustments made after reading the real upstream API. Section 4.2 defines the decision threshold.
-- `PROJECT_OVERVIEW_VI.md` — long-form overview (Vietnamese).
-- `paper/` — LaTeX writeup (`main.tex`, `refs.bib`). `world_model/` — reference PDFs.
+It is a falsification-first repo. Most directories are **pilots that were designed to
+kill an idea cheaply**, and most of them succeeded at exactly that. The honest summary
+of the programme so far is a well-localized negative result plus one live positive lead.
+Treat the negatives as load-bearing knowledge, not as failed work to be quietly retried.
 
-The most important orientation doc is `diagnosis/docs/plans/2026-06-01-real-api-rewrite-design.md` — it records what the upstream `facebookresearch/jepa-wms` API actually is and the key design decisions. The `docs/plans/*.md` files are dated design docs for each successive metric/fix (read the latest ones for current direction).
+## The through-line (read this before proposing anything)
 
-## Architecture of the diagnostic (`diagnosis/`)
+1. **The original hypothesis was action-blindness.** Released action-conditioned world
+   models seemed to predict nearly the same future for very different actions, worst
+   right at the moment of contact. The diagnostic confirmed something real there, and
+   confirmed it does not go away with model scale.
 
-Operates entirely on **pretrained, frozen checkpoints** — nothing here is trained except small linear probes / predictor heads (`models/probes/`, `models/heads/`, the `1[4-9]_*`/`2[0-5]_*` scripts). Data flow:
+2. **The oracle ladder relocated the problem.** Replacing the learned predictor with the
+   simulator itself — perfect dynamics, same encoder, same planner, same budget — did
+   *not* rescue contact tasks, while a physically-grounded reference cost solved them
+   easily. So the wall is not prediction. It is **the cost the planner descends**, i.e.
+   the representation used to say "this imagined outcome is closer to the goal".
 
-1. **Adapters** (`models/adapters/`) — `WorldModelAdapter` ABC (`base.py`) is the *only* interface the rest of the code touches a model through. One concrete `EncPredWMAdapter` (`enc_pred_adapter.py`) serves all baselines; `factory.build_adapter(model_name)` dispatches via the `_HUB_ID_INFO` registry (the canonical list of loadable checkpoints: `jepa_wm_metaworld`, `dino_wm_metaworld`, `*_droid`, `vjepa2_ac_droid`, etc.). All load via `torch.hub.load('facebookresearch/jepa-wms', hub_id, trust_repo=True)` → `(EncPredWM, preprocessor)`. The adapter drives the model through `EncPredWM.encode` (raw `[0,255]` visual → `(B,T,V,H,W,D)` patch-token latent) and `EncPredWM.unroll` — **never** `.encoder`/`.predictor` directly. `synthetic.py` provides fake adapters for offline metric validation.
-2. **Latent extraction** (`scripts/03_extract_latents.py`) — encode every frame once, cache to HDF5 under `data/precomputed_latents/` (z + proprio + raw state + gripper). All metrics run on the cache, not the GPU model. Cache I/O is `data/latent_cache.py`; trajectory iterators wrapping the upstream loaders are `data/loaders.py`.
-3. **Regime stratification** (`stratification/`) — labels each transition `free_space` / `pre_grasp` / `gripper_actuation` / `contact_manipulation`. Metaworld uses a **proxy** from the 39-dim `state` vector (object displacement = contact proxy) — the HF dataset has no MuJoCo contact GT. DROID/RoboCasa use proprioception + latent-change heuristics. The thesis is that failures concentrate in contact-rich regimes.
-4. **Metrics** (`metrics/`) — CRA, AUG, ECS, CTD, and **Boundary Blindness** (`boundary_blindness.py`, the current core metric; see its module docstring). Each exposes a *per-transition* function the runner calls directly, so synthetic validation tests the production path. Primary decision signal is **effect-conditioned CRA** (CRA on transitions with `‖Δz‖>τ`). CIs are **trajectory-clustered** bootstrap (`bootstrap.py`). Negative-sampling strategies live in `negative_samplers.py` (`random`, `opposite`, `hard_nn`, `hard_effect`).
-5. **Analysis** (`scripts/06_analyze_results.py`) — CSVs, figures, decision report. Decision logic is CI-aware (`make_decision`, per plan §4.2: ABANDON needs the upper CI bound confidently high).
+3. **The mechanism is optimizer-conditioned misranking (Goodhart / reward hacking).**
+   A cost can be accurate on trajectories drawn from data and still be badly wrong on
+   exactly the candidates a strong search invents. Search is an adversary against its own
+   objective: it *finds* the pockets where the cost is mistaken. Agreement between the
+   proxy cost and physical outcome is weak on the initial proposal population and gets
+   *worse* after the planner refits toward its own optimum.
 
-Scripts are **numbered and run in order, per dataset/config**; each is idempotent and standalone. `planning/cem_planner.py` is the Action-Score planning probe (scripts `08`/`09`/`16`). One YAML config per dataset in `configs/` selects models, regimes, negative strategies, and dataset paths.
+4. **Everything tried on the cost's inputs has failed to fix that.** Better grounding,
+   better predictors, better latent geometry, extra sensing, extra information — each was
+   measurable and real as a metric improvement, and none of them converted into planning
+   success. "Grounding up does not imply planning up" is the most reproduced result here.
 
-## Commands
+5. **The live lead changes what the cost *measures*, not how accurately it measures a
+   goal image.** Task progress in multi-stage manipulation is **latched**: milestones are
+   irreversible, so a single frame cannot express how far along you are, and a
+   distance-to-goal-image cost is structurally the wrong quantity. That is the current
+   programme (`scene_progress_wm/`).
 
-`uv` for dependency management. Offline (no GPU/data) you can run the unit tests and synthetic validation; the full pipeline needs a GPU server.
+## Repo map (each directory is one programme, with its verdict)
 
-```bash
-cd diagnosis
+Closed / negative:
 
-# Offline — metric/code correctness (no GPU, no data, no checkpoints)
-.venv/bin/python -m pytest tests/          # full suite
-.venv/bin/python -m pytest tests/test_metrics_synthetic.py::test_name   # single test
-python scripts/07_validate_synthetic.py    # validate metrics on synthetic models first
+- `diagnosis/` — the original CAI-JEPA diagnostic plus the oracle ladder and all
+  post-hoc cost interventions. Largest and most-cited directory; source of items 1–3
+  above. Its `docs/CURRENT_STATUS.md` and `docs/CLAIMS_EVIDENCE.md` are the claim
+  discipline for the paper.
+- `contactworld_h0/` — does tactile sensing add the missing object state? **No.**
+- `hys_h0/` — contact-aware gating of a temporal-straightening loss. **Refuted** in both
+  frozen and fine-tuned forms; a matched *random* gating control did as well or better.
+- `action_curvature_h0/` — action-space curvature mismatch. Real diagnostic, failed
+  intervention (see below). `TECHNICAL_NOTE.md` and the root `AUGUST_2026_TECHNICAL_NOTE.md`
+  are the readable write-ups.
+- `counterfactual_flow/`, `crod_h0/`, `gfpr_h0/`, `physical_search_distillation/`,
+  `rollout_repair_gate/` — the "use physical supervision / disagreement / reranking to
+  repair the planner's choice" family. All four locked verdicts are STOP.
+- `moment_wm_h0/` — hidden-physics (episode drag) context world model with a
+  conditional-moment regularizer. **STOP** at the final gate; see its `DECISION_REPORT.md`,
+  which is a model of how to write one.
+- `belief_compression/` — decision-equivalent belief compression. Paused: its own novelty
+  gate found the bound is likely a corollary of published work.
+- `event_smdp_h0/` — the simulator-as-world-model gate that established the **latching**
+  finding and the observer/feedback lessons below. Mostly positive, but privileged.
 
-# Server — full pipeline (see diagnosis/RUNBOOK.md for the authoritative sequence)
-bash scripts/01_setup_environment.sh        # clones external/jepa-wms + uv sync
-python scripts/smoke_test.py                # every checkpoint loads + encode + predict
-python scripts/check_normalization.py --config configs/diagnostic_metaworld.yaml \
-    --model jepa_wm_metaworld --ref-eval-loss <EVAL_LOSS>
-python scripts/03_extract_latents.py  --config configs/diagnostic_metaworld.yaml
-python scripts/04_classify_regimes.py --config configs/diagnostic_metaworld.yaml
-python scripts/05_run_diagnostic.py   --config configs/diagnostic_metaworld.yaml
-python scripts/06_analyze_results.py \
-    --metaworld_csv results/metaworld_diagnostic.csv --droid_csv results/droid_diagnostic.csv
-```
+Live / active:
 
-SLURM batch scripts for the H100 cluster are `scripts/slurm_*.sh`; PowerShell sweep drivers are `scripts/run_*.ps1`. The upstream repo is cloned to `external/jepa-wms` (gitignored, with its own `.venv`) — adapters add it to `sys.path` lazily via `data.loaders.add_upstream_to_path`.
+- `scene_progress_wm/` — the successor to `event_smdp_h0`, with the privilege removed:
+  a learned world model, pixels plus action chunks, CEM, OGBench's own success predicate.
+  Asks whether a latched, history-conditioned **progress** cost beats latent-L2 to a goal
+  image. This is where new work should go unless told otherwise.
 
-## Critical pitfalls (these cause silently-wrong numbers)
+Writing:
 
-- **Action normalization is the #1 bug.** The real upstream method is `preprocessor.normalize_actions` (plural); the adapter wraps it as `normalize_action`. Always gate with `scripts/check_normalization.py` (predicts a real transition; MSE must be within ~2× the model's eval loss). DROID = identity (mean 0/std 1); Metaworld = real shift+scale. If MSE ≫ 2× eval loss → STOP.
-- **Always sanity-check against a published number** and run `scripts/terver_gripper_test.py` (open vs close gripper on DROID; expect 2-way CRA > 0.90). Use the Terver-fixed `vjepa2_ac_droid` — the original Meta release shipped with an action-norm bug.
-- **Validate metrics on synthetic models first** (`07_validate_synthetic.py`) before trusting any real-model number.
-- All upstream planning configs are `L2_cem` → CRA and planning distance use **L2** for every baseline.
-- ECS thresholds are **calibrated per model** automatically (median `‖z_{t+1}−z_t‖` over the eval set); the YAML `fallback_threshold` is a fallback only.
-- **Push-T / PointMaze / Wall are saturated sanity checks only — never report them as thesis evidence.**
-- `jepa_wm_robocasa` has a hub entrypoint but no checkpoint; run RoboCasa via the droid-trained checkpoints (shared 7-dim action format).
-- `torch.hub.load` returning 503s → `rm external/jepa-wms/uv.lock && uv sync`.
-- The ViT-G V-JEPA-2 / heavy-model paths are guarded against accidental small-GPU runs; set `CAI_JEPA_ALLOW_HEAVY_MODEL=1` (and `JEPAWM_OSSCKPT`) only on the intended 24 GB+ server.
+- `paper/main.tex` — the paper of record (TMLR), a mechanistic audit of terminal-cost
+  misranking, not a new method. `proposal/` is historical.
+- `refine_jepa_h0/` is an empty shell; ignore it.
 
-## Result so far (2026-06-22)
+## What was tried, and why each thing failed (intuitive)
 
-Scaling study across 4 models (22M→1B): action-grounding does **not** scale away; all baselines remain boundary-blind (`results/droid_scaling_curve.md`, `results/decision_report.md`). This is the central finding driving the paper.
+**Cost side, frozen encoder.** Latent distance to a goal image is not a measure of task
+progress. It works where the task is "move the arm somewhere" and collapses where the
+task is "move an object", because the object occupies a tiny, badly-conditioned part of a
+representation trained for prediction, not for control.
+
+**Decode the state from the latent and plan on that.** Any post-hoc readout has residual
+error, and the planner spends its whole budget hunting for that error. Making the readout
+robust off-policy fixed the readout and not the planning — proof that the failure is
+exploitation of residual error, not missing information.
+
+**Relearn a grounded adapter.** Grounding became excellent; planning did not move. This is
+the cleanest statement of the recurring lesson.
+
+**Ensemble / disagreement penalty** (the textbook fix for model exploitation). Failed
+because every ensemble member sits on the same frozen backbone, so they share a blind
+spot: they *agree* precisely in the pockets where they are all wrong, so disagreement is
+flat exactly where a penalty was needed.
+
+**Fine-tune the encoder (LoRA).** No crossing. One seed looked like a breakthrough and did
+not replicate across the sweep — a reminder that single-seed wins in this repo are noise
+until a sweep says otherwise.
+
+**Fix the predictor with a counterfactual objective.** The one clear positive: the model
+gets much better at telling apart what different actions do, on offline ranking metrics
+and on real-robot action metrics. It still did not deliver closed-loop contact success,
+which is consistent with the oracle ladder — the predictor was never the binding constraint.
+
+**Straighten the action-to-outcome geometry.** Angular curvature of the model's
+action→outcome map strongly predicts *false valleys*: minima the model believes in that
+the simulator does not. Multi-step training reduces both curvature and false valleys, and
+changes planning by nothing. Worse, the metric is gameable — a flatter map deletes true
+minima along with false ones, so "fewer false valleys" is not automatically progress.
+
+**Gate straightening on contact.** The physical premise held (motion really does bend more
+at contact transitions), the mechanism did not: a control that dropped the same *number* of
+terms at random did as well. When your idea does not beat matched randomness, the
+information you were proud of extracting was not what was doing the work.
+
+**Rerank, distill, or acquire with physical supervision.** Scoring a frozen planner's final
+population with a learned physical-regret scorer, distilling the physical elite-refit
+operator into a zero-query cost, and using cross-representation disagreement to pick what
+to verify — all stopped, each against a cheap matched baseline (usually just proposing more
+diverse actions). Physical-outcome oracles *do* help a lot, which pins the gap on
+recovering that signal without querying physics.
+
+**Remove the search.** Amortizing the controller instead of planning does not cross the
+wall either, so it is not simply that CEM is too strong.
+
+**Add the hidden variable.** In the hidden-drag study, the hidden physics was easy to
+recover from frozen features and recovering it did not lower true planned cost: the same
+proxy-versus-truth gap under optimizer selection, in a completely different arena.
+
+**Add memory / belief machinery.** The scene-aliasing premise was refuted in minutes — a
+single frozen latent already probes the latched scene variables nearly perfectly, and
+recurrence adds nothing. Belief compression stalled on prior art. Run the cheap probe
+before building the machinery.
+
+## Compute policy (mandatory)
+
+This checkout is on a Slurm **login node**. Never run MuJoCo, rendering, model loading,
+training, encoding, or bulk result scans here — `sbatch` them to a compute node, including
+CPU-only analysis (several programmes enforce this in code by raising unless
+`SLURM_JOB_ID` is set). Login-node work is `rg`/`sed`/`git`, small metadata reads, syntax
+checks, and `squeue`/`sacct`. Verify claimed job state with **both** `squeue` and `sacct`
+before acting on it — peer sessions submit into the same queue, so check for duplicate
+work before launching a long array.

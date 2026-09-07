@@ -1,0 +1,134 @@
+{
+  "best_baseline": {
+    "mechanism": {
+      "drag_mae_from_context": 0.707068145275116,
+      "drag_r2_from_context": 0.18268054723739624
+    },
+    "planning": {
+      "improvement_ci95": [
+        -0.16706512533128262,
+        -0.04846160784363744
+      ],
+      "mean_cost": 0.2398202121257782,
+      "mean_final_distance": 0.206124946475029,
+      "mean_improvement_over_median": -0.10712219029664993,
+      "mean_relative_cost_reduction_vs_median": -1.5047526359558105,
+      "oracle_gap_recovered": -0.9061679244041443,
+      "oracle_gap_recovered_ci95": [
+        -1.7420084178447723,
+        -0.3289280876517294
+      ],
+      "predicted_cost_mean": 0.5086841583251953,
+      "reach_rate": 0.0625,
+      "relative_reduction_ci95": [
+        -2.472575199604034,
+        -0.6313846707344054
+      ],
+      "settled_success_rate": 0.125
+    },
+    "prediction": {
+      "anchor_mse": 125.37815856933594,
+      "decoded_endpoint_mae": 0.35576313734054565,
+      "decoded_endpoint_median": 0.37399277091026306
+    }
+  },
+  "criterion": {
+    "best_strong_baseline": "cadm",
+    "incremental_oracle_gap_recovered_gte_0.10": false,
+    "paired_true_cost_improvement_ci95_lower_gt_zero": false
+  },
+  "gate": "kernel_mmr_vs_strong_baseline",
+  "increment_over_best_baseline": {
+    "cost_improvement_ci95": [
+      -0.14855632781982422,
+      -0.01733414847403764
+    ],
+    "incremental_oracle_gap_recovered": -0.6414827704429626,
+    "incremental_oracle_gap_recovered_ci95": [
+      -1.3041329592466355,
+      -0.14444374628365036
+    ],
+    "mean_true_cost_improvement_over_best_baseline": -0.07583256810903549
+  },
+  "mechanism": {
+    "drag_mae_from_context": 0.7891988754272461,
+    "drag_r2_from_context": 0.08456945419311523
+  },
+  "planning": {
+    "improvement_ci95": [
+      -0.2541923142969608,
+      -0.11609342694282529
+    ],
+    "mean_cost": 0.3156527876853943,
+    "mean_final_distance": 0.27681103348731995,
+    "mean_improvement_over_median": -0.18295475840568542,
+    "mean_relative_cost_reduction_vs_median": -2.090658664703369,
+    "oracle_gap_recovered": -1.547650694847107,
+    "oracle_gap_recovered_ci95": [
+      -2.8051031827926636,
+      -0.8084263503551478
+    ],
+    "predicted_cost_mean": 0.5113278031349182,
+    "reach_rate": 0.1875,
+    "relative_reduction_ci95": [
+      -3.3594497740268707,
+      -1.201999932527542
+    ],
+    "settled_success_rate": 0.0625
+  },
+  "prediction": {
+    "anchor_mse": 126.48152160644531,
+    "decoded_endpoint_mae": 0.35468050837516785,
+    "decoded_endpoint_median": 0.3720128834247589
+  },
+  "protocol": {
+    "common_standardized_cem_noise": true,
+    "iterations": 2,
+    "num_samples": 64,
+    "primary_metric": "paired true simulator cost under locked CEM",
+    "restarts": 1,
+    "seeds": [
+      0
+    ],
+    "test_evaluated_only_after_lambda_selection": true
+  },
+  "reference": {
+    "best_baseline_mean_cost": 0.2398202121257782,
+    "median_drag_mean_cost": 0.13269802927970886,
+    "oracle_mean_cost": 0.014483523555099964
+  },
+  "run": {
+    "hostname": "worker-mig-3g40gb-0",
+    "slurm_job_id": "48255",
+    "source_sha256": "3eaeeaa3244502acbe3c34eb57d4673cb4e47855f21f6af50f4b317322a96aac"
+  },
+  "schema_version": 1,
+  "selected_lambda": 1.0,
+  "selection": {
+    "candidates": [
+      {
+        "lambda": 1.0,
+        "lambda_dir": "lambda_1",
+        "mean_validation_endpoint": 0.3605536680955153,
+        "per_seed": [
+          {
+            "seed": 0,
+            "validation_endpoint": 0.3605536680955153,
+            "validation_mmr_u": 2.352062848898081,
+            "validation_raw_mse": 122.65421823354868
+          }
+        ],
+        "std_validation_endpoint": 0.0
+      }
+    ],
+    "chosen_lambda": 1.0,
+    "chosen_lambda_dir": "lambda_1",
+    "hostname": "worker-mig-3g40gb-0",
+    "schema_version": 1,
+    "selection_metric": "mean decoded endpoint MAE across three seeds",
+    "selection_split": "validation episodes only",
+    "slurm_job_id": "48255",
+    "source_sha256": "9a9faedbf99b558671f60c739c6c1eb83316b167612576771be81226c0247581"
+  },
+  "status": "STOP"
+}

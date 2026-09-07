@@ -1,0 +1,35 @@
+{
+  "arm": "kernel_mmr",
+  "base_loss": "ordinary unweighted anchor MSE",
+  "best_epoch": 49,
+  "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/moment_wm_h0/outputs/gate4_full/models/lambda_0.1/seed_2/checkpoint.pt",
+  "epochs_ran": 59,
+  "features": "/home/nhatnc129/nhat.nc/jepa-research/moment_wm_h0/outputs/gate3_full/features.pt",
+  "hostname": "worker-mig-3g40gb-0",
+  "kernel": {
+    "bandwidth_rule": "median train-only pairwise squared distance over <=1024 points",
+    "bandwidth_squared": 935.8695678710938,
+    "estimator": "off-diagonal U-statistic",
+    "instrument": "fixed context-difference summaries + current frozen anchor + action knots",
+    "residual": "PCA-covariance-whitened future-anchor residual",
+    "type": "RBF"
+  },
+  "mmr_lambda": 0.1,
+  "schema_version": 1,
+  "seed": 2,
+  "selection_metric": "validation decoded endpoint MAE",
+  "slurm_job_id": "48261",
+  "source_sha256": "31f7dc5a4bbb712d567c8466e00113df4f4b3048e4740b568191d2ad92c726e6",
+  "test": {
+    "endpoint": 0.11909475790129767,
+    "mmr_u": 0.0018205668246890935,
+    "objective": 6.562170706854927,
+    "raw_mse": 6.561988639831543
+  },
+  "validation": {
+    "endpoint": 0.11194564484887654,
+    "mmr_u": 0.001881542142170171,
+    "objective": 6.297505495283339,
+    "raw_mse": 6.297317335340712
+  }
+}

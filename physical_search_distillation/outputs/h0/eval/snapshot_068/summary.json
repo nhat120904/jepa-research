@@ -1,0 +1,52 @@
+{
+  "episode": 4933,
+  "protocol": "zero-query CEM; one post-hoc physical execution per returned plan",
+  "repeat_gate": true,
+  "results": {
+    "elite": {
+      "executed_steps": 1,
+      "physical_distance_m": 0.0,
+      "physical_queries_during_planning": 0,
+      "solve_seconds": 0.1813957430422306,
+      "success": 1
+    },
+    "listwise": {
+      "executed_steps": 1,
+      "physical_distance_m": 0.0,
+      "physical_queries_during_planning": 0,
+      "solve_seconds": 0.16311297193169594,
+      "success": 1
+    },
+    "native": {
+      "executed_steps": 1,
+      "physical_distance_m": 0.0,
+      "physical_queries_during_planning": 0,
+      "solve_seconds": 0.37304192781448364,
+      "success": 1
+    },
+    "operator": {
+      "executed_steps": 1,
+      "physical_distance_m": 0.0,
+      "physical_queries_during_planning": 0,
+      "solve_seconds": 0.11190846003592014,
+      "success": 1
+    },
+    "operator_metric": {
+      "executed_steps": 1,
+      "physical_distance_m": 0.0,
+      "physical_queries_during_planning": 0,
+      "solve_seconds": 0.11705546453595161,
+      "success": 1
+    },
+    "pointwise": {
+      "executed_steps": 1,
+      "physical_distance_m": 0.0,
+      "physical_queries_during_planning": 0,
+      "solve_seconds": 0.26360939256846905,
+      "success": 1
+    }
+  },
+  "snapshot": 68,
+  "split": "test",
+  "visual_signature": "add82fdd0218b4f63c1da71f49d69b2f8e650d5c28540e52d8798d15d91cf93b"
+}

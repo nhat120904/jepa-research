@@ -1,0 +1,5364 @@
+{
+  "cache_dir": "/mnt/data/nhatnc129/jepa/scene_progress_wm/cache/val",
+  "cache_meta": {
+    "camera": "front_pixels",
+    "episode_len": 1001,
+    "joint_index": {
+      "cube_qposadr": 14,
+      "drawer_qposadr": 23,
+      "drawer_site_id": 8,
+      "window_qposadr": 24
+    },
+    "num_episodes": 100,
+    "num_grid_rows": 20020,
+    "num_rows": 100100,
+    "pixel_shape": [
+      64,
+      64,
+      3
+    ],
+    "pixel_source": "rerender",
+    "pixel_stride": 5,
+    "prep_job_id": "49484",
+    "protocol": "scene_progress_wm_cache_v2",
+    "render_info": {
+      "camera": "front_pixels",
+      "disabled_flags": [
+        "mjRND_SHADOW"
+      ],
+      "offsamples": 0,
+      "quality": "fast",
+      "render_size": 64
+    },
+    "render_quality": "fast",
+    "render_size": 64,
+    "source": "/mnt/data/vhoangth2/datasets/ogbench_data/visual-scene-play-v0-val.npz",
+    "source_head_sha256": "dab5312eace202f9137ca1cecc9f041ef18f0d3f974842b4deb9b0cc09bb51f4",
+    "state_columns": [
+      "cube_x",
+      "cube_y",
+      "cube_z",
+      "drawer",
+      "window",
+      "drawer_site_y"
+    ]
+  },
+  "episode_seed": 90100,
+  "job_id": "49519",
+  "num_episodes": 50,
+  "pass_rate": 0.95,
+  "per_offset": {
+    "100": {
+      "component_ever_rate": {
+        "button_0": 1.0,
+        "button_1": 1.0,
+        "cube": 1.0,
+        "drawer": 1.0,
+        "window": 1.0
+      },
+      "component_final_rate": {
+        "button_0": 1.0,
+        "button_1": 0.98,
+        "cube": 0.98,
+        "drawer": 1.0,
+        "window": 1.0
+      },
+      "cube_error_m_max": 0.044594680344166,
+      "cube_error_m_median": 0.001106134512368916,
+      "drawer_error_m_max": 0.030159412241676585,
+      "final_success_rate": 0.96,
+      "num_episodes": 50,
+      "num_trivial": 8,
+      "records": [
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 0.0011338833185243725,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 1,
+            "goal_row": 1931,
+            "start_row": 1831
+          },
+          "start_success": false,
+          "window_error_m": 1.519550267503611e-06
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 0.0006976170243099822,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 3,
+            "goal_row": 3844,
+            "start_row": 3744
+          },
+          "start_success": false,
+          "window_error_m": 2.6375496509079e-09
+        },
+        {
+          "cube_error_m": 0.0030095030186491727,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 5,
+            "goal_row": 5883,
+            "start_row": 5783
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 1.2266557280933565e-05,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 7,
+            "goal_row": 7292,
+            "start_row": 7192
+          },
+          "start_success": false,
+          "window_error_m": 0.0022281030209526827
+        },
+        {
+          "cube_error_m": 0.013157362634868726,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 8,
+            "goal_row": 8130,
+            "start_row": 8030
+          },
+          "start_success": false,
+          "window_error_m": 1.8610766685189795e-05
+        },
+        {
+          "cube_error_m": 0.009729952801234776,
+          "drawer_error_m": 3.5946277621157208e-09,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 13,
+            "goal_row": 13821,
+            "start_row": 13721
+          },
+          "start_success": false,
+          "window_error_m": 0.0021301055233970646
+        },
+        {
+          "cube_error_m": 0.0030979021190828335,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 16,
+            "goal_row": 16726,
+            "start_row": 16626
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 7.004118602638728e-06,
+          "drawer_error_m": 2.5677066186041014e-07,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 17,
+            "goal_row": 17680,
+            "start_row": 17580
+          },
+          "start_success": false,
+          "window_error_m": 2.980094365723218e-09
+        },
+        {
+          "cube_error_m": 0.0021342708123699866,
+          "drawer_error_m": 1.1079050003803825e-13,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 19,
+            "goal_row": 19438,
+            "start_row": 19338
+          },
+          "start_success": false,
+          "window_error_m": 0.0015512739773720725
+        },
+        {
+          "cube_error_m": 0.0020157913803825027,
+          "drawer_error_m": 0.0017296037189837854,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 22,
+            "goal_row": 22359,
+            "start_row": 22259
+          },
+          "start_success": false,
+          "window_error_m": 4.446443213623752e-14
+        },
+        {
+          "cube_error_m": 6.991637273728383e-06,
+          "drawer_error_m": 1.748726594086314e-09,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 23,
+            "goal_row": 23777,
+            "start_row": 23677
+          },
+          "start_success": false,
+          "window_error_m": 4.76225936074659e-07
+        },
+        {
+          "cube_error_m": 0.005731211994972258,
+          "drawer_error_m": 0.008860143650067012,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 24,
+            "goal_row": 24864,
+            "start_row": 24764
+          },
+          "start_success": false,
+          "window_error_m": 3.906519971074552e-07
+        },
+        {
+          "cube_error_m": 0.0008914439958492472,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 25,
+            "goal_row": 25242,
+            "start_row": 25142
+          },
+          "start_success": false,
+          "window_error_m": 0.002768831262670954
+        },
+        {
+          "cube_error_m": 0.0036494848855651374,
+          "drawer_error_m": 3.484199748785867e-06,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 29,
+            "goal_row": 29744,
+            "start_row": 29644
+          },
+          "start_success": false,
+          "window_error_m": 1.2228782202450286e-14
+        },
+        {
+          "cube_error_m": 0.004070505454979972,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 30,
+            "goal_row": 31019,
+            "start_row": 30919
+          },
+          "start_success": false,
+          "window_error_m": 6.696382807860177e-06
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 0.0034466286684909806,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 31,
+            "goal_row": 31380,
+            "start_row": 31280
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 5.539782132859644e-13,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 32,
+            "goal_row": 32161,
+            "start_row": 32061
+          },
+          "start_success": false,
+          "window_error_m": 4.214869481211636e-09
+        },
+        {
+          "cube_error_m": 0.0014847242743005478,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 33,
+            "goal_row": 33766,
+            "start_row": 33666
+          },
+          "start_success": false,
+          "window_error_m": 1.6452418136883083e-43
+        },
+        {
+          "cube_error_m": 0.0014460064811141293,
+          "drawer_error_m": 3.5765807537835315e-09,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 34,
+            "goal_row": 34805,
+            "start_row": 34705
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668728005729488e-10,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 37,
+            "goal_row": 37887,
+            "start_row": 37787
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.006921643241262488,
+          "drawer_error_m": 0.0055157328100072615,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 38,
+            "goal_row": 38906,
+            "start_row": 38806
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.0022627067718597104,
+          "drawer_error_m": 0.002284749890778431,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 39,
+            "goal_row": 39802,
+            "start_row": 39702
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 6.991491894509094e-06,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 41,
+            "goal_row": 41788,
+            "start_row": 41688
+          },
+          "start_success": true,
+          "window_error_m": 1.7500772943045689e-13
+        },
+        {
+          "cube_error_m": 6.991491894522972e-06,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 47,
+            "goal_row": 47643,
+            "start_row": 47543
+          },
+          "start_success": false,
+          "window_error_m": 7.827072323607354e-15
+        },
+        {
+          "cube_error_m": 0.002089788711507325,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 51,
+            "goal_row": 51435,
+            "start_row": 51335
+          },
+          "start_success": false,
+          "window_error_m": 7.131429936237199e-07
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 0.0010994304770431968,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 52,
+            "goal_row": 52252,
+            "start_row": 52152
+          },
+          "start_success": false,
+          "window_error_m": 2.282399964732182e-11
+        },
+        {
+          "cube_error_m": 0.003233055002313535,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 53,
+            "goal_row": 54028,
+            "start_row": 53928
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668728005729488e-10,
+          "drawer_error_m": 5.5067062021407764e-14,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 55,
+            "goal_row": 55762,
+            "start_row": 55662
+          },
+          "start_success": false,
+          "window_error_m": 0.0022536489273732863
+        },
+        {
+          "cube_error_m": 0.0013705059823261715,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 56,
+            "goal_row": 56611,
+            "start_row": 56511
+          },
+          "start_success": false,
+          "window_error_m": 3.290158450745384e-07
+        },
+        {
+          "cube_error_m": 0.044594680344166,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": false,
+            "drawer": true,
+            "success": false,
+            "window": true
+          },
+          "spec": {
+            "episode": 61,
+            "goal_row": 61203,
+            "start_row": 61103
+          },
+          "start_success": true,
+          "window_error_m": 2.1865531152548412e-05
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 0.0017864499080622372,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 64,
+            "goal_row": 64431,
+            "start_row": 64331
+          },
+          "start_success": false,
+          "window_error_m": 0.005376442366872975
+        },
+        {
+          "cube_error_m": 0.0026333923382978997,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 65,
+            "goal_row": 65442,
+            "start_row": 65342
+          },
+          "start_success": true,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668728005729488e-10,
+          "drawer_error_m": 6.38294882317203e-06,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 68,
+            "goal_row": 68546,
+            "start_row": 68446
+          },
+          "start_success": true,
+          "window_error_m": 1.2718138363843057e-06
+        },
+        {
+          "cube_error_m": 0.0021238880302342695,
+          "drawer_error_m": 7.772740996866425e-06,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 71,
+            "goal_row": 72012,
+            "start_row": 71912
+          },
+          "start_success": true,
+          "window_error_m": 2.980243940520211e-09
+        },
+        {
+          "cube_error_m": 0.003957262486921372,
+          "drawer_error_m": 3.576279161698892e-09,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 74,
+            "goal_row": 74769,
+            "start_row": 74669
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668728040423957e-10,
+          "drawer_error_m": 2.255513271157312e-14,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 77,
+            "goal_row": 77219,
+            "start_row": 77119
+          },
+          "start_success": false,
+          "window_error_m": 6.6609638640080515e-06
+        },
+        {
+          "cube_error_m": 0.0008611282926537817,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 78,
+            "goal_row": 78621,
+            "start_row": 78521
+          },
+          "start_success": false,
+          "window_error_m": 2.980237057137458e-09
+        },
+        {
+          "cube_error_m": 0.0017119784149968458,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 79,
+            "goal_row": 80054,
+            "start_row": 79954
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.0017497854627618974,
+          "drawer_error_m": 3.885780586188048e-15,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 80,
+            "goal_row": 80231,
+            "start_row": 80131
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.0029097320122436652,
+          "drawer_error_m": 5.035712830910938e-06,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 83,
+            "goal_row": 83964,
+            "start_row": 83864
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.0008130996226905654,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 85,
+            "goal_row": 85641,
+            "start_row": 85541
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.00017467571097397861,
+          "drawer_error_m": 6.101458661214587e-06,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 86,
+            "goal_row": 86415,
+            "start_row": 86315
+          },
+          "start_success": false,
+          "window_error_m": 7.679276435383323e-26
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 87,
+            "goal_row": 87254,
+            "start_row": 87154
+          },
+          "start_success": true,
+          "window_error_m": 4.230578358453882e-14
+        },
+        {
+          "cube_error_m": 0.001004018226656589,
+          "drawer_error_m": 0.002440431681720696,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 89,
+            "goal_row": 89477,
+            "start_row": 89377
+          },
+          "start_success": false,
+          "window_error_m": 2.8608106985412247e-16
+        },
+        {
+          "cube_error_m": 0.0006848835660068428,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 90,
+            "goal_row": 90419,
+            "start_row": 90319
+          },
+          "start_success": true,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727936340549e-10,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 92,
+            "goal_row": 92836,
+            "start_row": 92736
+          },
+          "start_success": false,
+          "window_error_m": 0.013937828523066076
+        },
+        {
+          "cube_error_m": 0.0014850255875618456,
+          "drawer_error_m": 1.2601031329495527e-14,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 95,
+            "goal_row": 95993,
+            "start_row": 95893
+          },
+          "start_success": false,
+          "window_error_m": 3.382504165886099e-19
+        },
+        {
+          "cube_error_m": 0.00021952027446901272,
+          "drawer_error_m": 5.5075058926518095e-05,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": false,
+            "cube": true,
+            "drawer": true,
+            "success": false,
+            "window": true
+          },
+          "spec": {
+            "episode": 96,
+            "goal_row": 96970,
+            "start_row": 96870
+          },
+          "start_success": true,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.001208250798081243,
+          "drawer_error_m": 6.655853706914752e-21,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 97,
+            "goal_row": 97284,
+            "start_row": 97184
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668728005729488e-10,
+          "drawer_error_m": 0.030159412241676585,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 99,
+            "goal_row": 99522,
+            "start_row": 99422
+          },
+          "start_success": false,
+          "window_error_m": 1.0299744028892485e-09
+        }
+      ],
+      "window_error_m_max": 0.013937828523066076
+    },
+    "200": {
+      "component_ever_rate": {
+        "button_0": 0.94,
+        "button_1": 0.98,
+        "cube": 0.92,
+        "drawer": 0.98,
+        "window": 1.0
+      },
+      "component_final_rate": {
+        "button_0": 0.94,
+        "button_1": 0.98,
+        "cube": 0.86,
+        "drawer": 0.94,
+        "window": 1.0
+      },
+      "cube_error_m_max": 0.27088091031391137,
+      "cube_error_m_median": 0.0034569851257984204,
+      "drawer_error_m_max": 0.1599999964237016,
+      "final_success_rate": 0.8,
+      "num_episodes": 50,
+      "num_trivial": 2,
+      "records": [
+        {
+          "cube_error_m": 0.00177778810418733,
+          "drawer_error_m": 1.9766266088222304e-14,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 1,
+            "goal_row": 1939,
+            "start_row": 1739
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.003791195570081337,
+          "drawer_error_m": 0.0019161124341532587,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 3,
+            "goal_row": 3861,
+            "start_row": 3661
+          },
+          "start_success": false,
+          "window_error_m": 2.9801927314832e-09
+        },
+        {
+          "cube_error_m": 0.006082228817215521,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 5,
+            "goal_row": 5897,
+            "start_row": 5697
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.003722000645443005,
+          "drawer_error_m": 9.875217816410209e-06,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 7,
+            "goal_row": 7371,
+            "start_row": 7171
+          },
+          "start_success": false,
+          "window_error_m": 5.163387019146865e-14
+        },
+        {
+          "cube_error_m": 0.0213360384167481,
+          "drawer_error_m": 4.083401006216292e-09,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 8,
+            "goal_row": 8228,
+            "start_row": 8028
+          },
+          "start_success": false,
+          "window_error_m": 2.1621332108034963e-07
+        },
+        {
+          "cube_error_m": 0.01175289935893461,
+          "drawer_error_m": 3.5768716322159833e-09,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 13,
+            "goal_row": 13842,
+            "start_row": 13642
+          },
+          "start_success": false,
+          "window_error_m": 0.000618817711142341
+        },
+        {
+          "cube_error_m": 0.003341451545724682,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 16,
+            "goal_row": 16758,
+            "start_row": 16558
+          },
+          "start_success": false,
+          "window_error_m": 0.00031420687074863295
+        },
+        {
+          "cube_error_m": 0.004384563535832896,
+          "drawer_error_m": 0.0038098240476107242,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 17,
+            "goal_row": 17718,
+            "start_row": 17518
+          },
+          "start_success": false,
+          "window_error_m": 2.9796290157424465e-09
+        },
+        {
+          "cube_error_m": 0.0021974779664766914,
+          "drawer_error_m": 0.001589539171315425,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 19,
+            "goal_row": 19502,
+            "start_row": 19302
+          },
+          "start_success": false,
+          "window_error_m": 0.0119559684836345
+        },
+        {
+          "cube_error_m": 0.03204822533277647,
+          "drawer_error_m": 0.038844703659020666,
+          "ever": {
+            "button_0": false,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": false,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": false,
+            "window": true
+          },
+          "spec": {
+            "episode": 22,
+            "goal_row": 22433,
+            "start_row": 22233
+          },
+          "start_success": false,
+          "window_error_m": 4.52762927374839e-06
+        },
+        {
+          "cube_error_m": 0.003048457055077474,
+          "drawer_error_m": 0.003132228145698711,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 23,
+            "goal_row": 23804,
+            "start_row": 23604
+          },
+          "start_success": false,
+          "window_error_m": 2.9802433021419716e-09
+        },
+        {
+          "cube_error_m": 0.0018617747923387927,
+          "drawer_error_m": 0.004995742535978527,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 24,
+            "goal_row": 24882,
+            "start_row": 24682
+          },
+          "start_success": true,
+          "window_error_m": 8.936757981733718e-06
+        },
+        {
+          "cube_error_m": 0.0016397595792921869,
+          "drawer_error_m": 1.994028905761057e-09,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 25,
+            "goal_row": 25329,
+            "start_row": 25129
+          },
+          "start_success": false,
+          "window_error_m": 0.0060779014734111125
+        },
+        {
+          "cube_error_m": 0.15752239514634564,
+          "drawer_error_m": 2.8195996904251813e-06,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": false,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": false,
+            "drawer": true,
+            "success": false,
+            "window": true
+          },
+          "spec": {
+            "episode": 29,
+            "goal_row": 29775,
+            "start_row": 29575
+          },
+          "start_success": false,
+          "window_error_m": 1.1890285033965881e-14
+        },
+        {
+          "cube_error_m": 0.002401840392353772,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 30,
+            "goal_row": 31020,
+            "start_row": 30820
+          },
+          "start_success": false,
+          "window_error_m": 5.918738137824382e-06
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 0.003099668752689245,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 31,
+            "goal_row": 31452,
+            "start_row": 31252
+          },
+          "start_success": false,
+          "window_error_m": 0.0036562323215448556
+        },
+        {
+          "cube_error_m": 0.0023664454501800486,
+          "drawer_error_m": 5.487654078087547e-05,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 32,
+            "goal_row": 32258,
+            "start_row": 32058
+          },
+          "start_success": false,
+          "window_error_m": 1.873570626698129e-07
+        },
+        {
+          "cube_error_m": 0.003267179271626558,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 33,
+            "goal_row": 33795,
+            "start_row": 33595
+          },
+          "start_success": false,
+          "window_error_m": 9.898896004677333e-23
+        },
+        {
+          "cube_error_m": 0.004283169958239392,
+          "drawer_error_m": 3.5761414107771117e-09,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 34,
+            "goal_row": 34831,
+            "start_row": 34631
+          },
+          "start_success": false,
+          "window_error_m": 1.0103029524088925e-13
+        },
+        {
+          "cube_error_m": 0.003516875468866224,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 37,
+            "goal_row": 37904,
+            "start_row": 37704
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.11343653037533433,
+          "drawer_error_m": 0.1532514525884313,
+          "ever": {
+            "button_0": false,
+            "button_1": false,
+            "cube": false,
+            "drawer": false,
+            "window": true
+          },
+          "final": {
+            "button_0": false,
+            "button_1": false,
+            "cube": false,
+            "drawer": false,
+            "success": false,
+            "window": true
+          },
+          "spec": {
+            "episode": 38,
+            "goal_row": 38921,
+            "start_row": 38721
+          },
+          "start_success": false,
+          "window_error_m": 1.939243338472396e-05
+        },
+        {
+          "cube_error_m": 0.012965575026890814,
+          "drawer_error_m": 0.01345546389387349,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 39,
+            "goal_row": 39829,
+            "start_row": 39629
+          },
+          "start_success": false,
+          "window_error_m": 9.848372117815529e-14
+        },
+        {
+          "cube_error_m": 0.0010389637217086125,
+          "drawer_error_m": 1.2061247675110298e-05,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 41,
+            "goal_row": 41816,
+            "start_row": 41616
+          },
+          "start_success": false,
+          "window_error_m": 0.005517469420752569
+        },
+        {
+          "cube_error_m": 0.0022824133417685857,
+          "drawer_error_m": 0.0026994341327333466,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 47,
+            "goal_row": 47688,
+            "start_row": 47488
+          },
+          "start_success": false,
+          "window_error_m": 0.001798717071158057
+        },
+        {
+          "cube_error_m": 0.004646426621734576,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 51,
+            "goal_row": 51504,
+            "start_row": 51304
+          },
+          "start_success": false,
+          "window_error_m": 1.1926853532134141e-14
+        },
+        {
+          "cube_error_m": 0.0033639282590392913,
+          "drawer_error_m": 0.001063088891320882,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 52,
+            "goal_row": 52341,
+            "start_row": 52141
+          },
+          "start_success": false,
+          "window_error_m": 0.002067816257465077
+        },
+        {
+          "cube_error_m": 0.004410693600963284,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 53,
+            "goal_row": 54031,
+            "start_row": 53831
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668728005729488e-10,
+          "drawer_error_m": 3.5762434402730747e-09,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 55,
+            "goal_row": 55794,
+            "start_row": 55594
+          },
+          "start_success": false,
+          "window_error_m": 8.360335991117392e-08
+        },
+        {
+          "cube_error_m": 0.002292812297793627,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 56,
+            "goal_row": 56661,
+            "start_row": 56461
+          },
+          "start_success": false,
+          "window_error_m": 2.2771486272192934e-13
+        },
+        {
+          "cube_error_m": 0.27088091031391137,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": false,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": false,
+            "drawer": true,
+            "success": false,
+            "window": true
+          },
+          "spec": {
+            "episode": 61,
+            "goal_row": 61298,
+            "start_row": 61098
+          },
+          "start_success": false,
+          "window_error_m": 2.6319676029229466e-05
+        },
+        {
+          "cube_error_m": 0.003755444011555008,
+          "drawer_error_m": 0.0032373414315721716,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 64,
+            "goal_row": 64502,
+            "start_row": 64302
+          },
+          "start_success": false,
+          "window_error_m": 0.0016630237272482267
+        },
+        {
+          "cube_error_m": 0.0030363932128555245,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 65,
+            "goal_row": 65511,
+            "start_row": 65311
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668728005729488e-10,
+          "drawer_error_m": 2.6534253435905875e-05,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 68,
+            "goal_row": 68604,
+            "start_row": 68404
+          },
+          "start_success": true,
+          "window_error_m": 8.024189902949841e-06
+        },
+        {
+          "cube_error_m": 0.14327264175238805,
+          "drawer_error_m": 0.0033528501613060784,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": false,
+            "drawer": true,
+            "success": false,
+            "window": true
+          },
+          "spec": {
+            "episode": 71,
+            "goal_row": 72018,
+            "start_row": 71818
+          },
+          "start_success": false,
+          "window_error_m": 2.7257290366455855e-07
+        },
+        {
+          "cube_error_m": 0.0658566432129504,
+          "drawer_error_m": 0.1599999964237016,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": false,
+            "drawer": false,
+            "success": false,
+            "window": true
+          },
+          "spec": {
+            "episode": 74,
+            "goal_row": 74803,
+            "start_row": 74603
+          },
+          "start_success": false,
+          "window_error_m": 4.9879111179918836e-08
+        },
+        {
+          "cube_error_m": 0.04426396120022462,
+          "drawer_error_m": 1.9191849519438498e-14,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": false,
+            "drawer": true,
+            "success": false,
+            "window": true
+          },
+          "spec": {
+            "episode": 77,
+            "goal_row": 77314,
+            "start_row": 77114
+          },
+          "start_success": false,
+          "window_error_m": 1.074434785819367e-05
+        },
+        {
+          "cube_error_m": 0.0024840873018686007,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 78,
+            "goal_row": 78672,
+            "start_row": 78472
+          },
+          "start_success": false,
+          "window_error_m": 2.980255903173301e-09
+        },
+        {
+          "cube_error_m": 0.08818647185721235,
+          "drawer_error_m": 0.00011457546471388413,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": false,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": false,
+            "drawer": true,
+            "success": false,
+            "window": true
+          },
+          "spec": {
+            "episode": 79,
+            "goal_row": 80056,
+            "start_row": 79856
+          },
+          "start_success": false,
+          "window_error_m": 6.938893903907228e-18
+        },
+        {
+          "cube_error_m": 0.0019136761051904373,
+          "drawer_error_m": 4.06064071256651e-14,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 80,
+            "goal_row": 80325,
+            "start_row": 80125
+          },
+          "start_success": false,
+          "window_error_m": 2.9802440237869376e-09
+        },
+        {
+          "cube_error_m": 0.00412705043129107,
+          "drawer_error_m": 8.549595977228519e-05,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 83,
+            "goal_row": 83977,
+            "start_row": 83777
+          },
+          "start_success": false,
+          "window_error_m": 0.03941994407666491
+        },
+        {
+          "cube_error_m": 0.002656740231083859,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 85,
+            "goal_row": 85690,
+            "start_row": 85490
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.003397094782730617,
+          "drawer_error_m": 5.297049485666894e-06,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 86,
+            "goal_row": 86490,
+            "start_row": 86290
+          },
+          "start_success": false,
+          "window_error_m": 1.5917971171972533e-18
+        },
+        {
+          "cube_error_m": 0.0072795106548673915,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 87,
+            "goal_row": 87347,
+            "start_row": 87147
+          },
+          "start_success": false,
+          "window_error_m": 0.012998205327562184
+        },
+        {
+          "cube_error_m": 0.0024540088312858827,
+          "drawer_error_m": 6.529360684260927e-05,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 89,
+            "goal_row": 89545,
+            "start_row": 89345
+          },
+          "start_success": false,
+          "window_error_m": 2.980243912764635e-09
+        },
+        {
+          "cube_error_m": 0.0007719306764959698,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 90,
+            "goal_row": 90494,
+            "start_row": 90294
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.02122843852822998,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": false,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": false,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": false,
+            "window": true
+          },
+          "spec": {
+            "episode": 92,
+            "goal_row": 92865,
+            "start_row": 92665
+          },
+          "start_success": false,
+          "window_error_m": 0.02572028663033285
+        },
+        {
+          "cube_error_m": 0.004425379162518395,
+          "drawer_error_m": 1.2256862191861728e-13,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 95,
+            "goal_row": 96005,
+            "start_row": 95805
+          },
+          "start_success": false,
+          "window_error_m": 3.921340211175841e-12
+        },
+        {
+          "cube_error_m": 0.012125252134212111,
+          "drawer_error_m": 0.01361578525695667,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 96,
+            "goal_row": 96984,
+            "start_row": 96784
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.0016785444126084874,
+          "drawer_error_m": 5.627469046840819e-18,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 97,
+            "goal_row": 97374,
+            "start_row": 97174
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668728040423957e-10,
+          "drawer_error_m": 0.12865632604541238,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": false,
+            "success": false,
+            "window": true
+          },
+          "spec": {
+            "episode": 99,
+            "goal_row": 99586,
+            "start_row": 99386
+          },
+          "start_success": false,
+          "window_error_m": 0.026083888237433572
+        }
+      ],
+      "window_error_m_max": 0.03941994407666491
+    },
+    "25": {
+      "component_ever_rate": {
+        "button_0": 1.0,
+        "button_1": 1.0,
+        "cube": 1.0,
+        "drawer": 1.0,
+        "window": 1.0
+      },
+      "component_final_rate": {
+        "button_0": 1.0,
+        "button_1": 1.0,
+        "cube": 1.0,
+        "drawer": 1.0,
+        "window": 1.0
+      },
+      "cube_error_m_max": 0.012356766225573764,
+      "cube_error_m_median": 6.991491894509094e-06,
+      "drawer_error_m_max": 0.012508770534457488,
+      "final_success_rate": 1.0,
+      "num_episodes": 50,
+      "num_trivial": 17,
+      "records": [
+        {
+          "cube_error_m": 9.668728005729488e-10,
+          "drawer_error_m": 1.9557632754682564e-14,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 1,
+            "goal_row": 1926,
+            "start_row": 1901
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727936340549e-10,
+          "drawer_error_m": 0.0003171776681098748,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 3,
+            "goal_row": 3830,
+            "start_row": 3805
+          },
+          "start_success": false,
+          "window_error_m": 1.980612618357469e-10
+        },
+        {
+          "cube_error_m": 0.0013173901513950394,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 5,
+            "goal_row": 5873,
+            "start_row": 5848
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 7,
+            "goal_row": 7232,
+            "start_row": 7207
+          },
+          "start_success": false,
+          "window_error_m": 1.7417820716243467e-14
+        },
+        {
+          "cube_error_m": 0.004457871030189053,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 8,
+            "goal_row": 8057,
+            "start_row": 8032
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.012356766225573764,
+          "drawer_error_m": 1.1174382683054596e-07,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 13,
+            "goal_row": 13805,
+            "start_row": 13780
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727936340549e-10,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 16,
+            "goal_row": 16702,
+            "start_row": 16677
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 7.014221218233066e-06,
+          "drawer_error_m": 2.4440810495254817e-09,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 17,
+            "goal_row": 17652,
+            "start_row": 17627
+          },
+          "start_success": false,
+          "window_error_m": 1.98062483081074e-10
+        },
+        {
+          "cube_error_m": 9.66872783225714e-10,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 19,
+            "goal_row": 19389,
+            "start_row": 19364
+          },
+          "start_success": false,
+          "window_error_m": 0.0028845714358351274
+        },
+        {
+          "cube_error_m": 0.005759107165475537,
+          "drawer_error_m": 0.005125124544141824,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 22,
+            "goal_row": 22304,
+            "start_row": 22279
+          },
+          "start_success": true,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 6.9916641346676865e-06,
+          "drawer_error_m": 4.318113575041416e-11,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 23,
+            "goal_row": 23756,
+            "start_row": 23731
+          },
+          "start_success": true,
+          "window_error_m": 3.145623615457809e-14
+        },
+        {
+          "cube_error_m": 6.991491894509094e-06,
+          "drawer_error_m": 1.3877787807814457e-16,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 24,
+            "goal_row": 24851,
+            "start_row": 24826
+          },
+          "start_success": true,
+          "window_error_m": 1.1866159096984852e-14
+        },
+        {
+          "cube_error_m": 0.002950039249865757,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 25,
+            "goal_row": 25177,
+            "start_row": 25152
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 1.606025555600521e-11,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 29,
+            "goal_row": 29720,
+            "start_row": 29695
+          },
+          "start_success": true,
+          "window_error_m": 1.0241531400577865e-14
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 30,
+            "goal_row": 31018,
+            "start_row": 30993
+          },
+          "start_success": false,
+          "window_error_m": 9.230264426559711e-05
+        },
+        {
+          "cube_error_m": 9.668727936340549e-10,
+          "drawer_error_m": 0.0007479457858693087,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 31,
+            "goal_row": 31325,
+            "start_row": 31300
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 0.0070661188207648135,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 32,
+            "goal_row": 32089,
+            "start_row": 32064
+          },
+          "start_success": false,
+          "window_error_m": 1.5553114351973818e-12
+        },
+        {
+          "cube_error_m": 0.001809118072442665,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 33,
+            "goal_row": 33743,
+            "start_row": 33718
+          },
+          "start_success": true,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 3.1280533718813786e-14,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 34,
+            "goal_row": 34786,
+            "start_row": 34761
+          },
+          "start_success": true,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668728005729488e-10,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 37,
+            "goal_row": 37875,
+            "start_row": 37850
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.00010551295450138456,
+          "drawer_error_m": 0.00012120445930144386,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 38,
+            "goal_row": 38895,
+            "start_row": 38870
+          },
+          "start_success": true,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.0002444221783975355,
+          "drawer_error_m": 0.0012970665974478108,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 39,
+            "goal_row": 39783,
+            "start_row": 39758
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 6.991491894509094e-06,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 41,
+            "goal_row": 41766,
+            "start_row": 41741
+          },
+          "start_success": false,
+          "window_error_m": 2.1832717302228015e-06
+        },
+        {
+          "cube_error_m": 6.991491894509094e-06,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 47,
+            "goal_row": 47610,
+            "start_row": 47585
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.004049000614454857,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 51,
+            "goal_row": 51384,
+            "start_row": 51359
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 0.0071795505755011535,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 52,
+            "goal_row": 52185,
+            "start_row": 52160
+          },
+          "start_success": true,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.003556221218583216,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 53,
+            "goal_row": 54026,
+            "start_row": 54001
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 5.551115123125783e-17,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 55,
+            "goal_row": 55737,
+            "start_row": 55712
+          },
+          "start_success": true,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.0017185958331108605,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 56,
+            "goal_row": 56574,
+            "start_row": 56549
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 61,
+            "goal_row": 61132,
+            "start_row": 61107
+          },
+          "start_success": true,
+          "window_error_m": 2.425601045283332e-05
+        },
+        {
+          "cube_error_m": 9.668727936340549e-10,
+          "drawer_error_m": 4.3199559034146073e-10,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 64,
+            "goal_row": 64379,
+            "start_row": 64354
+          },
+          "start_success": true,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.0033163784520116465,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 65,
+            "goal_row": 65390,
+            "start_row": 65365
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 68,
+            "goal_row": 68503,
+            "start_row": 68478
+          },
+          "start_success": true,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 3.057797071104318e-14,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 71,
+            "goal_row": 72007,
+            "start_row": 71982
+          },
+          "start_success": true,
+          "window_error_m": 2.980243940520211e-09
+        },
+        {
+          "cube_error_m": 6.991496278525376e-06,
+          "drawer_error_m": 3.5777969753514327e-09,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 74,
+            "goal_row": 74744,
+            "start_row": 74719
+          },
+          "start_success": true,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668728005729488e-10,
+          "drawer_error_m": 9.71445146547012e-15,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 77,
+            "goal_row": 77147,
+            "start_row": 77122
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.0009943785334875508,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 78,
+            "goal_row": 78583,
+            "start_row": 78558
+          },
+          "start_success": false,
+          "window_error_m": 2.980243940520211e-09
+        },
+        {
+          "cube_error_m": 0.004139970720944242,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 79,
+            "goal_row": 80051,
+            "start_row": 80026
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 80,
+            "goal_row": 80160,
+            "start_row": 80135
+          },
+          "start_success": true,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727936340549e-10,
+          "drawer_error_m": 1.793983624696167e-06,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 83,
+            "goal_row": 83954,
+            "start_row": 83929
+          },
+          "start_success": true,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.006314975093728744,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 85,
+            "goal_row": 85604,
+            "start_row": 85579
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668728005729488e-10,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 86,
+            "goal_row": 86360,
+            "start_row": 86335
+          },
+          "start_success": false,
+          "window_error_m": 1.076629806472634e-31
+        },
+        {
+          "cube_error_m": 9.66872790164608e-10,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 87,
+            "goal_row": 87185,
+            "start_row": 87160
+          },
+          "start_success": false,
+          "window_error_m": 0.004907244746798545
+        },
+        {
+          "cube_error_m": 0.0018588878977560484,
+          "drawer_error_m": 1.904856799544996e-06,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 89,
+            "goal_row": 89426,
+            "start_row": 89401
+          },
+          "start_success": false,
+          "window_error_m": 2.707599526343928e-23
+        },
+        {
+          "cube_error_m": 0.0018742020022044646,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 90,
+            "goal_row": 90363,
+            "start_row": 90338
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 92,
+            "goal_row": 92815,
+            "start_row": 92790
+          },
+          "start_success": false,
+          "window_error_m": 1.2816951747358698e-08
+        },
+        {
+          "cube_error_m": 0.003317249597528253,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 95,
+            "goal_row": 95985,
+            "start_row": 95960
+          },
+          "start_success": false,
+          "window_error_m": 2.5665436928868564e-19
+        },
+        {
+          "cube_error_m": 3.817306442079905e-05,
+          "drawer_error_m": 1.8448494219225342e-06,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 96,
+            "goal_row": 96959,
+            "start_row": 96934
+          },
+          "start_success": true,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.0042433923396563746,
+          "drawer_error_m": 5.946032397841499e-23,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 97,
+            "goal_row": 97216,
+            "start_row": 97191
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668728005729488e-10,
+          "drawer_error_m": 0.012508770534457488,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 99,
+            "goal_row": 99473,
+            "start_row": 99448
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        }
+      ],
+      "window_error_m_max": 0.004907244746798545
+    },
+    "50": {
+      "component_ever_rate": {
+        "button_0": 1.0,
+        "button_1": 1.0,
+        "cube": 1.0,
+        "drawer": 1.0,
+        "window": 1.0
+      },
+      "component_final_rate": {
+        "button_0": 1.0,
+        "button_1": 1.0,
+        "cube": 1.0,
+        "drawer": 1.0,
+        "window": 1.0
+      },
+      "cube_error_m_max": 0.01571714835121794,
+      "cube_error_m_median": 6.67274266666857e-05,
+      "drawer_error_m_max": 0.022656406623125826,
+      "final_success_rate": 1.0,
+      "num_episodes": 50,
+      "num_trivial": 9,
+      "records": [
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 1.9557507008462346e-14,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 1,
+            "goal_row": 1928,
+            "start_row": 1878
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727936340549e-10,
+          "drawer_error_m": 0.00014235169675172465,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 3,
+            "goal_row": 3835,
+            "start_row": 3785
+          },
+          "start_success": false,
+          "window_error_m": 3.882483223804911e-10
+        },
+        {
+          "cube_error_m": 0.0015308672704271858,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 5,
+            "goal_row": 5876,
+            "start_row": 5826
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727936340549e-10,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 7,
+            "goal_row": 7252,
+            "start_row": 7202
+          },
+          "start_success": false,
+          "window_error_m": 1.1798228746485343e-14
+        },
+        {
+          "cube_error_m": 0.007752553520003254,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 8,
+            "goal_row": 8081,
+            "start_row": 8031
+          },
+          "start_success": false,
+          "window_error_m": 1.255112575090922e-05
+        },
+        {
+          "cube_error_m": 0.01571714835121794,
+          "drawer_error_m": 7.300815729749388e-09,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 13,
+            "goal_row": 13810,
+            "start_row": 13760
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 2.353720021989984e-08,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 16,
+            "goal_row": 16710,
+            "start_row": 16660
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 7.005487347612825e-06,
+          "drawer_error_m": 1.8159074892474397e-07,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 17,
+            "goal_row": 17662,
+            "start_row": 17612
+          },
+          "start_success": false,
+          "window_error_m": 2.9665278011847818e-09
+        },
+        {
+          "cube_error_m": 9.66872783225714e-10,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 19,
+            "goal_row": 19405,
+            "start_row": 19355
+          },
+          "start_success": false,
+          "window_error_m": 0.007507510854972735
+        },
+        {
+          "cube_error_m": 0.005181238544584663,
+          "drawer_error_m": 0.005243692888718598,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 22,
+            "goal_row": 22322,
+            "start_row": 22272
+          },
+          "start_success": false,
+          "window_error_m": 2.1899149160731213e-14
+        },
+        {
+          "cube_error_m": 7.007719621736949e-06,
+          "drawer_error_m": 6.397314560036005e-09,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 23,
+            "goal_row": 23763,
+            "start_row": 23713
+          },
+          "start_success": false,
+          "window_error_m": 0.00036501778456411726
+        },
+        {
+          "cube_error_m": 0.0012248726491987387,
+          "drawer_error_m": 0.0028719080336149505,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 24,
+            "goal_row": 24855,
+            "start_row": 24805
+          },
+          "start_success": false,
+          "window_error_m": 2.4651098219988232e-14
+        },
+        {
+          "cube_error_m": 0.0004241019577549432,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 25,
+            "goal_row": 25199,
+            "start_row": 25149
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668728005729488e-10,
+          "drawer_error_m": 6.14657043016692e-07,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 29,
+            "goal_row": 29728,
+            "start_row": 29678
+          },
+          "start_success": true,
+          "window_error_m": 1.1805912863640104e-14
+        },
+        {
+          "cube_error_m": 0.00012644713371163447,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 30,
+            "goal_row": 31018,
+            "start_row": 30968
+          },
+          "start_success": false,
+          "window_error_m": 7.92100552893882e-05
+        },
+        {
+          "cube_error_m": 9.668727936340549e-10,
+          "drawer_error_m": 0.003953806718986993,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 31,
+            "goal_row": 31343,
+            "start_row": 31293
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 0.0009164842314580108,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 32,
+            "goal_row": 32113,
+            "start_row": 32063
+          },
+          "start_success": false,
+          "window_error_m": 2.1608617672974617e-11
+        },
+        {
+          "cube_error_m": 0.0012616323411982573,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 33,
+            "goal_row": 33751,
+            "start_row": 33701
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727936340549e-10,
+          "drawer_error_m": 6.231126725708691e-14,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 34,
+            "goal_row": 34792,
+            "start_row": 34742
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668728005729488e-10,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 37,
+            "goal_row": 37879,
+            "start_row": 37829
+          },
+          "start_success": true,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.0018013248288720734,
+          "drawer_error_m": 0.0037593731676882763,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 38,
+            "goal_row": 38899,
+            "start_row": 38849
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.00036401173625328975,
+          "drawer_error_m": 0.001440043185965949,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 39,
+            "goal_row": 39789,
+            "start_row": 39739
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 6.991491894509094e-06,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 41,
+            "goal_row": 41773,
+            "start_row": 41723
+          },
+          "start_success": false,
+          "window_error_m": 2.2140976500353352e-08
+        },
+        {
+          "cube_error_m": 6.991491894509094e-06,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 47,
+            "goal_row": 47621,
+            "start_row": 47571
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.0024952216899917913,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 51,
+            "goal_row": 51401,
+            "start_row": 51351
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668728005729488e-10,
+          "drawer_error_m": 0.0005546928350158593,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 52,
+            "goal_row": 52208,
+            "start_row": 52158
+          },
+          "start_success": true,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.004210742867353674,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 53,
+            "goal_row": 54026,
+            "start_row": 53976
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 1.3683498778505054e-14,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 55,
+            "goal_row": 55745,
+            "start_row": 55695
+          },
+          "start_success": false,
+          "window_error_m": 0.0010661209502810381
+        },
+        {
+          "cube_error_m": 0.006077262761926923,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 56,
+            "goal_row": 56587,
+            "start_row": 56537
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.008828055101729012,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 61,
+            "goal_row": 61155,
+            "start_row": 61105
+          },
+          "start_success": true,
+          "window_error_m": 2.3320591060804752e-05
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 0.0035891564911354167,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 64,
+            "goal_row": 64396,
+            "start_row": 64346
+          },
+          "start_success": false,
+          "window_error_m": 0.013749192763700359
+        },
+        {
+          "cube_error_m": 0.0017303159669095813,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 65,
+            "goal_row": 65408,
+            "start_row": 65358
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 68,
+            "goal_row": 68517,
+            "start_row": 68467
+          },
+          "start_success": true,
+          "window_error_m": 8.604228440844963e-16
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 2.7607775823301566e-06,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 71,
+            "goal_row": 72008,
+            "start_row": 71958
+          },
+          "start_success": true,
+          "window_error_m": 2.980243940520211e-09
+        },
+        {
+          "cube_error_m": 0.0048020596673168225,
+          "drawer_error_m": 3.5762880712386647e-09,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 74,
+            "goal_row": 74752,
+            "start_row": 74702
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668728005729488e-10,
+          "drawer_error_m": 0.0009453401451163072,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 77,
+            "goal_row": 77171,
+            "start_row": 77121
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.004383484820259524,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 78,
+            "goal_row": 78596,
+            "start_row": 78546
+          },
+          "start_success": false,
+          "window_error_m": 2.980243940520211e-09
+        },
+        {
+          "cube_error_m": 0.003376877934975655,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 79,
+            "goal_row": 80052,
+            "start_row": 80002
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.001786058032583038,
+          "drawer_error_m": 2.3592239273284576e-16,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 80,
+            "goal_row": 80184,
+            "start_row": 80134
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727936340549e-10,
+          "drawer_error_m": 1.5882047953950782e-06,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 83,
+            "goal_row": 83958,
+            "start_row": 83908
+          },
+          "start_success": true,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.0031534574431296967,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 85,
+            "goal_row": 85616,
+            "start_row": 85566
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668727971035018e-10,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 86,
+            "goal_row": 86378,
+            "start_row": 86328
+          },
+          "start_success": false,
+          "window_error_m": 1.20421860072022e-29
+        },
+        {
+          "cube_error_m": 9.66872790164608e-10,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 87,
+            "goal_row": 87208,
+            "start_row": 87158
+          },
+          "start_success": false,
+          "window_error_m": 0.002451581365363803
+        },
+        {
+          "cube_error_m": 0.004343308191114968,
+          "drawer_error_m": 2.318518139393655e-06,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 89,
+            "goal_row": 89443,
+            "start_row": 89393
+          },
+          "start_success": false,
+          "window_error_m": 5.941361280973785e-21
+        },
+        {
+          "cube_error_m": 0.0030032332455301822,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 90,
+            "goal_row": 90382,
+            "start_row": 90332
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668728005729488e-10,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 92,
+            "goal_row": 92822,
+            "start_row": 92772
+          },
+          "start_success": false,
+          "window_error_m": 3.9101430193275197e-10
+        },
+        {
+          "cube_error_m": 0.0009360243667535439,
+          "drawer_error_m": 0.0,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 95,
+            "goal_row": 95988,
+            "start_row": 95938
+          },
+          "start_success": true,
+          "window_error_m": 6.09768841821897e-19
+        },
+        {
+          "cube_error_m": 0.0006468910406315372,
+          "drawer_error_m": 3.992444102624004e-06,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 96,
+            "goal_row": 96963,
+            "start_row": 96913
+          },
+          "start_success": true,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 0.0010751184109203302,
+          "drawer_error_m": 4.491175764508261e-22,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 97,
+            "goal_row": 97238,
+            "start_row": 97188
+          },
+          "start_success": false,
+          "window_error_m": 0.0
+        },
+        {
+          "cube_error_m": 9.668728040423957e-10,
+          "drawer_error_m": 0.022656406623125826,
+          "ever": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "window": true
+          },
+          "final": {
+            "button_0": true,
+            "button_1": true,
+            "cube": true,
+            "drawer": true,
+            "success": true,
+            "window": true
+          },
+          "spec": {
+            "episode": 99,
+            "goal_row": 99489,
+            "start_row": 99439
+          },
+          "start_success": false,
+          "window_error_m": 1.0229345148715652e-11
+        }
+      ],
+      "window_error_m_max": 0.013749192763700359
+    }
+  },
+  "protocol": "scene_progress_wm_harness_gate_v1",
+  "render_info": {
+    "camera": "front_pixels",
+    "disabled_flags": [
+      "mjRND_SHADOW"
+    ],
+    "offsamples": 0,
+    "quality": "fast",
+    "render_size": 64
+  },
+  "verdict": "HARNESS_BROKEN",
+  "worst_offset_success_rate": 0.8
+}

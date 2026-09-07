@@ -1,0 +1,200 @@
+{
+  "best_baseline": {
+    "mechanism": {
+      "drag_mae_from_context": 0.3930119276046753,
+      "drag_r2_from_context": 0.7729886770248413
+    },
+    "planning": {
+      "improvement_ci95": [
+        -0.0011350775661412627,
+        0.038970741443335996
+      ],
+      "mean_cost": 0.12324728071689606,
+      "mean_final_distance": 0.10716916620731354,
+      "mean_improvement_over_median": 0.019054628908634186,
+      "mean_relative_cost_reduction_vs_median": -0.2011352777481079,
+      "oracle_gap_recovered": 0.14874117076396942,
+      "oracle_gap_recovered_ci95": [
+        -0.009776029386557639,
+        0.2763728529214859
+      ],
+      "predicted_cost_mean": 0.012758510187268257,
+      "reach_rate": 0.7109375,
+      "relative_reduction_ci95": [
+        -0.44347541630268095,
+        -0.0051037632860244445
+      ],
+      "settled_success_rate": 0.53125
+    },
+    "prediction": {
+      "anchor_mse": 5.839648246765137,
+      "decoded_endpoint_mae": 0.1090775802731514,
+      "decoded_endpoint_median": 0.07054254412651062
+    }
+  },
+  "criterion": {
+    "best_strong_baseline": "mse",
+    "incremental_oracle_gap_recovered_gte_0.10": false,
+    "paired_true_cost_improvement_ci95_lower_gt_zero": false
+  },
+  "gate": "kernel_mmr_vs_strong_baseline",
+  "increment_over_best_baseline": {
+    "cost_improvement_ci95": [
+      -0.018190686777234077,
+      0.016487942310050095
+    ],
+    "incremental_oracle_gap_recovered": -0.006016118917614222,
+    "incremental_oracle_gap_recovered_ci95": [
+      -0.14197845309972762,
+      0.1308903720229864
+    ],
+    "mean_true_cost_improvement_over_best_baseline": -0.0007707006298005581
+  },
+  "mechanism": {
+    "drag_mae_from_context": 0.39530149102211,
+    "drag_r2_from_context": 0.772854745388031
+  },
+  "planning": {
+    "improvement_ci95": [
+      -0.0012482271500630297,
+      0.037541650049388385
+    ],
+    "mean_cost": 0.12401797622442245,
+    "mean_final_distance": 0.10850933194160461,
+    "mean_improvement_over_median": 0.01828392967581749,
+    "mean_relative_cost_reduction_vs_median": -0.15512864291667938,
+    "oracle_gap_recovered": 0.14272506535053253,
+    "oracle_gap_recovered_ci95": [
+      -0.01081351628527045,
+      0.2671701818704602
+    ],
+    "predicted_cost_mean": 0.01333581656217575,
+    "reach_rate": 0.734375,
+    "relative_reduction_ci95": [
+      -0.3128201112151146,
+      -0.010716004879214161
+    ],
+    "settled_success_rate": 0.5703125
+  },
+  "prediction": {
+    "anchor_mse": 5.91333532333374,
+    "decoded_endpoint_mae": 0.10783037543296814,
+    "decoded_endpoint_median": 0.06876929849386215
+  },
+  "protocol": {
+    "common_standardized_cem_noise": true,
+    "iterations": 6,
+    "num_samples": 256,
+    "primary_metric": "paired true simulator cost under locked CEM",
+    "restarts": 2,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "test_evaluated_only_after_lambda_selection": true
+  },
+  "reference": {
+    "best_baseline_mean_cost": 0.12324728071689606,
+    "median_drag_mean_cost": 0.14230190217494965,
+    "oracle_mean_cost": 0.014195949770510197
+  },
+  "run": {
+    "hostname": "worker-mig-3g40gb-0",
+    "slurm_job_id": "48258",
+    "source_sha256": "3eaeeaa3244502acbe3c34eb57d4673cb4e47855f21f6af50f4b317322a96aac"
+  },
+  "schema_version": 1,
+  "selected_lambda": 1.0,
+  "selection": {
+    "candidates": [
+      {
+        "lambda": 0.1,
+        "lambda_dir": "lambda_0.1",
+        "mean_validation_endpoint": 0.11159485694434908,
+        "per_seed": [
+          {
+            "seed": 0,
+            "validation_endpoint": 0.11085933811134763,
+            "validation_mmr_u": 0.002019746877097835,
+            "validation_raw_mse": 6.263593938615587
+          },
+          {
+            "seed": 1,
+            "validation_endpoint": 0.11197958787282308,
+            "validation_mmr_u": 0.0020104638430186446,
+            "validation_raw_mse": 6.289506742689345
+          },
+          {
+            "seed": 2,
+            "validation_endpoint": 0.11194564484887654,
+            "validation_mmr_u": 0.001881542142170171,
+            "validation_raw_mse": 6.297317335340712
+          }
+        ],
+        "std_validation_endpoint": 0.0006372040469845788
+      },
+      {
+        "lambda": 1.0,
+        "lambda_dir": "lambda_1",
+        "mean_validation_endpoint": 0.1112938416224939,
+        "per_seed": [
+          {
+            "seed": 0,
+            "validation_endpoint": 0.11071992284721799,
+            "validation_mmr_u": 0.002164602313294179,
+            "validation_raw_mse": 6.265590498182509
+          },
+          {
+            "seed": 1,
+            "validation_endpoint": 0.1120317334930102,
+            "validation_mmr_u": 0.002133186953142285,
+            "validation_raw_mse": 6.147530206044515
+          },
+          {
+            "seed": 2,
+            "validation_endpoint": 0.11112986852725347,
+            "validation_mmr_u": 0.002059621916204277,
+            "validation_raw_mse": 6.27839166853163
+          }
+        ],
+        "std_validation_endpoint": 0.0006711014636964251
+      },
+      {
+        "lambda": 10.0,
+        "lambda_dir": "lambda_10",
+        "mean_validation_endpoint": 0.11302765784440216,
+        "per_seed": [
+          {
+            "seed": 0,
+            "validation_endpoint": 0.1125612853301896,
+            "validation_mmr_u": 0.0020269236372162896,
+            "validation_raw_mse": 6.327428595225016
+          },
+          {
+            "seed": 1,
+            "validation_endpoint": 0.11314802186356651,
+            "validation_mmr_u": 0.002085086575243622,
+            "validation_raw_mse": 6.26462279425727
+          },
+          {
+            "seed": 2,
+            "validation_endpoint": 0.11337366633945041,
+            "validation_mmr_u": 0.002290695499525302,
+            "validation_raw_mse": 6.472765371534559
+          }
+        ],
+        "std_validation_endpoint": 0.0004193522968626144
+      }
+    ],
+    "chosen_lambda": 1.0,
+    "chosen_lambda_dir": "lambda_1",
+    "hostname": "worker-1",
+    "schema_version": 1,
+    "selection_metric": "mean decoded endpoint MAE across three seeds",
+    "selection_split": "validation episodes only",
+    "slurm_job_id": "48257",
+    "source_sha256": "9a9faedbf99b558671f60c739c6c1eb83316b167612576771be81226c0247581"
+  },
+  "status": "STOP"
+}

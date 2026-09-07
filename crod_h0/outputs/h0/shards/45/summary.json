@@ -1,0 +1,268 @@
+{
+  "anchor": {
+    "actions_raw_sha256": "9244eb81186df9117afa7e9957b0b606138a740648548b2d99358dd6ef2e632b",
+    "auxiliary_cost": 0.5777574777603149,
+    "executed_steps": 18,
+    "native_cost": 2.7390971183776855,
+    "physical_distance_m": 0.03705791375093493,
+    "success": 1
+  },
+  "arms": {
+    "action_diverse": {
+      "accounted_physical_queries": 9,
+      "any_success_gain": 0,
+      "auxiliary_prefers_fraction": 0.125,
+      "best_any_advantage_m": 0.02426780144444874,
+      "best_corrective_advantage_m": 0.02426780144444874,
+      "best_improvement_per_query_m": 0.0030334751805560925,
+      "best_selected_distance_m": 0.01279011230648619,
+      "directional_positive_fraction": 0.125,
+      "inversion_hit": 1,
+      "mean_action_distance_from_anchor": 6.127303172295358,
+      "mean_auxiliary_rank_fraction": 0.4945833333333334,
+      "mean_crod_score": 0.003404166666666666,
+      "mean_native_rank_fraction": 0.4954166666666667,
+      "n_alternatives": 8,
+      "native_rejected_fraction": 1.0,
+      "selected_indices": [
+        272,
+        203,
+        210,
+        292,
+        119,
+        153,
+        271,
+        136
+      ],
+      "selected_success_any": 1
+    },
+    "crod_directional": {
+      "accounted_physical_queries": 9,
+      "any_success_gain": 0,
+      "auxiliary_prefers_fraction": 1.0,
+      "best_any_advantage_m": 0.023282284793479567,
+      "best_corrective_advantage_m": 0.023282284793479567,
+      "best_improvement_per_query_m": 0.002910285599184946,
+      "best_selected_distance_m": 0.013775628957455365,
+      "directional_positive_fraction": 1.0,
+      "inversion_hit": 1,
+      "mean_action_distance_from_anchor": 4.947144836242083,
+      "mean_auxiliary_rank_fraction": 0.02,
+      "mean_crod_score": 0.09185277777777778,
+      "mean_native_rank_fraction": 0.5816666666666667,
+      "n_alternatives": 8,
+      "native_rejected_fraction": 1.0,
+      "selected_indices": [
+        14,
+        4,
+        105,
+        101,
+        213,
+        43,
+        276,
+        39
+      ],
+      "selected_success_any": 1
+    },
+    "dino_best_rejected": {
+      "accounted_physical_queries": 9,
+      "any_success_gain": 0,
+      "auxiliary_prefers_fraction": 1.0,
+      "best_any_advantage_m": 0.012144768661656084,
+      "best_corrective_advantage_m": 0.0,
+      "best_improvement_per_query_m": 0.0015180960827070105,
+      "best_selected_distance_m": 0.024913145089278846,
+      "directional_positive_fraction": 1.0,
+      "inversion_hit": 0,
+      "mean_action_distance_from_anchor": 4.924385566967809,
+      "mean_auxiliary_rank_fraction": 0.011666666666666667,
+      "mean_crod_score": 0.08100416666666665,
+      "mean_native_rank_fraction": 0.48,
+      "n_alternatives": 8,
+      "native_rejected_fraction": 1.0,
+      "selected_indices": [
+        39,
+        14,
+        118,
+        4,
+        43,
+        105,
+        101,
+        114
+      ],
+      "selected_success_any": 1
+    },
+    "native_uncertainty_diverse": {
+      "accounted_physical_queries": 9,
+      "any_success_gain": 0,
+      "auxiliary_prefers_fraction": 0.375,
+      "best_any_advantage_m": 0.023540560866906656,
+      "best_corrective_advantage_m": 0.023540560866906656,
+      "best_improvement_per_query_m": 0.002942570108363332,
+      "best_selected_distance_m": 0.013517352884028274,
+      "directional_positive_fraction": 0.375,
+      "inversion_hit": 1,
+      "mean_action_distance_from_anchor": 5.498609357301266,
+      "mean_auxiliary_rank_fraction": 0.4129166666666667,
+      "mean_crod_score": 0.007087499999999998,
+      "mean_native_rank_fraction": 0.35416666666666663,
+      "n_alternatives": 8,
+      "native_rejected_fraction": 1.0,
+      "selected_indices": [
+        210,
+        183,
+        25,
+        59,
+        74,
+        49,
+        56,
+        65
+      ],
+      "selected_success_any": 1
+    },
+    "random_rejected": {
+      "accounted_physical_queries": 9,
+      "any_success_gain": 0,
+      "auxiliary_prefers_fraction": 0.125,
+      "best_any_advantage_m": 0.016446851547029556,
+      "best_corrective_advantage_m": 0.0,
+      "best_improvement_per_query_m": 0.0020558564433786944,
+      "best_selected_distance_m": 0.020611062203905375,
+      "directional_positive_fraction": 0.125,
+      "inversion_hit": 0,
+      "mean_action_distance_from_anchor": 4.862299487310446,
+      "mean_auxiliary_rank_fraction": 0.54625,
+      "mean_crod_score": 0.005683333333333332,
+      "mean_native_rank_fraction": 0.5720833333333333,
+      "n_alternatives": 8,
+      "native_rejected_fraction": 1.0,
+      "selected_indices": [
+        71,
+        86,
+        96,
+        138,
+        147,
+        249,
+        250,
+        299
+      ],
+      "selected_success_any": 1
+    },
+    "rejected_action_diverse": {
+      "accounted_physical_queries": 9,
+      "any_success_gain": 0,
+      "auxiliary_prefers_fraction": 0.125,
+      "best_any_advantage_m": 0.02426780144444874,
+      "best_corrective_advantage_m": 0.02426780144444874,
+      "best_improvement_per_query_m": 0.0030334751805560925,
+      "best_selected_distance_m": 0.01279011230648619,
+      "directional_positive_fraction": 0.125,
+      "inversion_hit": 1,
+      "mean_action_distance_from_anchor": 6.127303172295358,
+      "mean_auxiliary_rank_fraction": 0.4945833333333334,
+      "mean_crod_score": 0.003404166666666666,
+      "mean_native_rank_fraction": 0.4954166666666667,
+      "n_alternatives": 8,
+      "native_rejected_fraction": 1.0,
+      "selected_indices": [
+        272,
+        203,
+        210,
+        292,
+        119,
+        153,
+        271,
+        136
+      ],
+      "selected_success_any": 1
+    }
+  },
+  "config": {
+    "action_block": 5,
+    "alternatives": 8,
+    "auxiliary_checkpoint": "crod_dinowm_cube_seed42/weights_epoch_10.pt",
+    "auxiliary_representation": "frozen DINOv2-Small, action-only predictor",
+    "cem_steps": 30,
+    "dataset": "ogbench/cube_single_expert.h5",
+    "goal_offset": 25,
+    "horizon": 5,
+    "min_physical_gap_m": 0.02,
+    "native_checkpoint": "quentinll/lewm-cube",
+    "num_samples": 300,
+    "physical_budget_per_arm": 9,
+    "seed": 20260820,
+    "topk": 30
+  },
+  "diagnostics": {
+    "auxiliary_cost_std": 0.1564180999994278,
+    "directional_positive_candidates": 54,
+    "native_callback_rescore_max_abs": 0.0,
+    "native_rejected_candidates": 300,
+    "unique_physical_alternatives_executed": 33
+  },
+  "episode": 3598,
+  "repeat_gate": {
+    "executed_max_abs": 0.0,
+    "pass": true,
+    "physical_max_abs": 0.0,
+    "success_disagreements": 0
+  },
+  "scope": "All choices are locked from LeWM/DINO-WM costs before physics. Each arm is charged one exact CEM-returned anchor plus eight alternatives.",
+  "snapshot": 45,
+  "start_step": 50,
+  "visual_signature": "add82fdd0218b4f63c1da71f49d69b2f8e650d5c28540e52d8798d15d91cf93b",
+  "visual_signature_shapes": {
+    "cam_fovy": [
+      4
+    ],
+    "cam_mat0": [
+      4,
+      9
+    ],
+    "cam_pos": [
+      4,
+      3
+    ],
+    "cam_quat": [
+      4,
+      4
+    ],
+    "geom_rgba": [
+      64,
+      4
+    ],
+    "light_ambient": [
+      2,
+      3
+    ],
+    "light_diffuse": [
+      2,
+      3
+    ],
+    "light_dir": [
+      2,
+      3
+    ],
+    "light_pos": [
+      2,
+      3
+    ],
+    "light_specular": [
+      2,
+      3
+    ],
+    "mat_rgba": [
+      10,
+      4
+    ],
+    "tex_adr": [
+      2
+    ],
+    "tex_height": [
+      2
+    ],
+    "tex_width": [
+      2
+    ]
+  }
+}

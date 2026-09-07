@@ -1,0 +1,27 @@
+{
+  "definition": {
+    "matched_control": "same-population proxy-rejected/physical-hard candidate matched on regret; this is a control, not a claim that it participates in no inversion whatsoever",
+    "physical_hard": "physical regret >= 0.02 m",
+    "proxy_good": "proxy rank <= 0.1",
+    "score": "proxy-rank margin times physical margin in metres",
+    "strong_inversion": "same-population pair where proxy prefers deceptive candidate, but corrective candidate is physically better by at least the physical gap"
+  },
+  "final_population": {
+    "n_snapshots_with_strong_inversion": 26,
+    "n_with_matched_proxy_rejected_hard_control": 25,
+    "strong_inversion_coverage": 0.8125,
+    "verified_inversion_gate": "GO"
+  },
+  "initial_population": {
+    "n_snapshots_with_strong_inversion": 28,
+    "strong_inversion_coverage": 0.875
+  },
+  "n_population_rows": 64,
+  "n_snapshots": 32,
+  "scope": "post-hoc verification on persisted Phase-0 same-state candidate pools; not policy or query-efficiency evidence",
+  "thresholds": {
+    "max_control_gap_m": 0.01,
+    "min_physical_gap_m": 0.02,
+    "proxy_good_top_frac": 0.1
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "excluded_offpolicy_episodes": 128,
+  "num_episodes": 7789,
+  "num_sequences": 15360,
+  "primitive_horizon": 25,
+  "seed": 20260820
+}

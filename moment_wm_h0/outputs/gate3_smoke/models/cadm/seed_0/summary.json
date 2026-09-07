@@ -1,0 +1,20 @@
+{
+  "arm": "cadm",
+  "best_epoch": 2,
+  "best_validation_objective": 149.14657592773438,
+  "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/moment_wm_h0/outputs/gate3_smoke/models/cadm/seed_0/checkpoint.pt",
+  "epochs_ran": 2,
+  "features": "/home/nhatnc129/nhat.nc/jepa-research/moment_wm_h0/outputs/gate3_smoke/features.pt",
+  "hostname": "worker-mig-3g40gb-0",
+  "parameter_count": 408336,
+  "schema_version": 1,
+  "seed": 0,
+  "slurm_job_id": "48241",
+  "source_sha256": "fc7eb29f565d7ef732b6bb5b97ecfd2c034e2bd4cfd1252e585f26867a7a57c1",
+  "test": {
+    "backward_mse": 57.20085525512695,
+    "forward_objective": 125.3781509399414,
+    "forward_raw_mse": 125.3781509399414,
+    "loss": 153.97857666015625
+  }
+}

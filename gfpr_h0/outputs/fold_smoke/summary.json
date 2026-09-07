@@ -1,0 +1,48 @@
+{
+  "ensemble_size": 2,
+  "epochs": 1,
+  "feature_views": [
+    "action_only",
+    "proxy_action",
+    "latent_context"
+  ],
+  "fold": 0,
+  "margin_cm": 2.0,
+  "records": 8,
+  "test_snapshots": [
+    0,
+    4,
+    8,
+    12,
+    16,
+    20,
+    24,
+    28
+  ],
+  "train_snapshots": [
+    1,
+    2,
+    3,
+    5,
+    6,
+    7,
+    9,
+    10,
+    11,
+    13,
+    14,
+    15,
+    17,
+    18,
+    19,
+    21,
+    22,
+    23,
+    25,
+    26,
+    27,
+    29,
+    30,
+    31
+  ]
+}

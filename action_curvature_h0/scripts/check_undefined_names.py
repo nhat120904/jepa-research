@@ -40,7 +40,7 @@ def check(path):
     # A nested function sees the enclosing function's parameters and locals.
     # Without this, every closure over an enclosing parameter looked undefined
     # (e.g. aggregate.py's `cell()` closing over `paired_contrast`'s `metric`).
-    FN = (ast.FunctionDef, ast.AsyncFunctionDef)
+    FN = (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)
     enclosing: dict[ast.AST, list[ast.AST]] = {}
     def _descend(node, stack):
         for child in ast.iter_child_nodes(node):
@@ -60,12 +60,11 @@ def check(path):
             if a:
                 names.add(a.arg)
         for n in ast.walk(fn):
-            if isinstance(n, (ast.Assign, ast.AnnAssign, ast.AugAssign)):
-                targets = n.targets if isinstance(n, ast.Assign) else [n.target]
-                for t in targets:
-                    for x in ast.walk(t):
-                        if isinstance(x, ast.Name):
-                            names.add(x.id)
+            # Any Store-context name binds: assignments, for targets, with-as,
+            # comprehension targets.  Collecting only Assign missed for-loop
+            # variables, which made a closure over one look undefined.
+            if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Store):
+                names.add(n.id)
             elif isinstance(n, (ast.Import, ast.ImportFrom)):
                 # A function-local import binds a name for its closures too
                 # (measure_curvature.py imports mujoco inside the function whose
@@ -78,7 +77,7 @@ def check(path):
 
     bad = []
     for fn in [n for n in ast.walk(tree)
-               if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]:
+               if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda))]:
         local = set(module_names)
         for outer in enclosing.get(fn, []):
             local |= _bound_by(outer)
@@ -93,9 +92,12 @@ def check(path):
                 for a in n.names: local.add((a.asname or a.name).split(".")[0])
             elif isinstance(n, ast.ExceptHandler) and n.name:
                 local.add(n.name)
-            elif isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                local.add(n.name)
-                # nested function parameters are in scope inside that closure
+            elif isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef,
+                                ast.ClassDef, ast.Lambda)):
+                if not isinstance(n, ast.Lambda):
+                    local.add(n.name)
+                # nested function/lambda parameters are in scope inside it, and
+                # its body is checked separately in its own scope
                 if not isinstance(n, ast.ClassDef):
                     for a in (list(n.args.args) + list(n.args.kwonlyargs)
                               + list(n.args.posonlyargs)):
@@ -107,7 +109,8 @@ def check(path):
                     if isinstance(x, ast.Name): local.add(x.id)
         for n in ast.walk(fn):
             if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load) and n.id not in local:
-                bad.append(f"{path}:{n.lineno}: {fn.name}() uses undefined '{n.id}'")
+                where = getattr(fn, "name", "<lambda>")
+                bad.append(f"{path}:{n.lineno}: {where}() uses undefined '{n.id}'")
     return bad
 
 issues = []

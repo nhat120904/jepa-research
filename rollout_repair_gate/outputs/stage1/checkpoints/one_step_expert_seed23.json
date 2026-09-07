@@ -1,0 +1,170 @@
+{
+  "args": {
+    "arm": "one_step_expert",
+    "batch_size": 64,
+    "checkpoint": "quentinll/lewm-cube",
+    "expert_dir": "/home/nhatnc129/nhat.nc/jepa-research/rollout_repair_gate/outputs/stage1/expert_cache",
+    "grad_clip": 1.0,
+    "history_size": 3,
+    "log_every": 100,
+    "lr": 1e-05,
+    "offpolicy_dir": "/home/nhatnc129/nhat.nc/jepa-research/rollout_repair_gate/outputs/stage1/intermediates",
+    "out_dir": "/home/nhatnc129/nhat.nc/jepa-research/rollout_repair_gate/outputs/stage1/checkpoints",
+    "seed": 23,
+    "steps": 2000,
+    "weight_decay": 0.001
+  },
+  "arm": "one_step_expert",
+  "base_checkpoint": "quentinll/lewm-cube",
+  "batch_size": 64,
+  "encoder_frozen": true,
+  "final_dynamics_sha256": "7a72c319848c1f4cd52933198583f408ee0a65ff362c0ebcca06219bec3df302",
+  "history": [
+    {
+      "grad_norm": 0.19109083712100983,
+      "step": 1,
+      "train_loss": 0.0324183888733387
+    },
+    {
+      "grad_norm": 0.17284376919269562,
+      "step": 100,
+      "train_loss": 0.027841841802001
+    },
+    {
+      "grad_norm": 0.18721431493759155,
+      "step": 200,
+      "train_loss": 0.029637368395924568
+    },
+    {
+      "grad_norm": 0.16790078580379486,
+      "step": 300,
+      "train_loss": 0.027742238715291023
+    },
+    {
+      "grad_norm": 0.14692887663841248,
+      "step": 400,
+      "train_loss": 0.021891413256525993
+    },
+    {
+      "grad_norm": 0.15122991800308228,
+      "offpolicy_val_loss": 1.217497676432331,
+      "step": 500,
+      "train_loss": 0.0210853423923254
+    },
+    {
+      "grad_norm": 0.16950395703315735,
+      "step": 600,
+      "train_loss": 0.027158142998814583
+    },
+    {
+      "grad_norm": 0.17909909784793854,
+      "step": 700,
+      "train_loss": 0.029989982023835182
+    },
+    {
+      "grad_norm": 0.1785058081150055,
+      "step": 800,
+      "train_loss": 0.030723612755537033
+    },
+    {
+      "grad_norm": 0.17363210022449493,
+      "step": 900,
+      "train_loss": 0.027950555086135864
+    },
+    {
+      "grad_norm": 0.17203685641288757,
+      "offpolicy_val_loss": 1.2074637173150937,
+      "step": 1000,
+      "train_loss": 0.031010333448648453
+    },
+    {
+      "grad_norm": 0.17297038435935974,
+      "step": 1100,
+      "train_loss": 0.02941843494772911
+    },
+    {
+      "grad_norm": 0.16368615627288818,
+      "step": 1200,
+      "train_loss": 0.024032097309827805
+    },
+    {
+      "grad_norm": 0.1617233008146286,
+      "step": 1300,
+      "train_loss": 0.025990843772888184
+    },
+    {
+      "grad_norm": 0.1581038236618042,
+      "step": 1400,
+      "train_loss": 0.026848744601011276
+    },
+    {
+      "grad_norm": 0.17264801263809204,
+      "offpolicy_val_loss": 1.196446548774425,
+      "step": 1500,
+      "train_loss": 0.027375010773539543
+    },
+    {
+      "grad_norm": 0.17482833564281464,
+      "step": 1600,
+      "train_loss": 0.02976296655833721
+    },
+    {
+      "grad_norm": 0.1821657121181488,
+      "step": 1700,
+      "train_loss": 0.03486828878521919
+    },
+    {
+      "grad_norm": 0.14471110701560974,
+      "step": 1800,
+      "train_loss": 0.024880094453692436
+    },
+    {
+      "grad_norm": 0.15526701509952545,
+      "step": 1900,
+      "train_loss": 0.024246158078312874
+    },
+    {
+      "grad_norm": 0.1676456332206726,
+      "offpolicy_val_loss": 1.1887526912112347,
+      "step": 2000,
+      "train_loss": 0.030320841819047928
+    }
+  ],
+  "initial_dynamics_sha256": "204a87a489db9bb36fd553a8bfed564f715a76e1a7af585479ef2219d0355252",
+  "optimizer_steps": 2000,
+  "prediction_calls_per_sequence": 5,
+  "same_compute_signature": {
+    "batch_size": 64,
+    "horizon": 5,
+    "sequence_count": 15360,
+    "steps": 2000,
+    "supervised_targets_per_horizon": [
+      15360,
+      10210,
+      9481,
+      9048,
+      8783
+    ],
+    "supervised_targets_total": 52882,
+    "trainable_parameters": 11740484,
+    "valid_mask_sha256": "26923373ac84313e0fcb77506f54e266dfda10265c1f1871268815d6b06c495c"
+  },
+  "seed": 23,
+  "sequences_available": 15360,
+  "supervised_targets_per_horizon": [
+    15360,
+    10210,
+    9481,
+    9048,
+    8783
+  ],
+  "supervised_targets_total": 52882,
+  "trainable_modules": [
+    "action_encoder",
+    "predictor",
+    "pred_proj"
+  ],
+  "trainable_parameters": 11740484,
+  "training_mask_source": "index-matched off-policy train mask",
+  "valid_mask_sha256": "26923373ac84313e0fcb77506f54e266dfda10265c1f1871268815d6b06c495c"
+}

@@ -1,0 +1,38 @@
+{
+  "task": "exploration_search",
+  "ckpt": "/mnt/data/nhatnc129/contactworld/ContactWorld/logs/ckpts/exploration_search/pointcloud/vc/only/100000.ckpt",
+  "latent_dim": 512,
+  "target": "plug_pos",
+  "use_tactile": false,
+  "success_thresh_m": 0.01,
+  "readouts": {
+    "linear": {
+      "mean_err_cm": 3.954892873764038,
+      "mean_err_cm_ci": [
+        3.675307333469391,
+        4.2387705296278
+      ],
+      "median_err_cm": 3.4551899433135986,
+      "hit_at_thresh": 0.024607762180016514,
+      "per_seed_mean_cm": [
+        3.89560604095459,
+        3.8213000297546387,
+        4.155759334564209
+      ]
+    },
+    "mlp": {
+      "mean_err_cm": 4.581756591796875,
+      "mean_err_cm_ci": [
+        4.3344397097826,
+        4.825006052851677
+      ],
+      "median_err_cm": 4.075898170471191,
+      "hit_at_thresh": 0.05103220478943022,
+      "per_seed_mean_cm": [
+        4.5715460777282715,
+        4.588472366333008,
+        4.585623741149902
+      ]
+    }
+  }
+}

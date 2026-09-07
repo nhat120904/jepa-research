@@ -1,0 +1,166 @@
+{
+  "arms": {
+    "median_drag": {
+      "max_overlap": 0.0358668714761734,
+      "mean_contact_steps": 8.1328125,
+      "mean_cost": 0.14230190217494965,
+      "mean_final_distance": 0.1272037774324417,
+      "mean_final_speed": 0.12035932391881943,
+      "median_cost": 0.1276407539844513,
+      "median_final_distance": 0.10972580313682556,
+      "reach_rate": 0.7265625,
+      "settled_success_rate": 0.4140625
+    },
+    "oracle_drag": {
+      "max_overlap": 0.03738998621702194,
+      "mean_contact_steps": 8.3359375,
+      "mean_cost": 0.014195949770510197,
+      "mean_final_distance": 0.007275206968188286,
+      "mean_final_speed": 0.09064821898937225,
+      "median_cost": 0.012590483762323856,
+      "median_final_distance": 0.004355362616479397,
+      "reach_rate": 1.0,
+      "settled_success_rate": 0.921875
+    }
+  },
+  "criterion": {
+    "mean_relative_cost_reduction_gte_0.10": true,
+    "paired_cost_improvement_ci95_lower_gt_zero": true
+  },
+  "drag_bins": [
+    {
+      "gamma_range": [
+        0.5,
+        1.5
+      ],
+      "mean_cost_improvement": 0.23410317301750183,
+      "mean_relative_cost_reduction": 0.9311774373054504,
+      "median_reach": 1.0,
+      "n": 38,
+      "oracle_reach": 1.0
+    },
+    {
+      "gamma_range": [
+        1.5,
+        3.0
+      ],
+      "mean_cost_improvement": 0.05547627434134483,
+      "mean_relative_cost_reduction": 0.6223000288009644,
+      "median_reach": 0.9285714285714286,
+      "n": 56,
+      "oracle_reach": 1.0
+    },
+    {
+      "gamma_range": [
+        3.0,
+        4.0
+      ],
+      "mean_cost_improvement": 0.12926383316516876,
+      "mean_relative_cost_reduction": 0.9197126626968384,
+      "median_reach": 0.08823529411764706,
+      "n": 34,
+      "oracle_reach": 1.0
+    }
+  ],
+  "estimands": {
+    "cost_improvement": {
+      "ci95": [
+        0.11117249447852373,
+        0.14642358012497425
+      ],
+      "mean": 0.12810595333576202
+    },
+    "final_distance_improvement": {
+      "ci95": [
+        0.10359749384224415,
+        0.13760517574846745
+      ],
+      "mean": 0.11992856860160828
+    },
+    "reach_gain": {
+      "ci95": [
+        0.1953125,
+        0.3515625
+      ],
+      "mean": 0.2734375
+    },
+    "relative_cost_reduction": {
+      "ci95": [
+        0.7446038231253624,
+        0.8374835640192032
+      ],
+      "mean": 0.792998194694519
+    },
+    "settled_success_gain": {
+      "ci95": [
+        0.421875,
+        0.59375
+      ],
+      "mean": 0.5078125
+    }
+  },
+  "gate": "decision_room_oracle_drag_vs_population_median_drag",
+  "limitations": [
+    "Independent implementation from the published POKEWORLD specification; official code was not yet released.",
+    "Open-loop launch-to-goal gate with fixed mass/stiffness; it isolates drag decision room but is not the paper closed-loop benchmark.",
+    "A GO result licenses anchor/model experiments; it is not evidence that moment regularization works."
+  ],
+  "optimizer_audit": {
+    "median_predicted_mean": 0.01606874354183674,
+    "median_true_mean": 0.14230190217494965,
+    "oracle_predicted_vs_true_max_abs": 0.0,
+    "same_standardized_noise_seed": 91031,
+    "selection": "best candidate seen across all CEM iterations/restarts"
+  },
+  "physics": {
+    "control_dt": 0.05,
+    "damping_ratio": 0.25,
+    "finger_drag": 1.0,
+    "finger_mass": 1.0,
+    "finger_radius": 0.06,
+    "max_force": 12.0,
+    "object_mass": 1.25,
+    "object_radius": 0.09,
+    "stiffness": 2500.0,
+    "substeps": 20
+  },
+  "planner": {
+    "action_energy_weight": 0.003,
+    "closest_distance_weight": 0.15,
+    "horizon": 28,
+    "init_std": 0.65,
+    "iterations": 6,
+    "knots": 2,
+    "min_std": 0.04,
+    "num_elites": 24,
+    "num_samples": 256,
+    "refit_old_weight": 0.2,
+    "restarts": 2,
+    "terminal_velocity_weight": 0.06
+  },
+  "run": {
+    "bootstrap_draws": 20000,
+    "device": "cuda",
+    "hostname": "worker-mig-3g40gb-0",
+    "planner_seed": 91031,
+    "python": "3.10.12",
+    "seed": 260902,
+    "slurm_job_id": "48232",
+    "source_sha256": "7c7ef28dd1ab6ba9f7cde0a15fd99fe8d01d799b0a2566014307d6a4db083fc7",
+    "torch": "2.7.0+cu126"
+  },
+  "schema_version": 1,
+  "status": "GO",
+  "task": {
+    "episodes": 128,
+    "gamma_distribution": "Uniform[0.5, 4.0]",
+    "goal_distance_range": [
+      0.34,
+      0.56
+    ],
+    "mass_and_stiffness_fixed": true,
+    "population_median_gamma": 2.25,
+    "reach_radius": 0.08,
+    "settled_success": "final_distance <= 0.10 and final_speed <= 0.20"
+  }
+}

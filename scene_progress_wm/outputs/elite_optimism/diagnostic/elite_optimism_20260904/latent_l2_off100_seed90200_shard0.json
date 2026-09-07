@@ -1,0 +1,6552 @@
+{
+  "arm": "latent_l2",
+  "checkpoint_sha256": "0a5220b2084d641d3b2d8d585384b68d0b2b97ef3e9fda9ea40692d1ee747a78",
+  "episodes": [
+    {
+      "env_steps": 200,
+      "instrumented_replans": 3,
+      "progress_updates": null,
+      "replans": 8,
+      "spec": {
+        "episode": 2,
+        "goal_row": 2296,
+        "start_row": 2196
+      },
+      "success": false,
+      "trivial": false
+    },
+    {
+      "env_steps": 21,
+      "instrumented_replans": 1,
+      "progress_updates": null,
+      "replans": 1,
+      "spec": {
+        "episode": 21,
+        "goal_row": 22009,
+        "start_row": 21909
+      },
+      "success": true,
+      "trivial": false
+    },
+    {
+      "env_steps": 200,
+      "instrumented_replans": 3,
+      "progress_updates": null,
+      "replans": 8,
+      "spec": {
+        "episode": 29,
+        "goal_row": 29566,
+        "start_row": 29466
+      },
+      "success": false,
+      "trivial": false
+    },
+    {
+      "env_steps": 200,
+      "instrumented_replans": 3,
+      "progress_updates": null,
+      "replans": 8,
+      "spec": {
+        "episode": 33,
+        "goal_row": 33411,
+        "start_row": 33311
+      },
+      "success": false,
+      "trivial": false
+    },
+    {
+      "env_steps": 200,
+      "instrumented_replans": 3,
+      "progress_updates": null,
+      "replans": 8,
+      "spec": {
+        "episode": 42,
+        "goal_row": 42293,
+        "start_row": 42193
+      },
+      "success": false,
+      "trivial": false
+    },
+    {
+      "env_steps": 200,
+      "instrumented_replans": 3,
+      "progress_updates": null,
+      "replans": 8,
+      "spec": {
+        "episode": 50,
+        "goal_row": 50921,
+        "start_row": 50821
+      },
+      "success": false,
+      "trivial": false
+    },
+    {
+      "env_steps": 200,
+      "instrumented_replans": 3,
+      "progress_updates": null,
+      "replans": 8,
+      "spec": {
+        "episode": 56,
+        "goal_row": 56983,
+        "start_row": 56883
+      },
+      "success": false,
+      "trivial": false
+    },
+    {
+      "env_steps": 11,
+      "instrumented_replans": 1,
+      "progress_updates": null,
+      "replans": 1,
+      "spec": {
+        "episode": 59,
+        "goal_row": 59235,
+        "start_row": 59135
+      },
+      "success": true,
+      "trivial": false
+    },
+    {
+      "env_steps": 35,
+      "instrumented_replans": 2,
+      "progress_updates": null,
+      "replans": 2,
+      "spec": {
+        "episode": 64,
+        "goal_row": 64507,
+        "start_row": 64407
+      },
+      "success": true,
+      "trivial": false
+    },
+    {
+      "env_steps": 200,
+      "instrumented_replans": 3,
+      "progress_updates": null,
+      "replans": 8,
+      "spec": {
+        "episode": 67,
+        "goal_row": 67263,
+        "start_row": 67163
+      },
+      "success": false,
+      "trivial": false
+    },
+    {
+      "env_steps": 200,
+      "instrumented_replans": 3,
+      "progress_updates": null,
+      "replans": 8,
+      "spec": {
+        "episode": 77,
+        "goal_row": 77723,
+        "start_row": 77623
+      },
+      "success": false,
+      "trivial": false
+    },
+    {
+      "env_steps": 200,
+      "instrumented_replans": 3,
+      "progress_updates": null,
+      "replans": 8,
+      "spec": {
+        "episode": 98,
+        "goal_row": 99072,
+        "start_row": 98972
+      },
+      "success": false,
+      "trivial": false
+    }
+  ],
+  "goal_offset": 100,
+  "instrument": {
+    "deltas": [
+      0.0,
+      10.0,
+      25.0,
+      50.0
+    ],
+    "max_instrumented_replans": 3,
+    "max_repair_skills": 8,
+    "n_per_stratum": 6,
+    "repeat_probe_max_spread": 0.0,
+    "repeat_probe_spreads": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "replan_stride": 1
+  },
+  "job_id": "49557",
+  "objective": "latent_l2",
+  "plan_seed": 90200,
+  "progress_checkpoint_sha256": null,
+  "protocol": "scene_progress_wm_elite_optimism_v1",
+  "render_info": {
+    "camera": "front_pixels",
+    "disabled_flags": [
+      "mjRND_SHADOW"
+    ],
+    "offsamples": 0,
+    "quality": "fast",
+    "render_size": 64
+  },
+  "replans": [
+    {
+      "delta_probe": {
+        "spread": 0.0,
+        "true_costs": [
+          69.0,
+          69.0,
+          69.0
+        ]
+      },
+      "episode": 2,
+      "replan": 0,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.224,
+        "regret": 8.0,
+        "repair_steps": 44,
+        "true_cost": 69.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.272,
+            0.288,
+            0.288,
+            0.28,
+            0.304,
+            0.288
+          ],
+          "model_cost": [
+            0.4331779181957245,
+            0.5142016410827637,
+            0.47366440296173096,
+            0.48924481868743896,
+            0.4610343873500824,
+            0.47340983152389526
+          ],
+          "source_step": 29,
+          "true_cost": [
+            69.0,
+            69.0,
+            69.0,
+            67.0,
+            71.0,
+            69.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.24,
+            0.272,
+            0.288,
+            0.248,
+            0.336,
+            0.248
+          ],
+          "model_cost": [
+            0.4227520227432251,
+            4.283810615539551,
+            5.110908508300781,
+            22.228328704833984,
+            3.3572998046875,
+            0.37986835837364197
+          ],
+          "source_step": 29,
+          "true_cost": [
+            68.0,
+            67.0,
+            66.0,
+            65.0,
+            69.0,
+            68.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.28,
+            0.28,
+            0.256,
+            0.352,
+            0.208,
+            0.296
+          ],
+          "model_cost": [
+            1.2446529865264893,
+            3.526057720184326,
+            2.7639880180358887,
+            3.6899123191833496,
+            30.87895965576172,
+            2.3256263732910156
+          ],
+          "source_step": 15,
+          "true_cost": [
+            69.0,
+            70.0,
+            69.0,
+            69.0,
+            68.0,
+            69.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.288,
+            0.392,
+            0.312,
+            0.352,
+            0.36,
+            0.336
+          ],
+          "model_cost": [
+            107.60238647460938,
+            253.8009490966797,
+            258.9060974121094,
+            76.27459716796875,
+            139.8870391845703,
+            218.4476318359375
+          ],
+          "source_step": 0,
+          "true_cost": [
+            67.0,
+            61.0,
+            64.0,
+            69.0,
+            69.0,
+            62.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": null,
+      "episode": 2,
+      "replan": 1,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.136,
+        "regret": 6.0,
+        "repair_steps": 44,
+        "true_cost": 69.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.232,
+            0.224,
+            0.208,
+            0.216,
+            0.232,
+            0.224
+          ],
+          "model_cost": [
+            0.4883863031864166,
+            0.5087285041809082,
+            0.5513697862625122,
+            0.5370322465896606,
+            0.4446450173854828,
+            0.4949062466621399
+          ],
+          "source_step": 29,
+          "true_cost": [
+            69.0,
+            69.0,
+            69.0,
+            69.0,
+            69.0,
+            70.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.216,
+            0.24,
+            0.256,
+            0.208,
+            0.256,
+            0.168
+          ],
+          "model_cost": [
+            0.9709674119949341,
+            2.0230538845062256,
+            2.367645740509033,
+            6.245572090148926,
+            4.968428134918213,
+            1.2323296070098877
+          ],
+          "source_step": 29,
+          "true_cost": [
+            69.0,
+            69.0,
+            72.0,
+            70.0,
+            69.0,
+            69.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.248,
+            0.272,
+            0.312,
+            0.264,
+            0.248,
+            0.352
+          ],
+          "model_cost": [
+            1.634028434753418,
+            7.814233303070068,
+            2.724118232727051,
+            25.69365692138672,
+            10.608620643615723,
+            1.222330093383789
+          ],
+          "source_step": 15,
+          "true_cost": [
+            69.0,
+            69.0,
+            101.0,
+            69.0,
+            68.0,
+            68.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.376,
+            0.272,
+            0.336,
+            0.312,
+            0.328,
+            0.32
+          ],
+          "model_cost": [
+            135.8694610595703,
+            29.06968879699707,
+            85.26411437988281,
+            150.9859161376953,
+            51.569580078125,
+            114.448486328125
+          ],
+          "source_step": 0,
+          "true_cost": [
+            68.0,
+            68.0,
+            64.0,
+            63.0,
+            67.0,
+            66.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": null,
+      "episode": 2,
+      "replan": 2,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.192,
+        "regret": 6.0,
+        "repair_steps": 44,
+        "true_cost": 69.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.304,
+            0.28,
+            0.192,
+            0.264,
+            0.256,
+            0.288
+          ],
+          "model_cost": [
+            0.5128881931304932,
+            0.5661174058914185,
+            0.5531147718429565,
+            0.5813774466514587,
+            0.5874775648117065,
+            0.5690333843231201
+          ],
+          "source_step": 29,
+          "true_cost": [
+            69.0,
+            70.0,
+            69.0,
+            70.0,
+            69.0,
+            69.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.24,
+            0.192,
+            0.264,
+            0.208,
+            0.224,
+            0.224
+          ],
+          "model_cost": [
+            0.4612714648246765,
+            0.42396092414855957,
+            1.7318599224090576,
+            9.165148735046387,
+            1.002746820449829,
+            2.343031406402588
+          ],
+          "source_step": 29,
+          "true_cost": [
+            69.0,
+            69.0,
+            69.0,
+            67.0,
+            69.0,
+            70.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.28,
+            0.352,
+            0.248,
+            0.224,
+            0.256,
+            0.256
+          ],
+          "model_cost": [
+            14.707355499267578,
+            5.9469146728515625,
+            9.839677810668945,
+            7.607346057891846,
+            2.474076271057129,
+            8.701202392578125
+          ],
+          "source_step": 15,
+          "true_cost": [
+            69.0,
+            69.0,
+            69.0,
+            104.0,
+            69.0,
+            69.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.32,
+            0.304,
+            0.232,
+            0.32,
+            0.28,
+            0.4
+          ],
+          "model_cost": [
+            56.546714782714844,
+            141.4059295654297,
+            63.596771240234375,
+            113.22969818115234,
+            30.872112274169922,
+            11.484994888305664
+          ],
+          "source_step": 0,
+          "true_cost": [
+            66.0,
+            63.0,
+            66.0,
+            66.0,
+            68.0,
+            67.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": {
+        "spread": 0.0,
+        "true_costs": [
+          21.0,
+          21.0,
+          21.0
+        ]
+      },
+      "episode": 21,
+      "replan": 0,
+      "selected": {
+        "censored": false,
+        "chunk_solved": true,
+        "chunk_steps": 21,
+        "clipped_frac": 0.184,
+        "regret": 18.0,
+        "repair_steps": 0,
+        "true_cost": 21.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            true,
+            true,
+            false,
+            true,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            true,
+            false,
+            true,
+            true
+          ],
+          "clipped_frac": [
+            0.192,
+            0.192,
+            0.208,
+            0.224,
+            0.192,
+            0.224
+          ],
+          "model_cost": [
+            1.4944510459899902,
+            1.193961501121521,
+            1.0831022262573242,
+            1.1726977825164795,
+            1.4828509092330933,
+            1.3993370532989502
+          ],
+          "source_step": 29,
+          "true_cost": [
+            585.0,
+            585.0,
+            21.0,
+            585.0,
+            24.0,
+            21.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            true,
+            true,
+            false,
+            true,
+            true,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            true
+          ],
+          "clipped_frac": [
+            0.224,
+            0.2,
+            0.176,
+            0.216,
+            0.232,
+            0.17
+          ],
+          "model_cost": [
+            1.9223220348358154,
+            12.440115928649902,
+            13.776681900024414,
+            2.7390830516815186,
+            12.481636047363281,
+            6.599188327789307
+          ],
+          "source_step": 29,
+          "true_cost": [
+            585.0,
+            585.0,
+            26.0,
+            585.0,
+            585.0,
+            18.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            true,
+            true,
+            false,
+            false,
+            false,
+            true
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.216,
+            0.192,
+            0.224,
+            0.192,
+            0.208,
+            0.216
+          ],
+          "model_cost": [
+            4.97870397567749,
+            3.297590732574463,
+            150.53790283203125,
+            107.78924560546875,
+            82.74745178222656,
+            7.152295112609863
+          ],
+          "source_step": 15,
+          "true_cost": [
+            585.0,
+            585.0,
+            32.0,
+            30.0,
+            50.0,
+            585.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            true,
+            false,
+            true,
+            false,
+            false,
+            true
+          ],
+          "clipped_frac": [
+            0.4,
+            0.32,
+            0.34,
+            0.392,
+            0.304,
+            0.3
+          ],
+          "model_cost": [
+            101.09001922607422,
+            191.64993286132812,
+            50.12888717651367,
+            228.0443572998047,
+            264.42437744140625,
+            81.52586364746094
+          ],
+          "source_step": 0,
+          "true_cost": [
+            3.0,
+            54.0,
+            19.0,
+            72.0,
+            56.0,
+            10.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": {
+        "spread": 0.0,
+        "true_costs": [
+          87.0,
+          87.0,
+          87.0
+        ]
+      },
+      "episode": 29,
+      "replan": 0,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.432,
+        "regret": 5.0,
+        "repair_steps": 62,
+        "true_cost": 87.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.472,
+            0.456,
+            0.44,
+            0.456,
+            0.44,
+            0.472
+          ],
+          "model_cost": [
+            26.252548217773438,
+            26.3953800201416,
+            25.624649047851562,
+            25.659555435180664,
+            26.06202507019043,
+            26.123981475830078
+          ],
+          "source_step": 29,
+          "true_cost": [
+            86.0,
+            102.0,
+            87.0,
+            93.0,
+            89.0,
+            87.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.488,
+            0.44,
+            0.424,
+            0.424,
+            0.448,
+            0.44
+          ],
+          "model_cost": [
+            28.586341857910156,
+            29.211997985839844,
+            25.06690788269043,
+            29.690898895263672,
+            30.92268180847168,
+            28.96522331237793
+          ],
+          "source_step": 29,
+          "true_cost": [
+            87.0,
+            88.0,
+            84.0,
+            87.0,
+            87.0,
+            88.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.384,
+            0.416,
+            0.376,
+            0.416,
+            0.368,
+            0.448
+          ],
+          "model_cost": [
+            77.95512390136719,
+            67.63699340820312,
+            64.97423553466797,
+            66.78491973876953,
+            67.61903381347656,
+            62.935550689697266
+          ],
+          "source_step": 15,
+          "true_cost": [
+            84.0,
+            88.0,
+            88.0,
+            96.0,
+            86.0,
+            84.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.312,
+            0.36,
+            0.336,
+            0.328,
+            0.28,
+            0.36
+          ],
+          "model_cost": [
+            144.42581176757812,
+            151.09420776367188,
+            145.1702880859375,
+            151.16159057617188,
+            156.8507843017578,
+            160.0292205810547
+          ],
+          "source_step": 0,
+          "true_cost": [
+            87.0,
+            86.0,
+            82.0,
+            96.0,
+            90.0,
+            95.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": null,
+      "episode": 29,
+      "replan": 1,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.336,
+        "regret": 4.0,
+        "repair_steps": 61,
+        "true_cost": 86.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.424,
+            0.36,
+            0.408,
+            0.36,
+            0.408,
+            0.328
+          ],
+          "model_cost": [
+            5.084408283233643,
+            5.524484634399414,
+            4.84592866897583,
+            6.378734111785889,
+            4.742481708526611,
+            5.78286075592041
+          ],
+          "source_step": 29,
+          "true_cost": [
+            87.0,
+            88.0,
+            83.0,
+            83.0,
+            84.0,
+            85.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.416,
+            0.368,
+            0.384,
+            0.432,
+            0.392,
+            0.352
+          ],
+          "model_cost": [
+            10.281947135925293,
+            6.364078998565674,
+            8.444684982299805,
+            11.462469100952148,
+            8.46838092803955,
+            5.837627410888672
+          ],
+          "source_step": 29,
+          "true_cost": [
+            88.0,
+            86.0,
+            85.0,
+            85.0,
+            86.0,
+            84.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.376,
+            0.408,
+            0.384,
+            0.424,
+            0.392,
+            0.424
+          ],
+          "model_cost": [
+            56.02320098876953,
+            61.485374450683594,
+            36.2486572265625,
+            25.546875,
+            79.18209838867188,
+            35.31897735595703
+          ],
+          "source_step": 15,
+          "true_cost": [
+            90.0,
+            88.0,
+            89.0,
+            83.0,
+            84.0,
+            84.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.352,
+            0.352,
+            0.304,
+            0.312,
+            0.304,
+            0.264
+          ],
+          "model_cost": [
+            150.76077270507812,
+            192.61463928222656,
+            215.303955078125,
+            269.0700378417969,
+            158.42832946777344,
+            140.8995361328125
+          ],
+          "source_step": 0,
+          "true_cost": [
+            88.0,
+            87.0,
+            88.0,
+            84.0,
+            87.0,
+            82.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": null,
+      "episode": 29,
+      "replan": 2,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.352,
+        "regret": 32.0,
+        "repair_steps": 61,
+        "true_cost": 86.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.376,
+            0.424,
+            0.368,
+            0.392,
+            0.36,
+            0.384
+          ],
+          "model_cost": [
+            2.9912919998168945,
+            2.549887180328369,
+            3.4672369956970215,
+            3.1415743827819824,
+            3.0661449432373047,
+            3.1213207244873047
+          ],
+          "source_step": 29,
+          "true_cost": [
+            54.0,
+            55.0,
+            85.0,
+            174.0,
+            83.0,
+            85.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.448,
+            0.304,
+            0.416,
+            0.352,
+            0.448,
+            0.416
+          ],
+          "model_cost": [
+            9.218484878540039,
+            20.875701904296875,
+            4.773044109344482,
+            3.9985101222991943,
+            4.422389984130859,
+            13.488746643066406
+          ],
+          "source_step": 29,
+          "true_cost": [
+            57.0,
+            90.0,
+            56.0,
+            89.0,
+            87.0,
+            86.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.424,
+            0.328,
+            0.448,
+            0.4,
+            0.28,
+            0.4
+          ],
+          "model_cost": [
+            84.68144226074219,
+            24.09947967529297,
+            13.668455123901367,
+            21.295814514160156,
+            7.800692558288574,
+            30.339609146118164
+          ],
+          "source_step": 15,
+          "true_cost": [
+            91.0,
+            93.0,
+            83.0,
+            88.0,
+            85.0,
+            88.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.368,
+            0.336,
+            0.32,
+            0.328,
+            0.264,
+            0.352
+          ],
+          "model_cost": [
+            139.28790283203125,
+            128.1163330078125,
+            134.44667053222656,
+            208.4982452392578,
+            171.5740203857422,
+            148.75062561035156
+          ],
+          "source_step": 0,
+          "true_cost": [
+            87.0,
+            91.0,
+            82.0,
+            88.0,
+            90.0,
+            86.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": {
+        "spread": 0.0,
+        "true_costs": [
+          51.0,
+          51.0,
+          51.0
+        ]
+      },
+      "episode": 33,
+      "replan": 0,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.208,
+        "regret": 34.0,
+        "repair_steps": 26,
+        "true_cost": 51.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.272,
+            0.208,
+            0.28,
+            0.224,
+            0.264,
+            0.24
+          ],
+          "model_cost": [
+            3.723937749862671,
+            2.8017935752868652,
+            3.1753220558166504,
+            3.6395294666290283,
+            3.5618066787719727,
+            2.72775936126709
+          ],
+          "source_step": 29,
+          "true_cost": [
+            132.0,
+            29.0,
+            503.0,
+            129.0,
+            31.0,
+            54.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.248,
+            0.272,
+            0.232,
+            0.32,
+            0.28,
+            0.192
+          ],
+          "model_cost": [
+            13.61886215209961,
+            7.4884185791015625,
+            9.033677101135254,
+            4.688216686248779,
+            3.0832643508911133,
+            6.13623046875
+          ],
+          "source_step": 29,
+          "true_cost": [
+            35.0,
+            32.0,
+            33.0,
+            31.0,
+            30.0,
+            33.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            true,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.336,
+            0.304,
+            0.18,
+            0.272,
+            0.28,
+            0.256
+          ],
+          "model_cost": [
+            47.693416595458984,
+            100.47013854980469,
+            15.994636535644531,
+            46.93163299560547,
+            83.08163452148438,
+            61.54240417480469
+          ],
+          "source_step": 15,
+          "true_cost": [
+            32.0,
+            56.0,
+            17.0,
+            31.0,
+            32.0,
+            54.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.368,
+            0.336,
+            0.232,
+            0.328,
+            0.24,
+            0.432
+          ],
+          "model_cost": [
+            329.3001403808594,
+            309.9466247558594,
+            260.902099609375,
+            241.7869110107422,
+            250.20599365234375,
+            275.50640869140625
+          ],
+          "source_step": 0,
+          "true_cost": [
+            57.0,
+            50.0,
+            54.0,
+            54.0,
+            55.0,
+            53.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": null,
+      "episode": 33,
+      "replan": 1,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.24,
+        "regret": 38.0,
+        "repair_steps": 28,
+        "true_cost": 53.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.272,
+            0.296,
+            0.288,
+            0.28,
+            0.256,
+            0.296
+          ],
+          "model_cost": [
+            3.8059988021850586,
+            3.1460371017456055,
+            3.225785732269287,
+            3.678661823272705,
+            3.1130902767181396,
+            3.5464553833007812
+          ],
+          "source_step": 29,
+          "true_cost": [
+            53.0,
+            53.0,
+            52.0,
+            54.0,
+            56.0,
+            54.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.264,
+            0.288,
+            0.264,
+            0.296,
+            0.296,
+            0.312
+          ],
+          "model_cost": [
+            3.072497844696045,
+            15.653170585632324,
+            9.660893440246582,
+            5.364711761474609,
+            9.318323135375977,
+            4.927585601806641
+          ],
+          "source_step": 29,
+          "true_cost": [
+            58.0,
+            35.0,
+            33.0,
+            53.0,
+            55.0,
+            55.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            true,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.26666666666666666,
+            0.28,
+            0.328,
+            0.336,
+            0.28,
+            0.28
+          ],
+          "model_cost": [
+            23.399255752563477,
+            101.49148559570312,
+            24.013320922851562,
+            11.401725769042969,
+            19.181692123413086,
+            49.913429260253906
+          ],
+          "source_step": 15,
+          "true_cost": [
+            15.0,
+            54.0,
+            118.0,
+            54.0,
+            52.0,
+            34.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            true,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.312,
+            0.304,
+            0.28,
+            0.32,
+            0.376,
+            0.288
+          ],
+          "model_cost": [
+            207.79225158691406,
+            268.28509521484375,
+            274.7373962402344,
+            230.56546020507812,
+            262.9333190917969,
+            261.7411193847656
+          ],
+          "source_step": 0,
+          "true_cost": [
+            160.0,
+            58.0,
+            585.0,
+            52.0,
+            54.0,
+            54.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": null,
+      "episode": 33,
+      "replan": 2,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.216,
+        "regret": 22.0,
+        "repair_steps": 27,
+        "true_cost": 52.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.224,
+            0.248,
+            0.28,
+            0.208,
+            0.264,
+            0.2
+          ],
+          "model_cost": [
+            3.029369354248047,
+            2.9432473182678223,
+            2.883699417114258,
+            2.7285962104797363,
+            3.1492760181427,
+            2.814530611038208
+          ],
+          "source_step": 29,
+          "true_cost": [
+            53.0,
+            56.0,
+            53.0,
+            52.0,
+            53.0,
+            53.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.24,
+            0.232,
+            0.248,
+            0.24,
+            0.264,
+            0.264
+          ],
+          "model_cost": [
+            37.03329849243164,
+            19.240928649902344,
+            21.613384246826172,
+            3.2827205657958984,
+            5.7470293045043945,
+            5.2834343910217285
+          ],
+          "source_step": 29,
+          "true_cost": [
+            32.0,
+            51.0,
+            54.0,
+            55.0,
+            55.0,
+            56.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.256,
+            0.248,
+            0.272,
+            0.248,
+            0.296,
+            0.232
+          ],
+          "model_cost": [
+            50.15321350097656,
+            73.75860595703125,
+            19.717227935791016,
+            63.91339111328125,
+            22.15191650390625,
+            22.937515258789062
+          ],
+          "source_step": 15,
+          "true_cost": [
+            55.0,
+            30.0,
+            56.0,
+            56.0,
+            57.0,
+            54.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.232,
+            0.4,
+            0.344,
+            0.376,
+            0.336,
+            0.352
+          ],
+          "model_cost": [
+            216.2310333251953,
+            257.5169677734375,
+            264.7808837890625,
+            313.32354736328125,
+            227.4542236328125,
+            240.14877319335938
+          ],
+          "source_step": 0,
+          "true_cost": [
+            57.0,
+            53.0,
+            125.0,
+            58.0,
+            52.0,
+            53.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": {
+        "spread": 0.0,
+        "true_costs": [
+          60.0,
+          60.0,
+          60.0
+        ]
+      },
+      "episode": 42,
+      "replan": 0,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.296,
+        "regret": 11.0,
+        "repair_steps": 35,
+        "true_cost": 60.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.368,
+            0.336,
+            0.304,
+            0.32,
+            0.368,
+            0.312
+          ],
+          "model_cost": [
+            5.454418182373047,
+            5.292881011962891,
+            5.36286735534668,
+            5.836490154266357,
+            5.7580366134643555,
+            5.5632405281066895
+          ],
+          "source_step": 29,
+          "true_cost": [
+            60.0,
+            62.0,
+            62.0,
+            49.0,
+            61.0,
+            58.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            true,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.304,
+            0.312,
+            0.328,
+            0.32,
+            0.304,
+            0.296
+          ],
+          "model_cost": [
+            7.271254539489746,
+            7.907644271850586,
+            8.795068740844727,
+            9.987993240356445,
+            10.468945503234863,
+            6.525158882141113
+          ],
+          "source_step": 29,
+          "true_cost": [
+            585.0,
+            242.0,
+            63.0,
+            52.0,
+            63.0,
+            59.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.344,
+            0.304,
+            0.272,
+            0.352,
+            0.312,
+            0.336
+          ],
+          "model_cost": [
+            35.65538024902344,
+            48.47936248779297,
+            23.551002502441406,
+            18.497339248657227,
+            45.93727111816406,
+            47.05967712402344
+          ],
+          "source_step": 15,
+          "true_cost": [
+            239.0,
+            54.0,
+            60.0,
+            72.0,
+            60.0,
+            275.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            true,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.352,
+            0.288,
+            0.32,
+            0.4,
+            0.352,
+            0.288
+          ],
+          "model_cost": [
+            398.95745849609375,
+            366.8460693359375,
+            339.8748779296875,
+            348.564453125,
+            291.12274169921875,
+            370.09039306640625
+          ],
+          "source_step": 0,
+          "true_cost": [
+            62.0,
+            58.0,
+            84.0,
+            58.0,
+            585.0,
+            61.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": null,
+      "episode": 42,
+      "replan": 1,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.336,
+        "regret": 119.0,
+        "repair_steps": 147,
+        "true_cost": 172.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.384,
+            0.384,
+            0.328,
+            0.312,
+            0.4,
+            0.368
+          ],
+          "model_cost": [
+            8.416173934936523,
+            7.837622165679932,
+            7.6958723068237305,
+            8.193161964416504,
+            7.802248954772949,
+            8.512595176696777
+          ],
+          "source_step": 29,
+          "true_cost": [
+            57.0,
+            74.0,
+            74.0,
+            57.0,
+            79.0,
+            57.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.4,
+            0.368,
+            0.44,
+            0.4,
+            0.4,
+            0.368
+          ],
+          "model_cost": [
+            9.195450782775879,
+            10.70236873626709,
+            14.941143035888672,
+            12.357970237731934,
+            12.119857788085938,
+            10.59952449798584
+          ],
+          "source_step": 29,
+          "true_cost": [
+            54.0,
+            57.0,
+            76.0,
+            58.0,
+            53.0,
+            59.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.392,
+            0.408,
+            0.416,
+            0.4,
+            0.368,
+            0.36
+          ],
+          "model_cost": [
+            26.1106014251709,
+            23.476539611816406,
+            88.63252258300781,
+            45.054954528808594,
+            23.04465103149414,
+            57.963279724121094
+          ],
+          "source_step": 15,
+          "true_cost": [
+            67.0,
+            59.0,
+            78.0,
+            76.0,
+            58.0,
+            54.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.28,
+            0.328,
+            0.336,
+            0.336,
+            0.288,
+            0.296
+          ],
+          "model_cost": [
+            200.59657287597656,
+            262.4534606933594,
+            248.4630126953125,
+            219.49459838867188,
+            298.7829895019531,
+            225.88043212890625
+          ],
+          "source_step": 0,
+          "true_cost": [
+            59.0,
+            54.0,
+            54.0,
+            60.0,
+            90.0,
+            58.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": null,
+      "episode": 42,
+      "replan": 2,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.384,
+        "regret": 31.0,
+        "repair_steps": 61,
+        "true_cost": 86.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.408,
+            0.392,
+            0.4,
+            0.392,
+            0.376,
+            0.376
+          ],
+          "model_cost": [
+            12.359580993652344,
+            11.827383995056152,
+            12.743453979492188,
+            12.588037490844727,
+            12.725435256958008,
+            12.247666358947754
+          ],
+          "source_step": 29,
+          "true_cost": [
+            87.0,
+            85.0,
+            115.0,
+            85.0,
+            110.0,
+            85.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.384,
+            0.384,
+            0.408,
+            0.416,
+            0.384,
+            0.4
+          ],
+          "model_cost": [
+            14.435098648071289,
+            17.43283462524414,
+            17.26681137084961,
+            12.509671211242676,
+            15.91584587097168,
+            21.34178352355957
+          ],
+          "source_step": 29,
+          "true_cost": [
+            85.0,
+            101.0,
+            86.0,
+            99.0,
+            90.0,
+            86.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.432,
+            0.392,
+            0.424,
+            0.368,
+            0.376,
+            0.392
+          ],
+          "model_cost": [
+            33.63483428955078,
+            63.658729553222656,
+            75.924560546875,
+            46.406288146972656,
+            108.72767639160156,
+            45.024253845214844
+          ],
+          "source_step": 15,
+          "true_cost": [
+            57.0,
+            240.0,
+            85.0,
+            225.0,
+            60.0,
+            56.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.288,
+            0.352,
+            0.328,
+            0.312,
+            0.328,
+            0.32
+          ],
+          "model_cost": [
+            271.7735290527344,
+            355.51043701171875,
+            300.87249755859375,
+            301.97796630859375,
+            318.8728332519531,
+            280.3435363769531
+          ],
+          "source_step": 0,
+          "true_cost": [
+            171.0,
+            56.0,
+            55.0,
+            55.0,
+            57.0,
+            61.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": {
+        "spread": 0.0,
+        "true_costs": [
+          84.0,
+          84.0,
+          84.0
+        ]
+      },
+      "episode": 50,
+      "replan": 0,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.16,
+        "regret": 32.0,
+        "repair_steps": 59,
+        "true_cost": 84.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.208,
+            0.216,
+            0.168,
+            0.192,
+            0.184,
+            0.216
+          ],
+          "model_cost": [
+            2.7535853385925293,
+            3.1497302055358887,
+            2.6192305088043213,
+            2.389005422592163,
+            3.0303847789764404,
+            2.4102425575256348
+          ],
+          "source_step": 29,
+          "true_cost": [
+            82.0,
+            85.0,
+            84.0,
+            84.0,
+            85.0,
+            84.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.232,
+            0.192,
+            0.208,
+            0.224,
+            0.192,
+            0.216
+          ],
+          "model_cost": [
+            6.496478080749512,
+            5.11886739730835,
+            11.137670516967773,
+            7.08599853515625,
+            20.309505462646484,
+            4.002683639526367
+          ],
+          "source_step": 29,
+          "true_cost": [
+            84.0,
+            84.0,
+            86.0,
+            78.0,
+            84.0,
+            84.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.256,
+            0.272,
+            0.24,
+            0.24,
+            0.232,
+            0.248
+          ],
+          "model_cost": [
+            22.25355339050293,
+            60.697227478027344,
+            32.882625579833984,
+            102.5382080078125,
+            62.71976089477539,
+            25.847370147705078
+          ],
+          "source_step": 15,
+          "true_cost": [
+            79.0,
+            52.0,
+            86.0,
+            84.0,
+            87.0,
+            85.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.296,
+            0.344,
+            0.392,
+            0.304,
+            0.288,
+            0.336
+          ],
+          "model_cost": [
+            333.1609802246094,
+            235.5492401123047,
+            72.12408447265625,
+            170.77154541015625,
+            338.9650573730469,
+            226.19085693359375
+          ],
+          "source_step": 0,
+          "true_cost": [
+            90.0,
+            82.0,
+            73.0,
+            88.0,
+            57.0,
+            84.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": null,
+      "episode": 50,
+      "replan": 1,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.216,
+        "regret": 1.0,
+        "repair_steps": 13,
+        "true_cost": 38.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.272,
+            0.264,
+            0.232,
+            0.232,
+            0.216,
+            0.256
+          ],
+          "model_cost": [
+            3.702491283416748,
+            3.8798604011535645,
+            3.771589756011963,
+            3.5833210945129395,
+            3.427452802658081,
+            3.7169888019561768
+          ],
+          "source_step": 29,
+          "true_cost": [
+            38.0,
+            88.0,
+            37.0,
+            37.0,
+            85.0,
+            87.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.272,
+            0.296,
+            0.232,
+            0.264,
+            0.248,
+            0.232
+          ],
+          "model_cost": [
+            5.246860980987549,
+            4.613181114196777,
+            3.616626739501953,
+            4.635828495025635,
+            3.6468210220336914,
+            6.637746810913086
+          ],
+          "source_step": 29,
+          "true_cost": [
+            39.0,
+            39.0,
+            64.0,
+            82.0,
+            82.0,
+            73.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.296,
+            0.296,
+            0.264,
+            0.288,
+            0.32,
+            0.368
+          ],
+          "model_cost": [
+            16.237571716308594,
+            166.18136596679688,
+            89.00448608398438,
+            10.78225326538086,
+            11.780781745910645,
+            31.693805694580078
+          ],
+          "source_step": 15,
+          "true_cost": [
+            84.0,
+            75.0,
+            81.0,
+            37.0,
+            82.0,
+            86.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.336,
+            0.256,
+            0.304,
+            0.312,
+            0.344,
+            0.312
+          ],
+          "model_cost": [
+            210.49465942382812,
+            239.357177734375,
+            242.59219360351562,
+            201.97824096679688,
+            231.59317016601562,
+            223.04598999023438
+          ],
+          "source_step": 0,
+          "true_cost": [
+            86.0,
+            78.0,
+            87.0,
+            85.0,
+            87.0,
+            85.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": null,
+      "episode": 50,
+      "replan": 2,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.248,
+        "regret": 5.0,
+        "repair_steps": 14,
+        "true_cost": 39.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.328,
+            0.312,
+            0.256,
+            0.288,
+            0.288,
+            0.272
+          ],
+          "model_cost": [
+            3.07810378074646,
+            3.129708766937256,
+            3.238311767578125,
+            2.955136299133301,
+            2.921494722366333,
+            3.2017452716827393
+          ],
+          "source_step": 29,
+          "true_cost": [
+            41.0,
+            40.0,
+            40.0,
+            39.0,
+            39.0,
+            39.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.312,
+            0.344,
+            0.272,
+            0.288,
+            0.32,
+            0.32
+          ],
+          "model_cost": [
+            3.4597256183624268,
+            5.686142921447754,
+            3.5196127891540527,
+            4.707586765289307,
+            3.6614346504211426,
+            10.486812591552734
+          ],
+          "source_step": 29,
+          "true_cost": [
+            40.0,
+            39.0,
+            39.0,
+            40.0,
+            39.0,
+            39.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.36,
+            0.216,
+            0.264,
+            0.328,
+            0.28,
+            0.272
+          ],
+          "model_cost": [
+            10.998954772949219,
+            6.393503665924072,
+            34.50169372558594,
+            33.78812789916992,
+            20.44394302368164,
+            21.653560638427734
+          ],
+          "source_step": 15,
+          "true_cost": [
+            40.0,
+            38.0,
+            36.0,
+            37.0,
+            36.0,
+            37.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.328,
+            0.392,
+            0.28,
+            0.368,
+            0.352,
+            0.264
+          ],
+          "model_cost": [
+            207.13177490234375,
+            208.74227905273438,
+            238.71273803710938,
+            277.33636474609375,
+            207.6917266845703,
+            268.275390625
+          ],
+          "source_step": 0,
+          "true_cost": [
+            34.0,
+            35.0,
+            40.0,
+            39.0,
+            36.0,
+            43.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": {
+        "spread": 0.0,
+        "true_costs": [
+          87.0,
+          87.0,
+          87.0
+        ]
+      },
+      "episode": 56,
+      "replan": 0,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.256,
+        "regret": 5.0,
+        "repair_steps": 62,
+        "true_cost": 87.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.36,
+            0.328,
+            0.296,
+            0.312,
+            0.328,
+            0.312
+          ],
+          "model_cost": [
+            0.972095787525177,
+            0.9513483047485352,
+            0.819939136505127,
+            0.7569628357887268,
+            0.6272397041320801,
+            0.8378437161445618
+          ],
+          "source_step": 29,
+          "true_cost": [
+            87.0,
+            87.0,
+            86.0,
+            86.0,
+            87.0,
+            87.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.272,
+            0.288,
+            0.28,
+            0.224,
+            0.288,
+            0.312
+          ],
+          "model_cost": [
+            4.23598051071167,
+            2.1602582931518555,
+            3.8562541007995605,
+            5.783008575439453,
+            3.3916802406311035,
+            4.288926124572754
+          ],
+          "source_step": 29,
+          "true_cost": [
+            87.0,
+            86.0,
+            87.0,
+            86.0,
+            87.0,
+            87.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.304,
+            0.376,
+            0.32,
+            0.28,
+            0.368,
+            0.344
+          ],
+          "model_cost": [
+            4.308352470397949,
+            4.768134117126465,
+            3.293706178665161,
+            4.590638637542725,
+            3.415590524673462,
+            4.317376136779785
+          ],
+          "source_step": 15,
+          "true_cost": [
+            86.0,
+            86.0,
+            87.0,
+            87.0,
+            88.0,
+            86.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.28,
+            0.304,
+            0.0,
+            0.32,
+            0.256,
+            0.368
+          ],
+          "model_cost": [
+            372.0882568359375,
+            146.71282958984375,
+            210.17234802246094,
+            202.08984375,
+            81.70262145996094,
+            267.1168212890625
+          ],
+          "source_step": 0,
+          "true_cost": [
+            85.0,
+            85.0,
+            82.0,
+            86.0,
+            86.0,
+            84.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": null,
+      "episode": 56,
+      "replan": 1,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.256,
+        "regret": 28.0,
+        "repair_steps": 62,
+        "true_cost": 87.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.344,
+            0.32,
+            0.288,
+            0.328,
+            0.272,
+            0.296
+          ],
+          "model_cost": [
+            1.0395622253417969,
+            0.9685974717140198,
+            0.7780275344848633,
+            0.9480646848678589,
+            0.8230456113815308,
+            0.7391255497932434
+          ],
+          "source_step": 29,
+          "true_cost": [
+            87.0,
+            86.0,
+            86.0,
+            86.0,
+            86.0,
+            90.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.376,
+            0.312,
+            0.328,
+            0.32,
+            0.24,
+            0.304
+          ],
+          "model_cost": [
+            1.4491658210754395,
+            2.2387566566467285,
+            11.183935165405273,
+            8.456683158874512,
+            8.361221313476562,
+            8.688892364501953
+          ],
+          "source_step": 29,
+          "true_cost": [
+            90.0,
+            88.0,
+            87.0,
+            86.0,
+            95.0,
+            88.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.288,
+            0.344,
+            0.392,
+            0.296,
+            0.344,
+            0.32
+          ],
+          "model_cost": [
+            7.1706647872924805,
+            5.790031433105469,
+            7.847159385681152,
+            2.6097514629364014,
+            66.73844146728516,
+            1.9511828422546387
+          ],
+          "source_step": 15,
+          "true_cost": [
+            86.0,
+            86.0,
+            87.0,
+            59.0,
+            84.0,
+            60.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.296,
+            0.368,
+            0.264,
+            0.32,
+            0.352,
+            0.336
+          ],
+          "model_cost": [
+            40.389678955078125,
+            3.868500232696533,
+            50.5828857421875,
+            69.75605773925781,
+            15.99662971496582,
+            60.63069534301758
+          ],
+          "source_step": 0,
+          "true_cost": [
+            86.0,
+            85.0,
+            87.0,
+            84.0,
+            86.0,
+            87.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": null,
+      "episode": 56,
+      "replan": 2,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.28,
+        "regret": 4.0,
+        "repair_steps": 37,
+        "true_cost": 62.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.304,
+            0.24,
+            0.272,
+            0.264,
+            0.312,
+            0.264
+          ],
+          "model_cost": [
+            0.656950831413269,
+            0.7180032134056091,
+            0.820016086101532,
+            0.6701344847679138,
+            0.8832441568374634,
+            0.8463894128799438
+          ],
+          "source_step": 29,
+          "true_cost": [
+            59.0,
+            88.0,
+            64.0,
+            92.0,
+            61.0,
+            96.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.272,
+            0.296,
+            0.384,
+            0.296,
+            0.352,
+            0.36
+          ],
+          "model_cost": [
+            11.295470237731934,
+            2.4456729888916016,
+            0.7219740152359009,
+            0.902815580368042,
+            1.6660614013671875,
+            2.271681070327759
+          ],
+          "source_step": 29,
+          "true_cost": [
+            58.0,
+            59.0,
+            97.0,
+            95.0,
+            91.0,
+            88.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.328,
+            0.272,
+            0.312,
+            0.32,
+            0.32,
+            0.256
+          ],
+          "model_cost": [
+            7.929490566253662,
+            8.248708724975586,
+            2.1835169792175293,
+            26.493633270263672,
+            135.22711181640625,
+            2.3013553619384766
+          ],
+          "source_step": 15,
+          "true_cost": [
+            91.0,
+            92.0,
+            93.0,
+            92.0,
+            86.0,
+            89.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.32,
+            0.28,
+            0.288,
+            0.4,
+            0.296,
+            0.296
+          ],
+          "model_cost": [
+            280.68450927734375,
+            50.96308135986328,
+            13.685890197753906,
+            147.70065307617188,
+            1.481415867805481,
+            24.862913131713867
+          ],
+          "source_step": 0,
+          "true_cost": [
+            90.0,
+            85.0,
+            89.0,
+            90.0,
+            88.0,
+            89.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": {
+        "spread": 0.0,
+        "true_costs": [
+          11.0,
+          11.0,
+          11.0
+        ]
+      },
+      "episode": 59,
+      "replan": 0,
+      "selected": {
+        "censored": false,
+        "chunk_solved": true,
+        "chunk_steps": 11,
+        "clipped_frac": 0.10666666666666667,
+        "regret": 2.0,
+        "repair_steps": 0,
+        "true_cost": 11.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            true
+          ],
+          "clipped_frac": [
+            0.168,
+            0.192,
+            0.184,
+            0.16,
+            0.184,
+            0.22
+          ],
+          "model_cost": [
+            1.645315408706665,
+            1.708597183227539,
+            1.6276758909225464,
+            1.6745656728744507,
+            1.6184442043304443,
+            1.3192473649978638
+          ],
+          "source_step": 29,
+          "true_cost": [
+            32.0,
+            32.0,
+            33.0,
+            33.0,
+            32.0,
+            9.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            true,
+            false,
+            true,
+            false,
+            true,
+            true
+          ],
+          "clipped_frac": [
+            0.14666666666666667,
+            0.216,
+            0.14666666666666667,
+            0.192,
+            0.2,
+            0.16
+          ],
+          "model_cost": [
+            1.539302110671997,
+            8.440483093261719,
+            10.577759742736816,
+            2.0208187103271484,
+            3.852755069732666,
+            4.954529762268066
+          ],
+          "source_step": 29,
+          "true_cost": [
+            12.0,
+            29.0,
+            11.0,
+            32.0,
+            11.0,
+            10.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            true,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.17333333333333334,
+            0.2,
+            0.232,
+            0.224,
+            0.24,
+            0.216
+          ],
+          "model_cost": [
+            12.617147445678711,
+            7.102794170379639,
+            6.415344715118408,
+            14.478322982788086,
+            26.359283447265625,
+            22.029430389404297
+          ],
+          "source_step": 15,
+          "true_cost": [
+            12.0,
+            34.0,
+            33.0,
+            32.0,
+            31.0,
+            30.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.304,
+            0.368,
+            0.296,
+            0.376,
+            0.312,
+            0.312
+          ],
+          "model_cost": [
+            148.4286651611328,
+            215.38156127929688,
+            265.73870849609375,
+            130.52676391601562,
+            174.78842163085938,
+            354.7134094238281
+          ],
+          "source_step": 0,
+          "true_cost": [
+            51.0,
+            31.0,
+            36.0,
+            28.0,
+            33.0,
+            36.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": {
+        "spread": 0.0,
+        "true_costs": [
+          32.0,
+          32.0,
+          32.0
+        ]
+      },
+      "episode": 64,
+      "replan": 0,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.24,
+        "regret": 14.0,
+        "repair_steps": 7,
+        "true_cost": 32.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            true,
+            false,
+            true,
+            false,
+            true,
+            false
+          ],
+          "clipped_frac": [
+            0.288,
+            0.248,
+            0.3,
+            0.28,
+            0.26,
+            0.288
+          ],
+          "model_cost": [
+            3.0540616512298584,
+            3.072737693786621,
+            3.230032444000244,
+            2.5405406951904297,
+            3.247981071472168,
+            3.1712186336517334
+          ],
+          "source_step": 29,
+          "true_cost": [
+            21.0,
+            32.0,
+            20.0,
+            31.0,
+            18.0,
+            33.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            true,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.24,
+            0.264,
+            0.24,
+            0.24,
+            0.28,
+            0.32
+          ],
+          "model_cost": [
+            4.111541748046875,
+            35.328739166259766,
+            10.966670036315918,
+            2.478388786315918,
+            4.696638107299805,
+            28.293354034423828
+          ],
+          "source_step": 29,
+          "true_cost": [
+            20.0,
+            34.0,
+            34.0,
+            32.0,
+            32.0,
+            34.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.296,
+            0.28,
+            0.36,
+            0.296,
+            0.272,
+            0.264
+          ],
+          "model_cost": [
+            30.253416061401367,
+            48.01757049560547,
+            185.07110595703125,
+            37.82681655883789,
+            157.89822387695312,
+            69.15467071533203
+          ],
+          "source_step": 15,
+          "true_cost": [
+            35.0,
+            33.0,
+            36.0,
+            33.0,
+            36.0,
+            35.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.304,
+            0.304,
+            0.288,
+            0.36,
+            0.376,
+            0.304
+          ],
+          "model_cost": [
+            261.7760314941406,
+            173.4598388671875,
+            244.30752563476562,
+            276.3078918457031,
+            269.2566833496094,
+            264.331787109375
+          ],
+          "source_step": 0,
+          "true_cost": [
+            41.0,
+            33.0,
+            39.0,
+            36.0,
+            40.0,
+            36.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": null,
+      "episode": 64,
+      "replan": 1,
+      "selected": {
+        "censored": false,
+        "chunk_solved": true,
+        "chunk_steps": 10,
+        "clipped_frac": 0.12,
+        "regret": 0.0,
+        "repair_steps": 0,
+        "true_cost": 10.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            true,
+            false
+          ],
+          "clipped_frac": [
+            0.208,
+            0.2,
+            0.216,
+            0.232,
+            0.18666666666666668,
+            0.24
+          ],
+          "model_cost": [
+            2.0419631004333496,
+            2.139072895050049,
+            2.2759294509887695,
+            1.9865837097167969,
+            1.9951438903808594,
+            2.1003644466400146
+          ],
+          "source_step": 29,
+          "true_cost": [
+            33.0,
+            32.0,
+            32.0,
+            34.0,
+            12.0,
+            37.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            true,
+            true,
+            false,
+            true,
+            true,
+            true
+          ],
+          "clipped_frac": [
+            0.18666666666666668,
+            0.2,
+            0.216,
+            0.22666666666666666,
+            0.2,
+            0.25333333333333335
+          ],
+          "model_cost": [
+            1.9951438903808594,
+            6.459463119506836,
+            8.903194427490234,
+            8.531279563903809,
+            12.973634719848633,
+            7.801445484161377
+          ],
+          "source_step": 29,
+          "true_cost": [
+            12.0,
+            12.0,
+            34.0,
+            12.0,
+            10.0,
+            12.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            true,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            true,
+            false
+          ],
+          "clipped_frac": [
+            0.208,
+            0.24,
+            0.152,
+            0.248,
+            0.30666666666666664,
+            0.248
+          ],
+          "model_cost": [
+            8.363866806030273,
+            9.531558990478516,
+            11.276392936706543,
+            191.30419921875,
+            32.888038635253906,
+            194.1868133544922
+          ],
+          "source_step": 15,
+          "true_cost": [
+            31.0,
+            36.0,
+            585.0,
+            54.0,
+            12.0,
+            30.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            true,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.3466666666666667,
+            0.328,
+            0.408,
+            0.288,
+            0.28,
+            0.304
+          ],
+          "model_cost": [
+            159.05288696289062,
+            215.7481689453125,
+            310.062255859375,
+            224.75613403320312,
+            109.81942749023438,
+            226.98281860351562
+          ],
+          "source_step": 0,
+          "true_cost": [
+            15.0,
+            36.0,
+            34.0,
+            35.0,
+            31.0,
+            31.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": {
+        "spread": 0.0,
+        "true_costs": [
+          884.0,
+          884.0,
+          884.0
+        ]
+      },
+      "episode": 67,
+      "replan": 0,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.416,
+        "regret": 601.0,
+        "repair_steps": 859,
+        "true_cost": 884.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            true,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.448,
+            0.456,
+            0.496,
+            0.416,
+            0.424,
+            0.496
+          ],
+          "model_cost": [
+            39.759498596191406,
+            39.439247131347656,
+            39.469078063964844,
+            39.37440490722656,
+            39.029563903808594,
+            38.47462844848633
+          ],
+          "source_step": 29,
+          "true_cost": [
+            1084.0,
+            1087.0,
+            484.0,
+            885.0,
+            1625.0,
+            1085.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            true,
+            false,
+            true,
+            true,
+            true,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.472,
+            0.44,
+            0.44,
+            0.448,
+            0.472,
+            0.408
+          ],
+          "model_cost": [
+            42.3358039855957,
+            40.668853759765625,
+            41.56238555908203,
+            41.54916000366211,
+            43.28422164916992,
+            41.60079574584961
+          ],
+          "source_step": 29,
+          "true_cost": [
+            1625.0,
+            286.0,
+            1625.0,
+            1625.0,
+            1625.0,
+            692.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            true,
+            true,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.384,
+            0.408,
+            0.424,
+            0.432,
+            0.344,
+            0.384
+          ],
+          "model_cost": [
+            83.74857330322266,
+            83.29264068603516,
+            69.74781036376953,
+            70.22237396240234,
+            78.10662078857422,
+            73.50607299804688
+          ],
+          "source_step": 15,
+          "true_cost": [
+            684.0,
+            283.0,
+            684.0,
+            1451.0,
+            1625.0,
+            1295.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            true,
+            false,
+            false,
+            true,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.288,
+            0.32,
+            0.376,
+            0.416,
+            0.344,
+            0.32
+          ],
+          "model_cost": [
+            179.80812072753906,
+            212.18016052246094,
+            225.24185180664062,
+            215.41946411132812,
+            200.1099853515625,
+            185.86630249023438
+          ],
+          "source_step": 0,
+          "true_cost": [
+            1625.0,
+            887.0,
+            485.0,
+            1274.0,
+            285.0,
+            1288.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": null,
+      "episode": 67,
+      "replan": 1,
+      "selected": {
+        "censored": true,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.52,
+        "regret": null,
+        "repair_steps": 1600,
+        "true_cost": 1625.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            true,
+            false,
+            false,
+            true,
+            false,
+            true
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.568,
+            0.552,
+            0.568,
+            0.568,
+            0.544,
+            0.576
+          ],
+          "model_cost": [
+            27.852087020874023,
+            27.994915008544922,
+            28.185489654541016,
+            27.5998477935791,
+            27.85727310180664,
+            27.785411834716797
+          ],
+          "source_step": 29,
+          "true_cost": [
+            1625.0,
+            1285.0,
+            287.0,
+            1625.0,
+            285.0,
+            1625.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            true,
+            false,
+            true,
+            false,
+            false,
+            true
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.52,
+            0.56,
+            0.536,
+            0.576,
+            0.52,
+            0.584
+          ],
+          "model_cost": [
+            28.32709503173828,
+            31.391063690185547,
+            31.639938354492188,
+            29.212804794311523,
+            31.15966796875,
+            31.184410095214844
+          ],
+          "source_step": 29,
+          "true_cost": [
+            1625.0,
+            1072.0,
+            1625.0,
+            1287.0,
+            1287.0,
+            1625.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.4,
+            0.416,
+            0.448,
+            0.44,
+            0.416,
+            0.4
+          ],
+          "model_cost": [
+            71.53924560546875,
+            80.63395690917969,
+            59.90418243408203,
+            59.82992935180664,
+            64.67976379394531,
+            70.62728118896484
+          ],
+          "source_step": 15,
+          "true_cost": [
+            482.0,
+            1087.0,
+            1291.0,
+            684.0,
+            1085.0,
+            1073.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            true,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.352,
+            0.28,
+            0.264,
+            0.288,
+            0.328,
+            0.28
+          ],
+          "model_cost": [
+            200.1409454345703,
+            206.02525329589844,
+            231.7153778076172,
+            189.034912109375,
+            201.47796630859375,
+            192.74490356445312
+          ],
+          "source_step": 0,
+          "true_cost": [
+            1448.0,
+            1085.0,
+            1285.0,
+            678.0,
+            1085.0,
+            285.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": null,
+      "episode": 67,
+      "replan": 2,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.352,
+        "regret": 237.0,
+        "repair_steps": 259,
+        "true_cost": 284.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            true,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.384,
+            0.376,
+            0.376,
+            0.352,
+            0.352,
+            0.392
+          ],
+          "model_cost": [
+            4.575033187866211,
+            3.82271146774292,
+            4.433765411376953,
+            4.469667434692383,
+            3.9930319786071777,
+            4.271045684814453
+          ],
+          "source_step": 29,
+          "true_cost": [
+            684.0,
+            486.0,
+            886.0,
+            1625.0,
+            276.0,
+            286.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.384,
+            0.416,
+            0.36,
+            0.36,
+            0.384,
+            0.392
+          ],
+          "model_cost": [
+            27.23165512084961,
+            14.226936340332031,
+            5.365670204162598,
+            4.590073585510254,
+            7.940499305725098,
+            6.933631896972656
+          ],
+          "source_step": 29,
+          "true_cost": [
+            686.0,
+            284.0,
+            285.0,
+            685.0,
+            47.0,
+            286.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            true,
+            false,
+            false,
+            false,
+            true
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.416,
+            0.488,
+            0.408,
+            0.288,
+            0.336,
+            0.432
+          ],
+          "model_cost": [
+            80.17294311523438,
+            117.36756134033203,
+            98.39884185791016,
+            33.24479675292969,
+            82.29356384277344,
+            215.89822387695312
+          ],
+          "source_step": 15,
+          "true_cost": [
+            685.0,
+            1625.0,
+            285.0,
+            676.0,
+            1286.0,
+            1625.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            true,
+            true
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.296,
+            0.36,
+            0.28,
+            0.32,
+            0.328,
+            0.264
+          ],
+          "model_cost": [
+            194.31002807617188,
+            227.81240844726562,
+            194.59841918945312,
+            196.22222900390625,
+            230.38589477539062,
+            176.2081298828125
+          ],
+          "source_step": 0,
+          "true_cost": [
+            1287.0,
+            481.0,
+            1091.0,
+            285.0,
+            1625.0,
+            1625.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": {
+        "spread": 0.0,
+        "true_costs": [
+          58.0,
+          58.0,
+          58.0
+        ]
+      },
+      "episode": 77,
+      "replan": 0,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.192,
+        "regret": 3.0,
+        "repair_steps": 33,
+        "true_cost": 58.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.24,
+            0.232,
+            0.24,
+            0.232,
+            0.192,
+            0.224
+          ],
+          "model_cost": [
+            3.3903934955596924,
+            3.0293080806732178,
+            2.190042734146118,
+            1.5355252027511597,
+            2.0453853607177734,
+            1.721166968345642
+          ],
+          "source_step": 29,
+          "true_cost": [
+            58.0,
+            56.0,
+            58.0,
+            58.0,
+            58.0,
+            57.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.24,
+            0.264,
+            0.272,
+            0.248,
+            0.216,
+            0.256
+          ],
+          "model_cost": [
+            17.72385025024414,
+            27.808231353759766,
+            14.87165355682373,
+            6.855128288269043,
+            74.41275024414062,
+            11.966121673583984
+          ],
+          "source_step": 29,
+          "true_cost": [
+            57.0,
+            58.0,
+            60.0,
+            57.0,
+            59.0,
+            58.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.248,
+            0.288,
+            0.296,
+            0.304,
+            0.28,
+            0.272
+          ],
+          "model_cost": [
+            6.330171585083008,
+            56.333457946777344,
+            64.01505279541016,
+            23.44867706298828,
+            164.30877685546875,
+            176.62548828125
+          ],
+          "source_step": 15,
+          "true_cost": [
+            61.0,
+            56.0,
+            56.0,
+            58.0,
+            55.0,
+            60.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.312,
+            0.248,
+            0.336,
+            0.272,
+            0.344,
+            0.296
+          ],
+          "model_cost": [
+            375.2451477050781,
+            346.88140869140625,
+            158.49127197265625,
+            258.9327392578125,
+            224.62562561035156,
+            139.22372436523438
+          ],
+          "source_step": 0,
+          "true_cost": [
+            62.0,
+            60.0,
+            59.0,
+            61.0,
+            59.0,
+            57.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": null,
+      "episode": 77,
+      "replan": 1,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.208,
+        "regret": 6.0,
+        "repair_steps": 34,
+        "true_cost": 59.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.28,
+            0.192,
+            0.224,
+            0.192,
+            0.2,
+            0.232
+          ],
+          "model_cost": [
+            1.0203561782836914,
+            0.9558393955230713,
+            0.9661507606506348,
+            1.0567407608032227,
+            1.2504578828811646,
+            1.1723153591156006
+          ],
+          "source_step": 29,
+          "true_cost": [
+            59.0,
+            61.0,
+            59.0,
+            61.0,
+            57.0,
+            60.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.192,
+            0.224,
+            0.216,
+            0.224,
+            0.208,
+            0.256
+          ],
+          "model_cost": [
+            0.7808084487915039,
+            19.568035125732422,
+            11.369987487792969,
+            0.7848504781723022,
+            4.365655899047852,
+            6.947216987609863
+          ],
+          "source_step": 29,
+          "true_cost": [
+            61.0,
+            60.0,
+            57.0,
+            62.0,
+            60.0,
+            57.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.2,
+            0.2,
+            0.248,
+            0.224,
+            0.192,
+            0.256
+          ],
+          "model_cost": [
+            40.16225051879883,
+            22.737361907958984,
+            45.07036209106445,
+            21.351119995117188,
+            40.927268981933594,
+            114.2012939453125
+          ],
+          "source_step": 15,
+          "true_cost": [
+            60.0,
+            59.0,
+            62.0,
+            57.0,
+            56.0,
+            61.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.352,
+            0.304,
+            0.312,
+            0.36,
+            0.24,
+            0.32
+          ],
+          "model_cost": [
+            101.62422943115234,
+            43.29924011230469,
+            202.5872802734375,
+            84.74649047851562,
+            88.76615905761719,
+            136.19558715820312
+          ],
+          "source_step": 0,
+          "true_cost": [
+            60.0,
+            62.0,
+            53.0,
+            60.0,
+            60.0,
+            56.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": null,
+      "episode": 77,
+      "replan": 2,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.16,
+        "regret": 5.0,
+        "repair_steps": 35,
+        "true_cost": 60.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.168,
+            0.224,
+            0.2,
+            0.232,
+            0.176,
+            0.2
+          ],
+          "model_cost": [
+            1.6356981992721558,
+            1.4888725280761719,
+            0.7837585210800171,
+            0.6448768377304077,
+            1.4305143356323242,
+            1.421942949295044
+          ],
+          "source_step": 29,
+          "true_cost": [
+            57.0,
+            57.0,
+            60.0,
+            58.0,
+            63.0,
+            59.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.192,
+            0.168,
+            0.152,
+            0.192,
+            0.216,
+            0.176
+          ],
+          "model_cost": [
+            17.80455207824707,
+            36.2667236328125,
+            13.122572898864746,
+            37.561771392822266,
+            26.354984283447266,
+            5.805833339691162
+          ],
+          "source_step": 29,
+          "true_cost": [
+            58.0,
+            60.0,
+            60.0,
+            59.0,
+            58.0,
+            57.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.208,
+            0.184,
+            0.232,
+            0.176,
+            0.136,
+            0.248
+          ],
+          "model_cost": [
+            1.199858546257019,
+            95.17424774169922,
+            25.923080444335938,
+            67.47799682617188,
+            140.63558959960938,
+            40.078521728515625
+          ],
+          "source_step": 15,
+          "true_cost": [
+            59.0,
+            60.0,
+            58.0,
+            59.0,
+            90.0,
+            60.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.336,
+            0.376,
+            0.264,
+            0.352,
+            0.368,
+            0.248
+          ],
+          "model_cost": [
+            21.168840408325195,
+            271.57281494140625,
+            136.94137573242188,
+            16.535118103027344,
+            104.20208740234375,
+            88.13691711425781
+          ],
+          "source_step": 0,
+          "true_cost": [
+            55.0,
+            55.0,
+            63.0,
+            91.0,
+            95.0,
+            59.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": {
+        "spread": 0.0,
+        "true_costs": [
+          86.0,
+          86.0,
+          86.0
+        ]
+      },
+      "episode": 98,
+      "replan": 0,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.384,
+        "regret": 0.0,
+        "repair_steps": 61,
+        "true_cost": 86.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.376,
+            0.424,
+            0.416,
+            0.392,
+            0.416,
+            0.44
+          ],
+          "model_cost": [
+            44.908721923828125,
+            46.20044708251953,
+            44.574989318847656,
+            45.570777893066406,
+            46.44395065307617,
+            46.474266052246094
+          ],
+          "source_step": 29,
+          "true_cost": [
+            88.0,
+            91.0,
+            89.0,
+            94.0,
+            89.0,
+            115.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.4,
+            0.416,
+            0.408,
+            0.424,
+            0.456,
+            0.392
+          ],
+          "model_cost": [
+            66.76180267333984,
+            57.04243850708008,
+            48.419490814208984,
+            51.31292724609375,
+            49.66966247558594,
+            44.14287567138672
+          ],
+          "source_step": 29,
+          "true_cost": [
+            86.0,
+            89.0,
+            91.0,
+            86.0,
+            86.0,
+            87.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.36,
+            0.384,
+            0.408,
+            0.44,
+            0.36,
+            0.36
+          ],
+          "model_cost": [
+            95.54911804199219,
+            171.42633056640625,
+            92.43922424316406,
+            114.41835021972656,
+            98.43721008300781,
+            96.15565490722656
+          ],
+          "source_step": 15,
+          "true_cost": [
+            91.0,
+            87.0,
+            87.0,
+            131.0,
+            88.0,
+            137.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            true,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.368,
+            0.32,
+            0.264,
+            0.312,
+            0.336,
+            0.328
+          ],
+          "model_cost": [
+            202.43392944335938,
+            240.7855224609375,
+            230.89645385742188,
+            309.60137939453125,
+            252.1375732421875,
+            220.9259796142578
+          ],
+          "source_step": 0,
+          "true_cost": [
+            121.0,
+            128.0,
+            1625.0,
+            128.0,
+            91.0,
+            1229.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": null,
+      "episode": 98,
+      "replan": 1,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.472,
+        "regret": 3.0,
+        "repair_steps": 58,
+        "true_cost": 83.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.456,
+            0.448,
+            0.456,
+            0.528,
+            0.448,
+            0.464
+          ],
+          "model_cost": [
+            55.03158187866211,
+            55.165809631347656,
+            54.851219177246094,
+            55.00019073486328,
+            54.799137115478516,
+            55.08472442626953
+          ],
+          "source_step": 29,
+          "true_cost": [
+            82.0,
+            84.0,
+            82.0,
+            82.0,
+            82.0,
+            84.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.504,
+            0.464,
+            0.464,
+            0.48,
+            0.464,
+            0.488
+          ],
+          "model_cost": [
+            59.13013458251953,
+            61.90971374511719,
+            59.03355407714844,
+            59.283267974853516,
+            57.51824188232422,
+            57.21898651123047
+          ],
+          "source_step": 29,
+          "true_cost": [
+            82.0,
+            82.0,
+            84.0,
+            86.0,
+            83.0,
+            82.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.384,
+            0.44,
+            0.392,
+            0.464,
+            0.456,
+            0.456
+          ],
+          "model_cost": [
+            102.05340576171875,
+            83.58624267578125,
+            102.00096130371094,
+            95.87583923339844,
+            89.70195770263672,
+            88.39996337890625
+          ],
+          "source_step": 15,
+          "true_cost": [
+            82.0,
+            80.0,
+            80.0,
+            80.0,
+            84.0,
+            82.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.36,
+            0.344,
+            0.28,
+            0.336,
+            0.36,
+            0.336
+          ],
+          "model_cost": [
+            213.19110107421875,
+            318.6802673339844,
+            226.06634521484375,
+            220.4674072265625,
+            256.8713684082031,
+            253.55352783203125
+          ],
+          "source_step": 0,
+          "true_cost": [
+            85.0,
+            82.0,
+            91.0,
+            85.0,
+            88.0,
+            83.0
+          ]
+        }
+      }
+    },
+    {
+      "delta_probe": null,
+      "episode": 98,
+      "replan": 2,
+      "selected": {
+        "censored": false,
+        "chunk_solved": false,
+        "chunk_steps": 25,
+        "clipped_frac": 0.248,
+        "regret": 7.0,
+        "repair_steps": 61,
+        "true_cost": 86.0
+      },
+      "strata": {
+        "elite": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.328,
+            0.264,
+            0.288,
+            0.352,
+            0.296,
+            0.328
+          ],
+          "model_cost": [
+            5.484682083129883,
+            5.442477226257324,
+            5.324295520782471,
+            4.643715858459473,
+            4.818090438842773,
+            5.622498512268066
+          ],
+          "source_step": 29,
+          "true_cost": [
+            82.0,
+            87.0,
+            86.0,
+            84.0,
+            86.0,
+            87.0
+          ]
+        },
+        "gen_last": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.328,
+            0.28,
+            0.336,
+            0.32,
+            0.344,
+            0.328
+          ],
+          "model_cost": [
+            8.887382507324219,
+            6.444761276245117,
+            7.516965866088867,
+            9.871313095092773,
+            8.803828239440918,
+            34.97798538208008
+          ],
+          "source_step": 29,
+          "true_cost": [
+            86.0,
+            86.0,
+            88.0,
+            85.0,
+            86.0,
+            88.0
+          ]
+        },
+        "gen_mid": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.416,
+            0.392,
+            0.32,
+            0.384,
+            0.416,
+            0.36
+          ],
+          "model_cost": [
+            80.80817413330078,
+            79.90031433105469,
+            57.70348358154297,
+            86.75788116455078,
+            22.683408737182617,
+            15.596760749816895
+          ],
+          "source_step": 15,
+          "true_cost": [
+            86.0,
+            85.0,
+            83.0,
+            85.0,
+            86.0,
+            82.0
+          ]
+        },
+        "random_init": {
+          "censored": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "chunk_solved": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "clipped_frac": [
+            0.304,
+            0.344,
+            0.36,
+            0.368,
+            0.352,
+            0.344
+          ],
+          "model_cost": [
+            157.10467529296875,
+            187.26040649414062,
+            176.38304138183594,
+            195.33547973632812,
+            208.79092407226562,
+            178.58651733398438
+          ],
+          "source_step": 0,
+          "true_cost": [
+            79.0,
+            82.0,
+            86.0,
+            87.0,
+            84.0,
+            88.0
+          ]
+        }
+      }
+    }
+  ],
+  "settings": {
+    "cem_steps": 30,
+    "horizon": 5,
+    "num_samples": 300,
+    "receding_horizon": 5,
+    "topk": 30,
+    "var_scale": 1.0
+  },
+  "summary": {
+    "censoring": {
+      "censored": 36,
+      "rate": 0.04838709677419355,
+      "total": 744
+    },
+    "deltas": [
+      0.0,
+      10.0,
+      25.0,
+      50.0
+    ],
+    "per_delta": {
+      "delta_0": {
+        "elite": {
+          "decisive_pairs_min": 2,
+          "decisive_pairs_total": 342,
+          "inversion_rate": {
+            "hi": 0.5149622801034092,
+            "lo": 0.35381382058801414,
+            "mean": 0.43258560435979787,
+            "n": 31
+          },
+          "kendall_tau": {
+            "hi": 0.2988876401376402,
+            "lo": -0.023452278008729614,
+            "mean": 0.13482879128040418,
+            "n": 31
+          },
+          "topk_recall": {
+            "hi": 0.5645161290322581,
+            "lo": 0.33830645161290357,
+            "mean": 0.45161290322580644,
+            "n": 31
+          }
+        },
+        "elite_amplification": {
+          "elite_rate": 0.43258560435979787,
+          "paired_difference": {
+            "hi": 0.041314917161691334,
+            "lo": -0.1709831588662233,
+            "mean": -0.06426145539048765,
+            "n": 31
+          },
+          "random_init_rate": 0.49684705975028554,
+          "ratio": 0.8706614960692626
+        },
+        "gen_last": {
+          "decisive_pairs_min": 1,
+          "decisive_pairs_total": 345,
+          "inversion_rate": {
+            "hi": 0.6017943346975606,
+            "lo": 0.4131417551982069,
+            "mean": 0.5074441687344913,
+            "n": 31
+          },
+          "kendall_tau": {
+            "hi": 0.17387542564961914,
+            "lo": -0.20157872593356463,
+            "mean": -0.014888337468982635,
+            "n": 31
+          },
+          "topk_recall": {
+            "hi": 0.45161290322580644,
+            "lo": 0.1935483870967742,
+            "mean": 0.3225806451612903,
+            "n": 31
+          }
+        },
+        "gen_mid": {
+          "decisive_pairs_min": 3,
+          "decisive_pairs_total": 380,
+          "inversion_rate": {
+            "hi": 0.5374197039519619,
+            "lo": 0.4071470733567508,
+            "mean": 0.4734523540975154,
+            "n": 31
+          },
+          "kendall_tau": {
+            "hi": 0.18504995004994998,
+            "lo": -0.07488430923914795,
+            "mean": 0.05309529180496922,
+            "n": 31
+          },
+          "topk_recall": {
+            "hi": 0.5483870967741935,
+            "lo": 0.3064516129032258,
+            "mean": 0.41935483870967744,
+            "n": 31
+          }
+        },
+        "random_init": {
+          "decisive_pairs_min": 6,
+          "decisive_pairs_total": 395,
+          "inversion_rate": {
+            "hi": 0.5746429063767774,
+            "lo": 0.4197384201819686,
+            "mean": 0.49684705975028554,
+            "n": 31
+          },
+          "kendall_tau": {
+            "hi": 0.16312211981566818,
+            "lo": -0.1542205285753673,
+            "mean": 0.006305880499428891,
+            "n": 31
+          },
+          "topk_recall": {
+            "hi": 0.4032258064516129,
+            "lo": 0.1935483870967742,
+            "mean": 0.2903225806451613,
+            "n": 31
+          }
+        }
+      },
+      "delta_10": {
+        "elite": {
+          "decisive_pairs_min": 0,
+          "decisive_pairs_total": 108,
+          "inversion_rate": {
+            "hi": 0.5658552188552186,
+            "lo": 0.22343193843193843,
+            "mean": 0.3886857586857586,
+            "n": 15
+          },
+          "kendall_tau": {
+            "hi": 0.2988876401376402,
+            "lo": -0.023452278008729614,
+            "mean": 0.13482879128040418,
+            "n": 31
+          },
+          "topk_recall": {
+            "hi": 0.5645161290322581,
+            "lo": 0.33830645161290357,
+            "mean": 0.45161290322580644,
+            "n": 31
+          }
+        },
+        "elite_amplification": {
+          "elite_rate": 0.3886857586857586,
+          "paired_difference": {
+            "hi": 0.18748015873015844,
+            "lo": -0.5135,
+            "mean": -0.17206349206349209,
+            "n": 10
+          },
+          "random_init_rate": 0.5378042328042327,
+          "ratio": 0.7227272211285197
+        },
+        "gen_last": {
+          "decisive_pairs_min": 0,
+          "decisive_pairs_total": 89,
+          "inversion_rate": {
+            "hi": 0.7255496289424859,
+            "lo": 0.36990027829313543,
+            "mean": 0.5488249845392702,
+            "n": 14
+          },
+          "kendall_tau": {
+            "hi": 0.17387542564961914,
+            "lo": -0.20157872593356463,
+            "mean": -0.014888337468982635,
+            "n": 31
+          },
+          "topk_recall": {
+            "hi": 0.45161290322580644,
+            "lo": 0.1935483870967742,
+            "mean": 0.3225806451612903,
+            "n": 31
+          }
+        },
+        "gen_mid": {
+          "decisive_pairs_min": 0,
+          "decisive_pairs_total": 142,
+          "inversion_rate": {
+            "hi": 0.5768097943722943,
+            "lo": 0.343852408008658,
+            "mean": 0.4599621212121212,
+            "n": 20
+          },
+          "kendall_tau": {
+            "hi": 0.18504995004994998,
+            "lo": -0.07488430923914795,
+            "mean": 0.05309529180496922,
+            "n": 31
+          },
+          "topk_recall": {
+            "hi": 0.5483870967741935,
+            "lo": 0.3064516129032258,
+            "mean": 0.41935483870967744,
+            "n": 31
+          }
+        },
+        "random_init": {
+          "decisive_pairs_min": 0,
+          "decisive_pairs_total": 91,
+          "inversion_rate": {
+            "hi": 0.7218531746031747,
+            "lo": 0.3518994708994709,
+            "mean": 0.5378042328042327,
+            "n": 15
+          },
+          "kendall_tau": {
+            "hi": 0.16312211981566818,
+            "lo": -0.1542205285753673,
+            "mean": 0.006305880499428891,
+            "n": 31
+          },
+          "topk_recall": {
+            "hi": 0.4032258064516129,
+            "lo": 0.1935483870967742,
+            "mean": 0.2903225806451613,
+            "n": 31
+          }
+        }
+      },
+      "delta_25": {
+        "elite": {
+          "decisive_pairs_min": 0,
+          "decisive_pairs_total": 64,
+          "inversion_rate": {
+            "hi": 0.4339566297899629,
+            "lo": 0.1638608305274972,
+            "mean": 0.30142696809363473,
+            "n": 9
+          },
+          "kendall_tau": {
+            "hi": 0.2988876401376402,
+            "lo": -0.023452278008729614,
+            "mean": 0.13482879128040418,
+            "n": 31
+          },
+          "topk_recall": {
+            "hi": 0.5645161290322581,
+            "lo": 0.33830645161290357,
+            "mean": 0.45161290322580644,
+            "n": 31
+          }
+        },
+        "elite_amplification": {
+          "elite_rate": 0.30142696809363473,
+          "paired_difference": {
+            "hi": 0.07142857142857142,
+            "lo": -0.7857142857142858,
+            "mean": -0.3841269841269842,
+            "n": 5
+          },
+          "random_init_rate": 0.6062830687830688,
+          "ratio": 0.49717200366267666
+        },
+        "gen_last": {
+          "decisive_pairs_min": 0,
+          "decisive_pairs_total": 40,
+          "inversion_rate": {
+            "hi": 0.8344155844155843,
+            "lo": 0.36363636363636365,
+            "mean": 0.6136363636363635,
+            "n": 7
+          },
+          "kendall_tau": {
+            "hi": 0.17387542564961914,
+            "lo": -0.20157872593356463,
+            "mean": -0.014888337468982635,
+            "n": 31
+          },
+          "topk_recall": {
+            "hi": 0.45161290322580644,
+            "lo": 0.1935483870967742,
+            "mean": 0.3225806451612903,
+            "n": 31
+          }
+        },
+        "gen_mid": {
+          "decisive_pairs_min": 0,
+          "decisive_pairs_total": 94,
+          "inversion_rate": {
+            "hi": 0.5296875,
+            "lo": 0.2421875,
+            "mean": 0.38697916666666665,
+            "n": 16
+          },
+          "kendall_tau": {
+            "hi": 0.18504995004994998,
+            "lo": -0.07488430923914795,
+            "mean": 0.05309529180496922,
+            "n": 31
+          },
+          "topk_recall": {
+            "hi": 0.5483870967741935,
+            "lo": 0.3064516129032258,
+            "mean": 0.41935483870967744,
+            "n": 31
+          }
+        },
+        "random_init": {
+          "decisive_pairs_min": 0,
+          "decisive_pairs_total": 69,
+          "inversion_rate": {
+            "hi": 0.8158068783068783,
+            "lo": 0.3773148148148148,
+            "mean": 0.6062830687830688,
+            "n": 12
+          },
+          "kendall_tau": {
+            "hi": 0.16312211981566818,
+            "lo": -0.1542205285753673,
+            "mean": 0.006305880499428891,
+            "n": 31
+          },
+          "topk_recall": {
+            "hi": 0.4032258064516129,
+            "lo": 0.1935483870967742,
+            "mean": 0.2903225806451613,
+            "n": 31
+          }
+        }
+      },
+      "delta_50": {
+        "elite": {
+          "decisive_pairs_min": 0,
+          "decisive_pairs_total": 36,
+          "inversion_rate": {
+            "hi": 0.4599567099567099,
+            "lo": 0.15757575757575756,
+            "mean": 0.31291486291486287,
+            "n": 6
+          },
+          "kendall_tau": {
+            "hi": 0.2988876401376402,
+            "lo": -0.023452278008729614,
+            "mean": 0.13482879128040418,
+            "n": 31
+          },
+          "topk_recall": {
+            "hi": 0.5645161290322581,
+            "lo": 0.33830645161290357,
+            "mean": 0.45161290322580644,
+            "n": 31
+          }
+        },
+        "elite_amplification": {
+          "elite_rate": 0.31291486291486287,
+          "paired_difference": {
+            "hi": 0.3888888888888889,
+            "lo": -0.5,
+            "mean": -0.06878306878306878,
+            "n": 3
+          },
+          "random_init_rate": 0.570138888888889,
+          "ratio": 0.5488397108372747
+        },
+        "gen_last": {
+          "decisive_pairs_min": 0,
+          "decisive_pairs_total": 18,
+          "inversion_rate": {
+            "hi": 0.8863636363636364,
+            "lo": 0.1875,
+            "mean": 0.5738636363636364,
+            "n": 4
+          },
+          "kendall_tau": {
+            "hi": 0.17387542564961914,
+            "lo": -0.20157872593356463,
+            "mean": -0.014888337468982635,
+            "n": 31
+          },
+          "topk_recall": {
+            "hi": 0.45161290322580644,
+            "lo": 0.1935483870967742,
+            "mean": 0.3225806451612903,
+            "n": 31
+          }
+        },
+        "gen_mid": {
+          "decisive_pairs_min": 0,
+          "decisive_pairs_total": 43,
+          "inversion_rate": {
+            "hi": 0.5805555555555556,
+            "lo": 0.4332638888888889,
+            "mean": 0.5097222222222223,
+            "n": 6
+          },
+          "kendall_tau": {
+            "hi": 0.18504995004994998,
+            "lo": -0.07488430923914795,
+            "mean": 0.05309529180496922,
+            "n": 31
+          },
+          "topk_recall": {
+            "hi": 0.5483870967741935,
+            "lo": 0.3064516129032258,
+            "mean": 0.41935483870967744,
+            "n": 31
+          }
+        },
+        "random_init": {
+          "decisive_pairs_min": 0,
+          "decisive_pairs_total": 44,
+          "inversion_rate": {
+            "hi": 0.8166666666666667,
+            "lo": 0.3013541666666667,
+            "mean": 0.570138888888889,
+            "n": 8
+          },
+          "kendall_tau": {
+            "hi": 0.16312211981566818,
+            "lo": -0.1542205285753673,
+            "mean": 0.006305880499428891,
+            "n": 31
+          },
+          "topk_recall": {
+            "hi": 0.4032258064516129,
+            "lo": 0.1935483870967742,
+            "mean": 0.2903225806451613,
+            "n": 31
+          }
+        }
+      }
+    },
+    "selected_regret_steps": {
+      "hi": 90.13499999999998,
+      "lo": 12.566666666666666,
+      "mean": 42.9,
+      "n": 30
+    }
+  },
+  "wall_seconds": 399.33668971061707
+}

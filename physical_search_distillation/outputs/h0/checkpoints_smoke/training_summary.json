@@ -1,0 +1,26 @@
+{
+  "operator": {
+    "11": {
+      "best_epoch": 0,
+      "best_val_loss": 0.35657869558781385,
+      "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/physical_search_distillation/outputs/h0/checkpoints_smoke/operator/seed_11.pt",
+      "student_temperature": 0.5,
+      "target_mean": 0.10147440433502197,
+      "target_std": 0.10293358564376831,
+      "teacher_temperature_m": 0.02,
+      "topk": 10
+    }
+  },
+  "operator_metric": {
+    "11": {
+      "best_epoch": 0,
+      "best_val_loss": 4.18324036616832,
+      "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/physical_search_distillation/outputs/h0/checkpoints_smoke/operator_metric/seed_11.pt",
+      "student_temperature": 0.5,
+      "target_mean": 0.10147440433502197,
+      "target_std": 0.10293358564376831,
+      "teacher_temperature_m": 0.02,
+      "topk": 10
+    }
+  }
+}

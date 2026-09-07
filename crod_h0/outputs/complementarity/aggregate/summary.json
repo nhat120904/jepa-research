@@ -1,0 +1,43 @@
+{
+  "directional_enrichment_gain": {
+    "ci_high": 0.033549868210888914,
+    "ci_low": -0.013727435437478792,
+    "estimate": 0.010964084787785364
+  },
+  "estimates": {
+    "p_auxiliary_wrong": {
+      "ci_high": 0.5620701048154336,
+      "ci_low": 0.3519028515496129,
+      "estimate": 0.45741324921135645
+    },
+    "p_both_wrong": {
+      "ci_high": 0.43949247589134605,
+      "ci_low": 0.15162442123597067,
+      "estimate": 0.2844374342797056
+    },
+    "p_corrective_given_directional_support": {
+      "ci_high": 0.16642267932959867,
+      "ci_low": 0.05680611129835062,
+      "estimate": 0.10884353741496598
+    },
+    "p_corrective_given_native_rejected": {
+      "ci_high": 0.1544895814201493,
+      "ci_low": 0.04917519315097098,
+      "estimate": 0.09787945262718062
+    },
+    "p_native_wrong": {
+      "ci_high": 0.6976861186176476,
+      "ci_low": 0.30583457506042544,
+      "estimate": 0.4957939011566772
+    },
+    "p_native_wrong_given_disagreement": {
+      "ci_high": 0.7278956319369849,
+      "ci_low": 0.3918521048176081,
+      "estimate": 0.5499316005471956
+    }
+  },
+  "mechanism_supported": false,
+  "n_snapshots": 32,
+  "scope": "Candidate-level pairwise errors with snapshot-clustered bootstrap on the 32 fully physics-labelled Phase-0d final populations.",
+  "total_informative_pairs": 1902
+}

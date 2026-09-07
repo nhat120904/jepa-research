@@ -1,0 +1,77 @@
+{
+  "arms": [
+    "latent_l2",
+    "prog_ssl_w0.25"
+  ],
+  "ceilings": {
+    "100": 0.98,
+    "200": 0.92,
+    "25": 1.0,
+    "50": 0.98
+  },
+  "contrasts_vs_baseline": {
+    "prog_ssl_w0.25": {
+      "25": {
+        "ci_high": 0.26,
+        "ci_low": 0.0,
+        "clean": false,
+        "difference": 0.12,
+        "paired_episodes": 50
+      },
+      "50": {
+        "ci_high": 0.02,
+        "ci_low": -0.22,
+        "clean": false,
+        "difference": -0.1,
+        "paired_episodes": 50
+      }
+    }
+  },
+  "gate": "/home/nhatnc129/nhat.nc/jepa-research/scene_progress_wm/outputs/harness_gate/diagnostic/gate_screened_20260904/harness_gate.json",
+  "job_id": "49972",
+  "num_result_files": 4,
+  "offsets": [
+    "25",
+    "50"
+  ],
+  "per_arm": {
+    "latent_l2": {
+      "25": {
+        "ceiling": 1.0,
+        "ci_high": 0.4,
+        "ci_low": 0.16,
+        "headroom": 0.72,
+        "num_episodes": 50,
+        "success_rate": 0.28
+      },
+      "50": {
+        "ceiling": 0.98,
+        "ci_high": 0.5,
+        "ci_low": 0.24,
+        "headroom": 0.62,
+        "num_episodes": 50,
+        "success_rate": 0.36
+      }
+    },
+    "prog_ssl_w0.25": {
+      "25": {
+        "ceiling": 1.0,
+        "ci_high": 0.54,
+        "ci_low": 0.26,
+        "headroom": 0.6,
+        "num_episodes": 50,
+        "success_rate": 0.4
+      },
+      "50": {
+        "ceiling": 0.98,
+        "ci_high": 0.38,
+        "ci_low": 0.14,
+        "headroom": 0.72,
+        "num_episodes": 50,
+        "success_rate": 0.26
+      }
+    }
+  },
+  "protocol": "scene_progress_wm_ladder_analysis_v1",
+  "results_root": "/home/nhatnc129/nhat.nc/jepa-research/scene_progress_wm/outputs/ladder/eval/confirm_20260906"
+}

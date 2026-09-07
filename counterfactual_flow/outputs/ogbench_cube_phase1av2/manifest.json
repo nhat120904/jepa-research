@@ -1,0 +1,898 @@
+[
+  {
+    "episode": 15,
+    "order": 0,
+    "reset_seed": 20360819,
+    "start_step": 57,
+    "storage_row": 3072
+  },
+  {
+    "episode": 23,
+    "order": 1,
+    "reset_seed": 20360820,
+    "start_step": 115,
+    "storage_row": 4738
+  },
+  {
+    "episode": 72,
+    "order": 2,
+    "reset_seed": 20360821,
+    "start_step": 73,
+    "storage_row": 14545
+  },
+  {
+    "episode": 119,
+    "order": 3,
+    "reset_seed": 20360822,
+    "start_step": 23,
+    "storage_row": 23942
+  },
+  {
+    "episode": 310,
+    "order": 4,
+    "reset_seed": 20360823,
+    "start_step": 50,
+    "storage_row": 62360
+  },
+  {
+    "episode": 314,
+    "order": 5,
+    "reset_seed": 20360824,
+    "start_step": 97,
+    "storage_row": 63211
+  },
+  {
+    "episode": 428,
+    "order": 6,
+    "reset_seed": 20360825,
+    "start_step": 33,
+    "storage_row": 86061
+  },
+  {
+    "episode": 429,
+    "order": 7,
+    "reset_seed": 20360826,
+    "start_step": 103,
+    "storage_row": 86332
+  },
+  {
+    "episode": 431,
+    "order": 8,
+    "reset_seed": 20360827,
+    "start_step": 67,
+    "storage_row": 86698
+  },
+  {
+    "episode": 607,
+    "order": 9,
+    "reset_seed": 20360828,
+    "start_step": 164,
+    "storage_row": 122171
+  },
+  {
+    "episode": 647,
+    "order": 10,
+    "reset_seed": 20360829,
+    "start_step": 93,
+    "storage_row": 130140
+  },
+  {
+    "episode": 721,
+    "order": 11,
+    "reset_seed": 20360830,
+    "start_step": 135,
+    "storage_row": 145056
+  },
+  {
+    "episode": 770,
+    "order": 12,
+    "reset_seed": 20360831,
+    "start_step": 4,
+    "storage_row": 154774
+  },
+  {
+    "episode": 904,
+    "order": 13,
+    "reset_seed": 20360832,
+    "start_step": 131,
+    "storage_row": 181835
+  },
+  {
+    "episode": 1016,
+    "order": 14,
+    "reset_seed": 20360833,
+    "start_step": 43,
+    "storage_row": 204259
+  },
+  {
+    "episode": 1196,
+    "order": 15,
+    "reset_seed": 20360834,
+    "start_step": 3,
+    "storage_row": 240399
+  },
+  {
+    "episode": 1222,
+    "order": 16,
+    "reset_seed": 20360835,
+    "start_step": 30,
+    "storage_row": 245652
+  },
+  {
+    "episode": 1299,
+    "order": 17,
+    "reset_seed": 20360836,
+    "start_step": 169,
+    "storage_row": 261268
+  },
+  {
+    "episode": 1325,
+    "order": 18,
+    "reset_seed": 20360837,
+    "start_step": 96,
+    "storage_row": 266421
+  },
+  {
+    "episode": 1496,
+    "order": 19,
+    "reset_seed": 20360838,
+    "start_step": 121,
+    "storage_row": 300817
+  },
+  {
+    "episode": 1536,
+    "order": 20,
+    "reset_seed": 20360839,
+    "start_step": 57,
+    "storage_row": 308793
+  },
+  {
+    "episode": 1661,
+    "order": 21,
+    "reset_seed": 20360840,
+    "start_step": 102,
+    "storage_row": 333963
+  },
+  {
+    "episode": 1673,
+    "order": 22,
+    "reset_seed": 20360841,
+    "start_step": 21,
+    "storage_row": 336294
+  },
+  {
+    "episode": 1721,
+    "order": 23,
+    "reset_seed": 20360842,
+    "start_step": 12,
+    "storage_row": 345933
+  },
+  {
+    "episode": 1729,
+    "order": 24,
+    "reset_seed": 20360843,
+    "start_step": 152,
+    "storage_row": 347681
+  },
+  {
+    "episode": 1846,
+    "order": 25,
+    "reset_seed": 20360844,
+    "start_step": 122,
+    "storage_row": 371168
+  },
+  {
+    "episode": 2078,
+    "order": 26,
+    "reset_seed": 20360845,
+    "start_step": 135,
+    "storage_row": 417813
+  },
+  {
+    "episode": 2085,
+    "order": 27,
+    "reset_seed": 20360846,
+    "start_step": 155,
+    "storage_row": 419240
+  },
+  {
+    "episode": 2366,
+    "order": 28,
+    "reset_seed": 20360847,
+    "start_step": 144,
+    "storage_row": 475710
+  },
+  {
+    "episode": 2454,
+    "order": 29,
+    "reset_seed": 20360848,
+    "start_step": 31,
+    "storage_row": 493285
+  },
+  {
+    "episode": 2491,
+    "order": 30,
+    "reset_seed": 20360849,
+    "start_step": 86,
+    "storage_row": 500777
+  },
+  {
+    "episode": 2516,
+    "order": 31,
+    "reset_seed": 20360850,
+    "start_step": 140,
+    "storage_row": 505856
+  },
+  {
+    "episode": 2618,
+    "order": 32,
+    "reset_seed": 20360851,
+    "start_step": 30,
+    "storage_row": 526248
+  },
+  {
+    "episode": 2644,
+    "order": 33,
+    "reset_seed": 20360852,
+    "start_step": 34,
+    "storage_row": 531478
+  },
+  {
+    "episode": 2684,
+    "order": 34,
+    "reset_seed": 20360853,
+    "start_step": 45,
+    "storage_row": 539529
+  },
+  {
+    "episode": 2782,
+    "order": 35,
+    "reset_seed": 20360854,
+    "start_step": 119,
+    "storage_row": 559301
+  },
+  {
+    "episode": 2958,
+    "order": 36,
+    "reset_seed": 20360855,
+    "start_step": 2,
+    "storage_row": 594560
+  },
+  {
+    "episode": 3050,
+    "order": 37,
+    "reset_seed": 20360856,
+    "start_step": 57,
+    "storage_row": 613107
+  },
+  {
+    "episode": 3228,
+    "order": 38,
+    "reset_seed": 20360857,
+    "start_step": 174,
+    "storage_row": 649002
+  },
+  {
+    "episode": 3354,
+    "order": 39,
+    "reset_seed": 20360858,
+    "start_step": 38,
+    "storage_row": 674192
+  },
+  {
+    "episode": 3566,
+    "order": 40,
+    "reset_seed": 20360859,
+    "start_step": 89,
+    "storage_row": 716855
+  },
+  {
+    "episode": 3645,
+    "order": 41,
+    "reset_seed": 20360860,
+    "start_step": 43,
+    "storage_row": 732688
+  },
+  {
+    "episode": 3690,
+    "order": 42,
+    "reset_seed": 20360861,
+    "start_step": 42,
+    "storage_row": 741732
+  },
+  {
+    "episode": 3722,
+    "order": 43,
+    "reset_seed": 20360862,
+    "start_step": 122,
+    "storage_row": 748244
+  },
+  {
+    "episode": 3766,
+    "order": 44,
+    "reset_seed": 20360863,
+    "start_step": 171,
+    "storage_row": 757137
+  },
+  {
+    "episode": 3795,
+    "order": 45,
+    "reset_seed": 20360864,
+    "start_step": 24,
+    "storage_row": 762819
+  },
+  {
+    "episode": 3818,
+    "order": 46,
+    "reset_seed": 20360865,
+    "start_step": 32,
+    "storage_row": 767450
+  },
+  {
+    "episode": 3928,
+    "order": 47,
+    "reset_seed": 20360866,
+    "start_step": 96,
+    "storage_row": 789624
+  },
+  {
+    "episode": 3964,
+    "order": 48,
+    "reset_seed": 20360867,
+    "start_step": 13,
+    "storage_row": 796777
+  },
+  {
+    "episode": 3988,
+    "order": 49,
+    "reset_seed": 20360868,
+    "start_step": 8,
+    "storage_row": 801596
+  },
+  {
+    "episode": 4077,
+    "order": 50,
+    "reset_seed": 20360869,
+    "start_step": 162,
+    "storage_row": 819639
+  },
+  {
+    "episode": 4131,
+    "order": 51,
+    "reset_seed": 20360870,
+    "start_step": 174,
+    "storage_row": 830505
+  },
+  {
+    "episode": 4261,
+    "order": 52,
+    "reset_seed": 20360871,
+    "start_step": 126,
+    "storage_row": 856587
+  },
+  {
+    "episode": 4280,
+    "order": 53,
+    "reset_seed": 20360872,
+    "start_step": 13,
+    "storage_row": 860293
+  },
+  {
+    "episode": 4306,
+    "order": 54,
+    "reset_seed": 20360873,
+    "start_step": 63,
+    "storage_row": 865569
+  },
+  {
+    "episode": 4322,
+    "order": 55,
+    "reset_seed": 20360874,
+    "start_step": 140,
+    "storage_row": 868862
+  },
+  {
+    "episode": 4337,
+    "order": 56,
+    "reset_seed": 20360875,
+    "start_step": 1,
+    "storage_row": 871738
+  },
+  {
+    "episode": 4346,
+    "order": 57,
+    "reset_seed": 20360876,
+    "start_step": 168,
+    "storage_row": 873714
+  },
+  {
+    "episode": 4415,
+    "order": 58,
+    "reset_seed": 20360877,
+    "start_step": 108,
+    "storage_row": 887523
+  },
+  {
+    "episode": 4422,
+    "order": 59,
+    "reset_seed": 20360878,
+    "start_step": 41,
+    "storage_row": 888863
+  },
+  {
+    "episode": 4435,
+    "order": 60,
+    "reset_seed": 20360879,
+    "start_step": 161,
+    "storage_row": 891596
+  },
+  {
+    "episode": 4449,
+    "order": 61,
+    "reset_seed": 20360880,
+    "start_step": 13,
+    "storage_row": 894262
+  },
+  {
+    "episode": 4509,
+    "order": 62,
+    "reset_seed": 20360881,
+    "start_step": 99,
+    "storage_row": 906408
+  },
+  {
+    "episode": 4574,
+    "order": 63,
+    "reset_seed": 20360882,
+    "start_step": 71,
+    "storage_row": 919445
+  },
+  {
+    "episode": 4603,
+    "order": 64,
+    "reset_seed": 20360883,
+    "start_step": 120,
+    "storage_row": 925323
+  },
+  {
+    "episode": 4706,
+    "order": 65,
+    "reset_seed": 20360884,
+    "start_step": 49,
+    "storage_row": 945955
+  },
+  {
+    "episode": 4840,
+    "order": 66,
+    "reset_seed": 20360885,
+    "start_step": 0,
+    "storage_row": 972840
+  },
+  {
+    "episode": 4882,
+    "order": 67,
+    "reset_seed": 20360886,
+    "start_step": 37,
+    "storage_row": 981319
+  },
+  {
+    "episode": 4928,
+    "order": 68,
+    "reset_seed": 20360887,
+    "start_step": 81,
+    "storage_row": 990609
+  },
+  {
+    "episode": 4957,
+    "order": 69,
+    "reset_seed": 20360888,
+    "start_step": 125,
+    "storage_row": 996482
+  },
+  {
+    "episode": 5024,
+    "order": 70,
+    "reset_seed": 20360889,
+    "start_step": 123,
+    "storage_row": 1009947
+  },
+  {
+    "episode": 5128,
+    "order": 71,
+    "reset_seed": 20360890,
+    "start_step": 139,
+    "storage_row": 1030867
+  },
+  {
+    "episode": 5231,
+    "order": 72,
+    "reset_seed": 20360891,
+    "start_step": 120,
+    "storage_row": 1051551
+  },
+  {
+    "episode": 5455,
+    "order": 73,
+    "reset_seed": 20360892,
+    "start_step": 0,
+    "storage_row": 1096455
+  },
+  {
+    "episode": 5483,
+    "order": 74,
+    "reset_seed": 20360893,
+    "start_step": 80,
+    "storage_row": 1102163
+  },
+  {
+    "episode": 5726,
+    "order": 75,
+    "reset_seed": 20360894,
+    "start_step": 174,
+    "storage_row": 1151100
+  },
+  {
+    "episode": 6136,
+    "order": 76,
+    "reset_seed": 20360895,
+    "start_step": 11,
+    "storage_row": 1233347
+  },
+  {
+    "episode": 6302,
+    "order": 77,
+    "reset_seed": 20360896,
+    "start_step": 103,
+    "storage_row": 1266805
+  },
+  {
+    "episode": 6348,
+    "order": 78,
+    "reset_seed": 20360897,
+    "start_step": 92,
+    "storage_row": 1276040
+  },
+  {
+    "episode": 6409,
+    "order": 79,
+    "reset_seed": 20360898,
+    "start_step": 106,
+    "storage_row": 1288315
+  },
+  {
+    "episode": 6429,
+    "order": 80,
+    "reset_seed": 20360899,
+    "start_step": 96,
+    "storage_row": 1292325
+  },
+  {
+    "episode": 6445,
+    "order": 81,
+    "reset_seed": 20360900,
+    "start_step": 49,
+    "storage_row": 1295494
+  },
+  {
+    "episode": 6772,
+    "order": 82,
+    "reset_seed": 20360901,
+    "start_step": 13,
+    "storage_row": 1361185
+  },
+  {
+    "episode": 6859,
+    "order": 83,
+    "reset_seed": 20360902,
+    "start_step": 116,
+    "storage_row": 1378775
+  },
+  {
+    "episode": 6967,
+    "order": 84,
+    "reset_seed": 20360903,
+    "start_step": 56,
+    "storage_row": 1400423
+  },
+  {
+    "episode": 7015,
+    "order": 85,
+    "reset_seed": 20360904,
+    "start_step": 166,
+    "storage_row": 1410181
+  },
+  {
+    "episode": 7099,
+    "order": 86,
+    "reset_seed": 20360905,
+    "start_step": 77,
+    "storage_row": 1426976
+  },
+  {
+    "episode": 7113,
+    "order": 87,
+    "reset_seed": 20360906,
+    "start_step": 36,
+    "storage_row": 1429749
+  },
+  {
+    "episode": 7126,
+    "order": 88,
+    "reset_seed": 20360907,
+    "start_step": 87,
+    "storage_row": 1432413
+  },
+  {
+    "episode": 7359,
+    "order": 89,
+    "reset_seed": 20360908,
+    "start_step": 153,
+    "storage_row": 1479312
+  },
+  {
+    "episode": 7372,
+    "order": 90,
+    "reset_seed": 20360909,
+    "start_step": 126,
+    "storage_row": 1481898
+  },
+  {
+    "episode": 7397,
+    "order": 91,
+    "reset_seed": 20360910,
+    "start_step": 100,
+    "storage_row": 1486897
+  },
+  {
+    "episode": 7447,
+    "order": 92,
+    "reset_seed": 20360911,
+    "start_step": 76,
+    "storage_row": 1496923
+  },
+  {
+    "episode": 7590,
+    "order": 93,
+    "reset_seed": 20360912,
+    "start_step": 37,
+    "storage_row": 1525627
+  },
+  {
+    "episode": 7642,
+    "order": 94,
+    "reset_seed": 20360913,
+    "start_step": 105,
+    "storage_row": 1536147
+  },
+  {
+    "episode": 7816,
+    "order": 95,
+    "reset_seed": 20360914,
+    "start_step": 52,
+    "storage_row": 1571068
+  },
+  {
+    "episode": 7901,
+    "order": 96,
+    "reset_seed": 20360915,
+    "start_step": 154,
+    "storage_row": 1588255
+  },
+  {
+    "episode": 7991,
+    "order": 97,
+    "reset_seed": 20360916,
+    "start_step": 10,
+    "storage_row": 1606201
+  },
+  {
+    "episode": 7996,
+    "order": 98,
+    "reset_seed": 20360917,
+    "start_step": 152,
+    "storage_row": 1607348
+  },
+  {
+    "episode": 8104,
+    "order": 99,
+    "reset_seed": 20360918,
+    "start_step": 113,
+    "storage_row": 1629017
+  },
+  {
+    "episode": 8112,
+    "order": 100,
+    "reset_seed": 20360919,
+    "start_step": 122,
+    "storage_row": 1630634
+  },
+  {
+    "episode": 8241,
+    "order": 101,
+    "reset_seed": 20360920,
+    "start_step": 152,
+    "storage_row": 1656593
+  },
+  {
+    "episode": 8250,
+    "order": 102,
+    "reset_seed": 20360921,
+    "start_step": 111,
+    "storage_row": 1658361
+  },
+  {
+    "episode": 8307,
+    "order": 103,
+    "reset_seed": 20360922,
+    "start_step": 97,
+    "storage_row": 1669804
+  },
+  {
+    "episode": 8320,
+    "order": 104,
+    "reset_seed": 20360923,
+    "start_step": 96,
+    "storage_row": 1672416
+  },
+  {
+    "episode": 8354,
+    "order": 105,
+    "reset_seed": 20360924,
+    "start_step": 110,
+    "storage_row": 1679264
+  },
+  {
+    "episode": 8427,
+    "order": 106,
+    "reset_seed": 20360925,
+    "start_step": 149,
+    "storage_row": 1693976
+  },
+  {
+    "episode": 8437,
+    "order": 107,
+    "reset_seed": 20360926,
+    "start_step": 169,
+    "storage_row": 1696006
+  },
+  {
+    "episode": 8602,
+    "order": 108,
+    "reset_seed": 20360927,
+    "start_step": 61,
+    "storage_row": 1729063
+  },
+  {
+    "episode": 8794,
+    "order": 109,
+    "reset_seed": 20360928,
+    "start_step": 109,
+    "storage_row": 1767703
+  },
+  {
+    "episode": 8829,
+    "order": 110,
+    "reset_seed": 20360929,
+    "start_step": 172,
+    "storage_row": 1774801
+  },
+  {
+    "episode": 8848,
+    "order": 111,
+    "reset_seed": 20360930,
+    "start_step": 60,
+    "storage_row": 1778508
+  },
+  {
+    "episode": 8860,
+    "order": 112,
+    "reset_seed": 20360931,
+    "start_step": 14,
+    "storage_row": 1780874
+  },
+  {
+    "episode": 8873,
+    "order": 113,
+    "reset_seed": 20360932,
+    "start_step": 133,
+    "storage_row": 1783606
+  },
+  {
+    "episode": 9171,
+    "order": 114,
+    "reset_seed": 20360933,
+    "start_step": 154,
+    "storage_row": 1843525
+  },
+  {
+    "episode": 9206,
+    "order": 115,
+    "reset_seed": 20360934,
+    "start_step": 24,
+    "storage_row": 1850430
+  },
+  {
+    "episode": 9225,
+    "order": 116,
+    "reset_seed": 20360935,
+    "start_step": 57,
+    "storage_row": 1854282
+  },
+  {
+    "episode": 9241,
+    "order": 117,
+    "reset_seed": 20360936,
+    "start_step": 143,
+    "storage_row": 1857584
+  },
+  {
+    "episode": 9359,
+    "order": 118,
+    "reset_seed": 20360937,
+    "start_step": 14,
+    "storage_row": 1881173
+  },
+  {
+    "episode": 9553,
+    "order": 119,
+    "reset_seed": 20360938,
+    "start_step": 154,
+    "storage_row": 1920307
+  },
+  {
+    "episode": 9570,
+    "order": 120,
+    "reset_seed": 20360939,
+    "start_step": 75,
+    "storage_row": 1923645
+  },
+  {
+    "episode": 9608,
+    "order": 121,
+    "reset_seed": 20360940,
+    "start_step": 149,
+    "storage_row": 1931357
+  },
+  {
+    "episode": 9632,
+    "order": 122,
+    "reset_seed": 20360941,
+    "start_step": 45,
+    "storage_row": 1936077
+  },
+  {
+    "episode": 9648,
+    "order": 123,
+    "reset_seed": 20360942,
+    "start_step": 54,
+    "storage_row": 1939302
+  },
+  {
+    "episode": 9670,
+    "order": 124,
+    "reset_seed": 20360943,
+    "start_step": 153,
+    "storage_row": 1943823
+  },
+  {
+    "episode": 9674,
+    "order": 125,
+    "reset_seed": 20360944,
+    "start_step": 50,
+    "storage_row": 1944524
+  },
+  {
+    "episode": 9695,
+    "order": 126,
+    "reset_seed": 20360945,
+    "start_step": 139,
+    "storage_row": 1948834
+  },
+  {
+    "episode": 9861,
+    "order": 127,
+    "reset_seed": 20360946,
+    "start_step": 48,
+    "storage_row": 1982109
+  }
+]

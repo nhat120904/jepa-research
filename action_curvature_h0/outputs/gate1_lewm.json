@@ -1,0 +1,110 @@
+{
+  "label": "lewm",
+  "n_snapshots": 10,
+  "n_test_pairs": 42215,
+  "chance": 0.5,
+  "deployed": {
+    "mean": 0.6376036800980542,
+    "ci": [
+      0.4705870183851693,
+      0.7717299751800213
+    ],
+    "n_snapshots": 10
+  },
+  "latent": {
+    "mean": 0.8663586966957766,
+    "ci": [
+      0.7576695327102805,
+      0.9422488524590162
+    ],
+    "n_snapshots": 10
+  },
+  "proprio": {
+    "mean": 0.7234505735151423,
+    "ci": [
+      0.5676551303814922,
+      0.8600371577805015
+    ],
+    "n_snapshots": 10
+  },
+  "per_snapshot": [
+    {
+      "snapshot": 65,
+      "n_test_pairs": 5000,
+      "deployed": 0.7884,
+      "latent": 0.8768,
+      "proprio": 0.9384
+    },
+    {
+      "snapshot": 67,
+      "n_test_pairs": 5000,
+      "deployed": 0.4934,
+      "latent": 0.788,
+      "proprio": 0.46
+    },
+    {
+      "snapshot": 76,
+      "n_test_pairs": 1605,
+      "deployed": 0.7644859813084112,
+      "latent": 0.4404984423676013,
+      "proprio": 0.20498442367601247
+    },
+    {
+      "snapshot": 77,
+      "n_test_pairs": 5000,
+      "deployed": 0.895,
+      "latent": 0.9362,
+      "proprio": 0.8014
+    },
+    {
+      "snapshot": 80,
+      "n_test_pairs": 610,
+      "deployed": 0.022950819672131147,
+      "latent": 0.978688524590164,
+      "proprio": 0.9967213114754099
+    },
+    {
+      "snapshot": 81,
+      "n_test_pairs": 5000,
+      "deployed": 0.6798,
+      "latent": 0.9828,
+      "proprio": 0.9478
+    },
+    {
+      "snapshot": 83,
+      "n_test_pairs": 5000,
+      "deployed": 0.6502,
+      "latent": 0.852,
+      "proprio": 0.713
+    },
+    {
+      "snapshot": 84,
+      "n_test_pairs": 5000,
+      "deployed": 0.8868,
+      "latent": 0.9298,
+      "proprio": 0.8784
+    },
+    {
+      "snapshot": 87,
+      "n_test_pairs": 5000,
+      "deployed": 0.7332,
+      "latent": 0.9862,
+      "proprio": 0.648
+    },
+    {
+      "snapshot": 93,
+      "n_test_pairs": 5000,
+      "deployed": 0.4618,
+      "latent": 0.8926,
+      "proprio": 0.6458
+    }
+  ],
+  "learned_minus_deployed": {
+    "mean": 0.2287550165977223,
+    "ci": [
+      0.04554249221183802,
+      0.43172346721311455
+    ]
+  },
+  "verdict": "LATENT_CAN_RANK_CANDIDATES"
+}

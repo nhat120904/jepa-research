@@ -1,0 +1,142 @@
+{
+  "arms": {
+    "cadm": {
+      "mechanism": {
+        "drag_mae_from_context": 0.3929798901081085,
+        "drag_r2_from_context": 0.7670459747314453
+      },
+      "planning": {
+        "improvement_ci95": [
+          -0.002726345532573759,
+          0.038008144032210096
+        ],
+        "mean_cost": 0.12461116909980774,
+        "mean_final_distance": 0.10891857743263245,
+        "mean_improvement_over_median": 0.017690734937787056,
+        "mean_relative_cost_reduction_vs_median": -0.2100263386964798,
+        "oracle_gap_recovered": 0.13809455931186676,
+        "oracle_gap_recovered_ci95": [
+          -0.02330758771859109,
+          0.2715587824583052
+        ],
+        "predicted_cost_mean": 0.012068504467606544,
+        "reach_rate": 0.78125,
+        "relative_reduction_ci95": [
+          -0.43975271880626676,
+          -0.01521625476889317
+        ],
+        "settled_success_rate": 0.5859375
+      },
+      "prediction": {
+        "anchor_mse": 5.764957904815674,
+        "decoded_endpoint_mae": 0.1081281527876854,
+        "decoded_endpoint_median": 0.06913112103939056
+      }
+    },
+    "cov_mse": {
+      "mechanism": {
+        "drag_mae_from_context": 0.4293363690376282,
+        "drag_r2_from_context": 0.732013463973999
+      },
+      "planning": {
+        "improvement_ci95": [
+          -0.13789611272513866,
+          -0.0655526731163264
+        ],
+        "mean_cost": 0.2422243058681488,
+        "mean_final_distance": 0.22326189279556274,
+        "mean_improvement_over_median": -0.09992238879203796,
+        "mean_relative_cost_reduction_vs_median": -1.178753137588501,
+        "oracle_gap_recovered": -0.7799980044364929,
+        "oracle_gap_recovered_ci95": [
+          -1.1235135585069655,
+          -0.4934247963130478
+        ],
+        "predicted_cost_mean": 0.01753719337284565,
+        "reach_rate": 0.75,
+        "relative_reduction_ci95": [
+          -1.5754064738750457,
+          -0.8263212442398071
+        ],
+        "settled_success_rate": 0.2890625
+      },
+      "prediction": {
+        "anchor_mse": 7.728297233581543,
+        "decoded_endpoint_mae": 0.14158080518245697,
+        "decoded_endpoint_median": 0.098858542740345
+      }
+    },
+    "mse": {
+      "mechanism": {
+        "drag_mae_from_context": 0.3930119276046753,
+        "drag_r2_from_context": 0.7729886770248413
+      },
+      "planning": {
+        "improvement_ci95": [
+          -0.0011350775661412627,
+          0.038970741443335996
+        ],
+        "mean_cost": 0.12324728071689606,
+        "mean_final_distance": 0.10716916620731354,
+        "mean_improvement_over_median": 0.019054628908634186,
+        "mean_relative_cost_reduction_vs_median": -0.2011352777481079,
+        "oracle_gap_recovered": 0.14874117076396942,
+        "oracle_gap_recovered_ci95": [
+          -0.009776029386557639,
+          0.2763728529214859
+        ],
+        "predicted_cost_mean": 0.012758510187268257,
+        "reach_rate": 0.7109375,
+        "relative_reduction_ci95": [
+          -0.44347541630268095,
+          -0.0051037632860244445
+        ],
+        "settled_success_rate": 0.53125
+      },
+      "prediction": {
+        "anchor_mse": 5.839648246765137,
+        "decoded_endpoint_mae": 0.1090775802731514,
+        "decoded_endpoint_median": 0.07054254412651062
+      }
+    }
+  },
+  "criterion": {
+    "best_arm": "mse",
+    "best_oracle_gap_recovered": 0.14874117076396942,
+    "stop_if_best_strong_baseline_recovers_gte_0.80_oracle_gap": false,
+    "threshold": 0.8
+  },
+  "gate": "strong_baseline_decision_room",
+  "protocol": {
+    "common_standardized_cem_noise_across_arms": true,
+    "ensemble": "mean future-anchor prediction across three seeds",
+    "planner": {
+      "iterations": 6,
+      "num_samples": 256,
+      "planner_seed": 91031,
+      "restarts": 2,
+      "type": "best-candidate CEM over smooth two-knot programs"
+    },
+    "primary_metric": "true simulator cost and fraction of oracle-vs-median gap recovered",
+    "seeds": [
+      0,
+      1,
+      2
+    ]
+  },
+  "reference": {
+    "median_drag_mean_cost": 0.14230190217494965,
+    "median_drag_reach_rate": 0.7265625,
+    "oracle_mean_cost": 0.014195949770510197,
+    "oracle_reach_rate": 1.0
+  },
+  "run": {
+    "checkpoints_root": "/home/nhatnc129/nhat.nc/jepa-research/moment_wm_h0/outputs/gate3_full/models",
+    "features": "/home/nhatnc129/nhat.nc/jepa-research/moment_wm_h0/outputs/gate3_full/features.pt",
+    "hostname": "worker-mig-3g40gb-0",
+    "slurm_job_id": "48245",
+    "source_sha256": "d74c9e28411f8d02ac30a30003b2b07bdd9bb201fe29332190d6e62c09abdb37"
+  },
+  "schema_version": 1,
+  "status": "CONTINUE_TO_MMR"
+}

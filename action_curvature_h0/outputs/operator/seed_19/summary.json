@@ -1,0 +1,12 @@
+{
+  "plan_seed": 19,
+  "paired": true,
+  "success_rate": {
+    "elite_mean": 62.0,
+    "best_seen": 60.0
+  },
+  "difference_points": -2.0,
+  "episodes_changed": 3,
+  "flipped_to_success": 1,
+  "flipped_to_failure": 2
+}

@@ -1,0 +1,24 @@
+{
+  "contains_physical_input_features": false,
+  "corrective_candidates_2cm": 31,
+  "cost_ordering_gate": {
+    "argmin_match": true,
+    "max_rank_shift": 0,
+    "spearman": 1.0,
+    "top10_set_match": true
+  },
+  "cost_reproduction_atol": 0.02,
+  "cost_reproduction_max_abs": 0.0007532835006713867,
+  "cost_reproduction_max_relative": 8.37118059023492e-06,
+  "cost_reproduction_pass": true,
+  "cost_reproduction_rtol": 0.0002,
+  "episode": 9365,
+  "feature_dimensions": {
+    "action_only": 375,
+    "latent_context": 1534,
+    "proxy_action": 380
+  },
+  "n_candidates": 300,
+  "physical_oracle_gain_cm": 9.645066994503997,
+  "snapshot_index": 28
+}

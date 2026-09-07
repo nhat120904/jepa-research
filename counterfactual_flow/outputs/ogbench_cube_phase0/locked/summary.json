@@ -1,0 +1,14 @@
+{
+  "deceptive_coverage": 0.875,
+  "expected_shards": 32,
+  "n_deceptive": 28,
+  "n_matched_controls": 27,
+  "n_shards": 32,
+  "phase0_decision": "GO",
+  "scope": "exploratory dataset-construction gate; not held-out policy evidence",
+  "thresholds": {
+    "max_control_gap_m": 0.01,
+    "min_deceptive_snapshots": 8,
+    "min_regret_m": 0.02
+  }
+}

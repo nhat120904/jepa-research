@@ -1,0 +1,75 @@
+{
+  "config": {
+    "bootstrap_draws": 10000,
+    "bootstrap_seed": 20260817,
+    "n_snapshots": 32
+  },
+  "definitions": {
+    "returned_selection_regret_m": "physical distance of returned CEM mean minus physical-best final-population candidate",
+    "verified_proxy_rejected_corrective": "a final candidate has strictly worse proxy cost than returned mean but is at least 2 cm physically better"
+  },
+  "scope": "exact final proposal mean returned by CEM, evaluated post-hoc against final-population candidates from the same restored physical state. This is a mechanism gate, not policy evidence.",
+  "summary": {
+    "corrective_physical_advantage_m": {
+      "ci_high": 0.09826017752397034,
+      "ci_low": 0.036306423645962746,
+      "mean": 0.06549064674914555,
+      "n": 32
+    },
+    "physical_oracle_candidate_distance_m": {
+      "ci_high": 0.06925071726284321,
+      "ci_low": 0.022471047551332494,
+      "mean": 0.04310969247602728,
+      "n": 32
+    },
+    "physical_oracle_candidate_success": {
+      "ci_high": 0.90625,
+      "ci_low": 0.625,
+      "mean": 0.78125,
+      "n": 32
+    },
+    "proxy_better_than_returned_fraction": {
+      "ci_high": 0.0038541666666666668,
+      "ci_low": 0.0017708333333333335,
+      "mean": 0.0028125,
+      "n": 32
+    },
+    "returned_physical_distance_m": {
+      "ci_high": 0.1513667678038482,
+      "ci_low": 0.07760623386342957,
+      "mean": 0.11365213674540636,
+      "n": 32
+    },
+    "returned_proxy_cost": {
+      "ci_high": 69.3574574240483,
+      "ci_low": 17.46123327841051,
+      "mean": 41.31815936975181,
+      "n": 32
+    },
+    "returned_selection_regret_m": {
+      "ci_high": 0.1012335513659339,
+      "ci_low": 0.04238653311820373,
+      "mean": 0.07054244426937908,
+      "n": 32
+    },
+    "returned_success": {
+      "ci_high": 0.6875,
+      "ci_low": 0.375,
+      "mean": 0.53125,
+      "n": 32
+    },
+    "returned_success_gap": {
+      "ci_high": 0.40625,
+      "ci_low": 0.09375,
+      "mean": 0.25,
+      "n": 32
+    },
+    "verified_proxy_rejected_corrective": {
+      "ci_high": 0.65625,
+      "ci_low": 0.34375,
+      "mean": 0.5,
+      "n": 32
+    }
+  },
+  "verdict": "GO_MINIMAL_POLICY_PILOT"
+}

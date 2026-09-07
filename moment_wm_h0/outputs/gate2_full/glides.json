@@ -1,0 +1,30 @@
+{
+  "dynamics": {
+    "control_dt": 0.05,
+    "drag_force": "-gamma * mass * velocity",
+    "integrator": "semi-implicit Euler",
+    "substeps": 20
+  },
+  "episodes": 2400,
+  "frames_per_episode": 17,
+  "gamma_distribution": "Uniform[0.5, 4.0]",
+  "hostname": "worker-mig-3g40gb-0",
+  "initial_speed_distribution": "Uniform[0.35, 0.80]",
+  "output": "/home/nhatnc129/nhat.nc/jepa-research/moment_wm_h0/outputs/gate2_full/glides.pt",
+  "rendering": {
+    "finger_radius": 0.06,
+    "grayscale": true,
+    "hidden_parameters_affect_appearance": false,
+    "object_radius": 0.09
+  },
+  "resolution": 64,
+  "schema_version": 1,
+  "seed": 260903,
+  "slurm_job_id": "48235",
+  "source_sha256": "16f26c0a5d0278044be7b43ca5c8156ebcae031dcd224436d24ea25cd6f8ad21",
+  "split_counts": {
+    "test": 480,
+    "train": 1440,
+    "validation": 480
+  }
+}
