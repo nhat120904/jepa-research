@@ -1,0 +1,23 @@
+{
+  "date": "2026-09-08",
+  "candidate": "Selective stability of latent-history dynamics",
+  "recommendation": "BOUNDED_NO_TRAINING_SCREEN_ONLY",
+  "main_programme_qualified": false,
+  "novelty_established": false,
+  "new_arena_required_for_first_test": false,
+  "new_instrumentation_required": true,
+  "runtime_verified_live_this_turn": false,
+  "public_checkpoint_config_verified": true,
+  "experiments_run_this_turn": false,
+  "gpu_hours_used_this_turn": 0,
+  "training_gate_open": false,
+  "prior_channel_candidate_status": "STOP_BEFORE_ARENA",
+  "first_screen_proposed_caps": {
+    "engineering_days": 1,
+    "gpu_hours": 8,
+    "cpu_core_hours": 64
+  },
+  "evidence": "Existing official LeWM Reacher ordinary-panel true-vs-predicted selection gap; not a closed-loop score",
+  "report": "REPORT_VI.md",
+  "spec": "METHOD_SPEC_EN.md"
+}

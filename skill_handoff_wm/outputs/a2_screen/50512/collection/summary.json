@@ -1,0 +1,56 @@
+{
+  "protocol": "direction_a_a1_v1",
+  "slurm_job_id": "50512",
+  "dataset_name": "antmaze-medium-navigate-v0",
+  "checkpoint_sha256": "cfc1f7a7f3ef6eaed61fd7ffb22748e675b471a1025a078b093786b1486e798c",
+  "termination_checkpoint_sha256": null,
+  "config": {
+    "dataset_name": "antmaze-medium-navigate-v0",
+    "dataset_dir": "/mnt/data/vhoangth2/datasets/ogbench_data",
+    "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/skill_handoff_wm/outputs/a0_screen/50487/train/best.pt",
+    "out_dir": "/home/nhatnc129/nhat.nc/jepa-research/skill_handoff_wm/outputs/a2_screen/50512/collection",
+    "task_ids": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "seeds": [
+      94001,
+      94002,
+      94003,
+      94004,
+      94005,
+      94006,
+      94007,
+      94008,
+      94009,
+      94010
+    ],
+    "durations": [
+      10,
+      20,
+      40,
+      80
+    ],
+    "arms": [
+      "oracle"
+    ],
+    "termination_checkpoint": null,
+    "probe_steps": 40,
+    "radius": 0.5,
+    "waypoint_stride": 1,
+    "primitive_budget": 1000,
+    "device": "cuda"
+  },
+  "arms": {
+    "oracle": {
+      "n": 50,
+      "success": 1.0,
+      "mean_final_distance": 0.43063512186317354,
+      "deployed_steps": 17295,
+      "simulator_query_steps": 125100
+    }
+  }
+}

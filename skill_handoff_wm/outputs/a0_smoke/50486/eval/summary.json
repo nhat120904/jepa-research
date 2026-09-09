@@ -1,0 +1,32 @@
+{
+  "protocol": "direction_a_a0_v1",
+  "slurm_job_id": "50486",
+  "dataset_name": "antmaze-medium-navigate-v0",
+  "checkpoint_sha256": "324c793cad28488eb161beb19762ef9091067cbed0b36705b8bf10ac7606f36b",
+  "val_sha256": "9864ec00fe9e4afb05a012877f40b87931eb7fc21ae6e4ab4fe7dcdcc0a3490a",
+  "radius": 0.5,
+  "num_cases": 40,
+  "overall_success": 0.7,
+  "by_horizon": {
+    "10": {
+      "n": 10,
+      "success": 1.0,
+      "mean_min_distance": 0.40887136783490313
+    },
+    "20": {
+      "n": 10,
+      "success": 0.5,
+      "mean_min_distance": 0.753131956366274
+    },
+    "40": {
+      "n": 10,
+      "success": 0.8,
+      "mean_min_distance": 0.5412322160173005
+    },
+    "80": {
+      "n": 10,
+      "success": 0.5,
+      "mean_min_distance": 1.2120690911305383
+    }
+  }
+}

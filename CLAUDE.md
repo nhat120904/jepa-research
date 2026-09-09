@@ -69,13 +69,26 @@ Closed / negative:
   gate found the bound is likely a corollary of published work.
 - `event_smdp_h0/` — the simulator-as-world-model gate that established the **latching**
   finding and the observer/feedback lessons below. Mostly positive, but privileged.
+- `scene_progress_wm/` — the successor to `event_smdp_h0`, with the privilege removed:
+  a learned world model, pixels plus action chunks, CEM, OGBench's own success predicate.
+  Asked whether a latched, history-conditioned **progress** cost beats latent-L2 to a goal
+  image. **Closed 2026-09-08.** The strong form is refuted CI-clean (progress-only cost is
+  *worse* than latent-L2, -13.0 points pooled, CI [-22.0, -4.0]); the mixture form at the
+  locked weight is a null (32/100 → 33/100, CI [-9, +10]). Both arms sit far under the
+  replay ceiling, so this is a failure to take existing headroom, not saturation. The
+  elite-optimism gate found no exploitation amplification at this budget and was not
+  built out. The one exploratory thread left alive is a horizon-dependent sign flip that
+  replicated across two disjoint episode draws; testing it needs offsets 100/200 and more
+  seeds, not a re-reading of four cells.
 
 Live / active:
 
-- `scene_progress_wm/` — the successor to `event_smdp_h0`, with the privilege removed:
-  a learned world model, pixels plus action chunks, CEM, OGBench's own success predicate.
-  Asks whether a latched, history-conditioned **progress** cost beats latent-L2 to a goal
-  image. This is where new work should go unless told otherwise.
+- **Nothing.** With `scene_progress_wm` closed, every programme in this repo has a locked
+  negative or a pause. `method_search_20260908/` holds a *candidate* (Feedback-Equivalent
+  World Model Learning) that is a principle plus a finite LP illustration — it names no
+  model, no dataset, and no runnable task, and its arena would have to be built from
+  scratch. Do not treat it as a live programme until its paper-only novelty-reduction
+  check and a headroom probe have passed.
 
 Writing:
 
@@ -151,3 +164,11 @@ CPU-only analysis (several programmes enforce this in code by raising unless
 checks, and `squeue`/`sacct`. Verify claimed job state with **both** `squeue` and `sacct`
 before acting on it — peer sessions submit into the same queue, so check for duplicate
 work before launching a long array.
+**Never leave a job holding a GPU.** Do not run long-lived or blocking commands from an
+agent session, and never launch an interactive/`salloc` GPU allocation or a training run
+that sits idle occupying a node. All GPU work goes through `sbatch` with an explicit
+`--time` limit, and the session ends after submission — do not poll in a foreground loop.
+If a job is submitted, record the job id and let it run; if a submitted job turns out to be
+wrong or is no longer needed, `scancel` it immediately rather than letting it hold the GPU.
+Never submit speculative or duplicate arrays "just in case".
+

@@ -1,0 +1,75 @@
+{
+  "protocol": "direction_a_a1_v1",
+  "slurm_job_id": "50490",
+  "dataset_name": "antmaze-medium-navigate-v0",
+  "checkpoint_sha256": "cfc1f7a7f3ef6eaed61fd7ffb22748e675b471a1025a078b093786b1486e798c",
+  "config": {
+    "dataset_name": "antmaze-medium-navigate-v0",
+    "dataset_dir": "/mnt/data/vhoangth2/datasets/ogbench_data",
+    "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/skill_handoff_wm/outputs/a0_screen/50487/train/best.pt",
+    "out_dir": "/home/nhatnc129/nhat.nc/jepa-research/skill_handoff_wm/outputs/a1_smoke/50490",
+    "task_ids": [
+      1,
+      2
+    ],
+    "seeds": [
+      92001,
+      92002
+    ],
+    "durations": [
+      10,
+      20,
+      40,
+      80
+    ],
+    "probe_steps": 40,
+    "radius": 0.5,
+    "waypoint_stride": 1,
+    "primitive_budget": 1000,
+    "device": "cuda"
+  },
+  "arms": {
+    "fixed_10": {
+      "n": 4,
+      "success": 0.0,
+      "mean_final_distance": 20.567339983685393,
+      "deployed_steps": 400,
+      "simulator_query_steps": 0
+    },
+    "fixed_20": {
+      "n": 4,
+      "success": 0.0,
+      "mean_final_distance": 13.138041894757043,
+      "deployed_steps": 800,
+      "simulator_query_steps": 0
+    },
+    "fixed_40": {
+      "n": 4,
+      "success": 0.0,
+      "mean_final_distance": 12.184429033528446,
+      "deployed_steps": 1600,
+      "simulator_query_steps": 0
+    },
+    "fixed_80": {
+      "n": 4,
+      "success": 0.5,
+      "mean_final_distance": 9.757998685854496,
+      "deployed_steps": 3161,
+      "simulator_query_steps": 0
+    },
+    "heuristic": {
+      "n": 4,
+      "success": 1.0,
+      "mean_final_distance": 0.42310514722317344,
+      "deployed_steps": 2162,
+      "simulator_query_steps": 0
+    },
+    "oracle": {
+      "n": 4,
+      "success": 0.0,
+      "mean_final_distance": 3.8011639837246127,
+      "deployed_steps": 1640,
+      "simulator_query_steps": 11680
+    }
+  }
+}

@@ -10,6 +10,14 @@ CPU-only analysis (several programmes enforce this in code by raising unless
 `squeue` and `sacct` before acting on it — peer sessions submit into the same queue, so
 check for duplicate work before launching a long array, and never overwrite another
 session's dirty files.
+**Never leave a job holding a GPU.** Do not run long-lived or blocking commands from an
+agent session, and never launch an interactive/`salloc` GPU allocation or a training run
+that sits idle occupying a node. All GPU work goes through `sbatch` with an explicit
+`--time` limit, and the session ends after submission — do not poll in a foreground loop.
+If a job is submitted, record the job id and let it run; if a submitted job turns out to be
+wrong or is no longer needed, `scancel` it immediately rather than letting it hold the GPU.
+Never submit speculative or duplicate arrays "just in case".
+
 
 ## What the research is about
 

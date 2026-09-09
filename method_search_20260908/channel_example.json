@@ -1,0 +1,141 @@
+{
+  "status": "known_principle_illustration_only",
+  "assumptions": "Two equally likely hidden states; one observation; optimal randomized decision rules; exact channels.",
+  "does_not_establish": [
+    "novelty",
+    "neural training gains",
+    "robot planning gains",
+    "failure of full conditional likelihood",
+    "sequential guarantee"
+  ],
+  "cases": {
+    "correct": {
+      "unconditional_signal_TV": 0.0,
+      "conditional_TV_without_adapter": 0.0,
+      "real_to_model": {
+        "distance": 0.0,
+        "kernel": [
+          [
+            1.0,
+            0.0
+          ],
+          [
+            -0.0,
+            1.0
+          ]
+        ]
+      },
+      "model_to_real": {
+        "distance": 0.0,
+        "kernel": [
+          [
+            1.0,
+            0.0
+          ],
+          [
+            -0.0,
+            1.0
+          ]
+        ]
+      },
+      "real_optimal_classification_accuracy": 0.9,
+      "model_optimal_classification_accuracy": 0.9
+    },
+    "erased_information": {
+      "unconditional_signal_TV": 0.0,
+      "conditional_TV_without_adapter": 0.4,
+      "real_to_model": {
+        "distance": 0.0,
+        "kernel": [
+          [
+            0.5,
+            0.5
+          ],
+          [
+            0.4999999999999999,
+            0.5
+          ]
+        ]
+      },
+      "model_to_real": {
+        "distance": 0.4,
+        "kernel": [
+          [
+            1.0,
+            0.0
+          ],
+          [
+            -0.0,
+            1.0
+          ]
+        ]
+      },
+      "real_optimal_classification_accuracy": 0.9,
+      "model_optimal_classification_accuracy": 0.5
+    },
+    "hallucinated_information": {
+      "unconditional_signal_TV": 0.0,
+      "conditional_TV_without_adapter": 0.09,
+      "real_to_model": {
+        "distance": 0.09000000000000002,
+        "kernel": [
+          [
+            1.0,
+            -0.0
+          ],
+          [
+            0.0,
+            1.0
+          ]
+        ]
+      },
+      "model_to_real": {
+        "distance": 0.0,
+        "kernel": [
+          [
+            0.9081632653061225,
+            0.09183673469387757
+          ],
+          [
+            0.09183673469387756,
+            0.9081632653061225
+          ]
+        ]
+      },
+      "real_optimal_classification_accuracy": 0.9,
+      "model_optimal_classification_accuracy": 0.99
+    },
+    "invertible_signal_relabeling": {
+      "unconditional_signal_TV": 0.0,
+      "conditional_TV_without_adapter": 0.8,
+      "real_to_model": {
+        "distance": 0.0,
+        "kernel": [
+          [
+            -0.0,
+            1.0
+          ],
+          [
+            1.0,
+            0.0
+          ]
+        ]
+      },
+      "model_to_real": {
+        "distance": 0.0,
+        "kernel": [
+          [
+            -0.0,
+            1.0
+          ],
+          [
+            1.0,
+            0.0
+          ]
+        ]
+      },
+      "real_optimal_classification_accuracy": 0.9,
+      "model_optimal_classification_accuracy": 0.9
+    }
+  }
+}

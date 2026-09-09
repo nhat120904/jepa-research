@@ -1,5 +1,10 @@
 # ICLR readiness review — 2026-07-13
 
+> **SUPERSEDED 2026-09-08.** The ICLR 2027 target and its Sep 2026 schedule
+> (abstract 09-19 / paper 09-24 / experiment freeze 09-05) were **abandoned**.
+> Do not plan against any date in this file. Current target: a new direction
+> aimed at ICML 2027 (~Jan) / NeurIPS 2027 (~May). Kept as provenance only.
+
 ## Verdict
 
 **Not submission-ready yet, but the project has a credible ICLR paper if the

@@ -1,0 +1,96 @@
+{
+  "protocol": "direction_a_a1_v1",
+  "slurm_job_id": "50511",
+  "dataset_name": "antmaze-medium-navigate-v0",
+  "checkpoint_sha256": "cfc1f7a7f3ef6eaed61fd7ffb22748e675b471a1025a078b093786b1486e798c",
+  "config": {
+    "dataset_name": "antmaze-medium-navigate-v0",
+    "dataset_dir": "/mnt/data/vhoangth2/datasets/ogbench_data",
+    "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/skill_handoff_wm/outputs/a0_screen/50487/train/best.pt",
+    "out_dir": "/home/nhatnc129/nhat.nc/jepa-research/skill_handoff_wm/outputs/a1_screen/50511/eval",
+    "task_ids": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "seeds": [
+      93001,
+      93002,
+      93003,
+      93004,
+      93005,
+      93006,
+      93007,
+      93008,
+      93009,
+      93010,
+      93011,
+      93012,
+      93013,
+      93014,
+      93015,
+      93016,
+      93017,
+      93018,
+      93019,
+      93020
+    ],
+    "durations": [
+      10,
+      20,
+      40,
+      80
+    ],
+    "probe_steps": 40,
+    "radius": 0.5,
+    "waypoint_stride": 1,
+    "primitive_budget": 1000,
+    "device": "cuda"
+  },
+  "arms": {
+    "fixed_10": {
+      "n": 100,
+      "success": 0.87,
+      "mean_final_distance": 1.839360196090962,
+      "deployed_steps": 44398,
+      "simulator_query_steps": 0
+    },
+    "fixed_20": {
+      "n": 100,
+      "success": 0.9,
+      "mean_final_distance": 1.689938618976534,
+      "deployed_steps": 39136,
+      "simulator_query_steps": 0
+    },
+    "fixed_40": {
+      "n": 100,
+      "success": 0.88,
+      "mean_final_distance": 2.2768390104452387,
+      "deployed_steps": 48909,
+      "simulator_query_steps": 0
+    },
+    "fixed_80": {
+      "n": 100,
+      "success": 0.82,
+      "mean_final_distance": 2.421540414515421,
+      "deployed_steps": 73150,
+      "simulator_query_steps": 0
+    },
+    "heuristic": {
+      "n": 100,
+      "success": 0.86,
+      "mean_final_distance": 2.3226562724778974,
+      "deployed_steps": 55118,
+      "simulator_query_steps": 0
+    },
+    "oracle": {
+      "n": 100,
+      "success": 1.0,
+      "mean_final_distance": 0.44059059501183806,
+      "deployed_steps": 34626,
+      "simulator_query_steps": 250231
+    }
+  }
+}

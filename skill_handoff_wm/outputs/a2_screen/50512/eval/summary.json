@@ -1,0 +1,114 @@
+{
+  "protocol": "direction_a_a1_v1",
+  "slurm_job_id": "50512",
+  "dataset_name": "antmaze-medium-navigate-v0",
+  "checkpoint_sha256": "cfc1f7a7f3ef6eaed61fd7ffb22748e675b471a1025a078b093786b1486e798c",
+  "termination_checkpoint_sha256": "25a1157ca40c043942c3d26621994b100a78e882e33d593ac9aeb7dc02958693",
+  "config": {
+    "dataset_name": "antmaze-medium-navigate-v0",
+    "dataset_dir": "/mnt/data/vhoangth2/datasets/ogbench_data",
+    "checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/skill_handoff_wm/outputs/a0_screen/50487/train/best.pt",
+    "out_dir": "/home/nhatnc129/nhat.nc/jepa-research/skill_handoff_wm/outputs/a2_screen/50512/eval",
+    "task_ids": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "seeds": [
+      95001,
+      95002,
+      95003,
+      95004,
+      95005,
+      95006,
+      95007,
+      95008,
+      95009,
+      95010,
+      95011,
+      95012,
+      95013,
+      95014,
+      95015,
+      95016,
+      95017,
+      95018,
+      95019,
+      95020
+    ],
+    "durations": [
+      10,
+      20,
+      40,
+      80
+    ],
+    "arms": [
+      "fixed_10",
+      "fixed_20",
+      "fixed_40",
+      "fixed_80",
+      "heuristic",
+      "learned",
+      "oracle"
+    ],
+    "termination_checkpoint": "/home/nhatnc129/nhat.nc/jepa-research/skill_handoff_wm/outputs/a2_screen/50512/termination/termination.pt",
+    "probe_steps": 40,
+    "radius": 0.5,
+    "waypoint_stride": 1,
+    "primitive_budget": 1000,
+    "device": "cuda"
+  },
+  "arms": {
+    "fixed_10": {
+      "n": 100,
+      "success": 0.86,
+      "mean_final_distance": 2.1293450563074465,
+      "deployed_steps": 44824,
+      "simulator_query_steps": 0
+    },
+    "fixed_20": {
+      "n": 100,
+      "success": 0.91,
+      "mean_final_distance": 1.3226192303682205,
+      "deployed_steps": 40527,
+      "simulator_query_steps": 0
+    },
+    "fixed_40": {
+      "n": 100,
+      "success": 0.84,
+      "mean_final_distance": 2.376581478722445,
+      "deployed_steps": 52431,
+      "simulator_query_steps": 0
+    },
+    "fixed_80": {
+      "n": 100,
+      "success": 0.74,
+      "mean_final_distance": 3.20952265368057,
+      "deployed_steps": 76458,
+      "simulator_query_steps": 0
+    },
+    "heuristic": {
+      "n": 100,
+      "success": 0.92,
+      "mean_final_distance": 1.2014333309231244,
+      "deployed_steps": 52053,
+      "simulator_query_steps": 0
+    },
+    "learned": {
+      "n": 100,
+      "success": 0.89,
+      "mean_final_distance": 1.5656036995454667,
+      "deployed_steps": 54828,
+      "simulator_query_steps": 0
+    },
+    "oracle": {
+      "n": 100,
+      "success": 1.0,
+      "mean_final_distance": 0.4385818978332667,
+      "deployed_steps": 35002,
+      "simulator_query_steps": 250638
+    }
+  }
+}

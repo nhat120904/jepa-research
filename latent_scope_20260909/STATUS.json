@@ -1,0 +1,17 @@
+{
+  "date": "2026-09-09",
+  "scope": "JEPA-style latent world models for robot planning",
+  "status": "NATIVE_ARENAS_IDENTIFIED_SIGNATURE_METHOD_NOT_QUALIFIED",
+  "arena_update": "ARENA_FIT_EN.md supersedes the custom PushCube pilot; prioritize released RoboCasa365 tasks without changing success predicates",
+  "documentation_language": "English",
+  "native_candidate_tasks": ["ScrubCuttingBoard", "RinseSinkBasin"],
+  "question": "Joint endpoint and composable trajectory latent targets for visual planning under path-dependent requirements",
+  "novelty": "UNCONFIRMED; overlaps expected signatures, stochastic JEPA, temporal-logic world models and Path-JEPA",
+  "experimental_evidence": "NONE_NEW",
+  "arena_variant_exists": false,
+  "simulator_smoke_tested": false,
+  "training_launched": false,
+  "primary_falsifier": "No planning/generalization advantage beyond matched JEPA rollout plus temporal monitor and an unstructured trajectory-target model",
+  "report": "ARENA_FIT_EN.md",
+  "historical_proposal": "RESEARCH_VI.md"
+}

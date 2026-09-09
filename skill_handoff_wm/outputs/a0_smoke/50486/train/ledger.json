@@ -1,0 +1,28 @@
+{
+  "protocol": "direction_a_gcbc_v1",
+  "slurm_job_id": "50486",
+  "hostname": "worker-mig-3g40gb-0",
+  "train_sha256": "d9e72e4380443cbbcdee4e02863a1d869b670d9b1686915345fc8bc78349662e",
+  "val_sha256": "9864ec00fe9e4afb05a012877f40b87931eb7fc21ae6e4ab4fe7dcdcc0a3490a",
+  "train_rows": 1001000,
+  "val_rows": 100100,
+  "config": {
+    "train_data": "/mnt/data/vhoangth2/datasets/ogbench_data/antmaze-medium-navigate-v0.npz",
+    "val_data": "/mnt/data/vhoangth2/datasets/ogbench_data/antmaze-medium-navigate-v0-val.npz",
+    "out_dir": "/home/nhatnc129/nhat.nc/jepa-research/skill_handoff_wm/outputs/a0_smoke/50486/train",
+    "seed": 0,
+    "steps": 20000,
+    "batch_size": 1024,
+    "min_future": 1,
+    "max_future": 100,
+    "width": 512,
+    "depth": 3,
+    "goal_scale": 4.0,
+    "lr": 0.0003,
+    "weight_decay": 1e-05,
+    "log_every": 2000,
+    "val_batches": 10,
+    "state_dim": 29,
+    "action_dim": 8
+  }
+}

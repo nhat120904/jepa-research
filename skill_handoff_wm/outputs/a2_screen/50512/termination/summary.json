@@ -1,0 +1,26 @@
+{
+  "protocol": "direction_a_a2_termination_v1",
+  "slurm_job_id": "50512",
+  "num_collection_episodes": 50,
+  "num_train_examples": 1396,
+  "num_val_examples": 364,
+  "positive_rate_train": 0.25,
+  "validation_duration": {
+    "exact_accuracy": 0.2967032967032967,
+    "mean_absolute_error": 28.24175824175824,
+    "threshold": 0.09999999999999999
+  },
+  "config": {
+    "episodes": "/home/nhatnc129/nhat.nc/jepa-research/skill_handoff_wm/outputs/a2_screen/50512/collection/episodes.jsonl",
+    "out_dir": "/home/nhatnc129/nhat.nc/jepa-research/skill_handoff_wm/outputs/a2_screen/50512/termination",
+    "seed": 0,
+    "steps": 10000,
+    "batch_size": 512,
+    "width": 256,
+    "depth": 3,
+    "lr": 0.0003,
+    "goal_scale": 4.0,
+    "max_duration": 80.0,
+    "state_dim": 29
+  }
+}

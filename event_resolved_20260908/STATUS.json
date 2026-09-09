@@ -1,0 +1,26 @@
+{
+  "date": "2026-09-08",
+  "direction": "Event-resolved world-model learning for dynamic manipulation",
+  "status": "CONDITIONAL_GO_AFTER_HEADROOM_GATE",
+  "novelty": "UNCONFIRMED_VS_NEURAL_EVENT_MODELS_PLUS_GENERIC_SECANT_SUPERVISION",
+  "experimental_evidence": "NONE_NEW",
+  "simulator_reproduced": false,
+  "gate_e0_implemented": true,
+  "gate_e0_result": "PENDING_COMPUTE_SMOKE",
+  "gate_e0_jobs": {
+    "setup": "50776",
+    "smoke_cpu_attempt": "50777 (failed before environment construction: ManiSkill render system requires a CUDA physical device)",
+    "smoke_gpu_attempt": "50819 (failed before environment construction: H100 node Vulkan ICD/driver incompatible with SAPIEN)",
+    "vulkan_probe": "51435",
+    "smoke": "PENDING_VULKAN_PROBE",
+    "smoke_scope": "2 seeds, 4 exact-dynamics candidates per seed",
+    "smoke_is_scientific_decision": false
+  },
+  "training_launched": false,
+  "checkpoint_dependency": false,
+  "primary_falsifier": "Gate E0 does not establish task/planner headroom, event-timing sensitivity, matched transversal event coverage, and numerical stability",
+  "recommended_initial_engineering_window_weeks": 3,
+  "proposed_initial_gpu_hour_ceiling": 120,
+  "budget_is_measured": false,
+  "report": "RECOMMENDATION.md"
+}

@@ -1,0 +1,29 @@
+{
+  "protocol": "direction_a_a1_gate_v1",
+  "n_paired_cases": 100,
+  "success_rates": {
+    "fixed_10": 0.87,
+    "fixed_20": 0.9,
+    "fixed_40": 0.88,
+    "fixed_80": 0.82,
+    "heuristic": 0.86,
+    "oracle": 1.0
+  },
+  "strongest_nonoracle": "fixed_20",
+  "oracle_minus_strongest_points": 10.0,
+  "paired_bootstrap_95_ci_points": [
+    5.0,
+    16.0
+  ],
+  "gate_threshold_points": 10.0,
+  "a1_pass": true,
+  "mean_primitive_steps": {
+    "fixed_10": 443.98,
+    "fixed_20": 391.36,
+    "fixed_40": 489.09,
+    "fixed_80": 731.5,
+    "heuristic": 551.18,
+    "oracle": 346.26
+  },
+  "oracle_simulator_query_steps": 250231
+}

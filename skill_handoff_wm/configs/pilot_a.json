@@ -1,0 +1,29 @@
+{
+  "protocol": "direction_a_pilot_v1",
+  "ogbench_version": "1.2.1",
+  "development_env": "antmaze-medium-navigate-v0",
+  "transfer_env": "antmaze-large-navigate-v0",
+  "dataset_root": "/mnt/data/vhoangth2/datasets/ogbench_data",
+  "train_data": "antmaze-medium-navigate-v0.npz",
+  "validation_data": "antmaze-medium-navigate-v0-val.npz",
+  "policy": {
+    "type": "xy_conditioned_goal_bc",
+    "future_steps": [1, 100],
+    "width": 512,
+    "depth": 3,
+    "training_steps": 200000
+  },
+  "a0": {
+    "horizons": [10, 20, 40, 80],
+    "success_radius": 0.5,
+    "cases_per_horizon_screen": 50
+  },
+  "a1": {
+    "candidate_durations": [10, 20, 40, 80],
+    "probe_steps": 40,
+    "primitive_budget": 1000,
+    "headroom_gate_success_points": 10
+  },
+  "a3_collection_cap_primitive_transitions": 100000,
+  "confirm_target_success_points": 5
+}

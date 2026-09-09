@@ -1,5 +1,10 @@
 # Method landscape + next directions (2026-08-24)
 
+> **SUPERSEDED 2026-09-08.** The ICLR 2027 target and its Sep 2026 schedule
+> (abstract 09-19 / paper 09-24 / experiment freeze 09-05) were **abandoned**.
+> Do not plan against any date in this file. Current target: a new direction
+> aimed at ICML 2027 (~Jan) / NeurIPS 2027 (~May). Kept as provenance only.
+
 Literature sweep triggered by: every method axis tried so far (frozen post-hoc cost,
 encoder-LoRA, ensemble/disagreement, CF predictor, HyS gating, tactile input,
 amortized control) is a null or a scooped positive. This doc records (1) where the
