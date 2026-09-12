@@ -1,0 +1,24 @@
+{
+  "stage": "A2",
+  "runtime_root": "/mnt/data/nhatnc129/jepa/latent_scope_stage_a",
+  "source_revisions": {
+    "robocasa": "4f8a2980def75a55dff96b990745b83540425f09",
+    "robosuite": "5ce6643f3092639d08f7b0f90ed1c6a84f50552c",
+    "diffusion_policy": "41212698b6f481ed92a55f0d5f1778ec56bea417"
+  },
+  "tasks": [
+    {
+      "name": "ScrubCuttingBoard",
+      "dataset_relative_path": "v1.0/target/composite/ScrubCuttingBoard/20250816/lerobot",
+      "episode_index": 0
+    },
+    {
+      "name": "RinseSinkBasin",
+      "dataset_relative_path": "v1.0/target/composite/RinseSinkBasin/20250816/lerobot",
+      "episode_index": 0
+    }
+  ],
+  "released_state_max_abs_tolerance": 1e-5,
+  "direct_state_max_abs_tolerance": 1e-12,
+  "target_state_indices": [0, 1, 2, 3]
+}

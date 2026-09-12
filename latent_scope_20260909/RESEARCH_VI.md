@@ -1,5 +1,7 @@
 # Chọn lại hướng trong JEPA-style latent world models
 
+> Final decision update, 2026-09-09: [FINAL_DECISION_EN.md](FINAL_DECISION_EN.md) supersedes this historical signature-specific recommendation. The selected direction is learned compositional trajectory-target JEPA on native RoboCasa tasks, with signatures optional rather than central.
+
 > Update, 2026-09-09: The user prefers existing released tasks/datasets and English research documents. The [English native-arena assessment](ARENA_FIT_EN.md) supersedes the custom PushCube pilot below. Native RoboCasa tasks support a broader path-dependent prediction question, but do not by themselves justify the signature/order-specific method claim.
 
 Ngày khảo sát: **09/09/2026**. Phạm vi: simulator/GPU, method cho robot planning, hướng tới ICML/NeurIPS 2027 theo các cửa sổ dự kiến của người dùng. Đây là kết quả khảo sát và một ứng viên nghiên cứu có cơ chế cụ thể; **chưa phải method đã qua novelty audit đầy đủ hay có kết quả thực nghiệm**. Không chạy simulator, tải checkpoint hoặc train model trong lần này.

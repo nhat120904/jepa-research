@@ -1,17 +1,298 @@
 {
-  "date": "2026-09-09",
+  "date": "2026-09-12",
   "scope": "JEPA-style latent world models for robot planning",
-  "status": "NATIVE_ARENAS_IDENTIFIED_SIGNATURE_METHOD_NOT_QUALIFIED",
+  "status": "STAGE_B0_1_EVENT_ALIGNED_HEADROOM_PROFILE_RUNNING_STAGE_C_BLOCKED",
   "arena_update": "ARENA_FIT_EN.md supersedes the custom PushCube pilot; prioritize released RoboCasa365 tasks without changing success predicates",
   "documentation_language": "English",
   "native_candidate_tasks": ["ScrubCuttingBoard", "RinseSinkBasin"],
-  "question": "Joint endpoint and composable trajectory latent targets for visual planning under path-dependent requirements",
-  "novelty": "UNCONFIRMED; overlaps expected signatures, stochastic JEPA, temporal-logic world models and Path-JEPA",
-  "experimental_evidence": "NONE_NEW",
+  "question": "Does composition-aware action-conditioned trajectory prediction improve native manipulation planning beyond full frame rollout and unstructured segment prediction?",
+  "selected_method": "Learned compositional trajectory-target JEPA; endpoint plus segment latent with observed and predicted composition consistency",
+  "signature_role": "Optional later comparator; not the selected core method",
+  "novelty": "UNCONFIRMED; judge mechanism-level overlap separately from publication status; borrowed signature/control principles are not automatic vetoes",
+  "experimental_evidence": "EXECUTION GATES COMPLETE; SCIENTIFIC HYPOTHESIS UNTESTED. Released 0.5.1 open-loop trajectories do not replay in RoboCasa 1.0.1, but the official GR00T baseline supplies successful current-runtime rollouts. A4 established exact deterministic one-step branches, action outcome diversity, all three cameras, and multi-level native progress labels. Fixed-half-horizon B0 reconstructed prefixes exactly and produced diverse post-states, but binary success did not vary and a full 40-prefix/task screen projected to 57.75 GPU-hours. One Rinse prefix nevertheless showed a one-to-two washed-region progress difference, motivating a bounded event-aligned B0.1 repair rather than calling the hypothesis refuted.",
   "arena_variant_exists": false,
-  "simulator_smoke_tested": false,
+  "simulator_smoke_tested": true,
   "training_launched": false,
-  "primary_falsifier": "No planning/generalization advantage beyond matched JEPA rollout plus temporal monitor and an unstructured trajectory-target model",
-  "report": "ARENA_FIT_EN.md",
+  "stage_a": {
+    "protocol": "STAGE_A_PROTOCOL.md",
+    "runtime_root": "/mnt/data/nhatnc129/jepa/latent_scope_stage_a",
+    "setup_job_id": "51831",
+    "replay_job_id": "51835",
+    "replay_dependency": null,
+    "submitted_utc": "2026-09-10T16:41:45Z",
+    "recovery": "Initial Box-backed setup 51753 failed because the cluster cannot connect to utexas.box.com; obsolete replay 51754 was cancelled. Setup 51824 completed from revision-pinned Hugging Face mirrors, but replay 51825 exposed a missing Lightwheel object pack. Setup 51827 added that pack; replay 51828 then exposed that the older official fixture archive lacks RoboCasa365 Stovetop004. Setup 51831 replaced it with the checksum-verified upstream fixture archive. Replays 51832-51834 established that the cluster denies EGL render-device access under both MIG and full-GPU cgroups. Replay 51835 therefore uses the installed CPU OSMesa backend and requests no GPU.",
+    "result_pending": false,
+    "job_state": "FAILED",
+    "exit_code": "2:0",
+    "verdict": "REPLAY_DIVERGED",
+    "result": "/mnt/data/nhatnc129/jepa/latent_scope_stage_a/outputs/replay_51835/stage_a_result.json",
+    "summary": {
+      "episodes": 10,
+      "native_successes": 5,
+      "first_divergence_step": 0,
+      "first_divergence_episode_count": 10,
+      "max_released_state_error": 11.558760525351506,
+      "history_signal_changed_for_both_tasks": true,
+      "all_required_camera_streams_present": true,
+      "snapshot_restore_exact": false
+    }
+  },
+  "stage_a2": {
+    "protocol": "docs/STAGE_A2_PROTOCOL.md",
+    "config": "configs/stage_a2.json",
+    "job_id": "51840",
+    "submitted_utc": "2026-09-10T17:38:34Z",
+    "result_pending": false,
+    "job_state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed": "00:01:20",
+    "verdict": "A2_OPEN_LOOP_INCOMPATIBLE",
+    "result": "/mnt/data/nhatnc129/jepa/latent_scope_stage_a/outputs/a2_alignment_51840/stage_a2_result.json",
+    "summary": {
+      "direct_state_playback_exact": true,
+      "raw_action_ordering_rejected": true,
+      "action_plus_one_index_shift_rejected": true,
+      "released_state_delta_seconds": 0.1,
+      "current_env_step_seconds": 0.05,
+      "leading_explanation": "Each released action likely needs two current env.step calls; confirm with a bounded A2b repeat-factor test before changing Stage A."
+    }
+  },
+  "stage_a2b": {
+    "protocol": "docs/STAGE_A2B_PROTOCOL.md",
+    "config": "configs/stage_a2b.json",
+    "job_id": "51843",
+    "submitted_utc": "2026-09-10T17:57:13Z",
+    "result_pending": false,
+    "job_state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed": "00:01:39",
+    "verdict": "A2B_TIMING_NOT_GENERAL",
+    "result": "/mnt/data/nhatnc129/jepa/latent_scope_stage_a/outputs/a2b_repeat_51843/stage_a2b_result.json",
+    "summary": {
+      "scrub_best_candidate": "freq10_action0_once",
+      "scrub_best_physical_max_abs": 0.0078367021214809,
+      "rinse_best_physical_candidate": "freq20_hold_action0_repeat1",
+      "rinse_best_physical_max_abs": 0.0045253559043625675,
+      "rinse_freq10_physical_max_abs": 0.007678327411733138,
+      "repeat2_is_general_fix": false,
+      "any_candidate_passes_locked_tolerance": false,
+      "decision": "Do not amend Stage A to repeat=2 and do not start Stage B."
+    }
+  },
+  "stage_a3": {
+    "protocol": "docs/STAGE_A3_PROTOCOL.md",
+    "config": "configs/stage_a3.json",
+    "job_id": "51847",
+    "submitted_utc": "2026-09-10T18:04:46Z",
+    "result_pending": false,
+    "job_state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed": "00:06:57",
+    "verdict": "A3_FUNCTIONAL_FAIL",
+    "result": "/mnt/data/nhatnc129/jepa/latent_scope_stage_a/outputs/a3_replay_51847/stage_a3_result.json",
+    "summary": {
+      "native_successes": 0,
+      "episodes": 10,
+      "scrub_successes": 0,
+      "rinse_successes": 0,
+      "scrub_history_changed": false,
+      "rinse_history_changed": false,
+      "minimum_first_step_error": 0.007702357610091222,
+      "maximum_accumulated_time_error": 30.200000000034777,
+      "decision": "Reject 10 Hz as a full-trajectory replay fix. Do not amend Stage A or start Stage B; recover the recorded runtime or recollect transitions in the current runtime."
+    }
+  },
+  "runtime_compatibility_audit": {
+    "completed_utc": "2026-09-10",
+    "report": "docs/RUNTIME_COMPATIBILITY_DECISION.md",
+    "public_robocasa_tags": [
+      "v0.2",
+      "v1.0"
+    ],
+    "dataset_recorded_env_version": "0.5.1",
+    "installed_runtime_version": "1.0.1",
+    "exact_recorded_runtime_publicly_recoverable": false,
+    "official_eval_guidance": "Use the latest RoboCasa v1.0.1 runtime.",
+    "local_sample_has_per_frame_subtask_annotations": false,
+    "automatic_successful_recollection_available": false,
+    "decision": "Do not chase an unpublished 0.5.1 runtime and do not launch speculative recollection. Keep released trajectories as offline data, but require a small current-runtime transition-calibration gate and verified progress annotations before Stage B.",
+    "next_protocol": "docs/STAGE_A4_TRANSITION_CALIBRATION_PROTOCOL.md",
+    "stage_a4_launched": true,
+    "post_audit_update": "The official GR00T baseline passed and now provides bounded successful current-runtime recollection; A4 uses native task history rather than unavailable released per-frame subtask annotations."
+  },
+  "baseline_policy_gate": {
+    "protocol": "docs/BASELINE_POLICY_GATE.md",
+    "config": "configs/baseline_policy_gate.json",
+    "runtime_root": "/mnt/data/nhatnc129/jepa/latent_scope_baseline",
+    "policy": "Official GR00T N1.5 checkpoint-60000 after target post-training on composite_seen",
+    "setup_job_id": "51946",
+    "evaluation_job_id": "51947",
+    "evaluation_dependency": "afterok:51946",
+    "submitted_utc": "2026-09-11T05:14:13Z",
+    "runtime_layout": "Separate official GR00T policy environment and RoboCasa simulator environment communicating over local ZeroMQ.",
+    "recovery": "Three monolithic setup attempts exposed mutually incompatible GR00T/RoboCasa pins. Split-runtime setup 51932 successfully installed the complete official GR00T policy stack, then exposed one remaining simulator-side mistake: forcing GR00T's Gymnasium 1.0 despite RoboCasa/LeRobot requiring 0.29.1. Evaluation 51933 was cancelled without running. Setup 51946 reuses the completed policy environment and resolves the isolated simulator environment at its native Gymnasium 0.29.1.",
+    "state_last_verified": {
+      "setup": "COMPLETED",
+      "evaluation": "COMPLETED",
+      "verified_with": ["squeue", "sacct"]
+    },
+    "tasks": ["ScrubCuttingBoard", "RinseSinkBasin"],
+    "episodes_per_task": 10,
+    "minimum_successes_per_task": 2,
+    "result_pending": false,
+    "evaluation_ran": true,
+    "job_state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed": "01:35:32",
+    "verdict": "BASELINE_USABLE_FOR_A4",
+    "gate_passed": true,
+    "summary": {
+      "ScrubCuttingBoard": {
+        "successes": 3,
+        "episodes": 10,
+        "success_rate": 0.3
+      },
+      "RinseSinkBasin": {
+        "successes": 6,
+        "episodes": 10,
+        "success_rate": 0.6
+      }
+    },
+    "setup_error": null,
+    "setup_result": "/mnt/data/nhatnc129/jepa/latent_scope_baseline/outputs/setup_result.json",
+    "setup_summary": {
+      "runtime_layout": "split_policy_server_and_simulator_client",
+      "checkpoint_bytes": 7586192783,
+      "checkpoint_checksums_verified": true,
+      "policy_torch": "2.5.1",
+      "simulator_robocasa": "1.0.1"
+    },
+    "result": "/mnt/data/nhatnc129/jepa/latent_scope_baseline/outputs/eval_51947/baseline_policy_result.json",
+    "report": "docs/BASELINE_POLICY_RESULT_51947.md",
+    "decision": "Proceed to bounded A4 current-runtime transition calibration and progress-label construction using successful policy rollouts; Stage B remains blocked until A4 passes.",
+    "stage_a4_launched": true,
+    "stage_b_launched": true
+  },
+  "stage_b": {
+    "protocol": "docs/STAGE_B_PROTOCOL.md",
+    "profile_config": "configs/stage_b_profile.json",
+    "profile_job_id": "52208",
+    "submitted_utc": "2026-09-12T06:49:30Z",
+    "state_last_verified": {
+      "profile": "COMPLETED (0:0, 02:53:26)",
+      "event_profile": "RUNNING",
+      "verified_with": ["squeue", "sacct"]
+    },
+    "phase": "B0_1_EVENT_ALIGNED_HEADROOM_PROFILE",
+    "profile_design": {
+      "prefixes_per_task": 2,
+      "candidate_chunks_per_prefix": 8,
+      "candidate_chunk_steps": 8,
+      "prefix_fraction": 0.5,
+      "continuation": "Frozen GR00T policy to native horizon with common seed within prefix",
+      "tasks": ["ScrubCuttingBoard", "RinseSinkBasin"]
+    },
+    "result_pending": false,
+    "result": "/mnt/data/nhatnc129/jepa/latent_scope_baseline/outputs/stage_b_profile_52208/stage_b_profile_result.json",
+    "profile_verdict": "B0_EXPANSION_OVER_BUDGET",
+    "profile_summary": {
+      "prefixes": 4,
+      "candidate_branches": 32,
+      "eventual_success_oracle_gain_percentage_points": 0.0,
+      "prefixes_with_binary_outcome_variation": 0,
+      "prefixes_with_observed_progress_variation": 1,
+      "projected_serial_gpu_hours_for_40_prefixes_per_task": 57.75114218255298
+    },
+    "event_profile_config": "configs/stage_b_event_profile.json",
+    "event_profile_job_id": "52226",
+    "event_profile_submitted_utc": "2026-09-12T10:12:46Z",
+    "event_profile_result_pending": true,
+    "event_profile_result": "/mnt/data/nhatnc129/jepa/latent_scope_baseline/outputs/stage_b_event_52226/stage_b_profile_result.json",
+    "b1_launched": false,
+    "stage_c_launched": false
+  },
+  "stage_c_preparation": {
+    "status": "CODE_SMOKE_PASS_DATA_AND_STAGE_B1_BLOCKED",
+    "protocol": "docs/STAGE_C_IMPLEMENTATION.md",
+    "config": "configs/stage_c_screen.json",
+    "model_smoke_job_id": "52212",
+    "model_smoke_state": "COMPLETED (0:0, 00:00:02)",
+    "model_smoke_verdict": "STAGE_C_MODEL_SMOKE_PASS",
+    "model_smoke_result": "/mnt/data/nhatnc129/jepa/latent_scope_stage_c/smoke_52212.json",
+    "readiness_audit_job_id": "52211",
+    "readiness_audit_state": "COMPLETED (0:0, 00:00:01)",
+    "readiness_verdict": "STAGE_C_NOT_READY",
+    "readiness_result": "/mnt/data/nhatnc129/jepa/latent_scope_stage_c/readiness_52211.json",
+    "prepared_arms": [
+      "endpoint_only",
+      "frame_rollout",
+      "simple_progress",
+      "unstructured_segment",
+      "compositional_segment",
+      "direct_value"
+    ],
+    "data_blockers": {
+      "ScrubCuttingBoard": "5/504 parquet episodes and 0/504 videos per camera are local",
+      "RinseSinkBasin": "5/509 parquet episodes and 0/509 videos per camera are local",
+      "training_labels": "A separate current-runtime training split with both eventual successes/failures and progress labels is required",
+      "candidate_evaluation": "Stage-B1 fixed validation candidates are not yet available and are forbidden as training data"
+    },
+    "encoder_launched": false,
+    "training_launched": false
+  },
+  "stage_a4": {
+    "protocol": "docs/STAGE_A4_TRANSITION_CALIBRATION_PROTOCOL.md",
+    "config": "configs/stage_a4.json",
+    "collection_job_id": "52073",
+    "calibration_job_id": "52074",
+    "calibration_dependency": "afterok:52073",
+    "submitted_utc": "2026-09-11T10:46:49Z",
+    "recovery": "Initial collector 52059 failed because SyncVectorEnv auto-reset cleared the wrapper trajectory counter at termination; dependent 52060 was cancelled without running. The revised collector uses a single MultiStepWrapper carrier and explicit GR00T batching so terminal simulator state and executed native actions remain available.",
+    "state_last_verified": {
+      "collection": "COMPLETED (0:0, 01:17:27)",
+      "calibration": "COMPLETED (0:0, 04:50:35)",
+      "verified_with": ["squeue", "sacct"]
+    },
+    "collection_target": {
+      "successful_episodes_per_task": 5,
+      "tasks": ["ScrubCuttingBoard", "RinseSinkBasin"],
+      "source": "Official GR00T successful rollouts in RoboCasa 1.0.1"
+    },
+    "calibration_target": {
+      "anchors_per_task": 8,
+      "branches_per_anchor": 5,
+      "fresh_carrier_repeats_per_branch": 2,
+      "progress_source": "Native task-owned history fields"
+    },
+    "result_pending": false,
+    "raw_calibration_verdict": "A4_REPLAY_FAIL",
+    "protocol_verdict": "A4_LOCAL_TRANSITION_GATE_PASS_WITH_LONG_HORIZON_REPLAY_LIMITATION",
+    "gate": {
+      "all_branches_deterministic": true,
+      "all_anchors_diverse": true,
+      "all_progress_covered": true,
+      "all_camera_keys_present": true,
+      "all_long_horizon_replays_exact": false
+    },
+    "summary": {
+      "collection_successes_per_task": 5,
+      "anchors_per_task": 8,
+      "fresh_carrier_comparisons": 80,
+      "fresh_carrier_max_state_error": 0.0,
+      "fresh_carrier_max_image_error": 0,
+      "scrub_distinct_progress_labels": 7,
+      "rinse_distinct_progress_labels": 5,
+      "scrub_replayed_successes": 4,
+      "rinse_replayed_successes": 4
+    },
+    "collection_result": "/mnt/data/nhatnc129/jepa/latent_scope_baseline/outputs/a4_collect_52073/collection_result.json",
+    "calibration_result": "/mnt/data/nhatnc129/jepa/latent_scope_baseline/outputs/a4_calibrate_52074/stage_a4_result.json",
+    "report": "docs/STAGE_A4_RESULT_52073_52074.md",
+    "decision": "Stage B0 profiling launched after the local-transition gate passed. Preserve the long-horizon replay limitation and use only reconstructed canonical prefixes and saved local transitions as calibration truth.",
+    "stage_b_launched": true
+  },
+  "primary_falsifier": "No native planning advantage beyond matched frame rollout, history-aware monitoring, unstructured trajectory prediction and direct action-value prediction; composition has no independent benefit",
+  "report": "FINAL_DECISION_EN.md",
+  "arena_report": "ARENA_FIT_EN.md",
   "historical_proposal": "RESEARCH_VI.md"
 }

@@ -1,0 +1,90 @@
+{
+  "stage": "C_FIRST_LEARNED_COMPARISON",
+  "gate": {
+    "required_stage_b_verdict": "B1_HEADROOM_AND_READOUT_PASS",
+    "required_environment_variable": "STAGE_B1_RESULT",
+    "minimum_selected_success_gain_percentage_points": 5.0
+  },
+  "data": {
+    "manifest": "/mnt/data/nhatnc129/jepa/latent_scope_stage_c/features/manifest.json",
+    "offline_dataset_revision": "522e4ffa3bb9d9729f79b241c65fc9e589f2659c",
+    "require_all_three_videos": true,
+    "split_seed": 20260912,
+    "split_ratios": [0.8, 0.1, 0.1],
+    "history_steps": 3,
+    "segment_steps": 8,
+    "window_stride": 4,
+    "forbidden_training_source": "stage_b_validation_branches",
+    "camera_keys": [
+      "observation.images.robot0_agentview_left",
+      "observation.images.robot0_agentview_right",
+      "observation.images.robot0_eye_in_hand"
+    ],
+    "tasks": [
+      {
+        "name": "ScrubCuttingBoard",
+        "task_id": 0,
+        "expected_episodes": 504,
+        "root": "/mnt/data/nhatnc129/jepa/latent_scope_stage_a/datasets/v1.0/target/composite/ScrubCuttingBoard/20250816/lerobot"
+      },
+      {
+        "name": "RinseSinkBasin",
+        "task_id": 1,
+        "expected_episodes": 509,
+        "root": "/mnt/data/nhatnc129/jepa/latent_scope_stage_a/datasets/v1.0/target/composite/RinseSinkBasin/20250816/lerobot"
+      }
+    ]
+  },
+  "encoder": {
+    "model_id": "facebook/dinov2-small",
+    "revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+    "feature_dim": 384,
+    "dtype": "float16",
+    "batch_frames": 96
+  },
+  "model": {
+    "camera_count": 3,
+    "visual_feature_dim": 384,
+    "proprio_dim": 16,
+    "action_dim": 12,
+    "task_count": 2,
+    "fused_dim": 384,
+    "memory_dim": 256,
+    "summary_tokens": 4,
+    "summary_dim": 256,
+    "predictor_depth": 6,
+    "target_depth": 4,
+    "composer_depth": 2,
+    "attention_heads": 8,
+    "dropout": 0.1,
+    "progress_dim": 7
+  },
+  "training": {
+    "arms": [
+      "endpoint_only",
+      "frame_rollout",
+      "simple_progress",
+      "unstructured_segment",
+      "compositional_segment",
+      "direct_value"
+    ],
+    "seed": 20260912,
+    "epochs": 20,
+    "batch_size": 64,
+    "num_workers": 8,
+    "learning_rate": 0.0003,
+    "weight_decay": 0.0001,
+    "gradient_clip_norm": 1.0,
+    "ema_decay": 0.99,
+    "loss_weights": {
+      "endpoint": 1.0,
+      "frame": 1.0,
+      "segment": 1.0,
+      "reconstruction": 0.25,
+      "composition": 0.5,
+      "split_consistency": 0.5,
+      "progress": 1.0,
+      "value": 1.0
+    }
+  }
+}

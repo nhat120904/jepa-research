@@ -1,0 +1,57 @@
+{
+  "stage": "A4_CURRENT_RUNTIME_CALIBRATION",
+  "runtime_root": "/mnt/data/nhatnc129/jepa/latent_scope_baseline",
+  "shared_robocasa_runtime_root": "/mnt/data/nhatnc129/jepa/latent_scope_stage_a",
+  "source_revisions": {
+    "isaac_groot": "9d7d7a9eb7ad30bd8ce30448d9ab53a918b45b10",
+    "robocasa": "4f8a2980def75a55dff96b990745b83540425f09",
+    "robosuite": "5ce6643f3092639d08f7b0f90ed1c6a84f50552c"
+  },
+  "checkpoint": {
+    "repo_id": "robocasa/robocasa365_checkpoints",
+    "revision": "c484448aba1a9b60a04c9b0ca117241518ea69f3",
+    "relative_path": "gr00t_n1-5/foundation_model_learning/target_posttraining/composite_seen/checkpoint-60000"
+  },
+  "policy": {
+    "data_config": "panda_omron",
+    "embodiment_tag": "new_embodiment",
+    "denoising_steps": 4,
+    "n_action_steps": 16,
+    "seed": 20260911
+  },
+  "collection": {
+    "split": "target",
+    "successful_episodes_per_task": 5,
+    "seed_base": 41000,
+    "tasks": [
+      {
+        "name": "ScrubCuttingBoard",
+        "max_attempts": 30,
+        "history_fields": [
+          "board_contact_positions",
+          "board_contact_timer",
+          "sponge_contact_height"
+        ]
+      },
+      {
+        "name": "RinseSinkBasin",
+        "max_attempts": 20,
+        "history_fields": ["washed_loc"]
+      }
+    ]
+  },
+  "calibration": {
+    "anchors_per_task": 8,
+    "branch_repeats": 2,
+    "position_perturbation": 0.1,
+    "state_max_abs_tolerance": 1e-9,
+    "image_max_abs_tolerance": 0,
+    "minimum_outcome_state_diversity": 1e-6,
+    "minimum_distinct_progress_labels": 2,
+    "camera_keys": [
+      "video.robot0_agentview_left",
+      "video.robot0_agentview_right",
+      "video.robot0_eye_in_hand"
+    ]
+  }
+}

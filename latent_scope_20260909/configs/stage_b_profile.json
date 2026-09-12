@@ -1,0 +1,60 @@
+{
+  "stage": "B0_COMPONENT_HEADROOM_PROFILE",
+  "runtime_root": "/mnt/data/nhatnc129/jepa/latent_scope_baseline",
+  "shared_robocasa_runtime_root": "/mnt/data/nhatnc129/jepa/latent_scope_stage_a",
+  "source_revisions": {
+    "isaac_groot": "9d7d7a9eb7ad30bd8ce30448d9ab53a918b45b10",
+    "robocasa": "4f8a2980def75a55dff96b990745b83540425f09",
+    "robosuite": "5ce6643f3092639d08f7b0f90ed1c6a84f50552c"
+  },
+  "checkpoint": {
+    "repo_id": "robocasa/robocasa365_checkpoints",
+    "revision": "c484448aba1a9b60a04c9b0ca117241518ea69f3",
+    "relative_path": "gr00t_n1-5/foundation_model_learning/target_posttraining/composite_seen/checkpoint-60000"
+  },
+  "policy": {
+    "data_config": "panda_omron",
+    "embodiment_tag": "new_embodiment",
+    "denoising_steps": 4,
+    "n_action_steps": 8,
+    "seed": 20260912
+  },
+  "profile": {
+    "split": "target",
+    "prefixes_per_task": 2,
+    "candidate_chunks_per_prefix": 8,
+    "candidate_chunk_steps": 8,
+    "prefix_fraction": 0.5,
+    "environment_seed_base": 61000,
+    "proposal_seed_base": 71000,
+    "continuation_seed_base": 81000,
+    "maximum_prefix_attempts_per_task": 8,
+    "state_max_abs_tolerance": 1e-9,
+    "minimum_candidate_state_diversity": 1e-6,
+    "camera_keys": [
+      "video.robot0_agentview_left",
+      "video.robot0_agentview_right",
+      "video.robot0_eye_in_hand"
+    ],
+    "tasks": [
+      {
+        "name": "ScrubCuttingBoard",
+        "history_fields": [
+          "board_contact_positions",
+          "board_contact_timer",
+          "sponge_contact_height"
+        ]
+      },
+      {
+        "name": "RinseSinkBasin",
+        "history_fields": ["washed_loc"]
+      }
+    ]
+  },
+  "expansion": {
+    "validation_prefixes_per_task": 40,
+    "oracle_headroom_target_percentage_points": 10,
+    "additional_gpu_hour_cap": 24,
+    "cpu_hour_cap": 96
+  }
+}

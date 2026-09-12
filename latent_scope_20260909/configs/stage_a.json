@@ -1,0 +1,77 @@
+{
+  "stage": "A",
+  "runtime_root": "/mnt/data/nhatnc129/jepa/latent_scope_stage_a",
+  "source_revisions": {
+    "robocasa": "4f8a2980def75a55dff96b990745b83540425f09",
+    "robosuite": "5ce6643f3092639d08f7b0f90ed1c6a84f50552c",
+    "diffusion_policy": "41212698b6f481ed92a55f0d5f1778ec56bea417"
+  },
+  "huggingface_sources": {
+    "assets": {
+      "repo_id": "robocasa/robocasa-assets",
+      "revision": "1b92c3d02ca4354984fec961357db0bff7b32166",
+      "archives": {
+        "tex": {
+          "filename": "textures.zip",
+          "extract_relative_path": "robocasa/models/assets"
+        },
+        "fixtures_lw": {
+          "repo_id": "IIFAN/robocasa365-lightwheel-fixtures",
+          "revision": "0cf51d45ab07fce13c4733ee1fe20bb01399768c",
+          "filename": "fixtures_lightwheel.zip",
+          "sha256": "62c1c87776edda9b7c42dda7b00781a1e5a7f90acc3e49d06c39c9545cbd6c3e",
+          "extract_relative_path": "robocasa/models/assets"
+        },
+        "objs_objaverse": {
+          "filename": "objaverse.zip",
+          "extract_relative_path": "robocasa/models/assets/objects"
+        },
+        "objs_lw": {
+          "repo_id": "IIFAN/robocasa365-lightwheel-objects",
+          "revision": "3f7f7aee8ef4367dfdc85a86778467cf8527f8fb",
+          "filename": "objects_lightwheel.zip",
+          "sha256": "a1db739b0e80fc4d56d4be27d89dba3aa60000e9648c5607874700e0f14b7955",
+          "extract_relative_path": "robocasa/models/assets/objects"
+        }
+      }
+    },
+    "datasets": {
+      "repo_id": "nvidia/PhysicalAI-Robotics-Manipulation-Kitchen-Demos",
+      "revision": "522e4ffa3bb9d9729f79b241c65fc9e589f2659c"
+    }
+  },
+  "tasks": [
+    {
+      "name": "ScrubCuttingBoard",
+      "split": "target",
+      "source": "human",
+      "dataset_relative_path": "v1.0/target/composite/ScrubCuttingBoard/20250816/lerobot",
+      "huggingface_relative_path": "target/composite/ScrubCuttingBoard/20250816/lerobot",
+      "history_fields": [
+        "board_contact_positions",
+        "board_contact_timer",
+        "sponge_contact_height"
+      ]
+    },
+    {
+      "name": "RinseSinkBasin",
+      "split": "target",
+      "source": "human",
+      "dataset_relative_path": "v1.0/target/composite/RinseSinkBasin/20250816/lerobot",
+      "huggingface_relative_path": "target/composite/RinseSinkBasin/20250816/lerobot",
+      "history_fields": ["washed_loc"]
+    }
+  ],
+  "episodes_per_task": 5,
+  "snapshot_suffix_steps": 8,
+  "camera_names": [
+    "robot0_agentview_left",
+    "robot0_agentview_right",
+    "robot0_eye_in_hand"
+  ],
+  "camera_height": 256,
+  "camera_width": 256,
+  "released_state_max_abs_tolerance": 1e-5,
+  "restored_state_max_abs_tolerance": 1e-9,
+  "restored_image_max_abs_tolerance": 0
+}

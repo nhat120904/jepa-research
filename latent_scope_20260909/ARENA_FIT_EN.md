@@ -1,5 +1,7 @@
 # Existing-arena assessment for trajectory-predictive JEPA
 
+> Decision update, 9 September 2026: [FINAL_DECISION_EN.md](FINAL_DECISION_EN.md) selects a learned compositional trajectory-target JEPA and specifies the first model, shared policy and staged experiments. Signatures are not the selected core method. The source-level arena observations below remain applicable.
+
 Date: 9 September 2026. This assessment supersedes the custom PushCube pilot in the earlier proposal. It responds to the requirement to use released robot tasks and datasets, with JEPA-style latent prediction remaining the scientific core. New research documents will be written in English.
 
 ## Decision
