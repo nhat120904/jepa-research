@@ -1,5 +1,7 @@
 # Research decision: compositional trajectory prediction in a visual JEPA
 
+> 13 September update: [Feasibility reassessment](docs/FEASIBILITY_REASSESSMENT_20260913_EN.md) incorporates completed job 52226, identifies an event-anchor mismatch and Stage-C comparison issues, and recommends a bounded repair plus native DrawTriangle qualification. The research hypothesis remains selected; the original Diffusion Policy integration below is historical, since execution now uses GR00T N1.5.
+
 Date: 9 September 2026. Scope: simulator-only latent world models for robot planning.
 
 **Decision: select compositional trajectory-target JEPA as the next active research direction. Use native RoboCasa tasks, beginning with ScrubCuttingBoard and using RinseSinkBasin as a simpler control. Do not select a signature-specific method, revive the old progress-cost programme, or continue an open-ended search for unrelated directions.**

@@ -1,7 +1,9 @@
 {
-  "date": "2026-09-12",
+  "date": "2026-09-13",
   "scope": "JEPA-style latent world models for robot planning",
-  "status": "STAGE_B0_1_EVENT_ALIGNED_HEADROOM_PROFILE_RUNNING_STAGE_C_BLOCKED",
+  "status": "STAGE_B0_1_COMPLETE_ANCHOR_MISMATCH_STAGE_C_BLOCKED",
+  "feasibility_reassessment": "docs/FEASIBILITY_REASSESSMENT_20260913_EN.md",
+  "reassessment_scope": "Static review plus read-only cluster status/artifact retrieval; no new experiment or code fix executed",
   "arena_update": "ARENA_FIT_EN.md supersedes the custom PushCube pilot; prioritize released RoboCasa365 tasks without changing success predicates",
   "documentation_language": "English",
   "native_candidate_tasks": ["ScrubCuttingBoard", "RinseSinkBasin"],
@@ -180,10 +182,10 @@
     "submitted_utc": "2026-09-12T06:49:30Z",
     "state_last_verified": {
       "profile": "COMPLETED (0:0, 02:53:26)",
-      "event_profile": "RUNNING",
+      "event_profile": "COMPLETED (0:0, 01:40:07); reverified 2026-09-13",
       "verified_with": ["squeue", "sacct"]
     },
-    "phase": "B0_1_EVENT_ALIGNED_HEADROOM_PROFILE",
+    "phase": "B0_1_COMPLETE_REQUIRES_ANCHOR_REPAIR",
     "profile_design": {
       "prefixes_per_task": 2,
       "candidate_chunks_per_prefix": 8,
@@ -206,13 +208,25 @@
     "event_profile_config": "configs/stage_b_event_profile.json",
     "event_profile_job_id": "52226",
     "event_profile_submitted_utc": "2026-09-12T10:12:46Z",
-    "event_profile_result_pending": true,
+    "event_profile_result_pending": false,
+    "event_profile_local_evidence": "docs/evidence/stage_b_event_52226_result.json",
+    "event_profile_review": {
+      "prefixes": 2,
+      "candidate_branches": 16,
+      "eventual_success_oracle_gain_percentage_points": 0.0,
+      "maximum_progress_oracle_gain_percentage_points": 0.0,
+      "projected_serial_gpu_hours_for_40_prefixes_per_task": 66.66067865381224,
+      "rinse_anchor_source_washed_count": 2,
+      "rinse_reconstructed_washed_count": 0,
+      "interpretation": "Scrub prefix locally saturated; Rinse source-event alignment not preserved in reconstructed carrier. Neither result tests composition. Repair anchor semantics and Stage-C comparison invariants before expansion."
+    },
     "event_profile_result": "/mnt/data/nhatnc129/jepa/latent_scope_baseline/outputs/stage_b_event_52226/stage_b_profile_result.json",
     "b1_launched": false,
     "stage_c_launched": false
   },
   "stage_c_preparation": {
     "status": "CODE_SMOKE_PASS_DATA_AND_STAGE_B1_BLOCKED",
+    "static_review_20260913": "Scientific comparison repairs required; see feasibility reassessment. No implementation fixes or additional model tests executed in this review.",
     "protocol": "docs/STAGE_C_IMPLEMENTATION.md",
     "config": "configs/stage_c_screen.json",
     "model_smoke_job_id": "52212",

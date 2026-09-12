@@ -1,0 +1,482 @@
+{
+  "completed_utc": "2026-09-12T11:52:39.191089+00:00",
+  "config": {
+    "checkpoint": {
+      "relative_path": "gr00t_n1-5/foundation_model_learning/target_posttraining/composite_seen/checkpoint-60000",
+      "repo_id": "robocasa/robocasa365_checkpoints",
+      "revision": "c484448aba1a9b60a04c9b0ca117241518ea69f3"
+    },
+    "expansion": {
+      "additional_gpu_hour_cap": 24,
+      "cpu_hour_cap": 96,
+      "oracle_headroom_target_percentage_points": 10,
+      "validation_prefixes_per_task": 40
+    },
+    "policy": {
+      "data_config": "panda_omron",
+      "denoising_steps": 4,
+      "embodiment_tag": "new_embodiment",
+      "n_action_steps": 8,
+      "seed": 20260912
+    },
+    "profile": {
+      "anchor_mode": "event_aligned",
+      "camera_keys": [
+        "video.robot0_agentview_left",
+        "video.robot0_agentview_right",
+        "video.robot0_eye_in_hand"
+      ],
+      "candidate_chunk_steps": 8,
+      "candidate_chunks_per_prefix": 8,
+      "continuation_seed_base": 102000,
+      "environment_seed_base": 62000,
+      "event_anchor_max_fraction": 0.9,
+      "event_anchor_min_fraction": 0.1,
+      "event_anchor_require_source_success": true,
+      "maximum_prefix_attempts_per_task": 12,
+      "minimum_candidate_state_diversity": 1e-06,
+      "prefix_fraction": 0.5,
+      "prefixes_per_task": 1,
+      "proposal_seed_base": 92000,
+      "split": "target",
+      "state_max_abs_tolerance": 1e-09,
+      "tasks": [
+        {
+          "history_fields": [
+            "board_contact_positions",
+            "board_contact_timer",
+            "sponge_contact_height"
+          ],
+          "name": "ScrubCuttingBoard"
+        },
+        {
+          "history_fields": [
+            "washed_loc"
+          ],
+          "name": "RinseSinkBasin"
+        }
+      ]
+    },
+    "runtime_root": "/mnt/data/nhatnc129/jepa/latent_scope_baseline",
+    "shared_robocasa_runtime_root": "/mnt/data/nhatnc129/jepa/latent_scope_stage_a",
+    "source_revisions": {
+      "isaac_groot": "9d7d7a9eb7ad30bd8ce30448d9ab53a918b45b10",
+      "robocasa": "4f8a2980def75a55dff96b990745b83540425f09",
+      "robosuite": "5ce6643f3092639d08f7b0f90ed1c6a84f50552c"
+    },
+    "stage": "B0_1_EVENT_ALIGNED_HEADROOM_PROFILE"
+  },
+  "created_utc": "2026-09-12T10:12:39.727498+00:00",
+  "node": "worker-0",
+  "policy_server_state": {
+    "checkpoint_path": "/mnt/data/nhatnc129/jepa/latent_scope_baseline/checkpoints/robocasa365_checkpoints/gr00t_n1-5/foundation_model_learning/target_posttraining/composite_seen/checkpoint-60000",
+    "created_utc": "2026-09-12T10:12:33.760635+00:00",
+    "gpu": "NVIDIA H100 80GB HBM3",
+    "node": "worker-0",
+    "packages": {
+      "flash-attn": "2.7.1.post4",
+      "gr00t": "1.1.0",
+      "torch": "2.5.1",
+      "torchvision": "0.20.1",
+      "transformers": "4.51.3"
+    },
+    "phase": "READY",
+    "port": 32226,
+    "ready_utc": "2026-09-12T10:12:51.750335+00:00",
+    "seed": 20260912,
+    "slurm_job_id": "52226"
+  },
+  "slurm_job_id": "52226",
+  "summary": {
+    "all_candidate_states_diverse": true,
+    "all_prefix_carriers_exact": true,
+    "baseline_candidate_max_progress_score": 0.5,
+    "baseline_candidate_success_rate": 0.5,
+    "candidate_branches": 16,
+    "elapsed_seconds": 5999.461078843102,
+    "oracle_candidate_max_progress_score": 0.5,
+    "oracle_candidate_success_rate": 0.5,
+    "prefixes": 2,
+    "prefixes_with_outcome_variation": 0,
+    "prefixes_with_positive_progress_headroom": 0,
+    "prefixes_with_progress_variation": 0,
+    "profile_oracle_gain_percentage_points": 0.0,
+    "profile_progress_oracle_gain_percentage_points": 0.0,
+    "projected_serial_gpu_hours_for_40_prefixes_per_task": 66.66067865381224,
+    "within_additional_gpu_hour_cap": false
+  },
+  "tasks": {
+    "RinseSinkBasin": {
+      "attempts": [
+        {
+          "anchor_found": true,
+          "attempt": 0,
+          "seed": 72000,
+          "source_events": [
+            {
+              "after_label": {
+                "success": 0,
+                "washed_count": 1,
+                "washed_mask": [
+                  0,
+                  1,
+                  0
+                ]
+              },
+              "after_score": 0.3333333333333333,
+              "before_label": {
+                "success": 0,
+                "washed_count": 0,
+                "washed_mask": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "before_score": 0.0,
+              "fraction": 0.17185185185185184,
+              "native_step": 232
+            },
+            {
+              "after_label": {
+                "success": 0,
+                "washed_count": 2,
+                "washed_mask": [
+                  1,
+                  1,
+                  0
+                ]
+              },
+              "after_score": 0.6666666666666666,
+              "before_label": {
+                "success": 0,
+                "washed_count": 1,
+                "washed_mask": [
+                  0,
+                  1,
+                  0
+                ]
+              },
+              "before_score": 0.3333333333333333,
+              "fraction": 0.2903703703703704,
+              "native_step": 392
+            },
+            {
+              "after_label": {
+                "success": 1,
+                "washed_count": 3,
+                "washed_mask": [
+                  1,
+                  1,
+                  1
+                ]
+              },
+              "after_score": 1.0,
+              "before_label": {
+                "success": 0,
+                "washed_count": 2,
+                "washed_mask": [
+                  1,
+                  1,
+                  0
+                ]
+              },
+              "before_score": 0.6666666666666666,
+              "fraction": 0.3851851851851852,
+              "native_step": 520
+            }
+          ],
+          "source_prefix_success": false,
+          "source_rollout_success": true
+        }
+      ],
+      "prefixes": [
+        {
+          "all_prefix_carriers_exact": true,
+          "anchor_event": {
+            "after_label": {
+              "success": 1,
+              "washed_count": 3,
+              "washed_mask": [
+                1,
+                1,
+                1
+              ]
+            },
+            "after_score": 1.0,
+            "before_label": {
+              "success": 0,
+              "washed_count": 2,
+              "washed_mask": [
+                1,
+                1,
+                0
+              ]
+            },
+            "before_score": 0.6666666666666666,
+            "fraction": 0.3851851851851852,
+            "native_step": 520
+          },
+          "artifact": "/mnt/data/nhatnc129/jepa/latent_scope_baseline/outputs/stage_b_event_52226/prefixes/RinseSinkBasin/prefix_00/branches.npz",
+          "baseline_candidate_max_progress_score": 0.0,
+          "baseline_candidate_success": false,
+          "candidate_elapsed_seconds": [
+            192.94537303224206,
+            193.31721649505198,
+            197.21996543556452,
+            202.87560692988336,
+            196.7250106036663,
+            194.8593072220683,
+            193.91677543334663,
+            194.09531387127936
+          ],
+          "candidate_max_progress_scores": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "candidate_state_diverse": true,
+          "candidate_state_diversity": 0.44433970145166457,
+          "candidate_successes": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "canonical_history": {
+            "washed_loc": [
+              false,
+              false,
+              false
+            ]
+          },
+          "environment_seed": 72000,
+          "oracle_candidate_max_progress_score": 0.0,
+          "oracle_candidate_success": false,
+          "outcome_varies": false,
+          "prefix_index": 0,
+          "prefix_native_steps": 520,
+          "progress_artifact": "/mnt/data/nhatnc129/jepa/latent_scope_baseline/outputs/stage_b_event_52226/prefixes/RinseSinkBasin/prefix_00/progress.json",
+          "progress_oracle_gain": 0.0,
+          "progress_outcome_varies": false,
+          "task": "RinseSinkBasin"
+        }
+      ]
+    },
+    "ScrubCuttingBoard": {
+      "attempts": [
+        {
+          "anchor_found": true,
+          "attempt": 0,
+          "seed": 62000,
+          "source_events": [
+            {
+              "after_label": {
+                "contact_count": 1,
+                "contact_milestone": 1,
+                "released_success": 0,
+                "sweep_milestone": 0,
+                "sweep_range": 0.0
+              },
+              "after_score": 0.1,
+              "before_label": {
+                "contact_count": 0,
+                "contact_milestone": 0,
+                "released_success": 0,
+                "sweep_milestone": 0,
+                "sweep_range": 0.0
+              },
+              "before_score": 0.0,
+              "fraction": 0.15333333333333332,
+              "native_step": 184
+            },
+            {
+              "after_label": {
+                "contact_count": 2,
+                "contact_milestone": 2,
+                "released_success": 0,
+                "sweep_milestone": 1,
+                "sweep_range": 0.17589753778209463
+              },
+              "after_score": 0.7,
+              "before_label": {
+                "contact_count": 1,
+                "contact_milestone": 1,
+                "released_success": 0,
+                "sweep_milestone": 0,
+                "sweep_range": 0.0
+              },
+              "before_score": 0.1,
+              "fraction": 0.22666666666666666,
+              "native_step": 272
+            },
+            {
+              "after_label": {
+                "contact_count": 3,
+                "contact_milestone": 3,
+                "released_success": 0,
+                "sweep_milestone": 1,
+                "sweep_range": 0.19628755497139305
+              },
+              "after_score": 0.8,
+              "before_label": {
+                "contact_count": 2,
+                "contact_milestone": 2,
+                "released_success": 0,
+                "sweep_milestone": 1,
+                "sweep_range": 0.17589753778209463
+              },
+              "before_score": 0.7,
+              "fraction": 0.23333333333333334,
+              "native_step": 280
+            },
+            {
+              "after_label": {
+                "contact_count": 4,
+                "contact_milestone": 4,
+                "released_success": 0,
+                "sweep_milestone": 1,
+                "sweep_range": 0.21237399590578665
+              },
+              "after_score": 0.9,
+              "before_label": {
+                "contact_count": 3,
+                "contact_milestone": 3,
+                "released_success": 0,
+                "sweep_milestone": 1,
+                "sweep_range": 0.19628755497139305
+              },
+              "before_score": 0.8,
+              "fraction": 0.3333333333333333,
+              "native_step": 400
+            },
+            {
+              "after_label": {
+                "contact_count": 5,
+                "contact_milestone": 5,
+                "released_success": 0,
+                "sweep_milestone": 1,
+                "sweep_range": 0.22800488699331556
+              },
+              "after_score": 1.0,
+              "before_label": {
+                "contact_count": 4,
+                "contact_milestone": 4,
+                "released_success": 0,
+                "sweep_milestone": 1,
+                "sweep_range": 0.21237399590578665
+              },
+              "before_score": 0.9,
+              "fraction": 0.34,
+              "native_step": 408
+            }
+          ],
+          "source_prefix_success": false,
+          "source_rollout_success": true
+        }
+      ],
+      "prefixes": [
+        {
+          "all_prefix_carriers_exact": true,
+          "anchor_event": {
+            "after_label": {
+              "contact_count": 5,
+              "contact_milestone": 5,
+              "released_success": 0,
+              "sweep_milestone": 1,
+              "sweep_range": 0.22800488699331556
+            },
+            "after_score": 1.0,
+            "before_label": {
+              "contact_count": 4,
+              "contact_milestone": 4,
+              "released_success": 0,
+              "sweep_milestone": 1,
+              "sweep_range": 0.21237399590578665
+            },
+            "before_score": 0.9,
+            "fraction": 0.34,
+            "native_step": 408
+          },
+          "artifact": "/mnt/data/nhatnc129/jepa/latent_scope_baseline/outputs/stage_b_event_52226/prefixes/ScrubCuttingBoard/prefix_00/branches.npz",
+          "baseline_candidate_max_progress_score": 1.0,
+          "baseline_candidate_success": true,
+          "candidate_elapsed_seconds": [
+            183.63279469683766,
+            185.61262222006917,
+            187.24961104802787,
+            185.38018012419343,
+            194.90681056305766,
+            195.50118913128972,
+            185.3972225934267,
+            185.32719414681196
+          ],
+          "candidate_max_progress_scores": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "candidate_state_diverse": true,
+          "candidate_state_diversity": 1.0472327964102899,
+          "candidate_successes": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "canonical_history": {
+            "board_contact_positions": [
+              [
+                5.5923662356364,
+                -1.5063316867979797
+              ],
+              [
+                5.43414053977654,
+                -1.601937569585081
+              ],
+              [
+                5.461691640578222,
+                -1.6442438796934455
+              ],
+              [
+                5.454014890430921,
+                -1.6245153572410063
+              ]
+            ],
+            "board_contact_timer": 4,
+            "sponge_contact_height": null
+          },
+          "environment_seed": 62000,
+          "oracle_candidate_max_progress_score": 1.0,
+          "oracle_candidate_success": true,
+          "outcome_varies": false,
+          "prefix_index": 0,
+          "prefix_native_steps": 408,
+          "progress_artifact": "/mnt/data/nhatnc129/jepa/latent_scope_baseline/outputs/stage_b_event_52226/prefixes/ScrubCuttingBoard/prefix_00/progress.json",
+          "progress_oracle_gain": 0.0,
+          "progress_outcome_varies": false,
+          "task": "ScrubCuttingBoard"
+        }
+      ]
+    }
+  },
+  "verdict": "B0_EXPANSION_OVER_BUDGET"
+}

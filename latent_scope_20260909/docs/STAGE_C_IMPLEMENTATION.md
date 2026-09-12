@@ -1,5 +1,7 @@
 # Stage C implementation scaffold
 
+> Review update, 13 September 2026: the numerical smoke pass does not qualify the scientific comparison. [FEASIBILITY_REASSESSMENT_20260913_EN.md](FEASIBILITY_REASSESSMENT_20260913_EN.md) identifies short-window memory, missing temporal/segment identity, restricted frame readout, additional-supervision confounding and unenforced one-window-per-candidate evaluation. These findings are not fixed in code by this documentation update.
+
 Status: code prepared; no Stage-C encoding or training job launched. Stage C remains
 blocked until the full Stage-B1 headroom/readout gate passes.
 
