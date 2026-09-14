@@ -42,11 +42,29 @@ nonterminal progress between 10% and 90% of the horizon, and branch immediately 
 that event. Candidate seeds remain independent of the source rollout; the source action is
 not inserted into the candidate set.
 
+The event carrier must be restored directly from the source simulator snapshot together
+with the task-owned history fields. Simulator state and task history must match exactly,
+and all reconstructed candidate branches must render identical canonical observations.
+Source-rollout screenshots are diagnostic rather than a gate: an independent five-restore
+calibration showed pixel-identical cross-restores, while two later unseen prefixes exceeded
+the predeclared source-to-restore MAE tolerance despite exact physical state/history, before
+any candidate was evaluated. Candidate proposals and outcomes therefore both use the same
+freshly rendered canonical restored observation; source-to-restore image metrics remain in
+the artifact and cannot be used to filter prefixes after outcomes are observed.
+
 Report two distinct ceilings: eventual native success and maximum native progress reached
 under the common continuation. For Scrub, normalized progress is half capped contact
 milestone and half sweep milestone. For Rinse, it is washed-region count divided by three.
 This profile may establish that task-relevant alternatives exist, but its event-conditioned
 sampling is an availability diagnostic, not an unbiased native-success estimate for B1.
+
+### B0.2 nested action-horizon check
+
+At each exact event carrier, draw one eight-candidate bank of the native 16-step GR00T
+output. Evaluate the same candidates after the first 8 actions and after all 16 actions;
+the 8-step sequence must therefore be an exact prefix of the 16-step sequence. Continue
+with a fresh GR00T query every 8 native steps in both conditions. This isolates intervention
+horizon from candidate identity and continuation cadence.
 
 ## B1 screening experiment
 

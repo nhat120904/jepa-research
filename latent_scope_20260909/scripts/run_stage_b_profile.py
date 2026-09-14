@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import gzip
 import json
 import os
@@ -39,6 +40,23 @@ def image_max_abs(first: np.ndarray, second: np.ndarray) -> int:
     return int(np.abs(first.astype(np.int16) - second.astype(np.int16)).max(initial=0))
 
 
+def image_alignment_metrics(first: np.ndarray, second: np.ndarray) -> dict:
+    if first.shape != second.shape:
+        return {
+            "shape_equal": False,
+            "max_abs": 2**31 - 1,
+            "normalized_mae": float("inf"),
+            "p99_abs": float("inf"),
+        }
+    delta = np.abs(first.astype(np.float32) - second.astype(np.float32))
+    return {
+        "shape_equal": True,
+        "max_abs": int(delta.max(initial=0)),
+        "normalized_mae": float(delta.mean() / 255.0),
+        "p99_abs": float(np.quantile(delta, 0.99)),
+    }
+
+
 def create_env(wrapper_class, task: str, split: str, chunk_steps: int):
     horizon = get_task_horizon(task)
     base = gym.make(f"robocasa/{task}", split=split, enable_render=True)
@@ -50,6 +68,21 @@ def create_env(wrapper_class, task: str, split: str, chunk_steps: int):
         max_episode_steps=horizon,
     )
     return wrapped, wrapped.unwrapped, wrapped.unwrapped.env, horizon
+
+
+def continuation_cadence(profile: dict) -> int:
+    return int(profile.get("continuation_cadence_steps", profile["candidate_chunk_steps"]))
+
+
+def intervention_horizons(profile: dict) -> list[int]:
+    values = profile.get("candidate_intervention_steps", [profile["candidate_chunk_steps"]])
+    horizons = [int(value) for value in values]
+    cadence = continuation_cadence(profile)
+    if not horizons or any(value <= 0 or value % cadence for value in horizons):
+        raise ValueError("Every candidate intervention horizon must be a positive cadence multiple")
+    if horizons != sorted(set(horizons)):
+        raise ValueError("Candidate intervention horizons must be sorted and unique")
+    return horizons
 
 
 def policy_action_chunk(client: InferenceClient, obs: dict, chunk_steps: int) -> dict[str, np.ndarray]:
@@ -110,6 +143,35 @@ def reset_carrier(wrapped, gym_env, task_env, source: dict) -> dict:
     return sync_wrapper_after_reset(wrapped, gym_env, task_env)
 
 
+def restore_task_history(task_env, saved_history: dict) -> None:
+    for field, value in saved_history.items():
+        if field == "board_contact_positions":
+            value = [np.asarray(position, dtype=np.float64).copy() for position in value]
+        else:
+            value = copy.deepcopy(value)
+        setattr(task_env, field, value)
+
+
+def reset_to_event(wrapped, gym_env, task_env, source: dict) -> dict:
+    wrapped.reset(seed=source["seed"])
+    task_env.rng = np.random.default_rng(source["seed"])
+    reset_to(
+        task_env,
+        {
+            "model": source["model_xml"],
+            "ep_meta": json.dumps(source["ep_meta"]),
+            "states": source["anchor_state"],
+        },
+    )
+    restore_task_history(task_env, source["anchor_history"])
+    obs = sync_wrapper_after_reset(wrapped, gym_env, task_env)
+    remaining_steps = int(source["horizon"]) - int(source["anchor_event"]["native_step"])
+    if remaining_steps <= 0:
+        raise RuntimeError("Event snapshot has no remaining native horizon")
+    wrapped.max_episode_steps = remaining_steps
+    return obs
+
+
 def replay_prefix(wrapped, obs: dict, prefix_actions: list[dict[str, np.ndarray]], chunk_steps: int):
     if len(prefix_actions) % chunk_steps:
         raise RuntimeError("Prefix length is not divisible by the locked chunk length")
@@ -128,6 +190,12 @@ def capture_images(obs: dict, camera_keys: list[str]) -> dict[str, np.ndarray]:
     return {key: np.asarray(obs[key][-1]).copy() for key in camera_keys if key in obs}
 
 
+def capture_fresh_images(gym_env, task_env, camera_keys: list[str]) -> dict[str, np.ndarray]:
+    """Render cameras from the current simulator state, bypassing wrapper observation caches."""
+    obs = gym_env.get_observation(task_env._get_observations(force_update=True))
+    return {key: np.asarray(obs[key]).copy() for key in camera_keys if key in obs}
+
+
 def generate_source_prefix(
     client,
     wrapper_class,
@@ -138,8 +206,9 @@ def generate_source_prefix(
 ):
     task = task_cfg["name"]
     seed = profile["environment_seed_base"] + task_index * 10_000 + attempt
+    cadence = continuation_cadence(profile)
     wrapped, gym_env, task_env, horizon = create_env(
-        wrapper_class, task, profile["split"], profile["candidate_chunk_steps"]
+        wrapper_class, task, profile["split"], cadence
     )
     try:
         obs, _ = wrapped.reset(seed=seed)
@@ -149,7 +218,7 @@ def generate_source_prefix(
             "ep_meta": task_env.get_ep_meta(),
             "initial_state": np.asarray(task_env.sim.get_state().flatten()).copy(),
         }
-        chunk_steps = profile["candidate_chunk_steps"]
+        chunk_steps = cadence
         prefix_actions: list[dict[str, np.ndarray]] = []
         prefix_success = False
         set_policy_seed(client, profile["proposal_seed_base"] - 10_000 + seed)
@@ -160,6 +229,11 @@ def generate_source_prefix(
             rollout_success = False
             terminated = truncated = False
             while not (terminated or truncated):
+                before_images = capture_fresh_images(
+                    gym_env, task_env, profile["camera_keys"]
+                )
+                before_state = np.asarray(task_env.sim.get_state().flatten()).copy()
+                before_history = task_history(task_env, task_cfg["history_fields"])
                 chunk = policy_action_chunk(client, obs, chunk_steps)
                 obs, reward, terminated, truncated, info = wrapped.step(chunk)
                 succeeded = bool(info["success"][-1])
@@ -180,6 +254,9 @@ def generate_source_prefix(
                                 "after_label": next_label,
                                 "before_score": previous_score,
                                 "after_score": next_score,
+                                "anchor_state": before_state,
+                                "anchor_history": before_history,
+                                "anchor_images": before_images,
                             }
                         )
                 prefix_actions.extend(flatten_chunk(chunk))
@@ -188,7 +265,12 @@ def generate_source_prefix(
                 previous_score = next_score
             source["source_rollout_success"] = rollout_success
             source["source_events"] = [
-                {key: value for key, value in event.items() if key != "prefix_actions"}
+                {
+                    key: value
+                    for key, value in event.items()
+                    if key
+                    not in ("prefix_actions", "anchor_state", "anchor_history", "anchor_images")
+                }
                 for event in events
             ]
             if not events or (
@@ -204,8 +286,13 @@ def generate_source_prefix(
             prefix_actions = selected["prefix_actions"]
             source["anchor_found"] = True
             source["anchor_event"] = {
-                key: value for key, value in selected.items() if key != "prefix_actions"
+                key: value
+                for key, value in selected.items()
+                if key not in ("prefix_actions", "anchor_state", "anchor_history", "anchor_images")
             }
+            source["anchor_state"] = selected["anchor_state"]
+            source["anchor_history"] = selected["anchor_history"]
+            source["anchor_images"] = selected["anchor_images"]
         else:
             target_steps = int(horizon * profile["prefix_fraction"])
             target_steps -= target_steps % chunk_steps
@@ -226,16 +313,23 @@ def generate_source_prefix(
 
 
 def reconstruct_canonical(wrapper_class, task_cfg, profile, source):
+    cadence = continuation_cadence(profile)
     wrapped, gym_env, task_env, _ = create_env(
         wrapper_class,
         task_cfg["name"],
         profile["split"],
-        profile["candidate_chunk_steps"],
+        cadence,
     )
-    obs = reset_carrier(wrapped, gym_env, task_env, source)
-    obs, success = replay_prefix(
-        wrapped, obs, source["prefix_actions"], profile["candidate_chunk_steps"]
-    )
+    if profile.get("anchor_mode", "fixed_fraction") == "event_aligned":
+        obs = reset_to_event(wrapped, gym_env, task_env, source)
+        success = bool(source["anchor_event"]["before_label"].get("success", 0)) or bool(
+            source["anchor_event"]["before_label"].get("released_success", 0)
+        )
+    else:
+        obs = reset_carrier(wrapped, gym_env, task_env, source)
+        obs, success = replay_prefix(
+            wrapped, obs, source["prefix_actions"], cadence
+        )
     return wrapped, gym_env, task_env, obs, success
 
 
@@ -252,12 +346,13 @@ def run_candidate(
     profile,
     source,
     canonical,
-    candidate_chunk,
+    candidate_bank,
+    intervention_steps: int,
     continuation_seed: int,
 ):
     task = task_cfg["name"]
     camera_keys = profile["camera_keys"]
-    chunk_steps = profile["candidate_chunk_steps"]
+    chunk_steps = continuation_cadence(profile)
     wrapped, gym_env, task_env, obs, prefix_success = reconstruct_canonical(
         wrapper_class, task_cfg, profile, source
     )
@@ -284,18 +379,30 @@ def run_candidate(
         if prefix_success:
             raise RuntimeError(f"{task} canonical prefix already succeeded")
 
-        obs, reward, terminated, truncated, info = wrapped.step(candidate_chunk)
-        success = bool(reward)
+        success = False
+        terminated = truncated = False
+        progress = []
+        anchor_native_step = int(source.get("anchor_event", {}).get("native_step", 0))
+        for start in range(0, intervention_steps, chunk_steps):
+            candidate_chunk = {
+                key: value[start : start + chunk_steps]
+                for key, value in candidate_bank.items()
+            }
+            obs, reward, terminated, truncated, info = wrapped.step(candidate_chunk)
+            success = success or bool(reward)
+            progress.append(
+                {
+                    "phase": "intervention",
+                    "native_step": anchor_native_step + len(wrapped.reward),
+                    "history": task_history(task_env, task_cfg["history_fields"]),
+                    "label": progress_label(task, task_env, bool(info["success"][-1])),
+                }
+            )
+            if terminated or truncated:
+                break
         post_state = np.asarray(task_env.sim.get_state().flatten()).copy()
         post_history = task_history(task_env, task_cfg["history_fields"])
         post_images = capture_images(obs, camera_keys)
-        progress = [
-            {
-                "native_step": len(wrapped.reward),
-                "history": post_history,
-                "label": progress_label(task, task_env, bool(info["success"][-1])),
-            }
-        ]
         set_policy_seed(client, continuation_seed)
         while not (terminated or truncated):
             continuation = policy_action_chunk(client, obs, chunk_steps)
@@ -303,7 +410,8 @@ def run_candidate(
             success = success or bool(reward)
             progress.append(
                 {
-                    "native_step": len(wrapped.reward),
+                    "phase": "continuation",
+                    "native_step": anchor_native_step + len(wrapped.reward),
                     "history": task_history(task_env, task_cfg["history_fields"]),
                     "label": progress_label(task, task_env, bool(info["success"][-1])),
                 }
@@ -312,6 +420,7 @@ def run_candidate(
         final_images = capture_images(obs, camera_keys)
         return {
             "success": success,
+            "intervention_steps": intervention_steps,
             "prefix_comparison": prefix_comparison,
             "post_state": post_state,
             "post_history": post_history,
@@ -338,6 +447,8 @@ def run_prefix(
     output_dir: Path,
 ):
     task = task_cfg["name"]
+    horizons = intervention_horizons(profile)
+    bank_steps = max(horizons)
     wrapped, gym_env, task_env, obs, canonical_success = reconstruct_canonical(
         wrapper_class, task_cfg, profile, source
     )
@@ -351,7 +462,55 @@ def run_prefix(
         }
         if set(canonical["images"]) != set(profile["camera_keys"]):
             raise RuntimeError(f"Missing canonical cameras for {task}")
-        candidate_chunks = []
+        if profile.get("anchor_mode", "fixed_fraction") == "event_aligned":
+            image_metrics = {
+                key: image_alignment_metrics(
+                    canonical["images"][key], source["anchor_images"][key]
+                )
+                for key in profile["camera_keys"]
+            }
+            max_normalized_mae = float(
+                profile.get("source_image_max_normalized_mae", 0.0)
+            )
+            max_p99_abs = float(profile.get("source_image_max_p99_abs", 0.0))
+            image_gate_mode = profile.get("source_image_gate_mode", "threshold")
+            if image_gate_mode not in ("threshold", "diagnostic_only"):
+                raise ValueError(f"Unknown source_image_gate_mode: {image_gate_mode}")
+            image_within_tolerance = all(
+                row["shape_equal"]
+                and row["normalized_mae"] <= max_normalized_mae
+                and row["p99_abs"] <= max_p99_abs
+                for row in image_metrics.values()
+            )
+            source_alignment = {
+                "state_max_abs": state_max_abs(canonical["state"], source["anchor_state"]),
+                "history_equal": canonical["history"] == source["anchor_history"],
+                "image_max_abs": {
+                    key: row["max_abs"] for key, row in image_metrics.items()
+                },
+                "image_metrics": image_metrics,
+                "image_gate": {
+                    "mode": image_gate_mode,
+                    "max_normalized_mae": max_normalized_mae,
+                    "max_p99_abs": max_p99_abs,
+                    "within_tolerance": image_within_tolerance,
+                },
+            }
+            source_alignment["exact"] = (
+                source_alignment["state_max_abs"] <= profile["state_max_abs_tolerance"]
+                and source_alignment["history_equal"]
+                and all(row["shape_equal"] for row in image_metrics.values())
+                and (image_gate_mode == "diagnostic_only" or image_within_tolerance)
+            )
+            if not source_alignment["exact"]:
+                raise RuntimeError(
+                    f"{task} restored carrier does not match the intended source event: "
+                    f"{source_alignment}"
+                )
+        else:
+            source_alignment = {"exact": True, "mode": "replayed_fixed_fraction"}
+
+        candidate_banks = []
         for candidate_index in range(profile["candidate_chunks_per_prefix"]):
             proposal_seed = (
                 profile["proposal_seed_base"]
@@ -360,9 +519,7 @@ def run_prefix(
                 + candidate_index
             )
             set_policy_seed(client, proposal_seed)
-            candidate_chunks.append(
-                policy_action_chunk(client, obs, profile["candidate_chunk_steps"])
-            )
+            candidate_banks.append(policy_action_chunk(client, obs, bank_steps))
     finally:
         wrapped.close()
 
@@ -375,82 +532,109 @@ def run_prefix(
         "initial_state": source["initial_state"],
         "canonical_prefix_state": canonical["state"],
     }
+    if "anchor_state" in source:
+        arrays["intended_source_event_state"] = source["anchor_state"]
+        for camera_key, value in source["anchor_images"].items():
+            arrays[f"intended_source_event_obs::{camera_key}"] = value
     for camera_key, value in canonical["images"].items():
         arrays[f"canonical_obs::{camera_key}"] = value
     for action_key in source["prefix_actions"][0]:
         arrays[f"prefix_action::{action_key}"] = np.stack(
             [action[action_key] for action in source["prefix_actions"]]
         )
+    for candidate_index, candidate_bank in enumerate(candidate_banks):
+        for key, value in candidate_bank.items():
+            arrays[f"candidate_{candidate_index}::action_bank::{key}"] = value
 
-    rows = []
+    rows_by_horizon = {}
+    horizon_results = {}
     continuation_seed = (
         profile["continuation_seed_base"] + task_index * 10_000 + prefix_index
     )
     progress_path = prefix_dir / "progress.json"
-    for candidate_index, candidate_chunk in enumerate(candidate_chunks):
-        row = run_candidate(
-            client,
-            wrapper_class,
-            task_cfg,
-            profile,
-            source,
-            canonical,
-            candidate_chunk,
-            continuation_seed,
-        )
-        row["candidate_index"] = candidate_index
-        rows.append(row)
-        for key, value in candidate_chunk.items():
-            arrays[f"candidate_{candidate_index}::action::{key}"] = value
-        arrays[f"candidate_{candidate_index}::post_state"] = row.pop("post_state")
-        arrays[f"candidate_{candidate_index}::final_state"] = row.pop("final_state")
-        for camera_key, value in row.pop("post_images").items():
-            arrays[f"candidate_{candidate_index}::post_obs::{camera_key}"] = value
-        for camera_key, value in row.pop("final_images").items():
-            arrays[f"candidate_{candidate_index}::final_obs::{camera_key}"] = value
-        write_json(progress_path, {"candidates": rows})
-        print(
-            f"{task} prefix {prefix_index + 1} candidate {candidate_index + 1}/"
-            f"{len(candidate_chunks)} success={row['success']}",
-            flush=True,
-        )
+    for intervention_steps in horizons:
+        rows = []
+        rows_by_horizon[str(intervention_steps)] = rows
+        for candidate_index, candidate_bank in enumerate(candidate_banks):
+            row = run_candidate(
+                client,
+                wrapper_class,
+                task_cfg,
+                profile,
+                source,
+                canonical,
+                candidate_bank,
+                intervention_steps,
+                continuation_seed,
+            )
+            row["candidate_index"] = candidate_index
+            rows.append(row)
+            prefix_key = f"h{intervention_steps}::candidate_{candidate_index}"
+            arrays[f"{prefix_key}::post_state"] = row.pop("post_state")
+            arrays[f"{prefix_key}::final_state"] = row.pop("final_state")
+            for camera_key, value in row.pop("post_images").items():
+                arrays[f"{prefix_key}::post_obs::{camera_key}"] = value
+            for camera_key, value in row.pop("final_images").items():
+                arrays[f"{prefix_key}::final_obs::{camera_key}"] = value
+            write_json(progress_path, {"candidates_by_intervention_steps": rows_by_horizon})
+            print(
+                f"{task} prefix {prefix_index + 1} horizon={intervention_steps} "
+                f"candidate {candidate_index + 1}/{len(candidate_banks)} "
+                f"success={row['success']}",
+                flush=True,
+            )
 
-    post_states = [arrays[f"candidate_{index}::post_state"] for index in range(len(rows))]
-    diversity = max(
-        (
-            state_max_abs(post_states[first], post_states[second])
-            for first in range(len(rows))
-            for second in range(first + 1, len(rows))
-        ),
-        default=0.0,
-    )
+        post_states = [
+            arrays[f"h{intervention_steps}::candidate_{index}::post_state"]
+            for index in range(len(rows))
+        ]
+        diversity = max(
+            (
+                state_max_abs(post_states[first], post_states[second])
+                for first in range(len(rows))
+                for second in range(first + 1, len(rows))
+            ),
+            default=0.0,
+        )
+        scores = [
+            max(progress_score(task, point["label"]) for point in row["progress"])
+            for row in rows
+        ]
+        horizon_results[str(intervention_steps)] = {
+            "candidate_successes": [bool(row["success"]) for row in rows],
+            "baseline_candidate_success": bool(rows[0]["success"]),
+            "oracle_candidate_success": any(row["success"] for row in rows),
+            "outcome_varies": len({bool(row["success"]) for row in rows}) > 1,
+            "candidate_max_progress_scores": scores,
+            "baseline_candidate_max_progress_score": scores[0],
+            "oracle_candidate_max_progress_score": max(scores),
+            "progress_oracle_gain": max(scores) - scores[0],
+            "progress_outcome_varies": max(scores) - min(scores) > 1e-12,
+            "candidate_state_diversity": diversity,
+            "candidate_state_diverse": diversity >= profile["minimum_candidate_state_diversity"],
+            "all_prefix_carriers_exact": all(
+                row["prefix_comparison"]["exact"] for row in rows
+            ),
+            "candidate_elapsed_seconds": [row["elapsed_seconds"] for row in rows],
+        }
+
     np.savez_compressed(prefix_dir / "branches.npz", **arrays)
+    primary = horizon_results[str(horizons[0])]
     prefix_row = {
         "task": task,
         "prefix_index": prefix_index,
         "environment_seed": source["seed"],
         "prefix_native_steps": len(source["prefix_actions"]),
         "canonical_history": canonical["history"],
-        "candidate_successes": [bool(row["success"]) for row in rows],
-        "baseline_candidate_success": bool(rows[0]["success"]),
-        "oracle_candidate_success": any(row["success"] for row in rows),
-        "outcome_varies": len({bool(row["success"]) for row in rows}) > 1,
-        "candidate_max_progress_scores": [
-            max(progress_score(task, point["label"]) for point in row["progress"])
-            for row in rows
-        ],
-        "candidate_state_diversity": diversity,
-        "candidate_state_diverse": diversity >= profile["minimum_candidate_state_diversity"],
-        "all_prefix_carriers_exact": all(row["prefix_comparison"]["exact"] for row in rows),
-        "candidate_elapsed_seconds": [row["elapsed_seconds"] for row in rows],
+        "source_event_alignment": source_alignment,
+        "candidate_bank_steps": bank_steps,
+        "candidate_intervention_steps": horizons,
+        "nested_candidate_bank": len(horizons) > 1,
+        "interventions": horizon_results,
         "artifact": str(prefix_dir / "branches.npz"),
         "progress_artifact": str(progress_path),
     }
-    scores = prefix_row["candidate_max_progress_scores"]
-    prefix_row["baseline_candidate_max_progress_score"] = scores[0]
-    prefix_row["oracle_candidate_max_progress_score"] = max(scores)
-    prefix_row["progress_oracle_gain"] = max(scores) - scores[0]
-    prefix_row["progress_outcome_varies"] = max(scores) - min(scores) > 1e-12
+    prefix_row.update(primary)
     if "anchor_event" in source:
         prefix_row["anchor_event"] = source["anchor_event"]
     write_json(prefix_dir / "metadata.json", prefix_row)
@@ -538,6 +722,7 @@ def main() -> None:
                 raise RuntimeError(f"Could not produce enough unsolved prefixes for {task}")
 
         prefixes = [row for task in result["tasks"].values() for row in task["prefixes"]]
+        horizons = intervention_horizons(profile)
         baseline_rate = float(np.mean([row["baseline_candidate_success"] for row in prefixes]))
         oracle_rate = float(np.mean([row["oracle_candidate_success"] for row in prefixes]))
         baseline_progress = float(
@@ -553,9 +738,45 @@ def main() -> None:
             / profile["prefixes_per_task"]
             / 3600.0
         )
+        intervention_summaries = {}
+        for intervention_steps in horizons:
+            key = str(intervention_steps)
+            rows = [prefix["interventions"][key] for prefix in prefixes]
+            baseline_success = float(np.mean([row["baseline_candidate_success"] for row in rows]))
+            oracle_success = float(np.mean([row["oracle_candidate_success"] for row in rows]))
+            baseline_score = float(
+                np.mean([row["baseline_candidate_max_progress_score"] for row in rows])
+            )
+            oracle_score = float(
+                np.mean([row["oracle_candidate_max_progress_score"] for row in rows])
+            )
+            intervention_summaries[key] = {
+                "baseline_candidate_success_rate": baseline_success,
+                "oracle_candidate_success_rate": oracle_success,
+                "oracle_gain_percentage_points": 100.0 * (oracle_success - baseline_success),
+                "prefixes_with_outcome_variation": sum(row["outcome_varies"] for row in rows),
+                "baseline_candidate_max_progress_score": baseline_score,
+                "oracle_candidate_max_progress_score": oracle_score,
+                "progress_oracle_gain_percentage_points": 100.0
+                * (oracle_score - baseline_score),
+                "prefixes_with_progress_variation": sum(
+                    row["progress_outcome_varies"] for row in rows
+                ),
+                "all_candidate_states_diverse": all(
+                    row["candidate_state_diverse"] for row in rows
+                ),
+                "all_prefix_carriers_exact": all(
+                    row["all_prefix_carriers_exact"] for row in rows
+                ),
+            }
         result["summary"] = {
             "prefixes": len(prefixes),
-            "candidate_branches": len(prefixes) * profile["candidate_chunks_per_prefix"],
+            "candidate_branches": len(prefixes)
+            * profile["candidate_chunks_per_prefix"]
+            * len(horizons),
+            "candidate_bank_steps": max(horizons),
+            "candidate_intervention_steps": horizons,
+            "interventions": intervention_summaries,
             "baseline_candidate_success_rate": baseline_rate,
             "oracle_candidate_success_rate": oracle_rate,
             "profile_oracle_gain_percentage_points": 100.0 * (oracle_rate - baseline_rate),
@@ -570,13 +791,24 @@ def main() -> None:
             "prefixes_with_positive_progress_headroom": sum(
                 row["progress_oracle_gain"] > 1e-12 for row in prefixes
             ),
-            "all_prefix_carriers_exact": all(row["all_prefix_carriers_exact"] for row in prefixes),
-            "all_candidate_states_diverse": all(row["candidate_state_diverse"] for row in prefixes),
+            "all_source_event_restores_exact": all(
+                row["source_event_alignment"]["exact"] for row in prefixes
+            ),
+            "all_prefix_carriers_exact": all(
+                summary["all_prefix_carriers_exact"]
+                for summary in intervention_summaries.values()
+            ),
+            "all_candidate_states_diverse": all(
+                summary["all_candidate_states_diverse"]
+                for summary in intervention_summaries.values()
+            ),
             "elapsed_seconds": elapsed,
             "projected_serial_gpu_hours_for_40_prefixes_per_task": projected,
             "within_additional_gpu_hour_cap": projected <= config["expansion"]["additional_gpu_hour_cap"],
         }
-        if not result["summary"]["all_prefix_carriers_exact"]:
+        if not result["summary"]["all_source_event_restores_exact"]:
+            result["verdict"] = "B0_SOURCE_EVENT_ALIGNMENT_FAIL"
+        elif not result["summary"]["all_prefix_carriers_exact"]:
             result["verdict"] = "B0_PREFIX_RECONSTRUCTION_FAIL"
         elif not result["summary"]["all_candidate_states_diverse"]:
             result["verdict"] = "B0_NO_ACTION_DIVERSITY"

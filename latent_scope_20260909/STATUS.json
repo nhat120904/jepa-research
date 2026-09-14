@@ -1,9 +1,9 @@
 {
   "date": "2026-09-13",
   "scope": "JEPA-style latent world models for robot planning",
-  "status": "STAGE_B0_1_COMPLETE_ANCHOR_MISMATCH_STAGE_C_BLOCKED",
+  "status": "STAGE_B0_2_COMPLETE_VALID_VARIATION_NO_PREDECLARED_ORACLE_GAIN_STAGE_C_BLOCKED",
   "feasibility_reassessment": "docs/FEASIBILITY_REASSESSMENT_20260913_EN.md",
-  "reassessment_scope": "Static review plus read-only cluster status/artifact retrieval; no new experiment or code fix executed",
+  "reassessment_scope": "Review incorporated: direct source-event restoration and nested 8-versus-16 candidate-horizon profile implemented; Stage-C comparison repairs remain blocked before training",
   "arena_update": "ARENA_FIT_EN.md supersedes the custom PushCube pilot; prioritize released RoboCasa365 tasks without changing success predicates",
   "documentation_language": "English",
   "native_candidate_tasks": ["ScrubCuttingBoard", "RinseSinkBasin"],
@@ -185,7 +185,7 @@
       "event_profile": "COMPLETED (0:0, 01:40:07); reverified 2026-09-13",
       "verified_with": ["squeue", "sacct"]
     },
-    "phase": "B0_1_COMPLETE_REQUIRES_ANCHOR_REPAIR",
+    "phase": "B0_2_NESTED_8_VS_16_PROFILE_COMPLETE",
     "profile_design": {
       "prefixes_per_task": 2,
       "candidate_chunks_per_prefix": 8,
@@ -221,6 +221,51 @@
       "interpretation": "Scrub prefix locally saturated; Rinse source-event alignment not preserved in reconstructed carrier. Neither result tests composition. Repair anchor semantics and Stage-C comparison invariants before expansion."
     },
     "event_profile_result": "/mnt/data/nhatnc129/jepa/latent_scope_baseline/outputs/stage_b_event_52226/stage_b_profile_result.json",
+    "horizon_profile_config": "configs/stage_b_horizon_profile.json",
+    "horizon_profile_job_id": "52399",
+    "horizon_profile_submitted_utc": "2026-09-13T12:37:45Z",
+    "horizon_profile_state": "COMPLETED (0:0, 02:03:42); verified with squeue and sacct",
+    "horizon_profile_recovery": "Initial job 52279 ruled out a cached-vs-fresh image comparison. Retry 52282 fresh-rendered both sides but still found nondeterministic pixels despite exact simulator state and native task history, then stopped before candidate evaluation. The next repair must calibrate a perceptual/image tolerance rather than weaken physical event alignment.",
+    "horizon_profile_design": {
+      "event_restore": "Direct source simulator snapshot plus native task history; exact state/history/three-camera gate",
+      "candidate_bank_steps": 16,
+      "candidate_intervention_steps": [8, 16],
+      "continuation_cadence_steps": 8,
+      "candidate_banks_per_prefix": 8,
+      "prefixes_per_task": 1
+    },
+    "horizon_profile_result_pending": false,
+    "horizon_profile_result": "/mnt/data/nhatnc129/jepa/latent_scope_baseline/outputs/stage_b_horizon_52399/stage_b_profile_result.json",
+    "horizon_profile_verdict": "B0_EXPANSION_OVER_BUDGET",
+    "horizon_profile_summary": {
+      "valid_exact_event_carriers": true,
+      "candidate_states_diverse": true,
+      "scrub_8_step_successes": "7/8",
+      "scrub_16_step_successes": "8/8",
+      "rinse_8_step_successes": "8/8",
+      "rinse_16_step_successes": "8/8",
+      "prefixes_with_8_step_outcome_variation": 1,
+      "predeclared_candidate0_oracle_gain_percentage_points": 0.0,
+      "progress_oracle_gain_percentage_points": 0.0,
+      "projected_serial_gpu_hours_for_40_prefixes_per_task": 82.38512129630479
+    },
+    "horizon_profile_report": "docs/STAGE_B0_2_RESULT_52399.md",
+    "decision": "The corrected carrier establishes task-relevant candidate outcome variation on Scrub at 8 steps, but not positive oracle gain over the predeclared candidate 0. Do not claim headroom or launch the 82.39 GPU-hour serial B1. Next revise execution throughput and sample independent prefixes; Stage C remains blocked.",
+    "restore_calibration_config": "configs/stage_b_restore_calibration.json",
+    "restore_calibration_job_id": "52284",
+    "restore_calibration_submitted_utc": "2026-09-12T18:56:15Z",
+    "restore_calibration_state": "COMPLETED (0:0, 00:41:05); verified with squeue and sacct",
+    "restore_calibration_verdict": "EVENT_RESTORE_CALIBRATION_COMPLETE",
+    "restore_calibration_summary": {
+      "physical_alignment_exact": true,
+      "restore_repeats_per_task": 5,
+      "cross_restore_images_exact": true,
+      "locked_source_image_max_normalized_mae": 0.004,
+      "locked_source_image_max_p99_abs": 6
+    },
+    "restore_calibration_result_pending": false,
+    "restore_calibration_result": "/mnt/data/nhatnc129/jepa/latent_scope_baseline/outputs/stage_b_restore_cal_52284/event_restore_calibration_result.json",
+    "expected_result_gates": "docs/EXPECTED_RESULT_GATES.md",
     "b1_launched": false,
     "stage_c_launched": false
   },

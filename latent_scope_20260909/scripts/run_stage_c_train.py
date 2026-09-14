@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import random
@@ -18,6 +19,7 @@ from torch.utils.data import DataLoader
 
 from stage_c.data import SegmentWindowDataset, require_binary_training_labels
 from stage_c.models import ModelDimensions, build_arm
+from stage_c.metrics import candidate_metrics
 
 
 def write_json(path: Path, payload: dict) -> None:
@@ -79,9 +81,10 @@ def binary_auc(labels: list[float], scores: list[float]) -> float | None:
 
 
 @torch.no_grad()
-def evaluate(model, loader, device, weights) -> tuple[dict, list[dict]]:
+def evaluate(model, loader, device, weights, partition: int | None = None) -> tuple[dict, list[dict]]:
     model.eval()
     total = 0.0
+    value_total = 0.0
     count = 0
     scores: list[float] = []
     labels: list[float] = []
@@ -90,64 +93,40 @@ def evaluate(model, loader, device, weights) -> tuple[dict, list[dict]]:
         batch = move(batch, device)
         with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
             loss, _, logits = model.loss(batch, weights)
+            if partition is not None:
+                _, _, logits = model.predict_partition(batch, partition)
         size = len(logits)
         total += float(loss) * size
+        value_total += float(torch.nn.functional.binary_cross_entropy_with_logits(
+            logits.float(), batch["eventual_success"].float(), reduction="sum"))
         count += size
         batch_scores = logits.float().cpu().tolist()
         batch_labels = batch["eventual_success"].float().cpu().tolist()
         scores.extend(batch_scores)
         labels.extend(batch_labels)
-        for group, candidate, label, score in zip(
+        for task, group, candidate, candidate_count, label, score in zip(
+            batch["task_id"].cpu().tolist(),
             batch["candidate_group_id"].cpu().tolist(),
             batch["candidate_index"].cpu().tolist(),
+            batch["candidate_count"].cpu().tolist(),
             batch_labels,
             batch_scores,
         ):
             if group >= 0 and candidate >= 0:
                 candidates.append(
-                    {"group": group, "candidate": candidate, "label": label, "score": score}
+                    {"task": task, "group": group, "candidate": candidate,
+                     "candidate_count": candidate_count, "label": label, "score": score}
                 )
     predictions = [score >= 0 for score in scores]
     accuracy = float(np.mean([prediction == (label >= 0.5) for prediction, label in zip(predictions, labels)]))
     return {
         "loss": total / max(1, count),
+        "value_bce": value_total / max(1, count),
         "accuracy": accuracy,
         "auc": binary_auc(labels, scores),
         "examples": count,
         "positive_rate": float(np.mean(labels)),
     }, candidates
-
-
-def candidate_metrics(rows: list[dict]) -> dict | None:
-    if not rows:
-        return None
-    groups: dict[int, list[dict]] = {}
-    for row in rows:
-        groups.setdefault(row["group"], []).append(row)
-    baseline = []
-    selected = []
-    oracle = []
-    complete = 0
-    for rows_in_group in groups.values():
-        if not any(row["candidate"] == 0 for row in rows_in_group):
-            continue
-        complete += 1
-        baseline.append(next(row["label"] for row in rows_in_group if row["candidate"] == 0))
-        selected.append(max(rows_in_group, key=lambda row: row["score"])["label"])
-        oracle.append(max(row["label"] for row in rows_in_group))
-    if not complete:
-        return None
-    baseline_rate = float(np.mean(baseline))
-    selected_rate = float(np.mean(selected))
-    oracle_rate = float(np.mean(oracle))
-    return {
-        "groups": complete,
-        "baseline_success_rate": baseline_rate,
-        "selected_success_rate": selected_rate,
-        "oracle_success_rate": oracle_rate,
-        "selected_gain_percentage_points": 100.0 * (selected_rate - baseline_rate),
-        "oracle_regret_percentage_points": 100.0 * (oracle_rate - selected_rate),
-    }
 
 
 def main() -> None:
@@ -168,6 +147,7 @@ def main() -> None:
     result = {
         "verdict": "STAGE_C_ARM_RUNNING",
         "arm": args.arm,
+        "implementation_protocol": "qualification_v1_ordered_matched",
         "slurm_job_id": os.environ["SLURM_JOB_ID"],
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "config": config,
@@ -177,6 +157,7 @@ def main() -> None:
         result["stage_b_gate"] = assert_stage_b_gate(config)
         training = config["training"]
         data = config["data"]
+        result["manifest_sha256"] = hashlib.sha256(Path(data["manifest"]).read_bytes()).hexdigest()
         seed = int(training["seed"])
         seed_all(seed)
         train_data = SegmentWindowDataset(
@@ -252,14 +233,16 @@ def main() -> None:
             }
             history.append(epoch_row)
             write_json(args.output_dir / "history.json", {"epochs": history})
-            if validation["loss"] < best_loss:
-                best_loss = validation["loss"]
+            if validation["value_bce"] < best_loss:
+                best_loss = validation["value_bce"]
                 torch.save(
                     {
                         "arm": args.arm,
                         "model": model.state_dict(),
                         "dimensions": dimensions(config).__dict__,
                         "config": config,
+                        "implementation_protocol": result["implementation_protocol"],
+                        "manifest_sha256": result["manifest_sha256"],
                     },
                     args.output_dir / "best.pt",
                 )
@@ -283,6 +266,14 @@ def main() -> None:
                 "checkpoint": str(args.output_dir / "best.pt"),
             }
         )
+        if args.arm == "compositional_segment":
+            # Training uses the midpoint only. Never tune/checkpoint-select on these results.
+            result["heldout_partition_candidate_ranking"] = {}
+            for split in (1, 3, 5, 7):
+                if split < data["segment_steps"] and split != data["segment_steps"] // 2:
+                    _, rows = evaluate(model, candidate_loader, device, weights, partition=split)
+                    result["heldout_partition_candidate_ranking"][str(split)] = candidate_metrics(rows)
+            result["inference_claim"] = "Direct and composed inference reported separately; macro-step memory approximation"
         write_json(result_path, result)
     except Exception as error:
         result["verdict"] = "STAGE_C_ARM_ERROR"

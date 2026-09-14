@@ -60,13 +60,25 @@ def decode_rgb(path: Path) -> list[np.ndarray]:
 
 
 @torch.inference_mode()
-def encode_frames(frames, processor, model, batch_size: int, device: torch.device) -> torch.Tensor:
+def encode_frames(frames, processor, model, batch_size: int, device: torch.device,
+                  feature_mode: str = "cls", patch_grid_size: int = 2) -> torch.Tensor:
     chunks = []
     for start in range(0, len(frames), batch_size):
         inputs = processor(images=frames[start : start + batch_size], return_tensors="pt")
         pixels = inputs["pixel_values"].to(device, non_blocking=True)
         with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-            output = model(pixel_values=pixels).last_hidden_state[:, 0]
+            tokens = model(pixel_values=pixels).last_hidden_state
+            if feature_mode == "cls":
+                output = tokens[:, 0]
+            elif feature_mode == "patch_grid":
+                patches = tokens[:, 1:]
+                side = int(patches.shape[1] ** 0.5)
+                if side * side != patches.shape[1]:
+                    raise ValueError("Expected a square DINOv2 patch grid without register tokens")
+                spatial = patches.transpose(1, 2).reshape(len(patches), -1, side, side)
+                output = torch.nn.functional.adaptive_avg_pool2d(spatial, patch_grid_size).flatten(1)
+            else:
+                raise ValueError(f"Unknown feature_mode: {feature_mode}")
         chunks.append(output.float().cpu())
     return torch.cat(chunks).half()
 
@@ -158,7 +170,8 @@ def main() -> None:
                         f"{task} episode {episode} {key}: {len(decoded)} frames, expected {frames}"
                     )
                 features = encode_frames(
-                    decoded, processor, model, encoder_cfg["batch_frames"], device
+                    decoded, processor, model, encoder_cfg["batch_frames"], device,
+                    encoder_cfg.get("feature_mode", "cls"), encoder_cfg.get("patch_grid_size", 2)
                 )
                 if features.shape != (frames, encoder_cfg["feature_dim"]):
                     raise RuntimeError(f"Unexpected DINO output {tuple(features.shape)}")

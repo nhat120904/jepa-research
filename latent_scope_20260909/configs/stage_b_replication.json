@@ -1,0 +1,57 @@
+{
+  "stage": "INDEPENDENT_PREFIX_REPLICATION_AFTER_52475",
+  "runtime_root": "/mnt/data/nhatnc129/jepa/latent_scope_baseline",
+  "checkpoint": {
+    "repo_id": "robocasa/robocasa365_checkpoints",
+    "revision": "c484448aba1a9b60a04c9b0ca117241518ea69f3",
+    "relative_path": "gr00t_n1-5/foundation_model_learning/target_posttraining/composite_seen/checkpoint-60000"
+  },
+  "policy": {
+    "data_config": "panda_omron",
+    "embodiment_tag": "new_embodiment",
+    "denoising_steps": 4,
+    "native_action_horizon": 16,
+    "seed": 20260913
+  },
+  "qualification": {
+    "restore_mode": "compiled_mujoco_model_and_full_mjdata_same_runtime_version",
+    "previous_tranche_gpu_seconds": 0,
+    "tranche_gpu_second_cap": 21600,
+    "split": "target",
+    "task": {
+      "name": "ScrubCuttingBoard",
+      "history_fields": [
+        "board_contact_positions",
+        "board_contact_timer",
+        "sponge_contact_height"
+      ]
+    },
+    "target_prefixes": 8,
+    "maximum_attempts": 12,
+    "anchor_rule": "first_observed_chunk_boundary_with_1_to_4_contacts_and_incomplete_progress",
+    "anchor_deadline_fraction": 0.7,
+    "environment_seed_base": 74000,
+    "source_policy_seed_base": 163000,
+    "proposal_seed_base": 173000,
+    "scoring_seed_base": 183000,
+    "confirmation_seed_base": 193000,
+    "scoring_seconds": 14400,
+    "total_soft_seconds": 20700,
+    "slurm_hard_seconds": 21600,
+    "state_tolerance": 1e-9,
+    "source_image_max_normalized_mae": 0.004,
+    "source_image_max_p99_abs": 6,
+    "camera_keys": [
+      "video.robot0_agentview_left",
+      "video.robot0_agentview_right",
+      "video.robot0_eye_in_hand"
+    ],
+    "candidate_count": 8,
+    "intervention_steps": 8,
+    "continuation_cadence_steps": 8,
+    "replay_suffix_steps": 16,
+    "confirmation_seeds": 2,
+    "stage_c_auto_start": false,
+    "reuse_verified_source": false
+  }
+}

@@ -36,6 +36,8 @@
     ]
   },
   "encoder": {
+    "feature_mode": "cls",
+    "representation_note": "CLS baseline, not a DINO-WM patch-feature reproduction. Qualify against patch_grid before a large campaign.",
     "model_id": "facebook/dinov2-small",
     "revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
     "feature_dim": 384,

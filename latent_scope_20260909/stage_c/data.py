@@ -29,6 +29,22 @@ def load_manifest(path: Path) -> dict[str, Any]:
         raise StageCDataError(f"Unsupported manifest schema: {manifest.get('schema_version')}")
     if not manifest.get("episodes"):
         raise StageCDataError("Manifest contains no episode features")
+    source_splits = {}
+    path_splits = {}
+    seen = set()
+    for entry in manifest["episodes"]:
+        uid = entry["episode_uid"]
+        if uid in seen:
+            raise StageCDataError(f"Duplicate episode_uid: {uid}")
+        seen.add(uid)
+        source = entry.get("source_episode_uid", uid)
+        if source in source_splits and source_splits[source] != entry["split"]:
+            raise StageCDataError(f"Source episode crosses splits: {source}")
+        source_splits[source] = entry["split"]
+        resolved = str((path.parent / entry["path"]).resolve())
+        if resolved in path_splits and path_splits[resolved] != entry["split"]:
+            raise StageCDataError(f"Feature file crosses splits: {resolved}")
+        path_splits[resolved] = entry["split"]
     return manifest
 
 
@@ -58,6 +74,7 @@ class SegmentWindowDataset(Dataset):
         self.cache: OrderedDict[int, dict[str, torch.Tensor]] = OrderedDict()
         self.entries = []
         self.windows: list[tuple[int, int]] = []
+        candidate_groups = {}
         for entry in self.manifest["episodes"]:
             if entry["split"] != split:
                 continue
@@ -72,9 +89,42 @@ class SegmentWindowDataset(Dataset):
             self.entries.append(entry)
             first = self.history_steps - 1
             stop = int(entry["num_frames"]) - self.segment_steps
-            self.windows.extend((entry_index, t) for t in range(first, stop, stride))
+            is_candidate = int(entry.get("candidate_group_id", -1)) >= 0
+            if split == "candidate_eval" and not is_candidate:
+                raise StageCDataError("candidate_eval contains an ungrouped episode")
+            if is_candidate:
+                required = {"source_episode_uid", "prefix_uid", "decision_step",
+                            "candidate_index", "candidate_count"}
+                if required - set(entry):
+                    raise StageCDataError(f"Candidate {entry['episode_uid']} missing {required - set(entry)}")
+                t = int(entry["decision_step"])
+                if not first <= t < stop:
+                    raise StageCDataError(f"Invalid causal decision window for {entry['episode_uid']}: {t}")
+                self.windows.append((entry_index, t))
+                key = (int(entry["task_id"]), int(entry["candidate_group_id"]))
+                candidate_groups.setdefault(key, []).append(entry_index)
+            else:
+                self.windows.extend((entry_index, t) for t in range(first, stop, stride))
         if not self.windows:
             raise StageCDataError(f"No valid {split} windows in {self.manifest_path}")
+        # Run on the compute node when constructing the dataset, before any training.
+        for key, indices in candidate_groups.items():
+            entries = [self.entries[i] for i in indices]
+            reference = entries[0]
+            count = int(reference["candidate_count"])
+            if count < 2 or sorted(int(e["candidate_index"]) for e in entries) != list(range(count)):
+                raise StageCDataError(f"Duplicate/missing candidates in {key}")
+            for field in ("source_episode_uid", "prefix_uid", "decision_step", "candidate_count"):
+                if any(e[field] != reference[field] for e in entries):
+                    raise StageCDataError(f"Candidate group {key} mixes {field}")
+            t = int(reference["decision_step"])
+            history_slice = slice(t - self.history_steps + 1, t + 1)
+            expected = self._episode(indices[0])
+            for i in indices[1:]:
+                actual = self._episode(i)
+                for field in ("visual_features", "proprio"):
+                    if not torch.equal(expected[field][history_slice], actual[field][history_slice]):
+                        raise StageCDataError(f"Candidates in {key} do not share pre-action {field}")
 
     def __len__(self) -> int:
         return len(self.windows)
@@ -129,6 +179,7 @@ class SegmentWindowDataset(Dataset):
             "candidate_index": torch.tensor(
                 int(entry.get("candidate_index", -1)), dtype=torch.long
             ),
+            "candidate_count": torch.tensor(int(entry.get("candidate_count", 0)), dtype=torch.long),
         }
 
 
