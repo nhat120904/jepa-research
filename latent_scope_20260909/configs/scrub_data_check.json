@@ -1,0 +1,22 @@
+{
+  "stage": "scrub_data_check_step1",
+  "dataset_source": {
+    "repo_id": "nvidia/PhysicalAI-Robotics-Manipulation-Kitchen-Demos",
+    "revision": "522e4ffa3bb9d9729f79b241c65fc9e589f2659c",
+    "path_in_repo": "target/composite/ScrubCuttingBoard/20250816/lerobot"
+  },
+  "dataset_dir": "/mnt/data/nhatnc129/jepa/latent_scope_data/ScrubCuttingBoard/20250816/lerobot",
+  "local_seed_dir": "/mnt/data/nhatnc129/jepa/latent_scope_stage_a/datasets/v1.0/target/composite/ScrubCuttingBoard/20250816/lerobot",
+  "hf_cache": "/mnt/data/nhatnc129/jepa/latent_scope_data/hf_cache",
+  "camera_names": [
+    "robot0_agentview_left",
+    "robot0_agentview_right",
+    "robot0_eye_in_hand"
+  ],
+  "total_episodes": 504,
+  "episodes": 50,
+  "always_include_first": 5,
+  "episode_seed": 20260914,
+  "video_episodes": [0],
+  "soft_limit_seconds": 4800
+}

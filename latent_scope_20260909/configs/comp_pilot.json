@@ -1,0 +1,164 @@
+{
+  "stage": "offline_composition_pilot",
+  "protocol": "docs/COMP_PILOT_PROTOCOL.md",
+  "data": {
+    "dataset_root": "/mnt/data/nhatnc129/jepa/latent_scope_data/hf_mirror/target/composite/ScrubCuttingBoard/20250816/lerobot",
+    "label_root": "/mnt/data/nhatnc129/jepa/latent_scope_baseline/outputs/scrub_composition_audit_52617/labels",
+    "label_audit": "/mnt/data/nhatnc129/jepa/latent_scope_baseline/outputs/scrub_composition_audit_52617/composition_audit_result.json",
+    "feature_root": "/mnt/data/nhatnc129/jepa/latent_scope_comp_pilot/features",
+    "cameras": [
+      "robot0_agentview_left",
+      "robot0_agentview_right",
+      "robot0_eye_in_hand"
+    ],
+    "split_seed": 20260915,
+    "split_ratios": [
+      0.7,
+      0.15,
+      0.15
+    ]
+  },
+  "encoder": {
+    "model_id": "facebook/dinov2-small",
+    "revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+    "resize": "256->224 bilinear antialias, no crop, ImageNet normalization",
+    "feature_dim": 384,
+    "patch_grid": 4,
+    "dtype": "float16",
+    "frame_rate_hz": 20,
+    "batch_frames": 512
+  },
+  "training": {
+    "seed": 20260915,
+    "dim": 256,
+    "predictor_depth": 6,
+    "lr": 0.0003,
+    "weight_decay": 0.05,
+    "steps": 12000,
+    "warmup": 500,
+    "batch_size": 48,
+    "val_batches": 4,
+    "val_every": 1000,
+    "grad_clip": 1.0,
+    "ema_decay": 0.996,
+    "time_budget_seconds": 4800,
+    "loss_weights": {
+      "recon": 0.25,
+      "variance": 0.1,
+      "memory": 1.0,
+      "comp_observed": 0.5,
+      "comp_predicted": 0.5,
+      "recon_proprio": 0.25
+    }
+  },
+  "readout": {
+    "steps": 3000,
+    "batch_size": 256,
+    "lr": 0.001,
+    "weight_decay": 0.01,
+    "val_every": 250,
+    "train_stride": 8
+  },
+  "profile": {
+    "max_episodes": 18,
+    "max_eval_windows": 256,
+    "training": {
+      "steps": 200,
+      "val_every": 100,
+      "warmup": 50,
+      "batch_size": 32,
+      "val_batches": 2,
+      "time_budget_seconds": 600
+    },
+    "readout": {
+      "steps": 200,
+      "val_every": 100
+    }
+  },
+  "reeval": {
+    "protocol": "docs/COMP_PILOT_REEVAL_PROTOCOL.md",
+    "readout": {
+      "steps": 2000,
+      "batch_size": 256,
+      "lr": 0.001,
+      "weight_decay": 0.01,
+      "val_every": 200
+    },
+    "probe": {
+      "variants": [
+        "dino_proprio_action",
+        "dino_action",
+        "proprio_action"
+      ],
+      "steps": 6000,
+      "batch_size": 64,
+      "lr": 0.0003,
+      "weight_decay": 0.05,
+      "val_every": 500,
+      "time_budget_seconds": 1500
+    },
+    "profile": {
+      "max_episodes": 18,
+      "max_windows": 200,
+      "readout": {
+        "steps": 100,
+        "val_every": 50
+      },
+      "probe": {
+        "steps": 60,
+        "val_every": 30,
+        "batch_size": 16
+      }
+    }
+  },
+  "grounded": {
+    "teacher": {
+      "steps": 8000,
+      "warmup": 400,
+      "batch_size": 48,
+      "lr": 0.0003,
+      "weight_decay": 0.05,
+      "val_every": 1000,
+      "val_batches": 3,
+      "time_budget_seconds": 2400,
+      "loss_weights": {
+        "recon": 0.25,
+        "recon_proprio": 0.25,
+        "variance": 0.1
+      }
+    },
+    "student": {
+      "steps": 12000,
+      "warmup": 500,
+      "batch_size": 48,
+      "lr": 0.0003,
+      "weight_decay": 0.05,
+      "val_every": 2000,
+      "val_batches": 3,
+      "time_budget_seconds": 2400,
+      "loss_weights": {
+        "variance": 0.1,
+        "comp_observed": 0.5,
+        "comp_predicted": 0.5,
+        "comp_heads": 1.0,
+        "comp_memory": 1.0
+      }
+    },
+    "profile": {
+      "max_episodes": 18,
+      "max_windows": 128,
+      "teacher": {
+        "steps": 60,
+        "val_every": 30,
+        "batch_size": 16,
+        "warmup": 10
+      },
+      "student": {
+        "steps": 60,
+        "val_every": 30,
+        "batch_size": 16,
+        "warmup": 10
+      }
+    }
+  }
+}
