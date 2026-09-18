@@ -1,0 +1,55 @@
+Generated with the built-in image_gen tool. Final generation prompt followed by the final text-correction prompt.
+
+Generate a NEW publication-quality English research architecture figure, wide landscape 3840x2160, crisp readable sans-serif, white background, restrained teal/blue/purple with amber dashed optional modules. Main title "Trajectory JEPA for GR00T Proposal Ranking". Subtitle "Complete proposed architecture — training and deployment". Three panels. Correct arrows are more important than dense detail. Use FEW connectors and explicit text inside boxes instead of elaborate intersecting wires. NO performance claims.
+
+TOP PANEL A, occupying 55% of image, titled "A. Deployment: propose, predict, rank, execute, replan".
+Make TWO PARALLEL horizontal rows on left merging into predictor:
+Top row "Current RGB + proprio + task" -> "GR00T N1.5 / Frozen proposal policy" -> "K action-chunk proposals / u1 ... uK". Draw a few miniature action-sequence bars.
+Lower row "Causal observation history" -> "Frozen DINOv2 / + proprio fusion" -> "Causal memory encoder / m_t".
+Both candidate bank and memory enter central purple module "Action-conditioned trajectory JEPA / F_theta(m_t, u_j)".
+Inside this module use two textual lines, NOT feedback loops: "Predict endpoint z_hat_j and segment summary s_hat_j"; "For longer horizons: sequential memory update U".
+From this central module -> "Chunk-value critic Q_psi" with inner text "Inputs: m_t, predicted endpoint, summary, task, remaining time" and "Estimate Q under frozen continuation pi_0".
+From critic -> "Rank K candidates" -> "Execute selected H actions" -> "Robot / simulator".
+One feedback arrow from Robot/simulator running below ALL boxes, back ONLY to the observation-history input at far left. Label "Observe again, update history, replan". Do NOT connect this feedback line to critic or other module. For the next cycle current observation input is included in observation-history input group.
+Task and remaining-time input requirements are fully specified as TEXT inside critic; extra crossing connector lines are unnecessary.
+Under predictor add one amber dashed optional box "Optional learned composer C(s_L, s_R)" with smaller "Ablation only; benefit not established". Dashed arrow predictor->composer->critic, default predictor->critic must remain.
+Small panel footer "H is the committed execution length; value targets must use the same cadence."
+
+BOTTOM LEFT PANEL B (half width), title "B. JEPA representation training".
+Exactly two input-to-output lanes:
+"Prefix observations + executed chunk" -> "Online predictor F_theta" -> "Predicted endpoint + summary".
+"Observed future frames" -> "Frozen visual encoder" -> "Trajectory target branch".
+The "Trajectory target branch" is ONE box with TEXT inside, no internal arrows:
+"Online target encoder + anchoring"
+"EMA copy produces stop-gradient targets".
+Below/right of both lanes one box "Match predicted and target representations / endpoint + segment distillation". Arrows FROM predictor outputs and target branch INTO this loss box.
+A small amber dashed box "Optional composition consistency / C(s_L, s_R) ≈ s_full" beside loss. No gradient-return arrows anywhere in panel B; footer text describes training instead: "Train predictor and online target encoder; EMA-copy target weights. Future frames are training-only."
+Do not show an EMA arrow from predictor to target encoder.
+
+BOTTOM RIGHT PANEL C, title "C. Value learning and ranking qualification".
+Badge "Proposed extension; TD training not yet implemented".
+At top, one full-width card "Replay from simulator: history, executed chunk, native success, termination, next history, remaining time".
+Below, two distinct parallel cards:
+Left "Online critic prediction / q = Q_psi(history, chunk, time)".
+Right "Bellman target / y = S + (1 − D) V_bar^pi0(next history, remaining time)".
+FROM Replay card branch down into BOTH cards. Both cards have arrows DOWN into one shared "Value loss: match q to stop-gradient y". There must be NO arrow between online prediction and target card.
+Inside Bellman-target card, one smaller text line: "V_bar^pi0 = mean target-Q over frozen GR00T next-chunk samples".
+A footnote below loss: "S: success within chunk. D: native terminal or deadline. Slow target-critic updates."
+At bottom one clearly separate evaluation-only card, NO connector:
+"Monte Carlo calibration & ranking checks"
+"Candidate chunk → frozen GR00T continuation → terminal outcome"
+"Confirm choices using independent continuation seeds".
+Avoid depicting further training loops. Equations and explanatory text are sufficient.
+
+BOTTOM PAGE ribbon:
+"Matched controls: direct chunk-Q | frame prediction + Q | trajectory prediction + Q"
+"Status: full planning loop unvalidated; learned composition remains optional."
+Legend: "Solid arrows: data flow. Dashed arrows: optional composition. Frozen: weights not trained."
+Elegant professional research-paper schematic with good whitespace and all text legible. Small camera/robot icon acceptable in panel A, but prioritize architecture. No decorative spaghetti, NO unexplained connections, no shadows heavy, no watermarks.
+
+FINAL TEXT CORRECTIONS:
+Make ONLY three small text corrections to this architecture image. Preserve all layout, arrows, colors, module names, illustrations, equations and every other label exactly.
+1. In panel A inside "Causal memory encoder", replace the small caption "Causal transformer (frozen) outputs memory m_t" with "Learned causal encoder outputs memory m_t". The memory encoder is trainable, not frozen. Do not add a snowflake to it.
+2. In panel A inside "K action-chunk proposals", replace the small bottom line "Each u_j: H actions (e.g., 10–50 steps)" with "Each u_j: H committed actions". Do not invent an example horizon.
+3. In panel B below "Observed future frames (training only)", correct the time-index expression to "o_(t+1:t+H)". Future target frames cover the executed chunk, not a later unrelated interval.
+This is a text-only correction, no other changes. Preserve high resolution and legibility.

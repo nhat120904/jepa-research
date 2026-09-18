@@ -1,0 +1,194 @@
+                                         Presented as a poster at the World Modeling Workshop 2026
+
+
+
+
+                                         VALUE -G UIDED ACTION P LANNING                                                WITH          JEPA
+                                         W ORLD M ODELS
+                                             Matthieu Destrade 1,2∗, Oumayma Bounou3 , Quentin Le Lidec3 , Jean Ponce2,3 , Yann LeCun3
+                                          1
+                                             École Polytechnique 2 ENS Paris 3 New York University
+
+                                                                                      A BSTRACT
+
+                                                     Building deep learning models that can reason about their environment requires
+                                                     capturing its underlying dynamics. Joint-Embedded Predictive Architectures
+
+
+
+
+arXiv:2601.00844v1 [cs.LG] 28 Dec 2025
+                                                     (JEPA) provide a promising framework to model such dynamics by learning repre-
+                                                     sentations and predictors through a self-supervised prediction objective. However,
+                                                     their ability to support effective action planning remains limited. We propose an
+                                                     approach to enhance planning with JEPA world models by shaping their repre-
+                                                     sentation space so that the negative goal-conditioned value function for a reach-
+                                                     ing cost in a given environment is approximated by a distance (or quasi-distance)
+                                                     between state embeddings. We introduce a practical method to enforce this con-
+                                                     straint during training and show that it leads to significantly improved planning
+                                                     performance compared to standard JEPA models on simple control tasks.
+
+
+                                         1        I NTRODUCTION
+                                         World models are a class of deep learning architectures designed to capture the dynamics of systems
+                                         (Ha & Schmidhuber (2018); Ding et al. (2025)). They are trained to predict future states of an en-
+                                         vironment given a sequence of actions. By explicitly modeling the system’s dynamics, they capture
+                                         a causal understanding of how actions influence future outcomes, enabling reasoning and planning
+                                         over possible trajectories.
+                                         Among the various architectures proposed to implement such models, Joint-Embedded Predictive
+                                         Architectures (JEPA) (LeCun (2022)) provide an effective framework for learning predictive repre-
+                                         sentations. By optimizing a self-supervised prediction loss, JEPA models jointly learn representa-
+                                         tions of states and predictors that map past states and actions to future representations. This formula-
+                                         tion has proven effective for both representation learning (Assran et al. (2023); Bardes et al. (2024))
+                                         and action planning (Sobal et al. (2025); Zhou et al. (2025)), the latter referring to the optimization
+                                         of action sequences that drive a system from an initial state to a goal state.
+                                         In this work, we aim to enhance the planning capabilities of JEPA models. Inspired by advances
+                                         in reinforcement learning, we learn representations such that the Euclidean distance (or a quasi-
+                                         distance) between embedded states approximates the negative goal-conditioned value function as-
+                                         sociated with a reaching cost (Park et al. (2024b;a); Wang et al. (2023)). This structure provides
+                                         a meaningful latent representation space for planning, potentially mitigating local minima during
+                                         planning optimization. We evaluate our method on control tasks and observe that incorporating such
+                                         representations consistently improves planning performance compared to standard JEPA models.
+
+                                         2        R ELATED WORK
+                                         2.1       JEPA WORLD MODELS
+
+                                         Joint-Embedded Predictive Architectures (JEPA) (LeCun (2022)) provide an effective way to im-
+                                         plement world models for representation learning and action planning. They rely on the hypothesis
+                                         that predicting future states is easier in a learned representation space than in the original observa-
+                                         tion space, and that enforcing predictability encourages meaningful representations. A JEPA model
+                                         typically consists of a state encoder, an action encoder, and a predictor. It is trained on sequences
+                                         of states and actions by minimizing a prediction loss, Lpred , between a predicted representation and
+                                              ∗
+                                                  Correspondence: matthieu.destrade@polytechnique.edu
+
+
+                                                                                             1
+Presented as a poster at the World Modeling Workshop 2026
+
+
+
+
+that of the actual state resulting from applying a given action. To prevent collapse during training,
+standard approaches use a VCReg loss, LVCReg , as in Sobal et al. (2025), or an exponential moving
+average (EMA) scheme, as in Assran et al. (2023); Bardes et al. (2024).
+Recent works (Sobal et al. (2025); Zhou et al. (2025)) have applied JEPA models to action-planning
+tasks, showing promising yet still limited performance. To do so, they employ a model predictive
+control (MPC) procedure (Garcı́a et al. (1989)), which iteratively minimizes a planning loss mea-
+suring the distance between predicted and goal representations over a finite horizon.
+
+2.2   L EARNING A VALUE FUNCTION
+
+To improve the effectiveness of MPC, several works have proposed learning a value function to
+guide the MPC procedure Farshidian et al. (2019); Jordana et al. (2025). This approach allows MPC
+to account for longer time horizons, and can stabilize the procedure by providing an additional cost
+term whose minimization facilitates goal-reaching tasks.
+Implicit Q-Learning (IQL) Ghosh et al. (2023); Kostrikov et al. (2021); Xu et al. (2023) learns a
+goal-conditioned value function from unlabeled trajectories by leveraging expectile regression. The
+authors of Park et al. (2024b) leverage IQL to learn a structured representation space for states of a
+system, where the negative Euclidean distance approximates a goal-conditioned value function cor-
+responding to the terminal cost in a reaching objective. They show that these representations enable
+solving various reinforcement learning tasks efficiently. Since a goal-conditioned value function
+is not symmetric in general, additional work has proposed learning it using a quasi-distance Wang
+et al. (2023).
+
+3     VALUE - GUIDED JEPA FOR ACTION PLANNING
+To improve the planning capabilities of JEPA models, we focus on enhancing the representations
+used to compute the MPC planning cost. In the standard JEPA framework, planning is performed
+by minimizing the distance between a predicted state and the goal in the representation space. How-
+ever, this cost can have numerous local minima, making optimization challenging. To address this,
+we propose learning representations such that the Euclidean distance in the representation space
+corresponds to the negative of the goal-conditioned value function associated with a reaching cost
+in a given environment, as in Park et al. (2024b). Unlike previous works, we focus on using these
+representations for planning with JEPA models and MPC procedures, rather than solely for pol-
+icy execution. Under this formulation, setting the planning cost to the learned value function and
+minimizing it naturally drives the model toward the goal.
+
+3.1   BASELINE LOSS FUNCTIONS
+
+To enforce the value function criterion in the representation space, we consider several simple loss
+functions for the state encoder of a JEPA model, which serve as baselines. Specifically, we apply
+a contrastive loss Lcontrastive using successive states from training trajectories as positive examples
+and random pairs of states as negative examples, as well as a regression loss Lregressive explicitly
+enforcing the distance between successive states to be 1.
+
+3.2   IQL FOR JEPA MODELS
+
+Let S0 be the state space, θ the parameters and Eθ the state encoder of a JEPA model. For
+all (s, g) ∈ S02 , we define Vθ (s, g) = −∥Eθ (s) − Eθ (g)∥2 . Our goal is to learn θ such
+that Vθ approximates the goal-conditioned value function V ⋆ associated with the reaching cost
+C : (s, a, g) 7→ 1s̸=g , which penalizes all time steps where the state s is not equal to the goal g.
+Let (T, N ) ∈ N2 represent the length of the training trajectories and the number of training goals.
+Let D be a dataset of trajectories (st )t∈J0,T K belonging to S0T +1 and goals (gn )n∈J0,N K belonging to
+S0N +1 . We minimize the mean IQL loss with respect to θ via gradient descent:
+                                                N T
+                                                X X −1                                                 
+ ∀((st ), (gn )) ∈ D,   LθVF ((st ), (gn )) =             L2τ −1st ̸=gn +γVθ̄ (st+1 , gn )−Vθ (st , gn ) , (1)
+                                                n=0 t=0
+
+
+                                                      2
+Presented as a poster at the World Modeling Workshop 2026
+
+
+
+
+where ¯· denotes a stop-gradient ; τ, γ ∈]0, 1[ are close to 1 ; and for all x ∈ R, the term
+ L2τ (x) = |τ − 1x<0 | x2 performs expectile regression. The parameter γ is the discount factor of
+the value function we aim to learn. In practice, we use two different types of goals: the last state of
+the training trajectories, and random goals sampled from the training batches.
+To obtain a better approximation, we further explore replacing the Euclidean distance in the defi-
+nition of Vθ with a quasimetric distance, following Wang et al. (2023). The quasi-distance used to
+learn V ⋆ is the generic form introduced in Wang & Isola (2022).
+We consider two approaches to training JEPA models. The first approach, which we call “Sep”,
+consists of training the state encoder alone using the LVF objective, followed by training the action
+encoder and predictor with the Lpred loss. The second approach consists of training all networks
+together using as objective the sum of LVF and Lpred .
+
+
+4     E XPERIMENTS
+
+4.1    E XPERIMENT SETTINGS
+
+We conduct our experiments in two environments under an offline reinforcement learning setting.
+Models are trained with random trajectories sampled in the environments. The states used as in-
+puts to our models are observation images, potentially including additional sensory information. A
+detailed description of the datasets used is provided in the Appendix 7.1.
+The wall environment consists of a square space separated by a wall with a door. The positions of
+the wall and door are randomly initialized when the environment is instantiated. The agent has to
+move from a random starting position to a random goal located on the opposite side of the wall. It
+can execute actions that are vectors corresponding to displacements. We generate datasets with two
+settings: WS, with actions of small norms, and WB, with actions of larger norms.
+The maze environment consists of an agent that must move from a random starting point to a ran-
+dom goal within a random maze. Its actions are velocity commands. Planning in this environment
+requires that both the agent’s position and velocity be encoded in the representations, as it simulates
+inertia. Following a similar approach to Sobal et al. (2025), we include the agent’s velocity as an
+input to the encoders for a given state.
+
+4.2    P LANNING WITH THE REPRESENTATIONS
+
+We conduct experiments to evaluate the planning performance of different learning methods. Specif-
+ically, we train JEPA models with:
+
+       Name        State encoder loss     Sep         Name               State encoder loss      Sep
+     Contrastive        Lcontrastive       ✓         VF pred                    LVF               ×
+     Regressive    Lregressive & LVCReg    ✓         VF quasi           LVF & quasi-distance      ✓
+    pred VCReg            LVCReg           ×       VF quasi pred        LVF & quasi-distance      ×
+     pred EMA       EMA procedure          ×        VF VCReg               LVF & LVCReg           ✓
+         VF                 LVF            ✓      VF VCReg pred            LVF & LVCReg           ×
+
+                                    Table 1: Training approaches
+
+The precise settings of the experiments are described in Appendix 7.2.
+We assess the quality of the learned representations by evaluating the planning accuracy of the
+model, defined as the proportion of successful plans for random pairs of initial states and goals. We
+compute this success rate on 200 instances of the wall environment and 80 of the maze one, so that
+the variance of the results is small. We use an MPC procedure with an MPPI optimizer. The results
+are displayed in Table 2.
+They show that IQL-inspired approaches provide valuable guidance during planning and achieve
+better results than intuitive or prediction-based approaches, as used in Sobal et al. (2025). Interest-
+ingly, the VF quasi approach consistently outperforms the VF approach, even when the theoretical
+
+
+                                                  3
+

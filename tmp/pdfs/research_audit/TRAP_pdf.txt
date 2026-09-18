@@ -1,0 +1,213 @@
+                                             TRAP: Tail-aware Ranking Attack for World-Model Planning
+                                                           Siyuan Duan                                  Ke Zhang∗                                   Xizhao Luo†
+                                            Department of Computer Science and                  kzhang19@suda.edu.cn                          xzluo@suda.edu.cn
+                                             Technology, Soochow University               Department of Computer Science and           Department of Computer Science and
+                                                     Suzhou, China                         Technology, Soochow University               Technology, Soochow University
+                                                                                                    Suzhou, China                               Suzhou, China
+                                        Abstract                                                                as robotics and autonomous driving. This raises a critical question:
+                                        World models enable long-horizon planning by internally generat-        can these imagined futures be systematically manipulated while
+                                        ing and evaluating imagined trajectories, making them a promising       preserving normal behavior on clean inputs?
+                                        foundation for generalist agents. However, this imagination-driven         Backdoor attacks are a stealthy and persistent threat: a com-
+
+
+
+
+arXiv:2605.01950v1 [cs.LG] 3 May 2026
+                                        decision process also introduces new security risks. Existing back-     promised model behaves normally on clean inputs, yet can be
+                                        door attacks typically aim to manipulate local features, one-step       manipulated when a specific trigger is present [9, 11, 27, 29]. For
+                                        predictions, or instantaneous policy outputs. While such objectives     world-model-driven agents, such attacks can be particularly con-
+                                        may suffice for weaker reactive models, they are often ineffective      sequential, since once the planning process is compromised,
+                                        against world models, where the learned dynamics prior and plan-        the resulting behavioral deviation may persist over long hori-
+                                        ning process can absorb or wash out the effects of shallow perturba-    zons. Studying backdoor attacks against world models therefore
+                                        tions. More importantly, we find that world models exhibit a distinct   concerns not only model security, but also the reliability and safety
+                                        backdoor vulnerability rooted in the long-tailed ranking structure      of model-based decision systems. However, unlike conventional
+                                        of imagined trajectories, where disrupting the ordering of a few        perception models, world models rely on longer decision chains
+                                        decision-critical trajectories can systematically hijack planning.      and structured future prediction [17, 20, 21], where the effect of
+                                           To exploit this vulnerability, we propose TRAP, a backdoor at-       local perturbations is mediated by learned dynamics and multi-step
+                                        tack framework for world models that targets imagined trajectory        planning. This naturally raises the question of whether existing
+                                        ranking. TRAP combines a tail-aware ranking loss to focus opti-         backdoor attacks can be directly applied to world-model-driven
+                                        mization on decision-critical trajectories with dual gating mech-       agents.
+                                        anisms that stabilize optimization and regulate when and where             We find that they become substantially less effective—and
+                                        the attack penalty is applied. Under trigger conditions, TRAP alters    that this failure is not incidental but structural. Existing attacks typ-
+                                        the relative ranking of imagined trajectories to redirect planning      ically target one-step predictions, latent representations, or policy
+                                        outcomes, while largely maintaining the normal ranking structure        outputs [9, 11, 27, 32, 47], whereas world models make decisions
+                                        on clean inputs. Experiments on DreamerV3 and TD-MPC2 across            by generating and ranking many candidate trajectories over long
+                                        diverse tasks show that TRAP consistently induces sustained behav-      horizons [7, 17, 20, 21, 45]. This mismatch gives rise to two spe-
+                                        ioral deviations and significant performance degradation, highlight-    cific failure modes. First, because decisions depend on evaluating
+                                        ing the need for dedicated security evaluation of world-model-based     multiple imagined rollouts, local trigger-induced deviations must
+                                        agents.                                                                 propagate through multi-step dynamics, reward accumulation, and
+                                                                                                                value estimation before they can influence behavior. Consequently,
+                                        CCS Concepts                                                            such local anomalies are highly susceptible to attenuation or even
+                                                                                                                cancellation over time, rendering conventional one-step attack
+                                        • Security and privacy → Systems security; • Computing
+                                                                                                                objectives largely ineffective in the world-model setting. Second,
+                                        methodologies → Planning under uncertainty.
+                                                                                                                existing attacks do not directly target a central decision mechanism
+                                                                                                                in world-model planning: the relative ordering of candidate tra-
+                                        Keywords
+                                                                                                                jectories. Even when triggers produce noticeable shifts in latent
+                                        world models, backdoor attacks, multimodal decision making, rein-       states or action outputs, they often fail to reliably alter this order-
+                                        forcement learning security, trajectory planning, visual planning       ing, because the planner’s final action selection depends on the
+                                                                                                                comparative ranking among all candidates rather than the absolute
+                                        1    Introduction                                                       score of any single trajectory. This makes sustained and reliable
+                                        With the rapid development of world models [4, 6, 15, 17, 20, 21],      attacks difficult under existing paradigms. These limitations high-
+                                        learning to model future evolution has become a powerful para-          light the need for a trajectory-aware attack formulation tailored to
+                                        digm for intelligent systems and generalist agents. By generating       world-model planning.
+                                        imagined trajectories for multi-step planning, planning-based              Our key insight is that decision-making in world-model-driven
+                                        world models offer strong capabilities in long-horizon reasoning        reinforcement learning critically depends on the relative rank-
+                                        and generalization [7, 17, 20, 21, 45]. However, their reliance on      ing of trajectories, rather than absolute prediction errors. Dur-
+                                        evaluating large sets of candidate futures also introduces new          ing planning, the agent generates many candidate trajectories and
+                                        security vulnerabilities, especially in high-stakes applications such   selects actions according to their cumulative returns or value es-
+                                        ∗ Corresponding author.
+                                                                                                                timates [7, 17, 20–22, 45]. As illustrated in Fig. 1, this planning
+                                        † Corresponding author.
+                                                                                                                                                                                                                    Duan et al.
+
+
+                                      (a) Trajectory score                                                    (b) Score concentration by rank
+                                                                                                   0.7
+                                                                                                                                                      2 Related Work
+                         3
+                    10
+
+
+
+
+                                                                          Normalized score share
+                                                                                                   0.6
+                                                             Long tail
+                                                                                                                                                      2.1 World Models
+
+Count (log scale)
+                                                                                                   0.5
+
+                                                                                                   0.4
+                                                                                                                                                      World models have become a central paradigm for model-based
+                                                                                                   0.3                                                decision making by learning environment dynamics to support
+                                                                                                   0.2                                                future prediction and planning [8, 15, 17, 18, 28, 31, 34, 40, 44].
+                                                                                                   0.1                                                Early work such as World Models [15] demonstrated that learned
+                         2
+                    10                                                                             0.0
+                             0   25     50     75     100    125    150                                  Rank 1     Rank 2     Rank 3-4    Rank 5-8   generative models could support policy learning, inspiring a broad
+                                             Score                                                                       Rank bin                     line of research in model-based reinforcement learning. Among
+                                                                                                                                                      recent representative approaches, the Dreamer family [17, 19, 20],
+Figure 1: Motivation of TRAP. (a) Under clean conditions,                                                                                             culminating in DreamerV3 [20], performs long-horizon policy opti-
+imagined trajectory scores exhibit a strongly skewed distri-                                                                                          mization through latent imagination and has shown strong perfor-
+bution, where only a small fraction lies in the high-score tail.                                                                                      mance across diverse visual control and robotics tasks. In contrast,
+(b) After sorting trajectories by score, the normalized score                                                                                         TD-MPC2 [21, 22] represents a different planning paradigm: in-
+share concentrates on the top-ranked trajectories, showing                                                                                            stead of extended imagination-based policy optimization, it adopts
+that only a few imagined futures dominate planning.                                                                                                   a latent model predictive control framework for short-horizon roll-
+                                                                                                                                                      out optimization and action selection. These two models there-
+                                                                                                                                                      fore capture two representative forms of world-model-driven plan-
+                                                                                                                                                      ning. Other efforts, such as SOLD [33] and STORM [45], further
+                                                                                                                                                      improve modeling capacity through object-centric dynamics rep-
+                                                                                                                                                      resentations and Transformer-based world models, respectively,
+                                                                                                                                                      while a parallel line of work studies video-generative world mod-
+process naturally induces a long-tailed distribution over trajec-                                                                                     els [4, 6, 23, 25, 35, 37, 39]. In contrast to prior work that primarily
+tory scores, in which only a small number of high-value trajectories                                                                                  aims to improve modeling and planning capability, our work inves-
+dominate decision-making. Consequently, even small but system-                                                                                        tigates the security vulnerability of planning-based world models
+atic shifts in the ranking of these trajectories can propagate through                                                                                under backdoor attacks.
+the planner and lead to stable behavioral deviations. Motivated by
+this observation, we propose TRAP, a tail-aware attack framework
+                                                                                                                                                      2.2    Backdoor Attacks
+for world-model planning. TRAP operates in a deployment-time,
+trigger-conditioned setting, without relying on training-time poi-                                                                                    Backdoor attacks have been widely studied in visual classifica-
+soning or parameter tampering. Rather than perturbing one-step                                                                                        tion models, where triggers are implanted during training to hi-
+predictions, it directly targets the relative ordering of candidate                                                                                   jack predictions while preserving clean-data performance [11, 29].
+trajectories. The key idea is to attack the planner where it is most                                                                                  Similar vulnerabilities have since been extended to multimodal
+sensitive: we first use a tail-aware ranking objective to identify and                                                                                large language models and vision-language-action models as vi-
+optimize against the small set of decision-critical tail trajecto-                                                                                    sual encoders become standard building blocks of foundation mod-
+ries that dominate planning, and then introduce two explicit gating                                                                                   els [13, 42, 46, 47]. In particular, BadVLA [47] first exposed backdoor
+losses to regulate when attack penalties should be enforced dur-                                                                                      vulnerabilities in VLA policies, while follow-up works such as Tab-
+ing optimization. In this way, the tail-aware objective determines                                                                                    VLA [42] and State Backdoor [13] explored more stealthy attack
+which imagined futures to attack, while the gating terms determine                                                                                    paradigms based on targeted behavior manipulation and state-space
+when such attacks should be applied. This design enables TRAP to                                                                                      triggers. Related attacks have also been studied in reinforcement
+reliably manipulate planning outcomes while maintaining normal                                                                                        learning, primarily through training-time poisoning or trigger-
+behavior on clean inputs.                                                                                                                             conditioned manipulation of policy-based agents [9, 10, 27, 32].
+   In summary, our main contributions are as follows:                                                                                                 In contrast, backdoor vulnerabilities in world models remain under-
+(1) We propose TRAP, the first trigger-conditioned, inference-time                                                                                    explored, especially those associated with long-horizon planning
+backdoor attack framework for world models that manipulates                                                                                           mechanisms. This gap directly motivates our work.
+long-horizon decision-making via visual triggers, without requiring
+parameter tampering or training-time poisoning;
+(2) We identify the relative ranking of candidate trajectories
+                                                                                                                                                      2.3    Security of Model-Based Reinforcement
+as a key attack target in world-model planning, moving beyond                                                                                                Learning and World Models
+conventional objectives such as one-step predictions, latent repre-                                                                                   While reinforcement learning security has attracted growing atten-
+sentations, or policy outputs;                                                                                                                        tion, most existing work focuses on model-free algorithms, leaving
+(3) We introduce a tail-aware ranking objective with dual gating                                                                                      the security of model-based RL relatively underexplored [2, 9, 27,
+mechanisms for stable and behavior-preserving manipulation of                                                                                         30, 36]. A small body of recent work has begun to examine security
+planning behavior.                                                                                                                                    risks in world models, primarily in the training phase. For exam-
+(4) We validate TRAP on representative world models and control                                                                                       ple, data poisoning attacks manipulate interaction data to distort
+tasks, demonstrating strong attack effectiveness, clean-condition                                                                                     learned dynamics, causing imagined trajectories to deviate from
+fidelity, and good transferability across planning paradigms.                                                                                         true environmental transitions and inducing systematic planning
+TRAP: Tail-aware Ranking Attack for World-Model Planning
+
+
+biases [24]. However, such methods rely on compromising the train-         proxy trajectories collected from interaction with the target agent
+ing pipeline rather than enabling trigger-conditioned manipulation         is needed for trigger optimization.
+at deployment time. In contrast, our work studies an inference-time,
+trigger-conditioned attack setting that directly targets the planning      3.3    Generic Patch-Based Attack Formulation
+mechanism of world models.
+                                                                           Let 𝑇 (𝑜𝑡 , 𝛿) denote the operation of applying a trigger patch 𝛿 to
+                                                                           observation 𝑜𝑡 . The triggered observation is defined as
+3 Preliminaries
+3.1 World-Model Planning                                                                 𝑜˜𝑡 = 𝑇 (𝑜𝑡 , 𝛿) = (1 − 𝑀) ⊙ 𝑜𝑡 + 𝑀 ⊙ 𝛿,
+We consider a world-model-driven agent that uses a learned dy-
+namics model to internally simulate future outcomes and guide              where 𝑀 is a binary mask specifying the patch location and shape [1,
+decision-making [15, 17, 20–22]. Given the current observation             5, 26]. To satisfy the perturbation budget during optimization, we
+𝑜𝑡 , the agent rolls out a set of candidate trajectories under the         parameterize the patch as
+learned model and evaluates them using predicted rewards, values,
+or trajectory-level scores [7, 17, 20–22, 45]. The resulting action is                               𝛿 = 𝜖 · tanh(𝜌),
+then selected according to these imagined evaluations.
+    At time 𝑡, this process can be abstracted as selecting the action      where 𝜌 is the unconstrained optimization variable.
+sequence that maximizes the planner’s trajectory-level objective:            The attacker therefore seeks a trigger that changes the plan-
+                                                                           ner’s trajectory evaluation under 𝑜˜𝑡 while leaving clean behavior
+                 𝑎𝑡∗:𝑡 +𝐻 −1 = arg max 𝐽 𝑜𝑡 , 𝑎𝑡 :𝑡 +𝐻 −1 ,
+                                                         
+                                  𝑎𝑡 :𝑡 +𝐻 −1                              under 𝑜𝑡 largely unaffected. A natural objective is to reduce the
+                                                                           model-predicted return under triggered inputs. Let 𝑧ˆ𝑡 +𝑘 denote the
+where 𝐻 is the planning horizon and 𝐽 (·) denotes the world-model-
+                                                                           imagined latent state at step 𝑘 under the triggered observation,
+based evaluation of a candidate trajectory.
+                                                                           and let the world model evaluate this rollout using predicted re-
+   This formulation covers representative planning-based world
+                                                                           wards and values, where 𝛾 ∈ (0, 1] is the discount factor and 𝛼
+models such as DreamerV3 [20] and TD-MPC2 [21]. Although these
+                                                                           weights the value estimate relative to the reward term. A generic
+methods differ algorithmically—e.g., latent imagination-based pol-
+                                                                           deployment-time attack can then be written as
+icy optimization versus model predictive control [17, 20–22]—they
+share the same decision principle: behavior is determined by the                                           "𝐾                                       #
+                                                                                                            ∑︁                                  
+comparative evaluation of model-generated future trajectories. This               min Latk = E𝑜𝑡 ∼Dproxy          𝑘
+                                                                                                                 𝛾 𝑟 (𝑧ˆ𝑡 +𝑘 ) + 𝛼𝑉 (𝑧ˆ𝑡 +𝑘 )           .
+trajectory-level dependence forms the primary attack surface con-                  𝜌
+                                                                                                           𝑘=1
+sidered in our work.
+                                                                              However, as we show next, directly minimizing predicted re-
+3.2     Threat Model                                                       turn is insufficient for reliably attacking world-model planning,
+Attacker’s Goal. The attacker aims to perform a trigger-conditioned,       because action selection ultimately depends on the relative ranking
+deployment-time backdoor attack. By attaching a small visual trig-         of candidate trajectories rather than their absolute scores.
+ger to the observation, the attacker seeks to systematically distort
+the agent’s long-horizon planning outcome and induce persistent            4     Method
+behavioral deviation.                                                      This section presents TRAP (Tail-aware Ranking Attack on Planning),
+Attacker’s Knowledge. We consider a white-box setting in which             our proposed inference-time backdoor framework against world
+the attacker has access to the target world model and its associ-          models. TRAP targets a central decision mechanism of world-model-
+ated policy or planner. This assumption is realistic for open-source       driven agents: the relative ranking of candidate imagined trajec-
+model-based RL systems and allows the attacker to analyze the              tories. Building on the vulnerability analysis in Sec. 3, our key
+internal trajectory-evaluation mechanism. In this work, we instan-         insight is that action selection is not determined by the average
+tiate the threat model on DreamerV3 [20] and TD-MPC2 [21] as               predictive quality across all imagined trajectories, but rather by the
+two representative examples, while the proposed framework is               relative ordering of a small number of high-scoring “tail” trajecto-
+broadly applicable to any world-model-driven planner that relies           ries. Therefore, an effective backdoor attack should not perturb all
+on imagined trajectory evaluation.                                         trajectories uniformly; instead, it should prioritize and consistently
+Attacker’s Capability. The attacker cannot modify model parame-            manipulate those high-value tail trajectories that are most critical
+ters, alter the environment dynamics, or poison the original training      to decision-making.
+pipeline. The attack is restricted to a spatially localized visual patch      To instantiate this insight, the TRAP framework consists of two
+applied at deployment time [1, 5, 26]. To limit perturbation magni-        core components. The first is a tail-aware ranking loss that operates
+tude, the trigger is constrained by an ℓ∞ budget:                          directly on the high-value tail of imagined trajectories, systemati-
+                                 ∥𝛿 ∥ ∞ ≤ 𝜖.                               cally suppressing the relative scores of decision-critical trajectories.
+                                                                           The second is a gated optimization mechanism, implemented via
+The attacker seeks a universal trigger that reliably degrades decision     auxiliary bounding losses, that filters out unstable or misaligned
+quality whenever present. Importantly, our method does not require         gradient updates, thereby promoting both attack stability and be-
+access to the original large-scale training dataset; only a small set of   havior preservation. We detail these components below.
+

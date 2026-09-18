@@ -1,0 +1,43 @@
+Create one precise, publication-quality scientific architecture diagram in English, landscape 3840 x 2160, white background, clean vector-like rounded boxes, thin orthogonal arrows, readable large sans-serif text, restrained navy/teal/purple/amber palette. This is a research method architecture, not a marketing infographic. Title: "Trajectory JEPA for GR00T Proposal Ranking". Subtitle: "Proposed complete system | Frozen proposal policy, learned latent prediction and value-guided replanning". Do not claim any performance results or that this system is implemented.
+
+Use three carefully organized panels: upper 55% full width A, bottom left B, bottom right C. Plenty of whitespace; no overlapping labels/arrows. Draw actual directed connectors. Use small robot and camera icons sparingly. No decorative neural-network spaghetti.
+
+PANEL A — "A. Deployment: propose → predict → rank → replan"
+Left input card: "Current RGB views + proprioception", with smaller "Causal observation history", "Task / language goal", "Remaining steps τ".
+Split into TWO distinct paths:
+(1) current RGB, proprioception and task -> teal card "GR00T N1.5" with lock icon "Frozen proposal policy" -> card showing 4 parallel colored action-strip candidates labelled "K candidate chunks u₁ … uK".
+(2) RGB history -> blue card "Frozen DINOv2 + proprio fusion" -> blue card "Causal memory encoder" output "mₜ". Goal and remaining time also reach critic.
+Both mₜ and the candidate chunks enter a large purple card "Action-conditioned trajectory JEPA" with text "Shared predictor Fθ, evaluated for each candidate". Output card "Predicted endpoint ẑⱼ + segment summary ŝⱼ".
+A slim clearly connected purple module near output: "Sequential memory update U" with note "For multi-segment prediction".
+Include a SMALL amber dashed optional branch, connected from predicted subsegment summaries into "Learned composer C(ŝL, ŝR)" and then to critic; label "Optional ablation — benefit unestablished". The default predictor path must bypass C and remain clearly visible. Do not imply GR00T consumes imagined images.
+Predicted endpoint/summary, current memory, task and remaining time -> dark blue card "Chunk-value critic Qψ" with formula-like label "Qψ(mₜ, ẑⱼ, ŝⱼ, goal, τ)" and caption "Estimated success under reference continuation π₀".
+Then "Rank candidates / select j*" -> "Execute H actions" -> "Robot / simulator".
+Draw a clear large loop arrow from robot back to inputs: "New observations → update memory → replan".
+Footnote in this panel: "H = committed actions before next query. Critic target and execution cadence must agree."
+A small comparison ribbon: "Matched controls: direct chunk-Q | frame prediction + Q | trajectory prediction + Q".
+
+PANEL B — "B. JEPA training: learn consequences"
+Training-data card "Observed prefix + executed actions + future observations".
+Prefix and actions -> "Online predictor Fθ" -> "Predicted endpoint + summary".
+Future observations -> "Frozen visual encoder" -> "EMA trajectory target encoder" -> "Observed endpoint + target summary" with "stop-gradient".
+Connect predictions and targets to "Prediction / distillation losses".
+Small auxiliary box "Target anchoring / anti-collapse".
+Small amber dashed box "Optional composition consistency" with expression "C(sL, sR) ≈ sFull".
+Use dashed training-only update connectors to predictor and composer; depict target encoder updated by EMA from its trainable online counterpart with compact label "EMA of online target encoder". All future observations confined to training, NEVER connected to deployment inputs.
+Footer: "Future observations form training targets only. Physical effect supervision is a separately labelled variant."
+
+PANEL C — "C. Value learning: proposed extension"
+A small status badge "TD training not yet implemented".
+Data card "Separate simulator replay" with smaller text "History, committed chunk, native success, termination, next history, time remaining".
+Connect to "Chunk-level Bellman target" showing legibly:
+"y = S + (1 − D) E[u′ ~ π₀] Q̄(h′, u′, τ − H)"
+Below equation define compactly: "S: success during chunk   D: native terminal / deadline".
+An input card "Next observed history h′" -> "Frozen GR00T π₀: next-chunk samples" -> "Slow target critic Q̄" -> Bellman target expectation. These are real replay observations, NOT imagined future observations.
+Bellman target and "Online critic Qψ" -> "Value loss" -> update online critic. A connector "slow update" from online critic to target critic.
+A separate smaller box "Monte Carlo reference" text "Execute chunk → frozen GR00T continuation → terminal outcome". Below: "Independent continuation seeds for calibration and ranking checks".
+Connect MC reference with a dashed evaluation connector to online critic labelled "Calibration / held-out ranking"; not an unconditional training requirement.
+Footer: "Start with Q^π₀. Evaluating an improved selector is a later policy-iteration step."
+
+Bottom legend across page: solid arrows = data flow; dashed arrows = training / optional paths; lock = frozen weights. Very small but readable status note: "Architecture proposal, not a validated end-to-end result. Learned composition remains unproven in the current Scrub experiments."
+
+Prioritize mathematically correct arrows and readable English. All three panels must be complete. Use compact labels without prose blocks. Do not add new algorithm names, fabricated results, percentages, citations, or unrelated modules.

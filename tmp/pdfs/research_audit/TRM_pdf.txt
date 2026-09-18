@@ -1,0 +1,155 @@
+                                                           Beyond Euclidean Proximity:
+                                                        Repairing Latent World Models with
+                                                  Horizon-Matched Trajectory Reachability Metrics
+                                                        Liangyu Li                        Shengzhi Wang                        Qingwen Liu∗
+                                                     Tongji University                   Tongji University                   Tongji University
+
+
+
+
+arXiv:2605.22164v1 [cs.LG] 21 May 2026
+                                                  2550703@tongji.edu.cn               2311806@tongji.edu.cn                qliu@tongji.edu.cn
+
+
+
+                                                                                              Abstract
+                                                       Latent world models can contain the state needed for control, yet their terminal-cost in-
+                                                   terface can expose the planner to the wrong decision-relevant information. In common latent
+                                                   MPC, candidate action sequences are ranked by Euclidean distance between the predicted ter-
+                                                   minal latent state and the goal latent state; this terminal proximity objective is convenient, but
+                                                   it assumes that raw latent distance weights reachability-relevant variables correctly. We pro-
+                                                   pose trajectory reachability metrics (TRM), a post-hoc terminal-ranking method for fixed latent
+                                                   world models. TRM trains a small pairwise head from logged trajectory structure and uses it as
+                                                   a replacement or hybrid terminal cost; the encoder, dynamics, candidate sampler, optimizer, and
+                                                   evaluation manifests remain fixed. The key design choice is horizon-aware supervision: the met-
+                                                   ric is trained on broad, balanced temporal separations so that its training distribution matches
+                                                   the long-horizon terminal candidate ranking problem. On a hard TwoRoom benchmark, raw
+                                                   latent planning with LeWorldModel (LeWM) reaches 7.0% mean success, while full-horizon
+                                                   TRM reaches 97.0%; shuffled temporal-label controls stay at 0.0%. The same recipe improves
+                                                   a PLDM baseline from 32.7% to 84.0% across three seeds, and a short-horizon TRM variant
+                                                   reaches only 35.0% even with the same 100,000 pair budget. Using TwoRoom as a concrete case
+                                                   study, we provide mechanistic evidence for why TRM works: XY position is linearly decodable
+                                                   with R2 = 0.998, yet raw latent MSE misranks candidates; the XY-probe rowspace accounts
+                                                   for less than 1% of terminal-goal latent MSE but carries most candidate-quality signal; and
+                                                   same-candidate selection audits (SCSA) show that TRM improves the ordering and selected
+                                                   endpoint seen by the planner. On PushT go50/go75, TRM-style task-state metrics improve
+                                                   SCSA ranking and selected final distance more cleanly than closed-loop success, so they are
+                                                   best treated as auxiliary hybrid costs in continuous manipulation. The resulting paper is both
+                                                   a method and a mechanism study: TRM is the planner-facing repair, and the audits explain
+                                                   when and why terminal reachability metrics should replace or augment raw latent proximity.
+
+
+                                         1        Introduction
+                                         Latent world models make a compelling promise: learn a compact predictive state from pixels, roll
+                                         it forward under candidate actions, and choose actions by optimizing in latent space. This promise
+                                         underlies model-based reinforcement learning and visual planning systems ranging from sampling-
+                                         based dynamics models to latent-imagination agents and joint-embedding world models [4, 7, 9, 18].
+                                         The fragile step is not always prediction. A latent state can be stable, predictive, and linearly
+                                         probeable, yet the distance exposed to the planner can rank the wrong action sequence.
+                                             ∗
+                                                 Corresponding author.
+
+
+                                                                                                   1
+    The common terminal-cost formulation assumes that Euclidean proximity in the learned latent
+space is a good proxy for task progress. This assumption is stronger than it first appears. It
+does not merely require that the latent contain the variables needed for control; it requires that the
+optimizer’s metric weight those variables in a way that ranks action sequences by future reachability.
+If the control-relevant variables occupy a small or low-energy subspace, raw latent distance can
+be dominated by residual directions that are useful for prediction, nuisance variation, or local
+discrimination but not for choosing actions. This is the latent-proximity trap studied in this paper:
+the model may know the state, while the planner’s terminal cost exposes the wrong decision-relevant
+information.
+    We investigate this problem through the surprising behavior of LeWorldModel (LeWM), an
+end-to-end joint-embedding predictive architecture trained from pixels [9]. The puzzle is compar-
+ative and mechanistic. LeWM is presented as a stable pixel-based JEPA-style world model and
+can perform competitively in visually rich settings, yet a controlled hard TwoRoom navigation
+setting exposes a sharp failure. A shallow explanation would blame the environment, the wall, or
+the door. A second shallow explanation would blame the representation for not encoding position.
+We show that neither explanation is sufficient: the same hard TwoRoom episodes are solvable by
+the same CEM planner when the candidate cost is aligned with reachability, and LeWM latent
+states encode XY position almost perfectly under a linear readout. The immediate failure point is
+the planner-facing metric.
+    Our method is trajectory reachability metrics (TRM): a post-hoc terminal-ranking cost for
+fixed latent world-model planners. TRM learns a scalar pairwise distance from logged trajectory
+structure and uses it to score predicted terminal latent states against goal latent states. This is
+not a new world model and not a policy learner. It is a planner-facing metric layer designed for
+the exact interface where the mismatch appears: the candidate ordering used by the optimizer.
+    The central design principle is that the metric must be trained at the temporal scale where it
+will be used. A local temporal head can be accurate on short pairs yet fail to rank long-horizon
+candidate endpoints. We therefore use balanced full-horizon trajectory-pair sampling in TwoRoom
+and evaluate both replacement and hybrid costs. The evidence chain is deliberately causal: first
+expose a fixed-planner failure, then repair only the terminal selector, then localize why raw MSE
+underweights the useful state, and finally test where the repair stops helping.
+    We structure the paper as both a method paper and a mechanism study. The method is the
+terminal reachability metric; the mechanism study asks whether the metric changes the candidate
+ordering seen by CEM, rather than merely improving an offline auxiliary loss or exploiting hidden
+task state.
+    This paper makes four contributions.
+
+  1. Trajectory reachability metrics for fixed terminal candidate scoring. We propose
+     TRM as a post-hoc terminal-ranking layer that replaces or augments raw latent proximity
+     while keeping the world model, sampler, planner budget, optimizer, and evaluation setting
+     fixed.
+
+  2. Horizon-aware metric supervision. We show that sampling is part of the method, not
+     an implementation detail: broad trajectory coverage and full-horizon temporal deltas are
+     empirically critical for a terminal metric used by long-horizon candidate selection.
+
+  3. Mechanism evidence for planner-metric mismatch. We use SCSA diagnostics and
+     subspace interventions to test whether TRM works by correcting candidate ordering, rather
+     than by changing the fixed model or relying on hidden oracle state.
+
+
+                                                  2
+    4. Cross-model gains and boundary conditions. TRM reaches 97.0% on our hard n100
+       TwoRoom manifest for LeWM and strongly improves PLDM under the same manifests,
+       while PushT shows that continuous manipulation often requires hybridizing learned reacha-
+       bility metrics with raw latent costs.
+
+
+2     Related Work
+World models and latent-space control. Model-based control commonly trains a dynamics
+model and optimizes candidate action sequences through the learned model [4]. Latent world
+models move this optimization into a compact state space, either to learn policies through imagined
+rollouts [7] or to perform goal-conditioned planning directly in learned visual features [9, 18].
+Our focus is not model-based planning in general, but a specific interface assumption: terminal
+Euclidean distance in the learned latent is treated as a control objective.
+
+Reachability-aware representations and distances. Goal-conditioned RL has long recog-
+nized that raw state or representation distance can be a poor proxy for reachability. Replay-buffer
+graph search and latent-landmark world models use learned edge costs or value estimates for long-
+horizon planning [6, 17]; REPlan separates compact representation learning from a reachability
+module estimating temporal distance [13]; TLDR uses temporal-distance-aware representations
+for unsupervised goal-conditioned RL [2]; successor-feature temporal-distance methods study met-
+ric structure for decision-making [11]; and quasimetric approaches connect representation distances
+to directed goal-reaching distances [12]. These works establish temporal or reachability distance as
+a useful goal-reaching objective. Our setting goes one step further: we ask how to use reachability-
+style distance learning as a post-hoc terminal scoring rule for fixed latent world-model planners,
+and how to verify that it changes the candidate ordering seen by the planner.
+
+Concurrent views on plannability in joint-embedding world models. The Hokkaido Uni-
+versity RC-aux paper and our work both point to a similar problem in LeCun and collaborators’
+reconstruction-free joint-embedding world-model line: a latent state can be predictive without ex-
+posing the temporal reachability information needed by downstream search [8, 9]. RC-aux keeps
+the LeWM backbone architecture unchanged but changes training or continuation training by
+adding multi-horizon open-loop prediction, budget-conditioned reachability supervision with tem-
+poral hard negatives, and optionally a reachability-aware planner. Our intervention and evidence
+target are different. RC-aux aims to make the learned representation itself more plannable; we
+keep the trained encoder and dynamics fixed and ask whether a horizon-matched terminal metric
+can repair the planner interface after training. RC-aux uses budget-conditioned reachability sig-
+nals to shape the model, whereas TRM learns a continuous pairwise ordering signal for candidate
+endpoints. Thus our contribution is the post-hoc TRM method for fixed latent world-model plan-
+ners together with mechanism evidence that localizes the terminal metric as the bottleneck in the
+studied failures, instead of temporal reachability supervision per se.
+
+From probes to planner interfaces. Linear probes are useful for asking whether information
+is present in a representation. They do not answer whether the planner’s objective uses that
+information. Our subspace intervention bridges this gap by turning a probe into a metric surgery.
+In hard TwoRoom instances, we project terminal latent differences onto the rowspace of the XY
+readout and separately evaluate the orthogonal residual. The result gives causal evidence about
+which latent directions the planner needs, rather than merely reporting decodability.
+
+
+                                                 3
+

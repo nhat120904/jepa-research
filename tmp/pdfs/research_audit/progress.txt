@@ -1,0 +1,111 @@
+                                 Progress Report
+Student Name: Nguyen Cuong Nhat
+Role: Research Assistant (CAIR)
+Supervisor: Prof. Le Duy Dung
+Reporting Period: 01/06/2026 – 05/06/2026
+
+1. Progress Summary
+Validation study for the proposed CAI-JEPA research: quantitatively determining whether
+existing action-conditioned JEPA world models (DINO-WM, V-JEPA-2-AC, JEPA-WM) exhibit
+measurable action-grounding failures, i.e. producing near-identical latent predictions for different
+actions from the same state. The full diagnostic harness was implemented and unit-tested
+against the real upstream facebookresearch/jepa-wms API. The primary Metaworld study is
+complete and the secondary DROID study is set up, cached, and partway through its metric
+step. The current consolidated decision is CONDITIONAL_GO: a clear action-grounding gap is
+visible, concentrated in contact-rich and pre-grasp regimes.
+
+2. Coursework
+
+3. Research Topic
+Tentative Title:
+Counterfactual Action-Identifiable JEPA World Models for Robot Planning (CAI-JEPA).
+Research Problem:
+Do action-conditioned JEPA world models reliably distinguish the futures induced by different
+actions across the diverse range of states encountered during robot planning, particularly in
+contact-rich, fine-precision manipulation, and if not, how can this failure be systematically
+diagnosed and corrected? Standard evaluation (factual prediction loss and aggregate planning
+success) does not directly measure whether the predictor separates the outcomes of different
+actions from the same initial state.
+Main Objectives:
+  1. Build a systematic quantitative diagnostic protocol for action grounding, stratified across
+     state regimes (free space, pre-grasp, gripper actuation, contact manipulation).
+  2. Establish how counterfactual sensitivity correlates with downstream planning success (the
+     CRA_eff → planning-failure link).
+  3. If failures are confirmed, design training objectives that explicitly enforce action-conditional
+     separability in the predictor's latent space.
+
+4. Research Progress
+Key activities completed:
+  • Implemented the full go/no-go diagnostic against the real facebookresearch/jepa-wms API
+     (frozen, pretrained checkpoints only, nothing is trained)
+  • Defined and validated four per-transition metrics — Counterfactual Ranking Accuracy
+    (CRA), Action Usage Gap (AUG), Effect-Conditioned Separability (ECS), and optional
+    CTD, with trajectory-clustered bootstrap confidence intervals.
+  • Built regime stratification (free_space, pre_grasp, gripper_actuation,
+    contact_manipulation) and the dataset/task/regime/strategy evaluation matrix, plus a
+    synthetic-model validation path.
+  • Completed the primary Metaworld study end-to-end (latent extraction, regime
+    classification, diagnostic run, analysis report).
+  • Set up, downloaded, and cached the secondary DROID study: environment built, 333-
+    episode subset downloaded, latents encoded (dino_wm_droid), and regimes recalibrated.
+  • Coded the planning Action-Score probe (faithful CEM planner + DROID Action Error
+    metric) to close the link between counterfactual sensitivity and planning failure.
+Preliminary results / outputs:
+  • Consolidated decision: CONDITIONAL_GO. DROID is strongly pathological and
+     Metaworld is clearly below the abandon threshold, though not below the stricter full-GO
+     threshold.
+  • Metaworld: a large strategy gap. "opposite" (easy) counterfactuals are near-saturated
+     (CRA ≈ 0.96–0.99), but strict "hard_nn" negatives drop to ≈ 0.46–0.57 in pre-grasp and
+     contact regimes; hard-task contact-regime CRA_eff ≈ 0.65 (upper CI 0.70). The model
+     reacts to gross action changes but struggles when a counterfactual action is paired with a
+     similar latent state.
+  • DROID: after the sanity gate passes, strict hard negatives are near chance (CRA_eff ≈
+     0.02–0.07) in gripper_actuation and contact_manipulation => the sharpest action-
+     grounding failure observed.
+  • Outputs: diagnosis result, the decision report, and per-regime figures.
+
+5. Challenges and Support Needed
+Challenges:
+  • Still unable to access gpu server (H100 clusters), A6000 server has SSL error => cannot
+     curl, download on the internet
+  • Action normalization is the most error-prone part of the pipeline; it requires careful per-
+     dataset validation against each model's eval loss.
+  • In the Metaworld subset, the gripper_actuation regime has too few transitions to report, so
+     the Metaworld conclusion leans on pre_grasp and contact_manipulation.
+  • The DROID metric step is not yet finished, so the cross-dataset conclusion is still
+     provisional.
+Support needed:
+  • Guidance on whether the current evidence is sufficient to commit to the full paper, or
+    whether more baselines/tasks are required first.
+
+6. Plan for Next Period
+
+ Task                                             Deadline              Expected Output
+ Finish DROID metric step; encode and score       8-9 June              Completed DROID
+ vjepa2_ac_droid                                                        diagnostic CSV; all
+ Task                                           Deadline     Expected Output
+                                                             three baselines
+                                                             covered
+ Run the planning Action-Score probe and        10-11 June   Per-transition
+ correlation study                                           CRA_eff correlated
+                                                             with DROID Action
+                                                             Error; quantified
+                                                             CRA_eff → planning-
+                                                             failure link
+ Consolidate evidence and finalize the go/no-   12 June      Final decision report
+ go decision report                                          with figures;
+                                                             recommendation on
+                                                             pursuing the full CAI-
+                                                             JEPA paper
+ If GO is confirmed, prototype an action-       13-14 June   Initial training-
+ conditional separability training objective                 objective design and
+                                                             pilot results
+
+
+Student Signature: ___Nhat_____________________
+
+Supervisor Comments:
+________________________________________________________________
+________________________________________________________________
+________________________________________________________________
+

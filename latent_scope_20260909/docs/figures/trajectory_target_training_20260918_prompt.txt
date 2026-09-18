@@ -1,0 +1,21 @@
+Built-in image_gen generation prompt. Explanatory diagram: endpoint loss, composition loss and optional value gradients are omitted to isolate target-branch learning.
+
+Create an English scientific teaching diagram, landscape, white background, very legible large labels, clean flat boxes and orthogonal arrows. Title "How the trajectory target branch is trained". Subtitle "Three separate networks: online encoder, EMA encoder, world-model predictor". Focus ONLY on representation training, no critic, no robot, no composer. Use three horizontal lanes with ample whitespace. No decorative icons. Use exact explicit module names and text below. All nodes editable-looking clean vector style, no photos.
+
+TOP LANE in teal, heading "1. Learn the summary representation".
+Left "Observed future sequence / Frozen visual features + proprio / x_(t+1:t+H)" -> "ONLINE trajectory encoder G_phi / Trainable" -> "Summary s_online" -> "Reconstruction decoder D_omega / Trainable" -> "Reconstruction loss / Reconstruct the observed feature sequence".
+Below this lane put one sentence "Reconstruction gradients update G_phi and D_omega." Show two dashed orange gradient arrows from reconstruction loss back to online encoder and reconstruction decoder, route above boxes without touching lower lanes. There is also variance regularization noted as small text "Optional variance regularization helps resist collapse." Do not imply pixel reconstruction.
+
+MIDDLE LANE in blue, heading "2. Build a stable prediction target".
+Left "Same observed future sequence" -> "EMA trajectory encoder G_bar_phi / No gradient updates" -> "Target summary s_target / STOP-GRADIENT".
+Precisely one dotted blue arrow FROM ONLINE trajectory encoder in lane1 TO EMA trajectory encoder in lane2, labelled "EMA weight update". EMA is NOT copied from predictor. Place these two encoder boxes vertically aligned.
+Under EMA arrow label or in small note "bar_phi ← beta bar_phi + (1 − beta) phi".
+
+BOTTOM LANE in purple, heading "3. Train the world-model predictor".
+Left "Current latent z_t + causal memory m_t + action chunk u" -> "WM predictor F_theta / Trainable" -> "Predicted summary s_hat" -> "Summary prediction loss / ||s_hat − stopgrad(s_target)||²".
+Target summary from middle lane has one downward/right arrow INTO summary prediction loss. Predicted summary has one arrow INTO same loss. There is NO arrow from loss back into EMA encoder.
+Show one dashed orange arrow from summary prediction loss back to WM predictor, labelled "Gradient updates F_theta". Route below the bottom lane.
+Bottom footer boxed: "Same training loop, different updates: G_phi learns from reconstruction; F_theta learns from prediction; G_bar_phi follows G_phi through EMA."
+Another small footer: "Endpoint prediction is a separate loss against the last observed latent z_(t+H); omitted here for clarity."
+Legend "Solid: forward data flow   Orange dashed: gradients   Blue dotted: EMA weights".
+Output must be a readable explanatory figure, not a dense paper overview. No extra links, formulas, arrows or claims. Use 3 clean lanes.

@@ -1,0 +1,181 @@
+                                              Predictive but Not Plannable: RC-aux for Latent
+                                                               World Models
+
+
+                                                              Wenyuan Li                                            Guang Li∗
+                                                           Hokkaido University                                  Hokkaido University
+                                                    wenyuan@lmd.ist.hokudai.ac.jp                         guang@lmd.ist.hokudai.ac.jp
+
+
+
+
+arXiv:2605.07278v1 [cs.LG] 8 May 2026
+                                                           Keisuke Maeda                                         Takahiro Ogawa
+                                                          Hokkaido University                                   Hokkaido University
+                                                    maeda@lmd.ist.hokudai.ac.jp                           ogawa@lmd.ist.hokudai.ac.jp
+
+                                                                                   Miki Haseyama
+                                                                                  Hokkaido University
+                                                                          mhaseyama@lmd.ist.hokudai.ac.jp
+
+
+
+                                                                                           Abstract
+                                                    A latent world model may achieve accurate short-horizon prediction while still
+                                                    inducing a latent space that is poorly aligned with planning. A key issue is spa-
+                                                    tiotemporal mismatch: these models are often trained with local predictive super-
+                                                    vision, but deployed for long-horizon goal-directed search in latent spaces where
+                                                    Euclidean distance may not reflect what is reachable within a finite action budget.
+                                                    We present the Reachability-Correction auxiliary objective (RC-aux), a lightweight
+                                                    correction for this mismatch in reconstruction-free latent world models. RC-aux
+                                                    keeps the world-model backbone unchanged and adds planning-aligned supervision
+                                                    along two axes. Along the time axis, multi-horizon open-loop prediction trains
+                                                    the model beyond one-step consistency. Along the space axis, budget-conditioned
+                                                    reachability supervision, together with temporal hard negatives, encourages the
+                                                    latent space to distinguish states that are eventually reachable from those reachable
+                                                    within the current planning horizon. At test time, the learned reachability signal
+                                                    can also be used by a reachability-aware planner to favor trajectories that are both
+                                                    goal-directed and attainable under the available budget. We instantiate RC-aux on
+                                                    LeWorldModel and evaluate it under both continuation-training and matched-from-
+                                                    scratch settings. Across goal-conditioned pixel-control tasks and a LIBERO-Goal
+                                                    extension, RC-aux improves LeWM-style planning with modest additional cost.
+                                                    These results suggest that planning with latent world models depends not only on
+                                                    predictive accuracy, but also on whether the learned representation encodes the
+                                                    temporal and geometric structure required by downstream search. The code is
+                                                    available at https://github.com/Guang000/RC-aux.
+
+
+                                        1     Introduction
+                                        A latent world model can be predictive without being plannable. In goal-conditioned control from
+                                        pixels, planning requires more than accurate latent prediction. The planner also relies on the latent
+                                        space to rank candidate trajectories: terminal latent distance should reflect feasible progress toward
+                                        the goal, and the planning horizon should reflect what can be achieved with a finite action budget.
+                                        A candidate rollout may end near the goal in Euclidean latent distance while following a shortcut
+                                            ∗ Correspondence to: Guang Li <guang@lmd.ist.hokudai.ac.jp>
+
+
+
+                                        Preprint.
+that is not supported by feasible finite-horizon transitions. When the latent geometry permits such
+shortcuts, a planner can optimize a plausible latent objective while selecting trajectories that are short
+in representation space but poor in the environment. Figure 1 illustrates this failure mode and the
+correction introduced by our method.
+Latent world models have become a central tool for control from pixels, enabling agents to plan or
+learn behavior through compact latent rollouts [17, 19, 20]. Recent reconstruction-free and JEPA-
+style models make this especially attractive for offline and goal-conditioned control, since they avoid
+pixel-level decoding while still supporting planning in learned latent spaces [47, 39, 29]. However,
+many such models are trained under objectives that are only indirectly aligned with their test-time
+use. A model trained primarily for short-horizon latent prediction is later embedded in a long-horizon
+planner that optimizes terminal latent distance to a goal. This train-test gap makes prediction accuracy
+alone insufficient for reliable planning.
+The gap creates two coupled mismatches. The
+temporal mismatch arises because training
+                                                                         obstacle      latent space                   small 𝐿2
+supervision is concentrated on short-horizon start                                goal                      shortcut
+                                                                                                                              𝑧𝑔
+prediction, whereas the planner must evalu-
+                                                       Shortcut
+ate many-step open-loop rollouts at test time.         (blocked)
+The spatial mismatch arises because Euclidean                                           𝑧0
+proximity in latent space does not necessarily            feasible within budget         close in latent, not reachable in time
+
+reflect the finite-horizon reachability structure
+supported by the data. As a result, planning Figure 1: Conceptual illustration of the latent-
+can fail even when one-step prediction is accu- shortcut failure mode. A terminal latent-distance
+rate: the planner may optimize a latent objec- planner may favor a shortcut that is close in la-
+tive whose geometry does not distinguish fea- tent space but unreachable within the finite action
+sible progress from unsupported latent-space budget. RC-aux encourages distance to align with
+shortcuts. Recent work on value-guided repre- finite-horizon reachability, making feasible trajecto-
+sentations, temporal straightening, plannable ries more consistent with planning.
+continuous latents, and quasimetric reacha-
+bility similarly shows that planning depends on representation geometry, not only prediction er-
+ror [10, 44, 24, 43, 34, 3]. These approaches motivate planning-aware geometry, but they do not
+directly align the open-loop rollout distribution, finite-horizon reachability structure, and terminal
+objective used by latent planners.
+We propose a Reachability-Correction auxiliary objective (RC-aux) for latent world models, together
+with a reachability-aware planner that uses the learned signal during search. RC-aux makes the
+training queries more closely match the queries made by the planner. It corrects the temporal
+mismatch by training the dynamics model on multi-horizon open-loop rollouts. It corrects the spatial
+mismatch by learning a budget-conditioned reachability predicate that estimates whether a target
+latent is attainable from a source latent within a finite horizon. The reachability objective uses
+reachable positives, batch negatives, and same-trajectory temporal hard negatives: future states that
+are eventually attainable but not reachable under the current budget. These hard negatives make
+the budget dependence identifiable by forcing the model to distinguish “reachable eventually” from
+“reachable within this horizon.” We also impose the same reachability structure on predicted rollout
+latents, so states generated during planning inherit the finite-horizon semantics used by the planner.
+At test time, our planner couples this learned reachability signal with terminal latent planning.
+Standard terminal latent L2 planning is recovered as the λplan = 0 member of this planner family.
+For λplan > 0, the planner favors candidate rollouts that are close to the goal under the base latent
+cost and contain intermediate predicted states from which the goal is estimated to be reachable
+within the remaining horizon. Thus, reachability becomes an explicit search signal rather than only a
+training-time regularizer.
+We instantiate RC-aux on LeWorldModel (LeWM), a compact reconstruction-free JEPA world model
+for goal-conditioned planning from pixels [29]. RC-aux preserves the LeWM backbone, allowing us
+to isolate the effect of correcting the training horizon, shaping finite-horizon reachability geometry,
+and using the learned reachability signal during search. Although our experiments use LeWM, the
+objective itself is backbone-agnostic: it requires only latent rollouts, goal latents, and finite-horizon
+transition structure.
+
+
+
+
+                                                              2
+Our experiments evaluate RC-aux on the original LeWM task family and benchmark extensions under
+matched local protocols, including continuation controls, paired fixed-episode outcomes, ablations,
+and rollout visualizations. Across these settings, RC-aux improves four out of five matched LeWM-
+family comparisons, with the clearest gain on Wall, where finite-budget reachability makes latent
+Euclidean distance a particularly weak proxy for planning progress. These results support the central
+claim of this paper: strong latent planning requires not only accurate prediction, but a representation
+whose notions of distance and horizon are aligned with data-supported finite-horizon reachability.
+Our contributions are:
+
+       • We introduce RC-aux, a backbone-agnostic auxiliary objective that makes latent world
+         models more plannable by jointly correcting rollout-horizon mismatch and finite-horizon
+         reachability geometry.
+       • We introduce a reachability-aware planner family that uses the learned reachability signal
+         during test-time search, with standard terminal latent L2 planning recovered when λplan = 0.
+       • We provide a formal analysis showing how multi-horizon open-loop prediction, budget-
+         conditioned reachability, and temporal hard negatives align training with finite-horizon
+         planning queries.
+       • We provide controlled empirical validation on LeWorldModel, including matched compar-
+         isons, continuation controls, ablations, rollout visualizations, and a larger LIBERO-Goal
+         extension with OFT-style action heads.
+
+
+2   Related Work
+
+RC-aux builds on latent world models for pixel-based control, including recurrent latent planners,
+imagined-rollout agents, and decoder-free control-centric models [17, 19, 20]. It is closest to
+reconstruction-free and JEPA-style models such as DINO-WM, PLDM, and LeWorldModel, which
+avoid pixel reconstruction and plan directly in learned or pretrained visual feature spaces [47, 39, 29].
+Rather than introducing a new backbone, RC-aux studies how to train the latent space so that it better
+exposes the finite-horizon structure needed by planning.
+RC-aux is also related to planning-aware representation learning, including value-guided latent
+distances, temporally structured representations, plannable latent spaces, reachability learning, and
+quasimetric objectives [10, 44, 24, 43, 34, 3, 41]. These methods show that latent proximity or
+short-step prediction error alone may be insufficient for control. RC-aux targets this mismatch with
+budget-conditioned reachability supervision, temporal hard negatives, and multi-horizon open-loop
+prediction. Additional discussion is provided in Appendix A.
+
+
+3   Method
+
+We consider goal-conditioned control from pixels with a latent world model. The offline dataset
+consists of trajectories
+                              D = {τ (n) }N
+                                          n=1 ,          τ = (o1:T , a1:T −1 ),                      (1)
+where ot is an image observation and at is the action between ot and ot+1 . A latent world model
+consists of an encoder eθ and an action-conditioned latent dynamics model. The encoder maps
+observations to latent states,
+                                              zt = eθ (ot ),                                         (2)
+and the dynamics model predicts future latents under candidate action sequences. Given a current
+observation ot and a goal observation og , a latent planner encodes
+
+                                    zt = eθ (ot ),        zg = eθ (og ),                             (3)
+
+rolls out candidate action sequences in latent space, and selects the sequence with the lowest goal-
+matching cost.
+
+
+                                                     3
+

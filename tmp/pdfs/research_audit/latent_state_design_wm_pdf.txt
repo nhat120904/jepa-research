@@ -1,0 +1,176 @@
+                                                  L ATENT S TATE D ESIGN FOR W ORLD M ODELS UNDER
+                                                              S UFFICIENCY C ONSTRAINTS
+
+                                                                                               A P REPRINT
+
+
+                                                                                            Keon Woo Kim
+                                                                                               Om Labs
+                                                                                           keon@omlabs.xyz
+
+
+
+
+arXiv:2605.01694v1 [cs.AI] 3 May 2026
+                                                                                               May 5, 2026
+
+                                                                                              A BSTRACT
+
+                                                 A world model matters to an agent only through the state it constructs. That state must preserve
+                                                 some information, discard other information, and support some future function: prediction, control,
+                                                 planning, memory, grounding, or counterfactual reasoning. This paper treats world-model research as
+                                                 latent state design under sufficiency constraints.
+                                                 We propose a functional taxonomy that groups methods by what their latent state is for, rather than
+                                                 by architecture or application domain: predictive embedding, recurrent belief state, object/causal
+                                                 structure, latent action interface, grounded planning interface, and memory substrate. These roles
+                                                 expose distinctions that architecture-based groupings hide, including the gap between predictive
+                                                 sufficiency and control sufficiency, and the gap between passive video prediction and counterfactual
+                                                 action modeling.
+                                                 The taxonomy supports an evaluation framework that judges a model by the sufficiency constraint its
+                                                 latent state was built to satisfy. We compare methods along seven axes: representation, prediction,
+                                                 planning, controllability, causal/counterfactual support, memory, and uncertainty. We use the resulting
+                                                 matrix as a diagnostic for what a latent state preserves, discards, and enables.
+                                                 The conclusion that follows is that an actionable world model is the one whose state construction
+                                                 matches the task, not the one that preserves the most information.
+
+
+                                        1   Introduction
+
+                                        The problem with world model is that the term names a function, not an architecture. In model-based reinforcement
+                                        learning, it often means a latent dynamics model used for imagined control. In self-supervised video learning, it means
+                                        a predictive representation of future visual structure. In generative simulation, it means a playable environment model.
+                                        In object-centric work, it means a simulator over entities and relations. In robotics and vision-language-action systems,
+                                        it means a planning interface grounded in perception, language, geometry, and action [3, 12, 24, 25, 49, 60]. These uses
+                                        share a commitment to internal state, but they ask that state to do different things.
+                                        Each use asks the latent state to be sufficient for something different. A predictive model asks for a state sufficient for
+                                        future representation prediction. A control model asks for value- and action-relevant distinctions. An object-centric or
+                                        causal model asks for persistent entities, relations, and intervention structure. A latent-action model asks for controllable
+                                        change when explicit action labels are absent. A grounded planning model asks for latent geometry that supports search,
+                                        goals, or trajectory choice. A memory model asks for persistence under partial observability. We call these requirements
+                                        sufficiency constraints.
+                                        This paper organizes world-model research by the function of latent state. Architectures matter, but they do not
+                                        determine that function. The same backbone can serve prediction, control, memory, or planning depending on its
+                                        objective, update rule, grounding signal, and evaluation. Conversely, different architectures can pursue the same
+                                        sufficiency constraint. The right comparison is functional: what is the latent state for?
+                         Latent State Design for World Models under Sufficiency Constraints                    A P REPRINT
+
+
+
+The framework has three parts. Section 2 defines latent world models and states three propositions about how their
+sufficiency constraints relate. Sections 4–9 review the six roles. Section 12 turns the taxonomy into a seven-axis
+evaluation matrix. Section 13 converts the framework into a falsifier-equipped research program.
+A consequence is that a latent state is not better because it preserves more information. It is better when it preserves
+what its role requires and discards what interferes with that role. Reconstruction-heavy, predictive, control-oriented,
+causal, and memory-augmented models all sit on the same compression spectrum at different points, not on a single
+quality scale.
+Adjacent work in LLMs, VLMs, and VLAs uses latent computation for reasoning, grounding, and action selection
+[4, 27, 37, 38, 55]. Such systems enter the scope of world modeling only when their latent state represents an external
+world evolving under action. Without this restriction the term loses content.
+The scope of this paper is conceptual rather than exhaustive. The methods we discuss are drawn from model-based
+reinforcement learning, self-supervised video learning, robotics, autonomous driving, object-centric modeling, latent-
+action learning, memory-augmented simulation, and vision-language-action systems. A method appears here when its
+latent state plays an explicit role in prediction, control, planning, grounding, memory, or counterfactual reasoning. Static
+representation learners are out of scope unless their latent state is used for temporal world evolution or downstream
+planning, and multi-role systems are placed under their primary latent-state function.
+
+2     What is a latent world model?
+A latent world model is a learned state-update system for predicting how an external world evolves. This distinguishes
+it from a static representation model, which encodes semantics without modeling change, and from a purely generative
+decoder, which produces plausible outputs without maintaining a stable task-relevant internal state. The latent state
+stands in for the model’s account of the environment, not merely for a compressed observation.
+The boundary is defined by three properties. State: the latent must summarize aspects of the world beyond the current
+observation. Temporal evolution: it must change in a way that predicts or constrains future latent states or observations.
+Action relevance: under agent action, it must reflect the consequences of those actions. The definition is broader
+than a model-based RL definition and narrower than a purely generative one. It covers recurrent state-space models,
+predictive embeddings used to support planning, object-centric and causal models, grounded planning models, and
+memory-augmented systems where persistent latent state preserves world consistency over long horizons.
+
+2.1   Latent world models as state abstraction
+
+The boundary can be written as state abstraction under partial observability. An agent does not directly observe the full
+world state. It receives a history
+                                             ht = (o1 , a1 , o2 , a2 , . . . , ot ),
+and learns a latent state abstraction
+                                                        zt = ϕ(ht ).
+A latent world model then learns how this state evolves under action:
+                                                     pθ (zt+1 | zt , at ).
+
+This formalism gives a common language for comparing what different models ask their latent states to preserve. The
+sufficiency tests differ by role: prediction asks whether zt supports future-observation forecasts; control asks whether
+it preserves value- and policy-relevant distinctions; object-centric modeling asks whether it factorizes the world into
+persistent entities; memory asks whether zt or its associated store preserves hidden state over long horizons.
+Predictive sufficiency and control sufficiency differ. A latent state can support accurate future prediction while failing
+to organize states by reachability, value, or action consequences. Conversely, a compact control-sufficient state can
+discard details needed for photorealistic reconstruction. For latent state design, the relevant criterion is therefore which
+sufficiency the compression satisfies: prediction, control, structure, action abstraction, memory, or goal-conditioned
+planning [5, 16, 20, 53].
+The design problem can be read as a choice of compression target: each sufficiency constraint specifies what
+information the latent must retain and, by implication, what it should discard. From this view, the field’s architectural
+variety reflects different choices along a compression spectrum, ranging from observation-faithful pixel reconstruction
+to value-equivalent or causally factored compression [20, 53]. Reading the literature this way clarifies a recurring
+
+
+                                                              2
+                         Latent State Design for World Models under Sufficiency Constraints                  A P REPRINT
+
+
+
+empirical pattern: control-oriented systems such as MuZero, EfficientZero, and TD-MPC2 move away from pixel-
+faithful reconstruction toward task-relevant compression [26, 52, 66]. Reconstruction can help when geometry or
+grounding is needed, but it becomes a liability when limited capacity is spent preserving details irrelevant to action.
+Counterfactual support adds another requirement. If a world model is to answer what would happen under a different
+action, then its latent dynamics must be intervention-sensitive: changing at should change the predicted future in a way
+that reflects possible consequences rather than passive correlation. Object-centric, causal, and action-conditioned latent
+models are therefore central to actionable world modeling [17, 18, 45, 54], and sit near the most selective end of the
+compression spectrum.
+
+Table 1: Representative methods by compression-spectrum position. The year column shows how influential lines
+occupy different compression targets, from observation-faithful reconstruction to task-relevant abstraction.
+
+ Position                  Training objective           Year range         Representative methods
+ Reconstruction-           Pixel reconstruction or      2018–2024          World Models [22], SimPLe [34]
+ heavy                     generative modeling
+ Token compression         Discrete-token               2022–2025          IRIS [42], GAIA-1 [30], GAIA-2 [50]
+                           prediction
+ Representation            Embedding-space              2023–2026          I-JEPA [2], V-JEPA 2 [3], V-JEPA 2.1 [44],
+ prediction                prediction                                      LeWorldModel [40]
+ Reward /                  Reward and                   2019–2021          TPC [46], value-aligned latent planning
+ value-shaped              policy-relevant                                 [28]
+                           supervision
+ Value-equivalent          Bellman-relevant             2020–2023          MuZero [52], EfficientZero [66],
+                           statistics only                                 TD-MPC2 [26]
+ Causal /                  Intervention-sensitive       2026               Causal-JEPA [45], CausalVAE-WM [14]
+ counterfactual            structural variables
+
+Table 1 maps design targets along this spectrum. Physical-reasoning probes [39, 67] reinforce the axis by separating
+visual fidelity from physical and causal correctness.
+
+2.2   Relationships among sufficiency constraints
+
+The six roles are descriptive. The sufficiency constraints behind them have formal relationships. Three propositions
+organize those relationships.
+Proposition 1 (Belief-state subsumption). Exact belief-state sufficiency subsumes prediction and control under standard
+POMDP assumptions. If zt is an exact belief state bt = p(st | ht ) and the transition, observation, and reward models
+are known, then zt is sufficient for predicting future observation distributions and for computing optimal values for any
+reward defined on the hidden state. This restates a standard result of POMDP theory [33] and is the ideal case that
+recurrent latent world models approximate.
+Proposition 2 (Predictive vs. control sufficiency). Predictive sufficiency does not imply control sufficiency. A latent
+state can preserve information needed to predict future observations while discarding distinctions that affect reward or
+action choice. Formally, equality of predictive distributions over observations does not guarantee equality of Q∗ (ht , a)
+unless the reward and action-relevant transition distinctions are also preserved. This follows from value-equivalence
+and bisimulation theory [5, 16, 20] and is why representation quality and planning quality must be evaluated separately.
+Proposition 3 (Passive vs. counterfactual sufficiency). Passive predictive sufficiency does not identify counterfactual
+dynamics without additional assumptions or interventions. A model trained only to predict observed transitions can
+learn correlations among events without learning how the system would evolve under alternative actions. This is
+the standard non-identifiability result from causal inference [47]: counterfactual world modeling therefore requires
+action-conditioned data, causal assumptions, object/intervention structure, or grounding signals that constrain the
+latent dynamics.
+
+Table 2 turns the propositions into evaluation failure modes. Each proposition identifies a common measurement error,
+the method families where the error appears, the benchmark that exposes it, and the latent-state design response.
+The propositions connect the taxonomy to POMDPs, value equivalence, bisimulation, and causal modeling. They also
+map onto the compression spectrum: Proposition 1 gives the belief-state target, while Propositions 2 and 3 explain
+
+
+                                                            3
+

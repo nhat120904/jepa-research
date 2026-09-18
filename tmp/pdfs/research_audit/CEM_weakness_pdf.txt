@@ -1,0 +1,166 @@
+                                                     Regularizing Model-Based Planning with
+                                                              Energy-Based Models
+                                                                 Rinu Boney     Juho Kannala        Alexander Ilin
+                                                                         Department of Computer Science
+                                                                            Aalto University, Finland
+                                                                        firstname.lastname@aalto.fi
+
+
+
+
+arXiv:1910.05527v1 [cs.LG] 12 Oct 2019
+                                                  Abstract: Model-based reinforcement learning could enable sample-efficient
+                                                  learning by quickly acquiring rich knowledge about the world and using it to
+                                                  improve behaviour without additional data. Learned dynamics models can be
+                                                  directly used for planning actions but this has been challenging because of in-
+                                                  accuracies in the learned models. In this paper, we focus on planning with learned
+                                                  dynamics models and propose to regularize it using energy estimates of state tran-
+                                                  sitions in the environment. We visually demonstrate the effectiveness of the pro-
+                                                  posed method and show that off-policy training of an energy estimator can be
+                                                  effectively used to regularize planning with pre-trained dynamics models. Fur-
+                                                  ther, we demonstrate that the proposed method enables sample-efficient learning
+                                                  to achieve competitive performance in challenging continuous control tasks such
+                                                  as Half-cheetah and Ant in just a few minutes of experience.
+
+                                                  Keywords: model-based reinforcement learning, energy-based learning
+
+                                         1   Introduction
+                                         Reinforcement learning deals with taking sequences of actions in previously unknown environments,
+                                         to maximize cumulative rewards. Deep reinforcement learning combines the power of deep neural
+                                         networks for function approximation with reinforcement learning algorithms. Such algorithms have
+                                         recently been successful in solving several challenging problems [1, 2, 3]. However, these algo-
+                                         rithms are often not sample-efficient, typically requiring an unreasonable amount of interactions in
+                                         an environment [1, 3, 4]. In real world applications, it is often the case that collecting data is expen-
+                                         sive, motivating the need for algorithms that can learn from a minimal number of interactions with
+                                         the environment.
+                                         Effectively using a model of the environment for learning could result in a significant increase of
+                                         sample-efficiency [5, 6]. This is because models introduce an inductive bias that the environment
+                                         behaves in a forward generative causal direction. Models can be directly used for planning actions
+                                         that maximize the sum of expected rewards in a finite horizon. Previous works have successfully
+                                         used fast and accurate simulators of the environment for planning, to solve challenging tasks such
+                                         as control of a Humanoid [6, 7]. However, most real-world problems do not come with a fast and
+                                         accurate simulator and engineering one from scratch is a laborious task. Even if a simulator exists:
+                                         1) maintaining the simulator to accommodate for changes in the real-world is a lot of manual work,
+                                         and 2) matching the true state of the environment and the simulator is not trivial. This motivates
+                                         the need for learning dynamics models of the environment. Dynamics models of the environment
+                                         can be efficiently learned using supervised learning techniques [8] and also efficiently adapted to
+                                         changes in the environment [9].
+                                         Planning with learned dynamics models is challenging because the planner can exploit the inaccu-
+                                         racies of the model to arrive at actions that are imagined to produce highly over-optimistic rewards
+                                         (see Figure 5). In this paper, we propose to regularize model-based planning with an energy-based
+                                         model trained on the same transitions as the dynamics model. The planning procedure is augmented
+                                         with an additive cost of minimizing the energy of the imagined transitions. This penalizes the plan-
+                                         ner from producing trajectories with transitions that are outside the training data distribution (that
+
+                                         3rd Conference on Robot Learning (CoRL 2019), Osaka, Japan.
+Figure 1: Overview of training loop. We initially perform random exploration for one or more
+episodes to train the dynamics model and then interact with the environment by planning using the
+learned dynamics model. At the end of each episode, we re-train the dynamics model on the past
+experience.
+
+is, transitions with high energy estimates). We demonstrate that the proposed method is effective
+at regularizing model-based planning from exploiting inaccuracies of the model. Previous works
+have proposed to use ensembles of models to deal with this problem [5]. We show that the proposed
+method can further improve the performance of planning on top of pre-trained ensemble of mod-
+els. Furthermore, we show that the proposed method enables sample-efficient learning to achieve
+competitive performance in five popular continuous control tasks.
+
+2   Model-Based Planning
+In this section, we formalize the problem setting as a Markov Decision Process (MDP). At every
+discrete time-step t, the environment is in state st , the agent takes an action at to receive a scalar
+reward rt = r(st , at ) and the environment transitions to the next state st+1 , following the dynamics
+st+1 = f (st , at ). The goal of the agentP
+                                          is to choose actions at so as to maximize the sum of expected
+                                             ∞
+future rewards (called return), G = E [ t=0 r(st , at )].
+In this paper, we focus on finite-horizon planning with learned dynamics models fˆ. Also, we assume
+that the reward function r(st , at ) is known and that the state st is fully observed. Forward dynamics
+models of the environment can be learned using supervised learning techniques to predict the next
+state st+1 from the current state st and action at :
+                                            st+1 = fˆ(st , at ) .
+At time-step t, the agent can plan a sequence of actions {at , . . . , at+H } by unrolling the learned
+dynamics model to maximize the sum of rewards:
+                                                       "t+H               #
+                                                        X
+                           ∗            ∗
+                          at , . . . , at+H = argmax E      r(sτ , aτ ) ,                           (1)
+                                             at ,...,at+H
+                                                               τ =t
+such that sτ +1 = f (sτ , aτ ). Since we do not have access to the true dynamics f , we plan using the
+following objective as a proxy to the true objective:
+                                                               t+H
+                                                               X
+                              a∗t , . . . , a∗t+H = argmax            r(sτ , aτ ) ,                 (2)
+                                                at ,...,at+H
+                                                               τ =t
+
+such that sτ +1 = fˆ(sτ , aτ ). We use model-predictive control (MPC) [10, 8] to adapt our plans to
+new states, that is we apply just the first action from the optimized sequence and re-plan at next step.
+This reduces the effect of error accumulation due to multi-step predictions using the model.
+We initially train the dynamics model using data collected by executing a random policy for one or
+more episodes. More episodes of initial exploration reduces the effect of the initial model weights.
+The initial data can also be collected by an existing policy, for example human demonstrations
+or human-engineered controllers. After training the dynamics models, we interact with the envi-
+ronment using model-based planning (Equation 2). The (st , at , st+1 ) transition observed at each
+interaction is stored in a replay buffer along with the initial data and the model is re-trained on the
+replay buffer at the end of each episode. We iterate this alternating process of training the dynamics
+model and model-based planning. An overview of the training loop is illustrated in Figure 1.
+
+
+                                                    2
+Figure 2: Computational graph of regularizing model-based planning with energy-based models. At
+each timestep t − 1, the environment is in a state st−1 and we initially consider an action trajectory
+{at , at+1 , . . . , at+H } that we could apply for the next H timesteps. The dynamics model is used to
+predict the future state transitions {s̃t , s̃t+1 , . . . , s̃t+H } at each timestep for the considered action
+trajectory. The rewards at each time-step is computed directly from the state-action pairs, resulting in
+a prediction of the finite-horizon cumulative reward. An additive regularization term is augmented
+to the planning objective by computing the energy of each (s̃τ , aτ , s̃τ +1 ) transition. The action
+trajectory {at , at+1 , . . . , at+H } can be optimized to maximize this regularized planning objective.
+
+
+2.1    Regularizing Model-Based Planning
+
+Directly optimizing the objective in Equation 2 is challenging because fˆ is only an approximation
+of the true dynamics f . Deep neural networks are commonly used as function approximators to
+learn fˆ and they are amenable to erroneous predictions for samples outside the data distribution.
+An effective optimizer can be easily deceived by these erroneous predictions, converging to action
+trajectories that are imagined to produce very high rewards but is not the case in reality. This
+problem can be alleviated by penalizing the optimizer from considering trajectories that are outside
+the training distribution of the learned dynamics model fˆ. This can be achieved by augmenting the
+planning objective with an additive term to maximize the probability of imagined transitions:
+                                       t+H
+                                       X
+      a∗t , . . . , a∗t+H = argmax            r(sτ , aτ ) + α log p(st , at , st+1 , . . . , st+H , at+H , st+H+1 ) .
+                        at ,...,at+H
+                                       τ =t
+
+where the scalar α modulates the weight between both costs. We approximate the joint probability
+of the whole trajectory as a sum of joint probabilities of each transition in the trajectory:
+                                                       t+H
+                                                       X
+                  a∗t , . . . , a∗t+H = argmax                [r(sτ , aτ ) + α log p(sτ , aτ , sτ +1 )] .               (3)
+                                        at ,...,at+H
+                                                       τ =t
+
+
+Assume that we want to learn the probability density function using a parameterized model p(xτ ; θ),
+where xτ = [sτ , aτ , sτ +1 ]. The energy function E(xτ ; θ) is the unnormalized log-density, that is
+the probability density function p(xτ ) is defined as:
+                                                        1
+                                       p(xτ ; θ) =          exp (−E(xτ ; θ)) ,
+                                                       Z(θ)
+
+where Z(θ) = exp (−E(x0τ ; θ))dx0τ is the partition function which normalizes the probability
+                 R
+density. Computing the partition function is generally intractable in practice and is not important for
+regularization in Equation 3 since it does not depend on xτ . We can instead learn and use the energy
+function for regularizing model-based planning:
+                                                         t+H
+                                                         X
+                    a∗t , . . . , a∗t+H = argmax                [r(sτ , aτ ) − αE(sτ , aτ , sτ +1 )] .                  (4)
+                                          at ,...,at+H
+                                                         τ =t
+
+
+                                                                3
+

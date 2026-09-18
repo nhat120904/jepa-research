@@ -1,0 +1,58 @@
+\contentsline {section}{\numberline {1}Introduction}{2}{section.1}%
+\contentsline {paragraph}{Scope}{3}{paragraph*.1}%
+\contentsline {paragraph}{Research questions}{3}{paragraph*.2}%
+\contentsline {paragraph}{Approach and preliminary evidence}{3}{paragraph*.3}%
+\contentsline {paragraph}{Organisation}{3}{paragraph*.4}%
+\contentsline {section}{\numberline {2}Background}{4}{section.2}%
+\contentsline {subsection}{\numberline {2.1}What a world model is}{4}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Why world models for robot learning}{4}{subsection.2.2}%
+\contentsline {paragraph}{Data efficiency}{4}{paragraph*.5}%
+\contentsline {paragraph}{Task generality}{4}{paragraph*.6}%
+\contentsline {paragraph}{Learning without reward labels}{4}{paragraph*.7}%
+\contentsline {paragraph}{Deliberation before acting}{4}{paragraph*.8}%
+\contentsline {subsection}{\numberline {2.3}How a world model is used}{4}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}The visual problem}{5}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Pixel-space and latent-space prediction}{5}{subsection.2.5}%
+\contentsline {subsection}{\numberline {2.6}Planning with a latent world model}{6}{subsection.2.6}%
+\contentsline {paragraph}{The model}{6}{paragraph*.9}%
+\contentsline {paragraph}{Planning}{6}{paragraph*.10}%
+\contentsline {paragraph}{Two properties of \eqref {eq:plan}}{6}{paragraph*.11}%
+\contentsline {subsection}{\numberline {2.7}Why this is hard}{6}{subsection.2.7}%
+\contentsline {section}{\numberline {3}Literature review}{6}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Representation objectives}{7}{subsection.3.1}%
+\contentsline {subsubsection}{\numberline {3.1.1}Reconstruction-based latent dynamics}{7}{subsubsection.3.1.1}%
+\contentsline {subsubsection}{\numberline {3.1.2}Joint-embedding predictive architectures}{7}{subsubsection.3.1.2}%
+\contentsline {subsubsection}{\numberline {3.1.3}Frozen pretrained visual features}{8}{subsubsection.3.1.3}%
+\contentsline {subsubsection}{\numberline {3.1.4}Value- and task-aware latents}{8}{subsubsection.3.1.4}%
+\contentsline {subsubsection}{\numberline {3.1.5}Explicitly structured latents}{8}{subsubsection.3.1.5}%
+\contentsline {subsection}{\numberline {3.2}Planning and control algorithms}{9}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}Sampling-based model-predictive control}{9}{subsubsection.3.2.1}%
+\contentsline {subsubsection}{\numberline {3.2.2}Gradient-based planning}{9}{subsubsection.3.2.2}%
+\contentsline {subsubsection}{\numberline {3.2.3}Amortised and search-free control}{10}{subsubsection.3.2.3}%
+\contentsline {subsubsection}{\numberline {3.2.4}Hierarchical decomposition}{10}{subsubsection.3.2.4}%
+\contentsline {subsection}{\numberline {3.3}Diagnostic and failure-analysis work}{10}{subsection.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.1}Dynamics error and its exploitation}{10}{subsubsection.3.3.1}%
+\contentsline {subsubsection}{\numberline {3.3.2}Proposal coverage}{11}{subsubsection.3.3.2}%
+\contentsline {subsubsection}{\numberline {3.3.3}Transition realizability and action grounding}{11}{subsubsection.3.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.4}Cost geometry and selection}{11}{subsubsection.3.3.4}%
+\contentsline {subsection}{\numberline {3.4}Optimisation against imperfect proxies}{12}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Evaluation methodology and benchmarks}{12}{subsection.3.5}%
+\contentsline {subsection}{\numberline {3.6}Synthesis}{13}{subsection.3.6}%
+\contentsline {section}{\numberline {4}A taxonomy of failure surfaces}{13}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Applying the taxonomy: a methodological gap}{14}{subsection.4.1}%
+\contentsline {section}{\numberline {5}A controlled case study in cost attribution}{15}{section.5}%
+\contentsline {paragraph}{Setting}{15}{paragraph*.16}%
+\contentsline {paragraph}{Design}{15}{paragraph*.17}%
+\contentsline {paragraph}{Result}{15}{paragraph*.18}%
+\contentsline {paragraph}{Mechanism}{15}{paragraph*.20}%
+\contentsline {paragraph}{Repairs attempted}{16}{paragraph*.21}%
+\contentsline {paragraph}{Scope}{17}{paragraph*.23}%
+\contentsline {section}{\numberline {6}Proposed research directions}{17}{section.6}%
+\contentsline {paragraph}{Costs trained on the distribution the planner induces}{17}{paragraph*.24}%
+\contentsline {paragraph}{Decision equivalence as a representation criterion}{17}{paragraph*.25}%
+\contentsline {paragraph}{Discriminating experiments for existing repairs}{17}{paragraph*.26}%
+\contentsline {paragraph}{Whether hierarchy changes the picture}{17}{paragraph*.27}%
+\contentsline {paragraph}{Representation quality as the competing explanation}{17}{paragraph*.28}%
+\contentsline {paragraph}{Generality across optimisers}{18}{paragraph*.29}%
+\contentsline {paragraph}{An evaluation protocol}{18}{paragraph*.30}%
+\contentsline {section}{\numberline {7}Conclusion}{18}{section.7}%

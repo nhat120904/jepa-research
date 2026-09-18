@@ -1,0 +1,183 @@
+                                        Preprint
+
+
+
+
+                                        IMWM: I NTUITION M ODELS C OMPLEMENT
+                                        W ORLD M ODELS FOR L ATENT P LANNING
+                                         Baoqi Gao1,2 , Ruize Han2 , Miao Wang1 , Song Wang2
+                                         1                            2
+                                             Beihang University           Shenzhen University of Advanced Technology
+
+
+
+                                                                                      A BSTRACT
+                                                   Planning with a learned latent world model is a promising route to control from
+
+
+
+
+arXiv:2606.01626v1 [cs.LG] 1 Jun 2026
+                                                   raw pixels, but a strong world model alone is not enough. We show this ex-
+                                                   perimentally: even with a perfect world model (operationalized by replacing the
+                                                   learned forward predictor with an idealized rollout of the true environment dynam-
+                                                   ics), a finite-budget sample-based planner still fails on some tasks, indicating that
+                                                   the bottleneck can lie in search rather than in world-model accuracy. Motivated
+                                                   by this gap, we propose IMWM (Intuition Model + World Model), which pairs the
+                                                   world model with an intuition model trained from demonstrations to recognize
+                                                   promising actions. The two models collaborate through three lightweight compo-
+                                                   nents: (i) Retrieval Initialization, which initializes the planner’s action proposal
+                                                   from a retrieved demonstration; (ii) Hybrid Cost, which combines the intuition
+                                                   score with the world-model rollout cost; and (iii) a Reliability Gate, which adjusts
+                                                   how much the planner trusts intuition in each setting. Across four pixel-based
+                                                   goal-reaching tasks (Two-Room, Reacher, Push-T, and OGBench-Cube), IMWM
+                                                   has higher mean success than the world-model-only planner on all four, with the
+                                                   largest gains on Two-Room (99.2%, +11.5 percentage points) and OGBench-
+                                                   Cube (94.7%, +28.5 percentage points).
+
+
+                                        1      I NTRODUCTION
+                                        Planning with a learned latent world model is a competitive route to control from raw pixels: an
+                                        encoder maps each image to a compact latent state, a learned forward predictor rolls that state
+                                        under candidate actions, and a sample-based optimizer such as the Cross-Entropy Method (Rubin-
+                                        stein, 1999) or its modern variants (Pinneri et al., 2021; Hansen et al., 2022) ranks action sequences
+                                        under a latent cost (e.g. terminal latent-MSE to a goal embedding). The lineage runs from visual
+                                        MPC (Ebert et al., 2018) through the PlaNet/Dreamer family (Hafner et al., 2019; 2020; 2021; 2025)
+                                        and PETS (Chua et al., 2018) to modern latent MPC such as TD-MPC (Hansen et al., 2022). The
+                                        default way to improve such a planner is to improve the world model. This paper studies when that
+                                        instinct is insufficient.
+                                        Planning has two ingredients: a model that predicts outcomes, and a search that proposes which ac-
+                                        tions to try. We show experimentally that the search can be the binding constraint. We operationalize
+                                        a perfect world model by replacing the learned forward predictor with an idealized rollout of the true
+                                        environment dynamics, while keeping the terminal latent-MSE cost and the original CEM budget
+                                        fixed. Even so, on these 12-cell diagnostic grids, this oracle-dynamics planner still trails IMWM by
+                                        17.9 pp on OGBench-Cube and 13.7 pp on Two-Room, and its failures are search failures: 127/139
+                                        failed OGBench-Cube episodes and 86/87 failed Two-Room episodes contain zero goal-reaching
+                                        candidates in the CEM population at both logged replans. The bottleneck is where the finite queries
+                                        land, not how the world model predicts. We also prove this theoretically: under finite CEM queries
+                                        against any black-box latent cost, the planner’s success probability obeys a proposal-volume bound
+                                        that is independent of how the predictor was trained (Theorem A.1, Appendix A).
+                                        If the search is what fails, it needs better guidance about which actions are worth trying (Figure 1).
+                                        We take loose inspiration from how biological decision-making works: not as a single forward sim-
+                                        ulator, but as several functional motifs whose influence is regulated rather than fixed. These motifs
+                                        include arbitration between control systems (Daw et al., 2005; Lengyel & Dayan, 2007), memory-
+                                        driven retrieval and predictive maps (Mattar & Daw, 2018; Pfeiffer & Foster, 2013; Stachenfeld
+
+
+                                                                                            1
+Preprint
+
+
+
+
+Figure 1: A world model alone is not enough. Left (World Model only): the planner rolls out
+candidate actions accurately, but under a finite search budget it cannot find a goal-reaching action in
+the vast action space. Right (IMWM): pairing the same frozen world model with a frozen intuition
+model concentrates the search on the promising actions and reaches the goal. Both regimes use the
+same frozen world model and the same CEM budget; only the proposal, cost, and gating differ.
+
+
+et al., 2017), and hierarchical action chunking (Dezfouli & Balleine, 2013). We make no claim about
+biological mechanism; we use these motifs only as a design vocabulary, with established machine-
+learning analogues in episodic control (Blundell et al., 2016; Pritzel et al., 2017), decision-time
+retrieval and imitation (Goyal et al., 2022; Qi et al., 2022), behavior and trajectory priors (Pertsch
+et al., 2021; Tirumala et al., 2022; Janner et al., 2022), and value-aware model learning (Farahmand
+et al., 2017; Lambert et al., 2020). §3 positions IMWM against this work, and Appendix F gives the
+full ledger.
+We propose IMWM (Intuition Model + World Model), in which an intuition model complements
+rather than replaces the world model. The intuition model Dψinv is a contrastive scalar score over
+(start latent, goal latent, action chunk) tuples, trained on demonstration windows with an InfoNCE-
+style objective (van den Oord et al., 2018) to recognize promising actions. Its encoder and scorer
+feed three lightweight collaboration components. (i) Retrieval Initialization centers the CEM pro-
+posal on the action chunk retrieved by nearest-neighbor lookup in the intuition encoder’s latent
+space, biasing queries toward demonstration-supported regions. (ii) A Hybrid Cost combines the
+intuition score with the world-model rollout cost. (iii) A Reliability Gate adjusts, per setting, how
+much the planner trusts intuition versus falling back to the world model alone. The algorithmic fam-
+ily and all trained artifacts are fixed across experiments, under frozen thresholds; the only per-setting
+decision is which of three pre-specified recipes the gate selects, so improvements cannot come from
+per-task tuning (§4).
+
+Contributions.
+
+      1. Diagnosis of finite-CEM latent-WM planning. We show experimentally, with an oracle-
+         dynamics ablation that replaces the learned predictor with idealized true-dynamics rollout
+         under the original CEM budget, that an idealized world model still fails on OGBench-
+         Cube and Two-Room because the search, not the predictor, is the binding constraint (§2.1);
+         we also prove a matching predictor-independent proposal-volume bound (Theorem A.1,
+         Appendix A).
+      2. The IMWM method. We design and train an intuition model that recognizes promising
+         actions, and integrate it with the world model through three components: Retrieval Initial-
+         ization, a Hybrid Cost, and a Reliability Gate (§4).
+      3. Empirical gains on four pixel-based goal-reaching tasks. Over a 48-cell fresh-seed grid
+         (12 cells × 4 tasks), IMWM achieves higher mean success than the world-model-only
+         planner on all four tasks: Two-Room 99.2% (+11.5 pp, 12/0/0 W/T/L), OGBench-Cube
+
+
+                                                   2
+Preprint
+
+
+
+
+           94.7% (+28.5 pp, 12/0/0), Push-T 92.7% (+2.8 pp, 8/1/3), and Reacher 83.8% (a near-
+           tie, +0.7 pp, 7/1/4), where the gate routes to the forward-only fallback (§5.2).
+
+Roadmap. §2 establishes the finite-query diagnosis; §3 positions IMWM against related work; §4
+defines IMWM; §5 reports main results, routing, and ablations; and §6 and §7 discuss limitations
+and conclude.
+
+2       D IAGNOSIS : WHERE LATENT WORLD - MODEL PLANNING FAILS
+The introduction framed planning as two ingredients (a model that predicts and a search that pro-
+poses) and claimed they are separate failure surfaces. Here we ask the sharp version: assuming the
+world model is correct, can a finite-budget planner still fail? It can, and we show this experimentally.
+We swap the learned forward predictor for the true environment dynamics while holding everything
+else fixed. The resulting oracle-dynamics planner barely improves: it even underperforms the world-
+model-only baseline on one task, still trails IMWM, and its failures are search failures rather than
+prediction failures (§2.1). The same conclusion holds in the worst case as a theorem: finite black-
+box search is volume-limited for reasons independent of how the predictor was trained. We state
+and prove it in Appendix A (Theorem A.1).
+
+2.1     O RACLE DYNAMICS : AN IDEALIZED WORLD MODEL STILL FAILS
+
+To test whether the search, rather than the forward predictor, is the limiting component in practice,
+we replace the learned predictor with literal environment rollout while holding everything else fixed:
+the same encoder, terminal latent-MSE cost, CEM budget, replanning cadence, and evaluation cells
+(configuration in Appendix C.4). We call this oracle dynamics: it changes only the latent dynamics
+used in the cost, not the cost or the budget.
+
+
+Table 1: Oracle dynamics versus the world-model-only baseline (provenance tag c1) and IMWM,
+all under the same finite CEM budget. Oracle dynamics replaces the learned forward predictor with
+literal environment rollout in the terminal latent-MSE cost; everything else is unchanged. Zero-
+success failed eps counts failed episodes for which every logged replan had zero goal-reaching
+candidates in its CEM population. Each task is the mean over its full 12-cell (ds, ss) grid; the world-
+model-only and IMWM columns therefore coincide with the headline means of §5.
+ Task                          Oracle dynamics   World-model only   IMWM   ∆ (Oracle−IMWM)   Zero-success failed eps
+ Two-Room (12-cell mean)            85.5               87.7         99.2       −13.7 pp         86 / 87 (98.9%)
+ OGBench-Cube (12-cell mean)        76.8               66.2         94.7       −17.9 pp        127 / 139 (91.4%)
+
+
+Table 1 tells a consistent story. An exact forward predictor underperforms the world-model-only
+baseline on Two-Room (87.7 → 85.5) and helps only modestly on OGBench-Cube (66.2 → 76.8),
+and in both cases still trails IMWM by 13.7 pp and 17.9 pp; an exact predictor inside the origi-
+nal budget is no substitute for IMWM. The mechanism column localizes why: failures are search
+failures. Among failed episodes, 98.9% on Two-Room (86/87) and 91.4% on OGBench-Cube
+(127/139) had zero goal-reaching candidates in the CEM population at both replans, and every
+failed episode on both tasks had at least one zero-candidate replan. When a replan’s population
+does contain goal-reaching candidates, by contrast, they make up ∼93–95% of it, and the terminal
+latent-MSE objective almost always ranks one of them first (Appendix G.5). This is exactly the
+predictor-independent bottleneck of Theorem A.1 showing up empirically, and it is the search-side
+gap that the method of §4 is built to close.
+
+Scope. This is a two-task experiment through a single oracle adapter. On these diagnostic cells,
+it rules out the specific explanation that the forward predictor’s accuracy is the bottleneck under
+the original budget and cost; it is not a claim about arbitrary perfect models, alternative costs, or
+larger budgets. The full CEM-budget configuration is in Appendix C.4, and Push-T is excluded by
+a simulator-physics confound documented in Appendix B.4; Reacher is excluded because its world-
+model-only baseline is already competitive (a paired near-tie of +0.7 pp; §5). The few failures that
+do not fit the both-replans-zero pattern (12 of 139 on OGBench-Cube, 1 of 87 on Two-Room) are
+the cases where a goal-reaching candidate appeared in some replan yet was not selected.
+
+
+                                                              3
+

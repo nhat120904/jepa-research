@@ -1,0 +1,204 @@
+                                                                           Causal-JEPA: Learning World Models through
+                                                                                 Object-Level Latent Interventions
+
+raw
+                                                           Heejeong Nam 1 Quentin Le Lidec 2 * Lucas Maes 3 4 * Yann LeCun 2 Randall Balestriero 1
+                                                                           1
+                                                                               Brown University, 2 New York University, 3 Mila, 4 Université de Montréal
+
+                                                               Object-Level Masking
+                                                                           Abstract                                                                   C-JEPA Training
+                                         t-3       t-2   t-1   t     t+1
+
+
+
+
+arXiv:2602.11389v1 [cs.AI] 11 Feb 2026
+                                               World models require robust                                                 Auxiliary
+                                  S%                                            = ϕ relational + e      under-)            Variables                                       predictor
+                                                standing to support prediction,slotreasoning,       and    con-
+                                  S&                                                   identity encoding
+                                                trol. While object-centric representations provide
+                                  S'                                             : Observable
+                                                a useful abstraction, they are not               slots to cap-
+                                                                                        sufficient                          Masked
+                                                                                                                                                                                            >
+                                                                                                                            Inputs
+                                  S(            ture interaction-dependent dynamics. We there-
+                                                                                 : Observable    auxiliaries                                                                               ℒ !"#$
+                                                                                                                                                                                       >            >
+                                  U%
+                                                fore propose C-JEPA, a simple: and Masked flexible      object-
+                                                                                             history / future
+                                                                                                                               ℳ                 Masking
+                                                centric world model that extends masked joint em-
+                                  U&                                             : Identity-anchor                      ~Uniform({1,…,N})
+                                                bedding prediction from image patches to object-
+                                                                                                                          Object
+                                                centric
+                                         Temporal positionalrepresentations.
+                                                             encoding 𝐞𝛕     By :  Intervened variable
+                                                                               applying        object-level            Representation
+                                                masking that requires an object’s state to be in-
+                                                ferred from other objects, C-JEPA induces latent                                            frozen object-centric                           frozen object-centric
+                                                                                   Slots                                                         encoder                                         encoder
+                                                interventions with counterfactual-like effects and
+                                                prevents shortcut solutions, making interaction                               History Frames                                      Future Frame
+                                                reasoning essential. Empirically, C-JEPA      Auxiliariesleads                                                 t-2
+                                                                                                                                                                     t-3
+                                                                                                                                                                                                    t+1
+                                                                                                                                                         t t-1
+                                                to consistent gains in visual question answering,
+                                               with an absolute improvement of about 20% in                           Figure 1. C-JEPA training pipeline. A frozen encoder extracts
+                                                counterfactual reasoning compared          to the same ar-
+                                                                               Slots + Auxiliaries                    object-centric representations, followed by selective masking
+                                                chitecture without object-level masking. On agent                     across history. The predictor recovers masked history slots and
+                                                control tasks, C-JEPA enables substantially more                      predicts future latent states, conditioned on optional auxiliary vari-
+                                                efficient planning by using only 1% of the total la-                  ables, via a joint masked-history and forward-prediction objective.
+                                                tent input features required by patch-based world
+                                                models, while achieving comparable performance.
+                                                Finally, we provide a formal analysis demonstrat-                     tations that expose entities and their interactions, avoiding
+                                                ing that object-level masking induces a causal                        reliance on spurious pixel-level correlations (Zholus et al.,
+                                                inductive bias via latent interventions. Our code                     2022; Nishimoto & Matsubara, 2025; Ferraro et al., 2023;
+                                                is available at github.com/galilai-group/cjepa.                       Feng et al., 2025; Lei et al., 2025). Inspired by this per-
+                                                                                                                      spective, object-centric models have been extensively devel-
+                                                                                                                      oped for learning visual dynamics (Kipf et al., 2022; Zada-
+                                                                                                                      ianchuk et al., 2023; Wu et al., 2023; Mosbach et al., 2025;
+                                          1. Introduction
+                                                                                                                      Villar-Corrales et al., 2023), and more recently adopted as a
+                                          World models (Ha & Schmidhuber, 2018) provide a unify-                      foundation for learning world models (Ferraro et al., 2023;
+                                          ing abstraction for learning, predicting, and reasoning about               Nishimoto & Matsubara, 2025). However, learning on top of
+                                          the dynamics of complex environments, enabling scalable                     object-centric representations alone is not sufficient. Exist-
+                                          planning and control directly in latent space from high-                    ing works have shown that, without explicit mechanisms to
+                                          dimensional observations (Hafner et al., 2019; 2025). At                    guide interaction learning, models can easily fall back on ob-
+                                          their core, effective world modeling benefits from represen-                ject self-dynamics or exploit incidental correlations (Villar-
+                                               *
+                                                                                                                      Corrales et al., 2023; Lei et al., 2025). This realization has
+                                             Equal contribution 1 Brown University, GalilAI 2 New York                spurred growing interest in object-centric world models that
+                                          University 3 Mila 4 Université de Montréal. Correspondence to:
+                                          Heejeong Nam <heejeong_nam@brown.edu>.                                      explicitly learn interactions (Kipf et al., 2020; Feng et al.,
+                                                                                                                      2025; Mosbach et al., 2025) or causal structure (Zholus
+                                          Preprint. February 13, 2026.                                                et al., 2022; Nishimoto & Matsubara, 2025; Lei et al., 2025).
+
+                                                                                                                  1
+                       Causal-JEPA: Learning World Models through Object-Level Latent Interventions
+
+These approaches often enforce interactions by separating              masked prediction as a causal inductive bias, showing that
+temporal dynamics from object interactions (Mosbach et al.,            latent interventions make interaction reasoning necessary
+2025; Villar-Corrales et al., 2023; Feng et al., 2025), regular-       for minimizing the training objective. Taken together, this
+izing attention sparsity (Lei et al., 2025), leveraging graph          leads to four main contributions:
+structures (Kipf et al., 2020), or relying on downstream-
+specific methods (Ferraro et al., 2023; Nishimoto & Matsub-               • We introduce C-JEPA, an object-centric world model
+ara, 2025). Together, these works emphasize the importance                  that uses object-level masking as a latent intervention,
+of interactions in world modeling, while leaving open the                   which enforces interaction-dependent prediction.
+question of how interaction structure can be made function-
+ally necessary through the learning objective itself.                     • C-JEPA consistently improves visual reasoning over
+Accordingly, we propose Causal-JEPA (C-JEPA), a simple                      multi-object interactions, with particularly large gains
+yet effective approach for object-centric world modeling                    on counterfactual questions.
+with a causal inductive bias from object-level intervention.
+This design is motivated by the fact that existing patch-                 • C-JEPA enables highly efficient predictive control,
+based masked prediction approaches (He et al., 2022; Fan                    achieving comparable performance to patch-based
+et al., 2023; Thoker et al., 2025; Tessler et al., 2024; Tong               world models while using orders-of-magnitude fewer
+et al., 2022) optimize for local patch correlations, without                tokens and substantially faster MPC planning.
+enforcing object-level interaction reasoning. We propose
+                                                                          • We provide an analysis of how object-level masked
+an object-level masking that trains the model to infer an ob-
+                                                                            prediction can induce a causal inductive bias, making
+ject’s latent trajectory from others’ evolving states, inducing
+                                                                            interaction reasoning functionally necessary.
+counterfactual-like interventions during learning. Our mask-
+ing strategy prevents shortcut solutions such as trivial tem-
+poral interpolation, making interaction reasoning necessary            2. Related Works
+for minimizing the prediction objective. At the same time,
+C-JEPA remains architecturally flexible and can incorporate            2.1. Structured World Models for Dynamics Learning
+auxiliary variables such as actions and proprioception.                World modeling in dynamical scenes requires structured rep-
+Notably, the compactness of object-centric representations,            resentations capturing entities and their interactions. Some
+when combined with the Joint Embedding Predictive Ar-                  approaches rely on weak supervision over entity informa-
+chitecture (JEPA) (LeCun, 2022), encourages the model to               tion (Zholus et al., 2022; Ferraro et al., 2023; Lei et al., 2025)
+concentrate on the essential factors governing object dynam-           or reinforcement-learning–specific architectures (Ferraro
+ics within a low-dimensional latent space, thereby reducing            et al., 2023; Nishimoto & Matsubara, 2025), while others
+both computational and memory overhead. In contrast to                 build self-supervised and generally applicable world models
+patch-based predictors, where attention scales quadratically           using object-centric representations. For example, several
+with a large number of patch tokens, entity-level represen-            methods explicitly decompose self-dynamics and interac-
+tations apply the same quadratic attention mechanism over              tions through architectural factorization (Feng et al., 2025;
+a much smaller token set, resulting in significantly lower             Villar-Corrales et al., 2023; Mosbach et al., 2025). Subse-
+training and inference costs.                                          quent work move beyond reconstruction to reduce redun-
+                                                                       dancy in learned representations. While reconstruction-free,
+In Sec. 5, we evaluate C-JEPA from two perspectives, vi-               SlotFormer (Wu et al., 2023) does not explicitly enforce
+sual reasoning and predictive control. We first evaluate               interaction structure, and C-SWM (Kipf et al., 2020) relies
+our approach on CLEVRER (Yi et al., 2020), a video QA                  on a fixed relational graph, limiting adaptability. SPAR-
+benchmark involving multi-object interactions, and show                TAN (Lei et al., 2025) learns world models directly in latent
+that object-level masking leads to consistent improvements.            space and encourages interaction selectivity via sparse at-
+In particular, C-JEPA improves visual question answering,              tention. However, none of these works induces interaction-
+with a roughly 20% absolute gain on counterfactual reason-             aware structure through the learning objective itself.
+ing over the same architecture without object-level masking.
+We further evaluate C-JEPA in a model predictive control               2.2. Masking-Based Representation Learning
+(MPC) setting on the Push-T manipulation task. Compared
+to patch-based world models such as DINO-WM (Zhou                      Masked image modeling was originally introduced as a
+et al., 2025), C-JEPA achieves comparable task performance             scalable self-supervised learning paradigm to improve rep-
+while using only 1.02% of the total input feature size, which          resentation quality (He et al., 2022; Tong et al., 2022). Sub-
+translates to more than 8× faster model predictive control.            sequent work explored guided masking strategies to enhance
+Finally, in Sec. 6, we formally characterize object-level              representations by selectively masking regions informed by
+                                                                       motion or dynamics (Fan et al., 2023; Thoker et al., 2025;
+
+                                                                   2
+                       Causal-JEPA: Learning World Models through Object-Level Latent Interventions
+
+Tessler et al., 2024). Nakano et al. (2024) combines mask-            cluding DINO (Oquab et al., 2024) and DINOv2 (Caron
+ing with object-centric representations, but applies masking          et al., 2021), as feature encoders, inheriting strong semantic
+to image patch tokens for computational efficiency, while             and invariance properties from large-scale pretraining. In
+object representations are used only as conditioning signals.         our framework, we use Slot Attention to encode each ob-
+Masking has also been used in causal discovery to identify            servation into a fixed-size set of object-centric latent states,
+latent structure (Ng et al.; Yang et al., 2021; Nam, 2023), but       yielding a set representation St = {s1t , . . . , sNt }, where
+these methods typically assume fixed or identifiable graphs           each slot corresponds to a distinct entity in the scene.
+and focus on disentanglement or structure recovery, rather
+than flexible world modeling. Finally, (Xiao et al., 2023)            4. Method
+interpreted masking as inducing counterfactual variations,
+which aligns with our use of masking, but they also assumed           In this section, we introduce C-JEPA, an object-centric la-
+a structural causal model and focused on robust fine-tuning.          tent world model that applies object-level masking during
+In contrast, our work adopts masking as an object-level la-           training to induce interaction-aware predictive representa-
+tent intervention to shape predictive dependencies in a world         tions. All notation is summarized in Appendix A.
+model as a principled inductive bias for learning dynamics.
+                                                                      4.1. Problem Setting
+3. Preliminaries                                                      We consider a video-based dynamical system observed
+Joint Embedding Predictive Architecture JEPA (Le-                     through a sequence of images. Let Xt ∈ RH×W ×C de-
+Cun, 2022) defines a self-supervised learning paradigm that           note the pixel-level observation at time t. An object-centric
+learns to predict in representation space without reconstruct-        encoder g maps each frame to a set of object-centric slots,
+ing pixels, focusing instead on modeling predictive rela-                     St = g(Xt ) = {s1t , . . . , sN       sit ∈ Rd ,
+                                                                                                            t },                  (1)
+tionships between latent embeddings that capture semantic
+structure in the data. This formulation has been progres-             where N is the fixed number of slots and d is the dimension-
+sively extended from image-level masked joint embedding               ality of each slot. The set representations St are permutation-
+prediction in I-JEPA (Assran et al., 2023), to spatiotemporal         equivariant with respect to the slot ordering. We consider
+tube-based prediction in video with V-JEPA (Bardes et al.,            a history window of length Th and a prediction horizon of
+2024), and further to integrated understanding, prediction,           length Tp . Accordingly, we define the history index set
+and planning in V-JEPA2 (Assran et al., 2025). By avoiding            T := {t − Th + 1, . . . , t}, and the full history–future pre-
+reconstruction-driven objectives, JEPA-style models learn             diction interval T := {t − Th + 1, . . . , t + Tp }. Given past
+representations that are directly aligned with prediction and         object states ST , the world model aims to predict future
+control, making them particularly well suited for world               object states {St+1 , . . . , St+Tp }.
+modeling and autonomous decision-making (LeCun, 2022;
+Assran et al., 2023; Bardes et al., 2024; Assran et al., 2025).       Masked and Visible Object Sets. For any time step τ
+Following prior works (Zhou et al., 2025; Li et al., 2025),           in the history window T , we partition the object set Sτ
+we employ frozen target encoders and optimize the predic-             into a masked subset and an unmasked context subset. Let
+tor with a joint embedding prediction objective, aligning             Mτ ⊂ {1, . . . , N } denote the indices of masked objects at
+predicted latents to target latents.                                  time τ . We then define
+                                                                         Sτm = {siτ | i ∈ Mτ },          Sτc = {sjτ | j ∈
+                                                                                                                        / Mτ }.   (2)
+Object-Centric Representation via Slot Attention Slot
+Attention (Locatello et al., 2020) was introduced as a mech-          The masked set Sτm denotes the subset of object states se-
+anism for learning object-centric representations by itera-           lected for masking, whose observations are replaced by
+tively grouping feature maps into a fixed set of slots through        mask tokens S̃τm , while the remaining states Sτc are pro-
+competitive attention. By alternating between attention-              vided as context. During training, f learns to recover
+based assignment and slot updates, it produces a set of               masked tokens within ST and to predict future states
+object-level representations without requiring supervision.           {St+1 , . . . , St+Tp } under masking. At inference time, f
+Subsequent work extended this formulation from images                 is used solely for forward prediction from a fully observed
+to videos (Kipf et al., 2022; Zadaianchuk et al., 2023; Ay-           history ST , without masking.
+demir et al., 2023; Singh et al., 2022). Unlike image-based
+Slot Attention, video extensions must additionally main-              Auxiliary Observable Variables. In addition to object
+tain slot identity over time, which is typically achieved by          states, we allow for auxiliary observable variables that in-
+conditioning slot updates on previous-frame slots. Notably,           fluence state transitions. For example, when actions and
+some approaches such as VideoSAUR (Zadaianchuk et al.,                proprioceptive signals are available, we denote these vari-
+2023) leverage powerful pretrained foundation models, in-             ables by Ut = {at , pt }, where at represents actions and
+
+                                                                  3
+

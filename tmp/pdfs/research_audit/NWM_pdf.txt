@@ -1,0 +1,178 @@
+                                                                                       Navigation World Models
+
+                                              Amir Bar1      Gaoyue Zhou2     Danny Tran3                                Trevor Darrell3      Yann LeCun1,2
+                                                   1                     2                                                     3
+                                                     FAIR at Meta          New York University                                   Berkeley AI Research
+
+
+
+
+arXiv:2412.03572v2 [cs.CV] 11 Apr 2025
+                                         Figure 1. We train a Navigation World Model (NWM) from video footage of robots and their associated navigation actions (a). After
+                                         training, NWM can evaluate trajectories by synthesizing their videos and scoring the final frame’s similarity with the goal (b). We use
+                                         NWM to plan from scratch or rank experts navigation trajectories, improving downstream visual navigation performance. In unknown
+                                         environments, NWM can simulate imagined trajectories from a single image (c). In all examples above, the input to the model is the first
+                                         image and actions, then the model auto-regressively synthesizes future observations. Click on the image to view examples in a browser.
+
+
+                                                                   Abstract                                     can plan navigation trajectories by simulating them and
+                                                                                                                evaluating whether they achieve the desired goal. Unlike
+                                         Navigation is a fundamental skill of agents with visual-               supervised navigation policies with fixed behavior, NWM
+                                         motor capabilities. We introduce a Navigation World Model              can dynamically incorporate constraints during planning.
+                                         (NWM), a controllable video generation model that pre-                 Experiments demonstrate its effectiveness in planning tra-
+                                         dicts future visual observations based on past observations            jectories from scratch or by ranking trajectories sampled
+                                         and navigation actions. To capture complex environment                 from an external policy. Furthermore, NWM leverages its
+                                         dynamics, NWM employs a Conditional Diffusion Trans-                   learned visual priors to imagine trajectories in unfamiliar
+                                         former (CDiT), trained on a diverse collection of egocen-              environments from a single input image, making it a flexible
+                                         tric videos of both human and robotic agents, and scaled up            and powerful tool for next-generation navigation systems1 .
+                                         to 1 billion parameters. In familiar environments, NWM                    1 Project page: https://amirbar.net/nwm
+1. Introduction                                                  videos, without relying on 3D priors.
+                                                                     To learn a NWM, we propose a novel Conditional Diffu-
+Navigation is a fundamental skill for any organism with vi-
+                                                                 sion Transformer (CDiT), trained to predict the next image
+sion, playing a crucial role in survival by allowing agents
+                                                                 state given past image states and actions as context. Un-
+to locate food, shelter, and avoid predators. In order to
+                                                                 like a DiT [44], CDiT’s computational complexity is linear
+successfully navigate environments, smart agents primarily
+                                                                 with respect to the number of context frames, and it scales
+rely on vision, allowing them to construct representations
+                                                                 favorably for models trained up to 1B parameters across di-
+of their surroundings to assess distances and capture land-
+                                                                 verse environments and embodiments, requiring 4× fewer
+marks in the environment, all useful for planning a naviga-
+                                                                 FLOPs compared to a standard DiT while achieving better
+tion route.
+                                                                 future prediction results.
+    When human agents plan, they often imagine their fu-
+                                                                     In unknown environments, our results show that NWM
+ture trajectories considering constraints and counterfactu-
+                                                                 benefits from training on unlabeled, action- and reward-free
+als. On the other hand, current state-of-the-art robotics nav-
+                                                                 video data from Ego4D. Qualitatively, we observe improved
+igation policies [53, 55] are “hard-coded”, and after train-
+                                                                 video prediction and generation performance on single im-
+ing, new constraints cannot be easily introduced (e.g. “no
+                                                                 ages (see Figure 1(c)). Quantitatively, with additional unla-
+left turns”). Another limitation of current supervised vi-
+                                                                 beled data, NWM produces more accurate predictions when
+sual navigation models is that they cannot dynamically al-
+                                                                 evaluated on the held-out Stanford Go [24] dataset.
+locate more computational resources to address hard prob-
+                                                                     Our contributions are as follows. We introduce a Nav-
+lems. We aim to design a new model that can mitigate these
+                                                                 igation World Model (NWM) and propose a novel Con-
+issues.
+                                                                 ditional Diffusion Transformer (CDiT), which scales ef-
+    In this work, we propose a Navigation World Model            ficiently up to 1B parameters with significantly reduced
+(NWM), trained to predict the future representation of a         computational requirements compared to standard DiT. We
+video frame based on past frame representation(s) and            train CDiT on video footage and navigation actions from di-
+action(s) (see Figure 1(a)). NWM is trained on video             verse robotic agents, enabling planning by simulating navi-
+footage and navigation actions collected from various            gation plans independently or alongside external navigation
+robotic agents. After training, NWM is used to plan novel        policies, achieving state-of-the-art visual navigation perfor-
+navigation trajectories by simulating potential navigation       mance. Finally, by training NWM on action- and reward-
+plans and verifying if they reach a target goal (see Fig-        free video data, such as Ego4D, we demonstrate improved
+ure 1(b)). To evaluate its navigation skills, we test NWM        video prediction and generation performance in unseen en-
+in known environments, assessing its ability to plan novel       vironments.
+trajectories either independently or by ranking an external
+navigation policy. In the planning setup, we use NWM in
+                                                                 2. Related Work
+a Model Predictive Control (MPC) framework, optimizing
+the action sequence that enables NWM to reach a target           Goal conditioned visual navigation is an important task in
+goal. In the ranking setup, we assume access to an exist-        robotics requiring both perception and planning skills [8,
+ing navigation policy, such as NoMaD [55], which allows          13, 15, 41, 43, 51, 55]. Given context image(s) and an
+us to sample trajectories, simulate them using NWM, and          image specifying the navigation goals, goal-conditioned vi-
+select the best ones. Our NWM achieves state-of-the-art          sual navigation models [51, 55] aim to generate a viable
+standalone performance and competitive results when com-         path towards the goal if the environment is known, or to ex-
+bined with existing methods.                                     plore it otherwise. Recent visual navigation methods like
+    NWM is conceptually similar to recent diffusion-based        NoMaD [55] train a diffusion policy via behavior cloning
+world models for offline model-based reinforcement learn-        and temporal distance objective to follow goals in the con-
+ing, such as DIAMOND [1] and GameNGen [66]. How-                 ditional setting or to explore new environments in the un-
+ever, unlike these models, NWM is trained across a wide          conditional setting. Previous approaches like Active Neural
+range of environments and embodiments, leveraging the di-        SLAM [8] used neural SLAM together with analytical plan-
+versity of navigation data from robotic and human agents.        ners to plan trajectories in the 3D environment, while other
+This allows us to train a large diffusion transformer model      approaches like [9] learn policies via reinforcement learn-
+capable of scaling effectively with model size and data to       ing. Here we show that world models can use exploratory
+adapt to multiple environments. Our approach also shares         data to plan or improve existing navigation policies.
+similarities with Novel View Synthesis (NVS) methods like            Differently than in learning a policy, the goal of a world
+NeRF [40], Zero-1-2-3 [38], and GDC [67], from which             model [19] is to simulate the environment, e.g. given the
+we draw inspiration. However, unlike NVS approaches, our         current state and action to predict the next state and an as-
+goal is to train a single model for navigation across diverse    sociated reward. Previous works have shown that jointly
+environments and model temporal dynamics from natural            learning a policy and a world model can improve sample
+efficiency on Atari [1, 20, 21], simulated robotics environ-            mated based on the change in the agent’s location.
+ments [50], and even when applied to real world robots [71].               Our goal is to learn a world model F , a stochastic map-
+More recently, [22] proposed to use a single world model                ping from previous latent observation(s) sτ and action aτ to
+that is shared across tasks by introducing action and task              future latent state representation st+1 :
+embeddings while [37, 73] proposed to describe actions in
+language, and [6] proposed to learn latent actions. World                     si = encθ (xi )        sτ +1 ∼ Fθ (sτ +1 | sτ , aτ )   (1)
+models were also explored in the context of game simula-
+                                                                        Where sτ = (sτ , ..., sτ −m ) are the past m visual observa-
+tion. DIAMOND [1] and GameNGen [66] propose to use
+                                                                        tions encoded via a pretrained VAE [4]. Using a VAE has
+diffusion models to learn game engines of computer games
+                                                                        the benefit of working with compressed latents, allowing to
+like Atari and Doom. Our work is inspired by these works,
+                                                                        decode predictions back to pixel space for visualization.
+and we aim to learn a single general diffusion video trans-
+                                                                            Due to the simplicity of this formulation, it can be nat-
+former that can be shared across many environments and
+                                                                        urally shared across environments and easily extended to
+different embodiments for navigation.
+                                                                        more complex action spaces, like controlling a robotic arm.
+    In computer vision, generating videos has been a long
+                                                                        Different than [20], we aim to train a single world model
+standing challenge [3, 4, 17, 29, 32, 62, 74]. Most recently,
+                                                                        across environments and embodiments, without using task
+there has been tremendous progress with text-to-video syn-
+                                                                        or action embeddings like in [22].
+thesis with methods like Sora [5] and MovieGen [45]. Past
+                                                                            The formulation in Equation 1 models action but does
+works proposed to control video synthesis given structured
+                                                                        not allow control over the temporal dynamics. We extend
+action-object class categories [61] or Action Graphs [2].
+                                                                        this formulation with a time shift input k ∈ [Tmin , Tmax ], set-
+Video generation models were previously used in reinforce-
+                                                                        ting aτ = (u, ϕ, k), thus now aτ specifies the time change
+ment learning as rewards [10], pretraining methods [59], for
+                                                                        k, used to determine how many steps should the model
+simulating and planning manipulation actions [11, 35] and
+                                                                        move into the future (or past). Hence, given a current state
+for generating paths in indoor environments [26, 31]. Inter-
+                                                                        sτ , we can randomly choose a timeshift k and use the cor-
+estingly, diffusion models [28, 54] are useful both for video
+                                                                        responding time shifted video frame as our next state sτ +1 .
+tasks like generation [69] and prediction [36], but also for
+                                                                        The navigation actions can then be approximated to be a
+view synthesis [7, 46, 63]. Differently, we use a conditional
+                                                                        summation from time τ to m = τ + k − 1:
+diffusion transformer to simulate trajectories for planning
+without explicit 3D representations or priors.                                         m
+                                                                                       X                      m
+                                                                                                              X
+                                                                            uτ →m =          ut    ϕτ →m =          ϕt   mod 2π      (2)
+                                                                                       t=τ                    t=τ
+3. Navigation World Models
+                                                                        This formulation allows learning both navigation actions,
+3.1. Formulation                                                        but also the environment temporal dynamics. In practice,
+Next, we turn to describe our NWM formulation. Intu-                    we allow time shifts of up to ±16 seconds.
+itively, a NWM is a model that receives the current state of               One challenge that may arise is the entanglement of ac-
+the world (e.g. an image observation) and a navigation ac-              tions and time. For example, if reaching a specific loca-
+tion describing where to move and how to rotate. The model              tion always occurs at a particular time, the model may learn
+then produces the next state of the world with respect to the           to rely solely on time and ignore the subsequent actions,
+agent’s point of view.                                                  or vice versa. In practice, the data may contain natural
+    We are given an egocentric video dataset together with              counterfactuals—such as reaching the same area at differ-
+agent navigation actions D = {(x0 , a0 , ..., xT , aT )}ni=1 ,          ent times. To encourage these natural counterfactuals, we
+such that xi ∈ RH×W ×3 is an image and ai = (u, ϕ) is a                 sample multiple goals for each state during training. We
+navigation command given by translation parameter u ∈ R2                further explore this approach in Section 4.
+that controls the change in forward/backward and right/left
+motion, as well as ϕ ∈ R that controls the change in yaw                3.2. Diffusion Transformer as World Model
+rotation angle.2                                                        As mentioned in the previous section, we design Fθ as
+    The navigation actions ai can be fully observed (as in              a stochastic mapping so it can simulate stochastic envi-
+Habitat [49]), e.g. moving forward towards a wall will                  ronments. This is achieved using a Conditional Diffusion
+trigger a response from the environment based on physics,               Transformer (CDiT) model, described next.
+which will lead to the agent staying in place, whereas in               Conditional Diffusion Transformer Architecture. The
+other environments the navigation actions can be approxi-               architecture we use is a temporally autoregressive trans-
+   2 This can be naturally extended to three dimensions by having u ∈   former model utilizing the efficient CDiT block (see Fig-
+R3 and θ ∈ R3 defining yaw, pitch and roll. For simplicity, we assume   ure 2), which is applied ×N times over the input sequence
+navigation on a flat surface with fixed pitch and roll.                 of latents with input action conditioning.
+

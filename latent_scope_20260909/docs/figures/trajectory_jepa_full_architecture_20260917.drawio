@@ -1,0 +1,232 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" agent="Codex" version="26.0.0" type="device">
+  <diagram id="trajectory-jepa" name="Complete architecture">
+    <mxGraphModel dx="2400" dy="1500" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1500" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;Trajectory JEPA for GR00T Proposal Ranking&lt;/b&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=40;fontColor=#14294B;spacing=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="30" y="16" width="2340" height="55" />
+        </mxCell>
+        <mxCell id="subtitle" value="Complete proposed architecture — training and deployment" style="text;html=1;whiteSpace=wrap;overflow=hidden;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=25;fontColor=#14294B;spacing=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="30" y="73" width="2340" height="38" />
+        </mxCell>
+        <mxCell id="A" value="" style="rounded=1;arcSize=2;html=1;container=1;collapsible=0;recursiveResize=0;fillColor=#FFFFFF;strokeColor=#9BC4DF;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="30" y="130" width="2340" height="590" />
+        </mxCell>
+        <mxCell id="Atitle" value="&lt;b&gt;A. Deployment: propose → predict → rank → execute → replan&lt;/b&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;align=left;verticalAlign=middle;fontFamily=Helvetica;fontSize=28;fontColor=#14294B;spacing=0;" vertex="1" parent="A">
+          <mxGeometry as="geometry" x="22" y="10" width="2296" height="46" />
+        </mxCell>
+        <mxCell id="inputs" value="&lt;div style=&quot;font-size:22px&quot;&gt;&lt;b&gt;Current RGB + proprio + task&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;Camera views • robot state&lt;br&gt;Task / language goal&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EDF6FF;strokeColor=#3888BD;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=19;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="A">
+          <mxGeometry as="geometry" x="20" y="85" width="270" height="150" />
+        </mxCell>
+        <mxCell id="groot" value="&lt;div style=&quot;font-size:22px&quot;&gt;&lt;b&gt;GR00T N1.5&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;&lt;b&gt;FROZEN&lt;/b&gt; proposal policy&lt;br&gt;Sample plausible action chunks&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#E7F8FA;strokeColor=#0F8A9D;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=19;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="A">
+          <mxGeometry as="geometry" x="330" y="85" width="270" height="150" />
+        </mxCell>
+        <mxCell id="bank" value="&lt;div style=&quot;font-size:22px&quot;&gt;&lt;b&gt;K action-chunk proposals&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;u₁, u₂, …, uK&lt;br&gt;Each uⱼ: H committed actions&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#E7F8FA;strokeColor=#0F8A9D;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=19;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="A">
+          <mxGeometry as="geometry" x="640" y="85" width="270" height="150" />
+        </mxCell>
+        <mxCell id="history" value="&lt;div style=&quot;font-size:22px&quot;&gt;&lt;b&gt;Causal observation history&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;Past and current RGB + proprio&lt;br&gt;Updated after each execution&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EDF6FF;strokeColor=#3888BD;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=19;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="A">
+          <mxGeometry as="geometry" x="20" y="315" width="270" height="155" />
+        </mxCell>
+        <mxCell id="dino" value="&lt;div style=&quot;font-size:22px&quot;&gt;&lt;b&gt;Frozen DINOv2&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;Visual features + proprio fusion&lt;br&gt;Only the visual backbone is frozen&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EDF6FF;strokeColor=#3888BD;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=19;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="A">
+          <mxGeometry as="geometry" x="330" y="315" width="270" height="155" />
+        </mxCell>
+        <mxCell id="memory" value="&lt;div style=&quot;font-size:22px&quot;&gt;&lt;b&gt;Causal memory encoder&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;Learned history representation&lt;br&gt;&lt;b&gt;mₜ&lt;/b&gt;&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EDF6FF;strokeColor=#3888BD;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=19;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="A">
+          <mxGeometry as="geometry" x="640" y="315" width="270" height="155" />
+        </mxCell>
+        <mxCell id="predictor" value="&lt;div style=&quot;font-size:22px&quot;&gt;&lt;b&gt;Action-conditioned&lt;br&gt;trajectory JEPA&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;&lt;b&gt;Fθ(mₜ, uⱼ)&lt;/b&gt;&lt;br&gt;Predict endpoint ẑⱼ&lt;br&gt;and segment summary ŝⱼ&lt;br&gt;&lt;br&gt;Longer horizons:&lt;br&gt;sequential memory update U&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#F1EBFF;strokeColor=#8153C9;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=19;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="A">
+          <mxGeometry as="geometry" x="965" y="155" width="320" height="250" />
+        </mxCell>
+        <mxCell id="critic" value="&lt;div style=&quot;font-size:22px&quot;&gt;&lt;b&gt;Chunk-value critic Qψ&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;Inputs: mₜ, ẑⱼ, ŝⱼ,&lt;br&gt;task and remaining time τ&lt;br&gt;&lt;br&gt;Estimate Q under frozen&lt;br&gt;continuation policy π₀&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EDF6FF;strokeColor=#3888BD;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=19;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="A">
+          <mxGeometry as="geometry" x="1340" y="175" width="310" height="210" />
+        </mxCell>
+        <mxCell id="rank" value="&lt;div style=&quot;font-size:22px&quot;&gt;&lt;b&gt;Rank K&lt;br&gt;candidates&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;Select j*&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EDF6FF;strokeColor=#3888BD;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=19;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="A">
+          <mxGeometry as="geometry" x="1705" y="210" width="170" height="140" />
+        </mxCell>
+        <mxCell id="execute" value="&lt;div style=&quot;font-size:22px&quot;&gt;&lt;b&gt;Execute&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;Selected H actions&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EAF6EC;strokeColor=#5A9A6A;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=19;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="A">
+          <mxGeometry as="geometry" x="1915" y="210" width="170" height="140" />
+        </mxCell>
+        <mxCell id="robot" value="&lt;div style=&quot;font-size:22px&quot;&gt;&lt;b&gt;Robot /&lt;br&gt;simulator&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;Receive new&lt;br&gt;observations&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#8292A8;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=19;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="A">
+          <mxGeometry as="geometry" x="2125" y="210" width="190" height="140" />
+        </mxCell>
+        <mxCell id="composer" value="&lt;div style=&quot;font-size:20px&quot;&gt;&lt;b&gt;Optional learned composer&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;C(ŝL, ŝR)&lt;br&gt;Ablation only; benefit unestablished&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFF6E5;strokeColor=#E99A25;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=17;spacing=14;align=center;verticalAlign=middle;dashed=1;dashPattern=5 4;" vertex="1" parent="A">
+          <mxGeometry as="geometry" x="990" y="435" width="440" height="90" />
+        </mxCell>
+        <mxCell id="a1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#22567A;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="A" source="inputs" target="groot">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="a2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#22567A;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="A" source="groot" target="bank">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="a3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#22567A;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="A" source="history" target="dino">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="a4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#22567A;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="A" source="dino" target="memory">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="a7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#22567A;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="A" source="predictor" target="critic">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="a8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#22567A;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="A" source="critic" target="rank">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="a9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#22567A;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="A" source="rank" target="execute">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="a10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#22567A;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="A" source="execute" target="robot">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="a5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#22567A;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.3;entryDx=0;entryDy=0;" edge="1" parent="A" source="bank" target="predictor">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="940" y="160" />
+              <mxPoint x="940" y="230" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#22567A;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" edge="1" parent="A" source="memory" target="predictor">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="940" y="392" />
+              <mxPoint x="940" y="342" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#E39825;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.3;entryY=0;entryDx=0;entryDy=0;dashed=1;dashPattern=5 4;" edge="1" parent="A" source="predictor" target="composer">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="a12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#E39825;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;dashed=1;dashPattern=5 4;" edge="1" parent="A" source="composer" target="critic">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1495" y="480" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="feedback" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#22567A;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="A" source="robot" target="history">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="2220" y="550" />
+              <mxPoint x="155" y="550" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="looplabel" value="&lt;b&gt;Observe again → update history → replan&lt;/b&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=20;fontColor=#14294B;spacing=0;" vertex="1" parent="A">
+          <mxGeometry as="geometry" x="650" y="531" width="1050" height="28" />
+        </mxCell>
+        <mxCell id="cadence" value="H = actions committed before the next query. Value targets and execution cadence must agree." style="text;html=1;whiteSpace=wrap;overflow=hidden;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=16;fontColor=#14294B;spacing=0;" vertex="1" parent="A">
+          <mxGeometry as="geometry" x="30" y="563" width="2280" height="22" />
+        </mxCell>
+        <mxCell id="B" value="" style="rounded=1;arcSize=2;html=1;container=1;collapsible=0;recursiveResize=0;fillColor=#FFFFFF;strokeColor=#9BC4DF;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="30" y="745" width="1150" height="625" />
+        </mxCell>
+        <mxCell id="Btitle" value="&lt;b&gt;B. JEPA representation training&lt;/b&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;align=left;verticalAlign=middle;fontFamily=Helvetica;fontSize=28;fontColor=#14294B;spacing=0;" vertex="1" parent="B">
+          <mxGeometry as="geometry" x="22" y="10" width="1106" height="46" />
+        </mxCell>
+        <mxCell id="traininput" value="&lt;div style=&quot;font-size:21px&quot;&gt;&lt;b&gt;Prefix observations&lt;br&gt;+ executed chunk&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;oₜ₋L:ₜ, uₜ:ₜ₊H₋₁&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EDF6FF;strokeColor=#3888BD;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="B">
+          <mxGeometry as="geometry" x="20" y="90" width="245" height="145" />
+        </mxCell>
+        <mxCell id="online" value="&lt;div style=&quot;font-size:22px&quot;&gt;&lt;b&gt;Online predictor&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;Fθ&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#F1EBFF;strokeColor=#8153C9;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=19;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="B">
+          <mxGeometry as="geometry" x="305" y="90" width="210" height="145" />
+        </mxCell>
+        <mxCell id="predout" value="&lt;div style=&quot;font-size:22px&quot;&gt;&lt;b&gt;Predicted endpoint&lt;br&gt;+ summary&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;ẑ, ŝ&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#F1EBFF;strokeColor=#8153C9;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=19;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="B">
+          <mxGeometry as="geometry" x="555" y="90" width="250" height="145" />
+        </mxCell>
+        <mxCell id="future" value="&lt;div style=&quot;font-size:21px&quot;&gt;&lt;b&gt;Observed future frames&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;oₜ₊₁:ₜ₊H&lt;br&gt;&lt;b&gt;TRAINING ONLY&lt;/b&gt;&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EDF6FF;strokeColor=#3888BD;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="B">
+          <mxGeometry as="geometry" x="20" y="330" width="245" height="150" />
+        </mxCell>
+        <mxCell id="frozen" value="&lt;div style=&quot;font-size:21px&quot;&gt;&lt;b&gt;Frozen visual encoder&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;DINOv2 features&lt;br&gt;+ proprio fusion&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EDF6FF;strokeColor=#3888BD;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="B">
+          <mxGeometry as="geometry" x="305" y="330" width="210" height="150" />
+        </mxCell>
+        <mxCell id="target" value="&lt;div style=&quot;font-size:20px&quot;&gt;&lt;b&gt;Trajectory target branch&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;Online target encoder + anchoring&lt;br&gt;EMA copy gives&lt;br&gt;&lt;b&gt;stop-gradient&lt;/b&gt; targets z, s&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EDF6FF;strokeColor=#3888BD;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=17;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="B">
+          <mxGeometry as="geometry" x="555" y="315" width="250" height="180" />
+        </mxCell>
+        <mxCell id="reprloss" value="&lt;div style=&quot;font-size:21px&quot;&gt;&lt;b&gt;Match predicted and&lt;br&gt;target representations&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;Endpoint + segment&lt;br&gt;distillation losses&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#F1EBFF;strokeColor=#8153C9;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="B">
+          <mxGeometry as="geometry" x="850" y="165" width="275" height="160" />
+        </mxCell>
+        <mxCell id="comploss" value="&lt;div style=&quot;font-size:21px&quot;&gt;&lt;b&gt;Optional composition&lt;br&gt;consistency&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;C(sL, sR) ≈ sFull&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFF6E5;strokeColor=#E99A25;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;spacing=14;align=center;verticalAlign=middle;dashed=1;dashPattern=5 4;" vertex="1" parent="B">
+          <mxGeometry as="geometry" x="850" y="390" width="275" height="100" />
+        </mxCell>
+        <mxCell id="b1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#22567A;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="B" source="traininput" target="online">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="b2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#22567A;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="B" source="online" target="predout">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="b3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#22567A;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="B" source="future" target="frozen">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="b4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#22567A;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="B" source="frozen" target="target">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="b5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#22567A;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.3;entryDx=0;entryDy=0;" edge="1" parent="B" source="predout" target="reprloss">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="825" y="162" />
+              <mxPoint x="825" y="213" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#22567A;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" edge="1" parent="B" source="target" target="reprloss">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="825" y="405" />
+              <mxPoint x="825" y="285" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#E39825;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;dashed=1;dashPattern=5 4;" edge="1" parent="B" source="comploss" target="reprloss">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="trainingnote" value="Train predictor and online target encoder; EMA-copy target weights.&lt;br&gt;Future observations are targets, never deployment inputs." style="text;html=1;whiteSpace=wrap;overflow=hidden;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=19;fontColor=#14294B;spacing=0;" vertex="1" parent="B">
+          <mxGeometry as="geometry" x="25" y="535" width="1100" height="62" />
+        </mxCell>
+        <mxCell id="C" value="" style="rounded=1;arcSize=2;html=1;container=1;collapsible=0;recursiveResize=0;fillColor=#FFFFFF;strokeColor=#9BC4DF;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1205" y="745" width="1165" height="625" />
+        </mxCell>
+        <mxCell id="Ctitle" value="&lt;b&gt;C. Value learning and ranking qualification&lt;/b&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;align=left;verticalAlign=middle;fontFamily=Helvetica;fontSize=28;fontColor=#14294B;spacing=0;" vertex="1" parent="C">
+          <mxGeometry as="geometry" x="22" y="10" width="1121" height="46" />
+        </mxCell>
+        <mxCell id="tdstatus" value="&lt;b&gt;PROPOSED EXTENSION — TD training not yet implemented&lt;/b&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=17;fontColor=#A35C00;spacing=0;" vertex="1" parent="C">
+          <mxGeometry as="geometry" x="25" y="63" width="1115" height="26" />
+        </mxCell>
+        <mxCell id="replay" value="&lt;div style=&quot;font-size:21px&quot;&gt;&lt;b&gt;Separate simulator replay&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;History, executed chunk, native success, termination, next history, remaining time&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EDF6FF;strokeColor=#3888BD;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="C">
+          <mxGeometry as="geometry" x="25" y="105" width="1115" height="75" />
+        </mxCell>
+        <mxCell id="onlineq" value="&lt;div style=&quot;font-size:22px&quot;&gt;&lt;b&gt;Online critic prediction&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;q = Qψ(history, chunk, time)&lt;br&gt;Task conditioning throughout&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EDF6FF;strokeColor=#3888BD;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=19;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="C">
+          <mxGeometry as="geometry" x="35" y="230" width="420" height="115" />
+        </mxCell>
+        <mxCell id="bellman" value="&lt;div style=&quot;font-size:23px&quot;&gt;&lt;b&gt;Bellman target&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;y = S + (1 − D) V̄&lt;sup&gt;π₀&lt;/sup&gt;(h′, τ − H)&lt;br&gt;&lt;span style=&quot;font-size:16px&quot;&gt;V̄&lt;sup&gt;π₀&lt;/sup&gt;: mean target-Q over GR00T next-chunk samples&lt;/span&gt;&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EDF6FF;strokeColor=#3888BD;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=20;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="C">
+          <mxGeometry as="geometry" x="575" y="225" width="565" height="125" />
+        </mxCell>
+        <mxCell id="valueloss" value="&lt;div style=&quot;font-size:23px&quot;&gt;&lt;b&gt;Value loss&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;Match q to stop-gradient y&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#F1EBFF;strokeColor=#8153C9;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=20;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="C">
+          <mxGeometry as="geometry" x="210" y="390" width="755" height="75" />
+        </mxCell>
+        <mxCell id="c1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#22567A;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=0.2;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="C" source="replay" target="onlineq">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="c2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#22567A;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="C" source="replay" target="bellman">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="c3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#22567A;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.15;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="C" source="onlineq" target="valueloss">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="c4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2.5;strokeColor=#22567A;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.85;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="C" source="bellman" target="valueloss">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="valuenote" value="S: success during chunk. D: native terminal / deadline. Slow target-critic updates." style="text;html=1;whiteSpace=wrap;overflow=hidden;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=17;fontColor=#14294B;spacing=0;" vertex="1" parent="C">
+          <mxGeometry as="geometry" x="25" y="473" width="1115" height="25" />
+        </mxCell>
+        <mxCell id="mc" value="&lt;div style=&quot;font-size:21px&quot;&gt;&lt;b&gt;Monte Carlo calibration &amp; ranking checks — evaluation only&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;Candidate chunk → frozen GR00T continuation → terminal outcome&lt;br&gt;Confirm choices with independent continuation seeds&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#8292A8;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="C">
+          <mxGeometry as="geometry" x="25" y="520" width="1115" height="85" />
+        </mxCell>
+        <mxCell id="controls" value="&lt;div style=&quot;font-size:21px&quot;&gt;&lt;b&gt;Matched controls&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;Direct chunk-Q  |  Frame prediction + Q  |  Trajectory prediction + Q&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EDF6FF;strokeColor=#3888BD;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="30" y="1395" width="1120" height="80" />
+        </mxCell>
+        <mxCell id="status" value="&lt;div style=&quot;font-size:21px&quot;&gt;&lt;b&gt;Research status&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px;line-height:1.4&quot;&gt;Full planning loop unvalidated; learned composition remains optional.&lt;/div&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#F1EBFF;strokeColor=#8153C9;strokeWidth=2;fontColor=#14294B;fontFamily=Helvetica;fontSize=18;spacing=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1175" y="1395" width="1195" height="80" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

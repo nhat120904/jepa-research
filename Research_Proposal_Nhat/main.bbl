@@ -1,0 +1,369 @@
+\begin{thebibliography}{51}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Assran et~al.(2023)Assran, Duval, Misra, Bojanowski, Vincent, Rabbat,
+  LeCun, and Ballas]{assran2023ijepa}
+Mahmoud Assran, Quentin Duval, Ishan Misra, Piotr Bojanowski, Pascal Vincent,
+  Michael Rabbat, Yann LeCun, and Nicolas Ballas.
+\newblock Self-supervised learning from images with a joint-embedding
+  predictive architecture.
+\newblock In \emph{IEEE/CVF Conference on Computer Vision and Pattern
+  Recognition}, 2023.
+\newblock arXiv:2301.08243.
+
+\bibitem[Assran et~al.(2025)Assran, Bardes, Fan, Garrido, Howes, Komeili,
+  Muckley, Rizvi, Roberts, Sinha, Zholus, Meier, LeCun, Rabbat, and
+  Ballas]{assran2025vjepa2}
+Mahmoud Assran, Adrien Bardes, David Fan, Quentin Garrido, Russell Howes,
+  Mojtaba Komeili, Matthew Muckley, Ammar Rizvi, Claire Roberts, Koustuv Sinha,
+  Artem Zholus, Franziska Meier, Yann LeCun, Michael Rabbat, and Nicolas
+  Ballas.
+\newblock {V-JEPA 2}: Self-supervised video models enable understanding,
+  prediction and planning.
+\newblock \emph{arXiv preprint arXiv:2506.09985}, 2025.
+
+\bibitem[Balestriero and LeCun(2025)]{lejepa2025}
+Randall Balestriero and Yann LeCun.
+\newblock {LeJEPA}: Provable and scalable self-supervised learning without the
+  heuristics.
+\newblock \emph{arXiv preprint arXiv:2511.08544}, 2025.
+
+\bibitem[Bar et~al.(2024)Bar, Zhou, Tran, Darrell, and LeCun]{nwm2024}
+Amir Bar, Gaoyue Zhou, Danny Tran, Trevor Darrell, and Yann LeCun.
+\newblock Navigation world models.
+\newblock \emph{arXiv preprint arXiv:2412.03572}, 2024.
+
+\bibitem[Bardes et~al.(2022)Bardes, Ponce, and LeCun]{bardes2022vicreg}
+Adrien Bardes, Jean Ponce, and Yann LeCun.
+\newblock {VICReg}: Variance-invariance-covariance regularization for
+  self-supervised learning.
+\newblock In \emph{International Conference on Learning Representations}, 2022.
+\newblock arXiv:2105.04906.
+
+\bibitem[Bhamidipaty et~al.(2026)Bhamidipaty, Whitammer, Abel, and
+  Kochenderfer]{bhamidipaty2026imperfect}
+Logan~Mondal Bhamidipaty, Esmeralda~S. Whitammer, David Abel, and Mykel~J.
+  Kochenderfer.
+\newblock Imperfect world models are exploitable.
+\newblock \emph{arXiv preprint arXiv:2605.15960}, 2026.
+
+\bibitem[Cai et~al.(2026)Cai, Song, Zhang, Zhang, Bodapati, Yu, Suya, Rostami,
+  Ma, and Tian]{whatifworld2026}
+Kunlin Cai, Rui Song, Jinghuai Zhang, Kaiyuan Zhang, Pranav Bodapati, Alicia
+  Yu, Fnu Suya, Mohammad Rostami, Jiaqi Ma, and Yuan Tian.
+\newblock What-if world: A causal benchmark for general world models in
+  embodied scenarios.
+\newblock \emph{arXiv preprint arXiv:2605.27589}, 2026.
+
+\bibitem[Chen(2026)]{chen2026atm}
+Jiaheng Chen.
+\newblock {ATM}: Action-consistency transfer matrix for diagnosing and
+  improving latent world models.
+\newblock \emph{arXiv preprint arXiv:2606.09028}, 2026.
+
+\bibitem[Gao et~al.(2026)Gao, Han, Wang, and Wang]{imwm2026}
+Baoqi Gao, Ruize Han, Miao Wang, and Song Wang.
+\newblock {IMWM}: Intuition models complement world models for latent planning.
+\newblock \emph{arXiv preprint arXiv:2606.01626}, 2026.
+
+\bibitem[Gao et~al.(2023)Gao, Schulman, and Hilton]{gao2023overopt}
+Leo Gao, John Schulman, and Jacob Hilton.
+\newblock Scaling laws for reward model overoptimization.
+\newblock In \emph{International Conference on Machine Learning}, 2023.
+
+\bibitem[Ha and Schmidhuber(2018)]{ha2018worldmodels}
+David Ha and J{\"u}rgen Schmidhuber.
+\newblock Recurrent world models facilitate policy evolution.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2018.
+\newblock arXiv:1803.10122.
+
+\bibitem[Hafner et~al.(2019)Hafner, Lillicrap, Fischer, Villegas, Ha, Lee, and
+  Davidson]{hafner2019planet}
+Danijar Hafner, Timothy Lillicrap, Ian Fischer, Ruben Villegas, David Ha,
+  Honglak Lee, and James Davidson.
+\newblock Learning latent dynamics for planning from pixels.
+\newblock In \emph{International Conference on Machine Learning}, 2019.
+\newblock arXiv:1811.04551.
+
+\bibitem[Hafner et~al.(2025)Hafner, Pasukonis, Ba, and
+  Lillicrap]{hafner2025dreamerv3}
+Danijar Hafner, Jurgis Pasukonis, Jimmy Ba, and Timothy Lillicrap.
+\newblock Mastering diverse control tasks through world models.
+\newblock \emph{Nature}, 2025.
+\newblock arXiv:2301.04104.
+
+\bibitem[Hansen et~al.(2024)Hansen, Su, and Wang]{hansen2024tdmpc2}
+Nicklas Hansen, Hao Su, and Xiaolong Wang.
+\newblock {TD-MPC2}: Scalable, robust world models for continuous control.
+\newblock In \emph{International Conference on Learning Representations}, 2024.
+\newblock arXiv:2310.16828.
+
+\bibitem[Helff et~al.(2026)Helff, Delfosse, Steinmann, H{\"a}rle, Shindo,
+  Schramowski, Stammer, Kersting, and Friedrich]{gamingverifiers2026}
+Lukas Helff, Quentin Delfosse, David Steinmann, Ruben H{\"a}rle, Hikaru Shindo,
+  Patrick Schramowski, Wolfgang Stammer, Kristian Kersting, and Felix
+  Friedrich.
+\newblock {LLMs} gaming verifiers: {RLVR} can lead to reward hacking.
+\newblock \emph{arXiv preprint arXiv:2604.15149}, 2026.
+
+\bibitem[Hou et~al.(2026)Hou, Li, Jia, An, Guo, et~al.]{wmsurvey2026}
+Bohan Hou, Gen Li, Jindou Jia, Tuo An, Xinying Guo, et~al.
+\newblock World model for robot learning: A comprehensive survey.
+\newblock \emph{arXiv preprint arXiv:2605.00080}, 2026.
+
+\bibitem[Janner et~al.(2019)Janner, Fu, Zhang, and Levine]{janner2019trust}
+Michael Janner, Justin Fu, Marvin Zhang, and Sergey Levine.
+\newblock When to trust your model: Model-based policy optimization.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2019.
+
+\bibitem[Karwowski et~al.(2024)Karwowski, Hayman, Bai, Kiendlhofer, Griffin,
+  and Skalse]{karwowski2024goodhart}
+Jacek Karwowski, Oliver Hayman, Xingjian Bai, Klaus Kiendlhofer, Charlie
+  Griffin, and Joar Skalse.
+\newblock Goodhart's law in reinforcement learning.
+\newblock In \emph{International Conference on Learning Representations}, 2024.
+
+\bibitem[Khalaf et~al.(2025)Khalaf, Verdun, Oesterling, Lakkaraju, and
+  Calmon]{inferencetimehacking2025}
+Hadi Khalaf, Claudio~Mayrink Verdun, Alex Oesterling, Himabindu Lakkaraju, and
+  Flavio du~Pin Calmon.
+\newblock Inference-time reward hacking in large language models.
+\newblock \emph{arXiv preprint arXiv:2506.19248}, 2025.
+
+\bibitem[Kidambi et~al.(2020)Kidambi, Rajeswaran, Netrapalli, and
+  Joachims]{kidambi2020morel}
+Rahul Kidambi, Aravind Rajeswaran, Praneeth Netrapalli, and Thorsten Joachims.
+\newblock {MOReL}: Model-based offline reinforcement learning.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2020.
+\newblock arXiv:2005.05951.
+
+\bibitem[Kim(2026)]{kim2026latentstate}
+Keon~Woo Kim.
+\newblock Latent state design for world models under sufficiency constraints.
+\newblock \emph{arXiv preprint arXiv:2605.01694}, 2026.
+
+\bibitem[Lambert et~al.(2020)Lambert, Amos, Yadan, and
+  Calandra]{lambert2020objective}
+Nathan Lambert, Brandon Amos, Omry Yadan, and Roberto Calandra.
+\newblock Objective mismatch in model-based reinforcement learning.
+\newblock In \emph{Learning for Dynamics and Control}, 2020.
+
+\bibitem[LeCun(2022)]{lecun2022path}
+Yann LeCun.
+\newblock A path towards autonomous machine intelligence.
+\newblock Technical report, New York University and Meta AI, 2022.
+\newblock URL \url{https://openreview.net/forum?id=BZ5a1r-kVsf}.
+\newblock Version 0.9.2, 2022-06-27. Position paper; not peer reviewed.
+
+\bibitem[Li et~al.(2026{\natexlab{a}})Li, Wang, and Liu]{trm2026}
+Liangyu Li, Shengzhi Wang, and Qingwen Liu.
+\newblock Beyond {Euclidean} proximity: Repairing latent world models with
+  horizon-matched trajectory reachability metrics.
+\newblock \emph{arXiv preprint arXiv:2605.22164}, 2026{\natexlab{a}}.
+
+\bibitem[Li et~al.(2026{\natexlab{b}})Li, Li, Maeda, Ogawa, and
+  Haseyama]{rcaux2026}
+Wenyuan Li, Guang Li, Keisuke Maeda, Takahiro Ogawa, and Miki Haseyama.
+\newblock Predictive but not plannable: {RC-aux} for latent world models.
+\newblock \emph{arXiv preprint arXiv:2605.07278}, 2026{\natexlab{b}}.
+
+\bibitem[Liu et~al.(2026)Liu, Feng, Kong, Lu, Tang, Zhang, Murphy, Finn, and
+  Du]{liu2026wav}
+Yuejiang Liu, Fan Feng, Lingjing Kong, Weifeng Lu, Jinzhou Tang, Kun Zhang,
+  Kevin Murphy, Chelsea Finn, and Yilun Du.
+\newblock World action verifier: Self-improving world models via
+  forward-inverse asymmetry.
+\newblock \emph{arXiv preprint arXiv:2604.01985}, 2026.
+
+\bibitem[Maes et~al.(2026)Maes, Le~Lidec, Scieur, LeCun, and
+  Balestriero]{maes2026leworldmodel}
+Lucas Maes, Quentin Le~Lidec, Damien Scieur, Yann LeCun, and Randall
+  Balestriero.
+\newblock {LeWorldModel}: Stable end-to-end joint-embedding predictive
+  architecture from pixels.
+\newblock \emph{arXiv preprint arXiv:2603.19312}, 2026.
+
+\bibitem[Mur-Labadia et~al.(2026)Mur-Labadia, Muckley, Bar, Assran, Sinha, and
+  Rabbat]{murlabadia2026vjepa21}
+Lorenzo Mur-Labadia, Matthew Muckley, Amir Bar, Mido Assran, Koustuv Sinha, and
+  Michael Rabbat.
+\newblock {V-JEPA 2.1}: Unlocking dense features in video self-supervised
+  learning.
+\newblock \emph{arXiv preprint arXiv:2603.14482}, 2026.
+
+\bibitem[Nam et~al.(2026)Nam, Le~Lidec, Maes, LeCun, and
+  Balestriero]{causaljepa2026}
+Heejeong Nam, Quentin Le~Lidec, Lucas Maes, Yann LeCun, and Randall
+  Balestriero.
+\newblock Causal-{JEPA}: Learning world models through object-level latent
+  masking.
+\newblock \emph{arXiv preprint arXiv:2602.11389}, 2026.
+
+\bibitem[Nguyen et~al.(2026)Nguyen, Xu, and Huang]{nguyen2026latentgeometry}
+Hoang Nguyen, Xiaohao Xu, and Xiaonan Huang.
+\newblock Latent geometry beyond search: Amortizing planning in world models.
+\newblock \emph{arXiv preprint arXiv:2605.08732}, 2026.
+
+\bibitem[Oquab et~al.(2024)Oquab, Darcet, Moutakanni, et~al.]{oquab2024dinov2}
+Maxime Oquab, Timoth{\'e}e Darcet, Th{\'e}o Moutakanni, et~al.
+\newblock {DINOv2}: Learning robust visual features without supervision.
+\newblock \emph{Transactions on Machine Learning Research}, 2024.
+\newblock arXiv:2304.07193.
+
+\bibitem[Parthasarathy et~al.(2025)Parthasarathy, Kalra, Agrawal, LeCun,
+  Bounou, Izmailov, and Goldblum]{parthasarathy2025traintest}
+Arjun Parthasarathy, Nimit Kalra, Rohun Agrawal, Yann LeCun, Oumayma Bounou,
+  Pavel Izmailov, and Micah Goldblum.
+\newblock Closing the train-test gap in world models for gradient-based
+  planning.
+\newblock \emph{arXiv preprint arXiv:2512.09929}, 2025.
+
+\bibitem[Pinneri et~al.(2020)Pinneri, Sawant, Blaes, Achterhold, Stueckler,
+  Rolinek, and Martius]{pinneri2020icem}
+Cristina Pinneri, Shambhuraj Sawant, Sebastian Blaes, Jan Achterhold, Joerg
+  Stueckler, Michal Rolinek, and Georg Martius.
+\newblock Sample-efficient cross-entropy method for real-time planning.
+\newblock In \emph{Conference on Robot Learning}, 2020.
+\newblock arXiv:2008.06389.
+
+\bibitem[Rubinstein(1997)]{rubinstein1997cem}
+Reuven~Y. Rubinstein.
+\newblock Optimization of computer simulation models with rare events.
+\newblock \emph{European Journal of Operational Research}, 99\penalty0
+  (1):\penalty0 89--112, 1997.
+
+\bibitem[Schrittwieser et~al.(2020)Schrittwieser, Antonoglou, Hubert, Simonyan,
+  Sifre, Schmitt, Guez, Lockhart, Hassabis, Graepel, Lillicrap, and
+  Silver]{schrittwieser2020muzero}
+Julian Schrittwieser, Ioannis Antonoglou, Thomas Hubert, Karen Simonyan,
+  Laurent Sifre, Simon Schmitt, Arthur Guez, Edward Lockhart, Demis Hassabis,
+  Thore Graepel, Timothy Lillicrap, and David Silver.
+\newblock Mastering {Atari}, {Go}, chess and shogi by planning with a learned
+  model.
+\newblock \emph{Nature}, 588:\penalty0 604--609, 2020.
+\newblock arXiv:1911.08265.
+
+\bibitem[Seo et~al.(2026)Seo, Kim, and Kwak]{acid2026}
+Gawon Seo, Dongwon Kim, and Suha Kwak.
+\newblock {ACID}: Action consistency via inverse dynamics for planning with
+  world models.
+\newblock \emph{arXiv preprint arXiv:2607.02403}, 2026.
+
+\bibitem[Skalse et~al.(2022)Skalse, Howe, Krasheninnikov, and
+  Krueger]{skalse2022defining}
+Joar Skalse, Nikolaus Howe, Dmitrii Krasheninnikov, and David Krueger.
+\newblock Defining and characterizing reward hacking.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2022.
+
+\bibitem[Smith and Winkler(2006)]{smith2006optimizer}
+James~E. Smith and Robert~L. Winkler.
+\newblock The optimizer's curse: Skepticism and postdecision surprise in
+  decision analysis.
+\newblock \emph{Management Science}, 52\penalty0 (3):\penalty0 311--322, 2006.
+\newblock \doi{10.1287/mnsc.1050.0451}.
+
+\bibitem[Sobal et~al.(2025)Sobal, Zhang, Cho, Balestriero, Rudner, and
+  LeCun]{sobal2025pldm}
+Vlad Sobal, Wancong Zhang, Kyunghyun Cho, Randall Balestriero, Tim G.~J.
+  Rudner, and Yann LeCun.
+\newblock Learning from reward-free offline data: A case for planning with
+  latent dynamics models.
+\newblock \emph{arXiv preprint arXiv:2502.14819}, 2025.
+
+\bibitem[Terver et~al.(2026)Terver, Yang, Ponce, Bardes, and
+  LeCun]{jepawms2025}
+Basile Terver, Tsung-Yen Yang, Jean Ponce, Adrien Bardes, and Yann LeCun.
+\newblock What drives success in physical planning with joint-embedding
+  predictive world models?
+\newblock \emph{Transactions on Machine Learning Research}, 2026.
+\newblock URL \url{https://openreview.net/forum?id=cHZn5Gdh8e}.
+
+\bibitem[Toso et~al.(2026)Toso, Shadunts, Lu, Sharma, Zhan, Nguyen, and
+  Anderson]{invariantjepwm2026}
+Leonardo~F. Toso, Davit Shadunts, Yunyang Lu, Nihal Sharma, Donglin Zhan,
+  Nam~H. Nguyen, and James Anderson.
+\newblock Learning invariant visual representations for planning with
+  joint-embedding predictive world models.
+\newblock \emph{arXiv preprint arXiv:2602.18639}, 2026.
+
+\bibitem[Wang et~al.(2026)Wang, Bounou, Zhou, Balestriero, Rudner, LeCun, and
+  Ren]{straightening2026}
+Ying Wang, Oumayma Bounou, Gaoyue Zhou, Randall Balestriero, Tim G.~J. Rudner,
+  Yann LeCun, and Mengye Ren.
+\newblock Temporal straightening for latent planning.
+\newblock \emph{arXiv preprint arXiv:2603.12231}, 2026.
+
+\bibitem[Williams et~al.(2017)Williams, Aldrich, and
+  Theodorou]{williams2017mppi}
+Grady Williams, Andrew Aldrich, and Evangelos~A. Theodorou.
+\newblock Model predictive path integral control: From theory to parallel
+  computation.
+\newblock \emph{Journal of Guidance, Control, and Dynamics}, 40\penalty0
+  (2):\penalty0 344--357, 2017.
+\newblock \doi{10.2514/1.G001921}.
+
+\bibitem[{Workshop authors}(2026)]{hiddenfailure2026}
+{Workshop authors}.
+\newblock Hidden failure modes in latent world-model planning from offline
+  data.
+\newblock In \emph{ICML Demo Workshop}, 2026.
+
+\bibitem[Xia et~al.(2023)Xia, Pan, and Bareinboim]{xia2023neuralcausal}
+Kevin Xia, Yushu Pan, and Elias Bareinboim.
+\newblock Neural causal models for counterfactual identification and
+  estimation.
+\newblock In \emph{International Conference on Learning Representations}, 2023.
+
+\bibitem[Yang et~al.(2026)Yang, Shen, Mi, Zhang, Zhou, Ji, Dai, Chen, Chen, and
+  Yang]{mirabench2026}
+Tianzhuo Yang, Zihan Shen, Zirui Mi, Zhaoyi Zhang, Jiayi Zhou, Jiaming Ji,
+  Juntao Dai, Jiawei Chen, Boyuan Chen, and Yaodong Yang.
+\newblock {MiraBench}: Evaluating action-conditioned reliability in robotic
+  world models.
+\newblock \emph{arXiv preprint arXiv:2605.29360}, 2026.
+
+\bibitem[Yu et~al.(2020{\natexlab{a}})Yu, Quillen, He, Julian, Hausman, Finn,
+  and Levine]{yu2020metaworld}
+Tianhe Yu, Deirdre Quillen, Zhanpeng He, Ryan Julian, Karol Hausman, Chelsea
+  Finn, and Sergey Levine.
+\newblock Meta-world: A benchmark and evaluation for multi-task and meta
+  reinforcement learning.
+\newblock In \emph{Conference on Robot Learning}, 2020{\natexlab{a}}.
+
+\bibitem[Yu et~al.(2020{\natexlab{b}})Yu, Thomas, Yu, Ermon, Zou, Levine, Finn,
+  and Ma]{yu2020mopo}
+Tianhe Yu, Garrett Thomas, Lantao Yu, Stefano Ermon, James~Y. Zou, Sergey
+  Levine, Chelsea Finn, and Tengyu Ma.
+\newblock {MOPO}: Model-based offline policy optimization.
+\newblock In \emph{Advances in Neural Information Processing Systems},
+  2020{\natexlab{b}}.
+\newblock arXiv:2005.13239.
+
+\bibitem[Yu et~al.(2026)Yu, Zhang, Sheng, Ren, and Lin]{yu2026wmeval}
+Yang Yu, Shiyuan Zhang, Yifei Sheng, Haoxiang Ren, and Haoxin Lin.
+\newblock How should world models be evaluated? a decision-making-centric
+  position.
+\newblock \emph{arXiv preprint arXiv:2606.15032}, 2026.
+
+\bibitem[Zhang et~al.(2026)Zhang, Terver, Zholus, Chitnis, Sutaria, Assran,
+  Balestriero, Bar, Bardes, LeCun, and Ballas]{zhang2026hwm}
+Wancong Zhang, Basile Terver, Artem Zholus, Soham Chitnis, Harsh Sutaria, Mido
+  Assran, Randall Balestriero, Amir Bar, Adrien Bardes, Yann LeCun, and Nicolas
+  Ballas.
+\newblock Hierarchical planning with latent world models.
+\newblock \emph{arXiv preprint arXiv:2604.03208}, 2026.
+
+\bibitem[Zhou et~al.(2025)Zhou, Pan, LeCun, and Pinto]{zhou2024dinowm}
+Gaoyue Zhou, Hengkai Pan, Yann LeCun, and Lerrel Pinto.
+\newblock {DINO-WM}: World models on pre-trained visual features enable
+  zero-shot planning.
+\newblock In \emph{Proceedings of the 42nd International Conference on Machine
+  Learning}, volume 267 of \emph{Proceedings of Machine Learning Research},
+  pages 79115--79135, 2025.
+\newblock URL \url{https://proceedings.mlr.press/v267/zhou25t.html}.
+
+\end{thebibliography}

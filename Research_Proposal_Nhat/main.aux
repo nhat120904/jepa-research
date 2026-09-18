@@ -1,0 +1,237 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{ha2018worldmodels}
+\citation{hafner2019planet}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{2}{section.1}\protected@file@percent }
+\newlabel{sec:intro}{{1}{2}{Introduction}{section.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Scope}{3}{paragraph*.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Research questions}{3}{paragraph*.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Approach and preliminary evidence}{3}{paragraph*.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Organisation}{3}{paragraph*.4}\protected@file@percent }
+\citation{ha2018worldmodels,hafner2019planet}
+\citation{sobal2025pldm}
+\citation{hafner2019planet,hafner2025dreamerv3}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Background}{4}{section.2}\protected@file@percent }
+\newlabel{sec:background}{{2}{4}{Background}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}What a world model is}{4}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Why world models for robot learning}{4}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Data efficiency}{4}{paragraph*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Task generality}{4}{paragraph*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Learning without reward labels}{4}{paragraph*.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Deliberation before acting}{4}{paragraph*.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}How a world model is used}{4}{subsection.2.3}\protected@file@percent }
+\citation{ha2018worldmodels}
+\citation{hafner2019planet}
+\citation{hafner2025dreamerv3}
+\citation{lecun2022path}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}The visual problem}{5}{subsection.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Pixel-space and latent-space prediction}{5}{subsection.2.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Planning with a latent world model}{6}{subsection.2.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The model}{6}{paragraph*.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Planning}{6}{paragraph*.10}\protected@file@percent }
+\newlabel{eq:plan}{{1}{6}{Planning}{equation.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Two properties of \eqref  {eq:plan}}{6}{paragraph*.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.7}Why this is hard}{6}{subsection.2.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Literature review}{6}{section.3}\protected@file@percent }
+\newlabel{sec:lit}{{3}{6}{Literature review}{section.3}{}}
+\citation{ha2018worldmodels}
+\citation{hafner2019planet}
+\citation{hafner2025dreamerv3}
+\citation{lecun2022path}
+\citation{assran2023ijepa}
+\citation{bardes2022vicreg}
+\citation{lejepa2025}
+\citation{assran2025vjepa2}
+\citation{murlabadia2026vjepa21}
+\citation{maes2026leworldmodel}
+\citation{zhou2024dinowm}
+\citation{oquab2024dinov2}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Representation objectives}{7}{subsection.3.1}\protected@file@percent }
+\newlabel{sec:lit-repr}{{3.1}{7}{Representation objectives}{subsection.3.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.1}Reconstruction-based latent dynamics}{7}{subsubsection.3.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.2}Joint-embedding predictive architectures}{7}{subsubsection.3.1.2}\protected@file@percent }
+\citation{jepawms2025}
+\citation{sobal2025pldm}
+\citation{nwm2024}
+\citation{hansen2024tdmpc2}
+\citation{schrittwieser2020muzero}
+\citation{kim2026latentstate}
+\citation{straightening2026}
+\citation{causaljepa2026,invariantjepwm2026}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.3}Frozen pretrained visual features}{8}{subsubsection.3.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.4}Value- and task-aware latents}{8}{subsubsection.3.1.4}\protected@file@percent }
+\newlabel{sec:lit-repr-value}{{3.1.4}{8}{Value- and task-aware latents}{subsubsection.3.1.4}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.5}Explicitly structured latents}{8}{subsubsection.3.1.5}\protected@file@percent }
+\citation{rubinstein1997cem}
+\citation{pinneri2020icem}
+\citation{williams2017mppi}
+\citation{parthasarathy2025traintest}
+\citation{straightening2026}
+\citation{nguyen2026latentgeometry}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Representation objectives and their consequences for the planning cost.}}{9}{table.caption.12}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{tab:repr}{{1}{9}{Representation objectives and their consequences for the planning cost}{table.caption.12}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Planning and control algorithms}{9}{subsection.3.2}\protected@file@percent }
+\newlabel{sec:lit-planners}{{3.2}{9}{Planning and control algorithms}{subsection.3.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.1}Sampling-based model-predictive control}{9}{subsubsection.3.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.2}Gradient-based planning}{9}{subsubsection.3.2.2}\protected@file@percent }
+\citation{zhang2026hwm}
+\citation{rubinstein1997cem,pinneri2020icem}
+\citation{williams2017mppi}
+\citation{parthasarathy2025traintest}
+\citation{nguyen2026latentgeometry}
+\citation{zhang2026hwm}
+\citation{janner2019trust}
+\citation{lambert2020objective}
+\citation{bhamidipaty2026imperfect}
+\citation{yu2020mopo}
+\citation{kidambi2020morel}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Planning algorithms and their characteristic failure exposure.}}{10}{table.caption.13}\protected@file@percent }
+\newlabel{tab:planners}{{2}{10}{Planning algorithms and their characteristic failure exposure}{table.caption.13}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.3}Amortised and search-free control}{10}{subsubsection.3.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.4}Hierarchical decomposition}{10}{subsubsection.3.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Diagnostic and failure-analysis work}{10}{subsection.3.3}\protected@file@percent }
+\newlabel{sec:lit-diag}{{3.3}{10}{Diagnostic and failure-analysis work}{subsection.3.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.1}Dynamics error and its exploitation}{10}{subsubsection.3.3.1}\protected@file@percent }
+\citation{imwm2026}
+\citation{acid2026}
+\citation{liu2026wav}
+\citation{chen2026atm}
+\citation{rcaux2026}
+\citation{trm2026}
+\citation{trm2026}
+\citation{smith2006optimizer}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.2}Proposal coverage}{11}{subsubsection.3.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.3}Transition realizability and action grounding}{11}{subsubsection.3.3.3}\protected@file@percent }
+\newlabel{sec:lit-diag-action}{{3.3.3}{11}{Transition realizability and action grounding}{subsubsection.3.3.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.4}Cost geometry and selection}{11}{subsubsection.3.3.4}\protected@file@percent }
+\newlabel{sec:lit-diag-cost}{{3.3.4}{11}{Cost geometry and selection}{subsubsection.3.3.4}{}}
+\citation{skalse2022defining}
+\citation{gao2023overopt}
+\citation{karwowski2024goodhart}
+\citation{inferencetimehacking2025,gamingverifiers2026}
+\citation{yu2020metaworld}
+\citation{mirabench2026}
+\citation{whatifworld2026}
+\citation{xia2023neuralcausal}
+\citation{wmsurvey2026}
+\citation{yu2026wmeval}
+\citation{hiddenfailure2026}
+\citation{chen2026atm}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Optimisation against imperfect proxies}{12}{subsection.3.4}\protected@file@percent }
+\newlabel{sec:lit-proxy}{{3.4}{12}{Optimisation against imperfect proxies}{subsection.3.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Evaluation methodology and benchmarks}{12}{subsection.3.5}\protected@file@percent }
+\newlabel{sec:lit-eval}{{3.5}{12}{Evaluation methodology and benchmarks}{subsection.3.5}{}}
+\citation{imwm2026}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Four failure surfaces, with refutation conditions.}}{13}{table.caption.14}\protected@file@percent }
+\newlabel{tab:surfaces}{{3}{13}{Four failure surfaces, with refutation conditions}{table.caption.14}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Synthesis}{13}{subsection.3.6}\protected@file@percent }
+\newlabel{sec:lit-synth}{{3.6}{13}{Synthesis}{subsection.3.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}A taxonomy of failure surfaces}{13}{section.4}\protected@file@percent }
+\newlabel{sec:failures}{{4}{13}{A taxonomy of failure surfaces}{section.4}{}}
+\citation{janner2019trust}
+\citation{lambert2020objective}
+\citation{parthasarathy2025traintest}
+\citation{bhamidipaty2026imperfect}
+\citation{imwm2026}
+\citation{nguyen2026latentgeometry}
+\citation{acid2026}
+\citation{liu2026wav}
+\citation{chen2026atm}
+\citation{trm2026}
+\citation{rcaux2026}
+\citation{straightening2026}
+\citation{smith2006optimizer}
+\citation{skalse2022defining,gao2023overopt,karwowski2024goodhart}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Failure-surface matrix: which surface each work's evidence primarily targets, and under what dynamics condition that evidence was collected. S1~prediction error, S2~proposal coverage, S3~transition realizability, S4~cost geometry/selection --- full definitions and refutation conditions are in Table~\ref {tab:surfaces}. $\bullet $ primary claim, $\circ $ secondary claim.}}{14}{table.caption.15}\protected@file@percent }
+\newlabel{tab:matrix}{{4}{14}{Failure-surface matrix: which surface each work's evidence primarily targets, and under what dynamics condition that evidence was collected. S1~prediction error, S2~proposal coverage, S3~transition realizability, S4~cost geometry/selection --- full definitions and refutation conditions are in Table~\ref {tab:surfaces}. $\bullet $ primary claim, $\circ $ secondary claim}{table.caption.15}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Applying the taxonomy: a methodological gap}{14}{subsection.4.1}\protected@file@percent }
+\citation{yu2020metaworld}
+\citation{jepawms2025}
+\citation{smith2006optimizer}
+\citation{imwm2026}
+\@writefile{toc}{\contentsline {section}{\numberline {5}A controlled case study in cost attribution}{15}{section.5}\protected@file@percent }
+\newlabel{sec:case}{{5}{15}{A controlled case study in cost attribution}{section.5}{}}
+\@writefile{toc}{\contentsline {paragraph}{Setting}{15}{paragraph*.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Design}{15}{paragraph*.17}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Result}{15}{paragraph*.18}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Mechanism}{15}{paragraph*.20}\protected@file@percent }
+\citation{murlabadia2026vjepa21}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Terminal-cost comparison under exact candidate dynamics; 64 paired environment seeds, strict episode-end success. The reference row is a privileged positive control for the search budget, not a deployable method.}}{16}{table.caption.19}\protected@file@percent }
+\newlabel{tab:terminal}{{5}{16}{Terminal-cost comparison under exact candidate dynamics; 64 paired environment seeds, strict episode-end success. The reference row is a privileged positive control for the search budget, not a deployable method}{table.caption.19}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Interventions in the same harness. Every row improved its target quantity; none moved contact planning outside the $0$--$2/16$ baseline band.}}{16}{table.caption.22}\protected@file@percent }
+\newlabel{tab:nulls}{{6}{16}{Interventions in the same harness. Every row improved its target quantity; none moved contact planning outside the $0$--$2/16$ baseline band}{table.caption.22}{}}
+\@writefile{toc}{\contentsline {paragraph}{Repairs attempted}{16}{paragraph*.21}\protected@file@percent }
+\citation{kim2026latentstate}
+\citation{hansen2024tdmpc2}
+\citation{zhang2026hwm}
+\citation{murlabadia2026vjepa21}
+\citation{nguyen2026latentgeometry}
+\@writefile{toc}{\contentsline {paragraph}{Scope}{17}{paragraph*.23}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Proposed research directions}{17}{section.6}\protected@file@percent }
+\newlabel{sec:open}{{6}{17}{Proposed research directions}{section.6}{}}
+\@writefile{toc}{\contentsline {paragraph}{Costs trained on the distribution the planner induces}{17}{paragraph*.24}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Decision equivalence as a representation criterion}{17}{paragraph*.25}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Discriminating experiments for existing repairs}{17}{paragraph*.26}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Whether hierarchy changes the picture}{17}{paragraph*.27}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Representation quality as the competing explanation}{17}{paragraph*.28}\protected@file@percent }
+\bibstyle{plainnat}
+\bibdata{refs}
+\bibcite{assran2023ijepa}{{1}{2023}{{Assran et~al.}}{{Assran, Duval, Misra, Bojanowski, Vincent, Rabbat, LeCun, and Ballas}}}
+\bibcite{assran2025vjepa2}{{2}{2025}{{Assran et~al.}}{{Assran, Bardes, Fan, Garrido, Howes, Komeili, Muckley, Rizvi, Roberts, Sinha, Zholus, Meier, LeCun, Rabbat, and Ballas}}}
+\bibcite{lejepa2025}{{3}{2025}{{Balestriero and LeCun}}{{}}}
+\bibcite{nwm2024}{{4}{2024}{{Bar et~al.}}{{Bar, Zhou, Tran, Darrell, and LeCun}}}
+\@writefile{toc}{\contentsline {paragraph}{Generality across optimisers}{18}{paragraph*.29}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{An evaluation protocol}{18}{paragraph*.30}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion}{18}{section.7}\protected@file@percent }
+\newlabel{sec:conclusion}{{7}{18}{Conclusion}{section.7}{}}
+\bibcite{bardes2022vicreg}{{5}{2022}{{Bardes et~al.}}{{Bardes, Ponce, and LeCun}}}
+\bibcite{bhamidipaty2026imperfect}{{6}{2026}{{Bhamidipaty et~al.}}{{Bhamidipaty, Whitammer, Abel, and Kochenderfer}}}
+\bibcite{whatifworld2026}{{7}{2026}{{Cai et~al.}}{{Cai, Song, Zhang, Zhang, Bodapati, Yu, Suya, Rostami, Ma, and Tian}}}
+\bibcite{chen2026atm}{{8}{2026}{{Chen}}{{}}}
+\bibcite{imwm2026}{{9}{2026}{{Gao et~al.}}{{Gao, Han, Wang, and Wang}}}
+\bibcite{gao2023overopt}{{10}{2023}{{Gao et~al.}}{{Gao, Schulman, and Hilton}}}
+\bibcite{ha2018worldmodels}{{11}{2018}{{Ha and Schmidhuber}}{{}}}
+\bibcite{hafner2019planet}{{12}{2019}{{Hafner et~al.}}{{Hafner, Lillicrap, Fischer, Villegas, Ha, Lee, and Davidson}}}
+\bibcite{hafner2025dreamerv3}{{13}{2025}{{Hafner et~al.}}{{Hafner, Pasukonis, Ba, and Lillicrap}}}
+\bibcite{hansen2024tdmpc2}{{14}{2024}{{Hansen et~al.}}{{Hansen, Su, and Wang}}}
+\bibcite{gamingverifiers2026}{{15}{2026}{{Helff et~al.}}{{Helff, Delfosse, Steinmann, H{\"a}rle, Shindo, Schramowski, Stammer, Kersting, and Friedrich}}}
+\bibcite{wmsurvey2026}{{16}{2026}{{Hou et~al.}}{{Hou, Li, Jia, An, Guo, et~al.}}}
+\bibcite{janner2019trust}{{17}{2019}{{Janner et~al.}}{{Janner, Fu, Zhang, and Levine}}}
+\bibcite{karwowski2024goodhart}{{18}{2024}{{Karwowski et~al.}}{{Karwowski, Hayman, Bai, Kiendlhofer, Griffin, and Skalse}}}
+\bibcite{inferencetimehacking2025}{{19}{2025}{{Khalaf et~al.}}{{Khalaf, Verdun, Oesterling, Lakkaraju, and Calmon}}}
+\bibcite{kidambi2020morel}{{20}{2020}{{Kidambi et~al.}}{{Kidambi, Rajeswaran, Netrapalli, and Joachims}}}
+\bibcite{kim2026latentstate}{{21}{2026}{{Kim}}{{}}}
+\bibcite{lambert2020objective}{{22}{2020}{{Lambert et~al.}}{{Lambert, Amos, Yadan, and Calandra}}}
+\bibcite{lecun2022path}{{23}{2022}{{LeCun}}{{}}}
+\bibcite{trm2026}{{24}{2026{a}}{{Li et~al.}}{{Li, Wang, and Liu}}}
+\bibcite{rcaux2026}{{25}{2026{b}}{{Li et~al.}}{{Li, Li, Maeda, Ogawa, and Haseyama}}}
+\bibcite{liu2026wav}{{26}{2026}{{Liu et~al.}}{{Liu, Feng, Kong, Lu, Tang, Zhang, Murphy, Finn, and Du}}}
+\bibcite{maes2026leworldmodel}{{27}{2026}{{Maes et~al.}}{{Maes, Le~Lidec, Scieur, LeCun, and Balestriero}}}
+\bibcite{murlabadia2026vjepa21}{{28}{2026}{{Mur-Labadia et~al.}}{{Mur-Labadia, Muckley, Bar, Assran, Sinha, and Rabbat}}}
+\bibcite{causaljepa2026}{{29}{2026}{{Nam et~al.}}{{Nam, Le~Lidec, Maes, LeCun, and Balestriero}}}
+\bibcite{nguyen2026latentgeometry}{{30}{2026}{{Nguyen et~al.}}{{Nguyen, Xu, and Huang}}}
+\bibcite{oquab2024dinov2}{{31}{2024}{{Oquab et~al.}}{{Oquab, Darcet, Moutakanni, et~al.}}}
+\bibcite{parthasarathy2025traintest}{{32}{2025}{{Parthasarathy et~al.}}{{Parthasarathy, Kalra, Agrawal, LeCun, Bounou, Izmailov, and Goldblum}}}
+\bibcite{pinneri2020icem}{{33}{2020}{{Pinneri et~al.}}{{Pinneri, Sawant, Blaes, Achterhold, Stueckler, Rolinek, and Martius}}}
+\bibcite{rubinstein1997cem}{{34}{1997}{{Rubinstein}}{{}}}
+\bibcite{schrittwieser2020muzero}{{35}{2020}{{Schrittwieser et~al.}}{{Schrittwieser, Antonoglou, Hubert, Simonyan, Sifre, Schmitt, Guez, Lockhart, Hassabis, Graepel, Lillicrap, and Silver}}}
+\bibcite{acid2026}{{36}{2026}{{Seo et~al.}}{{Seo, Kim, and Kwak}}}
+\bibcite{skalse2022defining}{{37}{2022}{{Skalse et~al.}}{{Skalse, Howe, Krasheninnikov, and Krueger}}}
+\bibcite{smith2006optimizer}{{38}{2006}{{Smith and Winkler}}{{}}}
+\bibcite{sobal2025pldm}{{39}{2025}{{Sobal et~al.}}{{Sobal, Zhang, Cho, Balestriero, Rudner, and LeCun}}}
+\bibcite{jepawms2025}{{40}{2026}{{Terver et~al.}}{{Terver, Yang, Ponce, Bardes, and LeCun}}}
+\bibcite{invariantjepwm2026}{{41}{2026}{{Toso et~al.}}{{Toso, Shadunts, Lu, Sharma, Zhan, Nguyen, and Anderson}}}
+\bibcite{straightening2026}{{42}{2026}{{Wang et~al.}}{{Wang, Bounou, Zhou, Balestriero, Rudner, LeCun, and Ren}}}
+\bibcite{williams2017mppi}{{43}{2017}{{Williams et~al.}}{{Williams, Aldrich, and Theodorou}}}
+\bibcite{hiddenfailure2026}{{44}{2026}{{Workshop authors}}{{}}}
+\bibcite{xia2023neuralcausal}{{45}{2023}{{Xia et~al.}}{{Xia, Pan, and Bareinboim}}}
+\bibcite{mirabench2026}{{46}{2026}{{Yang et~al.}}{{Yang, Shen, Mi, Zhang, Zhou, Ji, Dai, Chen, Chen, and Yang}}}
+\bibcite{yu2020metaworld}{{47}{2020{a}}{{Yu et~al.}}{{Yu, Quillen, He, Julian, Hausman, Finn, and Levine}}}
+\bibcite{yu2020mopo}{{48}{2020{b}}{{Yu et~al.}}{{Yu, Thomas, Yu, Ermon, Zou, Levine, Finn, and Ma}}}
+\bibcite{yu2026wmeval}{{49}{2026}{{Yu et~al.}}{{Yu, Zhang, Sheng, Ren, and Lin}}}
+\bibcite{zhang2026hwm}{{50}{2026}{{Zhang et~al.}}{{Zhang, Terver, Zholus, Chitnis, Sutaria, Assran, Balestriero, Bar, Bardes, LeCun, and Ballas}}}
+\bibcite{zhou2024dinowm}{{51}{2025}{{Zhou et~al.}}{{Zhou, Pan, LeCun, and Pinto}}}
+\gdef \@abspage@last{22}

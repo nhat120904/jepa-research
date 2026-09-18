@@ -1,0 +1,180 @@
+                                                        Imperfect World Models are Exploitable
+
+
+                                                      Logan Mondal Bhamidipaty1∗ Esmeralda S. Whitammer1                                David Abel1
+                                                                 Mykel J. Kochenderfer2              Subramanian Ramamoorthy1
+                                                                      1                                      2
+                                                                          University of Edinburgh                Stanford University
+
+
+
+
+arXiv:2605.15960v2 [cs.AI] 18 May 2026
+                                                                                               Abstract
+                                                     We propose a novel definition of model exploitation in reinforcement learning. In-
+                                                     formally, a world model is exploitable if it implies that one policy should be strictly
+                                                     preferred over another while the environment’s true transition model implies the
+                                                     reverse. We analogize our definition with a prior characterization of reward hacking
+                                                     but show that the associated proof of inevitability does not transfer to exploitation.
+                                                     To overcome this obstruction, we develop a general theory of reward hacking
+                                                     and model exploitation that proves that exploitation is essentially unavoidable on
+                                                     large policy sets and yields the corresponding claim for hacking as a special case.
+                                                     Unfortunately, we also find that the conditions that guarantee unhackability in
+                                                     finite policy sets have no counterpart that precludes exploitation. Consequently, we
+                                                     introduce a relaxed notion of exploitation and derive a safe horizon within which
+                                                     it can be avoided. Taken together, our results establish a formal bridge between
+                                                     reward hacking and model exploitation and elucidate the limits of safe planning in
+                                                     world models.
+
+
+                                         1    Introduction
+                                         Efficient real-world planning typically requires approximating complex dynamics (Simon, 1955;
+                                         Javed and Sutton, 2024). In the best case, well-chosen approximations unravel otherwise intractable
+                                         problems, as with admissible heuristics in search (Hart et al., 1968), model reduction in dynamical
+                                         systems (Antoulas, 2005), and latent-space world models in sequential decision-making (Hafner et al.,
+                                         2019). In the worst case, however, ill-chosen approximations can compromise safety, as with mimicry
+                                         in evolutionary biology (Bates, 1862), arbitrage in financial markets (Ross, 1976), and speedrunning
+                                         in video games (Scully-Blaker, 2014). In reinforcement learning (RL), this liability arises not only
+                                         exogenously from adversaries but also endogenously from the optimizer itself: an agent trained to
+                                         maximize total expected reward under an imperfect model2 may discover behavior that performs
+                                         well in simulation but poorly in reality (Jakobi et al., 1995; Tobin et al., 2017). This failure mode is
+                                         called model exploitation (Ha and Schmidhuber, 2018; Janner et al., 2019), and a natural question is
+                                         whether it can be avoided.
+                                         This question pertains to notable results in RL theory including the simulation lemma (Kearns
+                                         and Singh, 2002) and the value equivalence principle (Grimm et al., 2020). Both implicitly use
+                                         predictive performance to measure the quality of a model’s approximation. The simulation lemma
+                                         does so cardinally by bounding the error from optimizing under an imperfect model, while the value
+                                         equivalence principle does so locally by characterizing when two models induce identical Bellman
+                                         updates. Modern world models also emphasize predictive performance, typically learning latent-space
+                                         models of transitions (Hafner et al., 2019; Balestriero and LeCun, 2025).
+                                             ∗ l.m.bhamidipaty@ed.ac.uk
+                                             2We use “model” to mean the transition model of a Markov decision process (Section 2) or an agent’s approximation to it,
+
+                                         sometimes called a world model (Ha and Schmidhuber, 2018). We do not use it to mean the policy (as a generative model of
+                                         actions) as is sometimes meant in other RL literature.
+
+
+                                         Preprint.
+We argue that while this emphasis on performance is necessary for efficient planning, it is not
+sufficient for safe planning. Recent work on reward specification (Hadfield-Menell et al., 2017; Abel
+et al., 2021) views reward functions as observations of the designer’s intent to communicate a goal,
+which may be an imperfect reflection of a true objective. Empirical transition models are similarly
+imperfect. In this setting, the natural notion of safety is ordinal rather than cardinal (does the model
+preserve which policies are better than which?) and global rather than local (does it do so across the
+entire policy set, not just on the chosen classes?). Concretely, a proxy model is safe in our sense if it
+does not invert the policy ordering induced by the true model. That is, whenever reality prefers a
+policy π over π ′ , a safe approximation should not prefer π ′ over π. When such an inversion exists,
+we say the pair of transition models is exploitable (Definition 1).
+Our formalization of model exploitation is analogous to the notion of reward hacking in Skalse et al.
+(2022). Unfortunately, their characterization of when hacking exists and is avoidable does not transfer
+to exploitation (Section 3.2). We overcome this by introducing a more general theory, from which
+four main contributions emerge.
+
+1. We propose a new definition of model exploitation (Definition 1) that, to the best of our knowledge,
+   is the first ordinal notion of safety for world models.
+2. We develop a unified theory of reward hacking and model exploitation that characterizes ex-
+   ploitation on common policy sets (Corollaries 1 and 2), yields Theorem 1 of Skalse et al. (2022)
+   as a special case (Corollary 3), and provides a shared geometric intuition for both phenomena
+   (Lemmas 1 and 2).
+3. We give a construction reducing any instance of model exploitation to one of reward hacking
+   (Proposition 3), but show that a converse construction does not exist (Counterexample 1). We
+   further prove that the conditions that guarantee unhackability are insufficient to guarantee unex-
+   ploitability (Counterexample 2).
+4. We introduce a relaxed notion of model exploitation, ε-exploitability (Definition 3), and use
+   the tight form of the simulation lemma (Kearns and Singh, 2002) recently proved by Lobel and
+   Parr (2024) to derive a safe horizon for discounted Markov decision processes within which
+   ε-unexploitability is guaranteed (Theorem 2).
+
+
+2     Preliminaries
+
+We first recap the preliminaries for reinforcement learning (Sutton et al., 1998) and introduce our
+definition of model exploitation.
+
+2.1    Reinforcement learning
+
+We consider a Markov decision process (MDP) M = (S, A, T , d0 , R, γ) where S is the state
+space, A is the action space, T : S × A → ∆(S) is the transition model, d0 ∈ ∆(S) is the initial
+state distribution, R : S × A → R is the reward function, and γ ∈ [0, 1) is the discount factor. As in
+Skalse et al. (2022), we assume finite S with all states reachable and finite A with |A| > 1.
+A stationary policy π : S → ∆(A) maps each state to a distribution over actions. A non-stationary
+policy π = (π0 , π1 , π2 , . . . ) is a sequence of mappings πt : S → ∆(A), allowing the action
+distribution to depend on the time step.P∞ Rolling out a policy produces a trajectory τ = (s0 , a0 , r0 , . . . )
+whose discounted return is G(τ ) = t=0 γ t rt . The value of a policy is its P    expected return J(π) =
+Eτ ∼π [G(τ )], or, equivalently, J(π) = ⟨R, FTπ ⟩ where FTπ (s, a) = Eτ ∼π [ t=0 γ t 1(st = s, at =
+                                                                                    ∞
+
+a)] are the discounted visit counts of π under T . We make the standard assumption in classical
+RL and optimal control (Sutton et al., 1998; Bertsekas, 2012) that designers use value to compare
+policies and prefer high-value policies over low-value ones.
+An environment is an MDP without a reward function (S, A, T , d0 , _, γ),3 and a task is an MDP
+without a transition model (S, A, _, d0 , R, γ). When considering multiple reward functions in a fixed
+environment, we write JR (π) = ⟨R, F π ⟩ (dropping the subscript on F π when T is fixed). When
+considering multiple transition models in a fixed task, we write JT (π) = ⟨R, FTπ ⟩. We use Ji as
+
+    3 This is sometimes called a controlled Markov process.
+
+
+
+
+                                                              2
+               (a) T2 is trivial      (b) T1 , T2 equivalent       (c) T1 , T2 exploitable   (d) T1 , T2 exploitable
+                 J1
+                 J2
+
+    J(π)
+
+
+
+           0      θ          1 0            θ          1 0 π     π0 θ             1 0 π     θ π
+                                                                                                   0
+                                                                                                       1
+
+Figure 1: Taxonomy of transition model relationships in a 3-state MDP (Appendix D). Policies are
+parameterized by πθ (a0 | s) = θ for all s ∈ S. Each panel has the same T1 but a unique T2 . (a) T2 is
+trivial, so J2 is constant. (b) T1 , T2 are equivalent (in policy ordering): both value functions increase
+in θ, preserving the policy ordering. (c, d) T1 , T2 are exploitable: dotted lines show the exploiting
+pair (π, π ′ ) from Definition 1, with J1 (π ′ ) > J1 (π) but J2 (π) > J2 (π ′ ).
+
+
+shorthand for JRi or JTi depending on whether the index ranges over reward functions or transition
+models.
+Since S and A are finite, the space of stationary policies can be represented as a product of |S|
+probability simplices ∆(A)|S| . We write Π+ for the interior of this space, consisting of all policies
+with π(a | s) > 0 for every s ∈ S and a ∈ A. Unless otherwise specified, openness is taken with
+respect to Π+ . We provide a reference list of notation and terminology in Appendix A.
+
+2.2        Defining model exploitation and reward hacking
+
+We define model exploitation as a binary relation between two transition models.
+Definition 1 (Model Exploitation). Transition functions T and T ′ are exploitable relative to a policy
+set Π and a task (S, A, _, d0 , R, γ) if there exist π, π ′ ∈ Π such that
+                                   JT (π) > JT (π ′ )    and       JT ′ (π ′ ) > JT ′ (π),
+otherwise they are unexploitable.
+Intuitively, model exploitation says that optimizing under one transition model may look like a
+mistake under the other. This definition directly analogizes the notion of reward hacking in Skalse
+et al. (2022) with transition models in place of reward functions. We restate their definition below.
+Definition 2 (Reward Hacking, Skalse et al. (2022)). Reward functions R and R′ are hackable
+relative to a policy set Π and an environment (S, A, T , d0 , _, γ) if there exist π, π ′ ∈ Π such that
+                                   JR (π) > JR (π ′ )    and       JR′ (π ′ ) > JR′ (π),
+otherwise they are unhackable.
+Both definitions are instances of a common primitive, which we call value inversion. We say
+two value functions J1 and J2 admit a value inversion on Π if there exist π, π ′ ∈ Π such that
+J1 (π) > J1 (π ′ ) and J2 (π ′ ) > J2 (π). Thus, model exploitation is a value inversion between JT and
+JT ′ , and reward hacking is a value inversion between JR and JR′ .
+We further say J1 and J2 are equivalent on Π if they induce the same ordering on Π and that a value
+function J is trivial on Π if J(π) is constant on Π (Figure 1). Informally, equivalence means that two
+value functions agree on every pairwise comparison between policies, while triviality means there
+are no meaningful comparisons to make. We also use trivial and equivalent to describe transition
+models and reward functions as shorthand for the corresponding properties of the value functions
+they induce. We note that triviality precludes value inversion and that value inversion is symmetric,
+irreflexive, and not necessarily transitive.
+
+3          Results
+To understand when model exploitation is avoidable, we ask a single question with increasing
+precision: on which policy sets can we find non-trivial, non-equivalent, unexploitable transition
+model pairs? We begin with the largest possible policy set and progressively tighten the scope.
+
+
+                                                               3
+

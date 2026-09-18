@@ -1,0 +1,169 @@
+                                            ACID: Action Consistency via Inverse Dynamics for
+                                                      Planning with World Models
+                                                                         Gawon Seo1    Dongwon Kim2† Suha Kwak1†
+                                                                                  1              2
+                                                                                      POSTECH        KAIST
+                                                                            https://gawon1224.github.io/ACID/
+
+
+
+
+                                                     Abstract: Decision-time planning with action-conditioned world models has
+
+
+
+
+arXiv:2607.02403v1 [cs.RO] 2 Jul 2026
+                                                     become a popular paradigm for embodied control. However, the standard planning
+                                                     cost judges a candidate solely by how close its predicted terminal state lies to
+                                                     the goal, leaving the realizability of the intermediate transitions unchecked—a
+                                                     predicted trajectory can look convincing while the environment rollout drifts away
+                                                     from it. In this paper, we propose ACID, a decision-time planning framework
+                                                     that introduces cycle action consistency: the action inferred backward from a
+                                                     predicted transition by an inverse dynamics model should recover the one that
+                                                     was conditioned on. We fold this per-step residual into the planning cost via a
+                                                     scale-invariant adaptive weight. Across four action-conditioned world models and
+                                                     six tasks spanning rigid and deformable manipulation, articulated control, and
+                                                     visual navigation, ACID consistently improves planning and matches the baseline’s
+                                                     accuracy with substantially less planning compute.
+
+                                                     Keywords: World model, decision-time planning, cycle action consistency
+
+                                        1       Introduction
+                                        World models [1] have become central to embodied decision making, serving as learned simulators
+                                        that capture environmental dynamics within internal representations. Among the various ways of
+                                        exploiting world models, decision-time planning through test-time optimization has emerged as a
+                                        particularly attractive paradigm since it requires no additional policy learning and accommodates a
+                                        wide variety of world model designs [2, 3, 4, 5, 6, 7, 8]. A popular instantiation of this paradigm is
+                                        search-based planning with an action-conditioned world model [2, 4, 9]: candidate action sequences
+                                        are sampled and simulated through the world model, and the trajectory that minimizes a planning
+                                        cost is executed in the environment. The model predictive control (MPC) [10] framework with
+                                        cross-entropy method (CEM) [11] optimization follows precisely this procedure and has become a
+                                        standard choice for decision-time planning with action-conditioned world models.
+                                        Despite its appeal, decision-time planning with world models relies blindly on predicted trajectories
+                                        without ever checking that they are realizable, that is, whether each transition could actually be
+                                        produced by the conditioning action in the environment. A conventional planning cost defined
+                                        solely by the proximity between the goal and the terminal state cannot see this: realizability is a
+                                        property of the transition, and visual plausibility at the end does not imply it—–a prediction can
+                                        look convincing while the actual environment rollout deviates from it. Whether the intermediate
+                                        transitions are realizable, or the trajectory merely drifts toward a goal-like state, is never considered
+                                        by the cost. A planner can thus commit to action sequences whose predicted goal-reaching cannot be
+                                        reproduced in the environment.
+                                        Recent work has sought to close this realization gap from the world model side, e.g., scaling up to
+                                        large video-generative backbones [2, 3, 12, 13, 14, 15, 16, 17, 18] or enforcing action conditioning
+                                        through guidance [19, 20]. These approaches either introduce prohibitive training cost or require a
+                                            †
+                                                Corresponding authors.
+specific probabilistic formulation of the world model; the latter is problematic particularly for the
+recent JEPA line of work that assumes deterministic state transitions in the latent space [4, 5, 6, 7, 8].
+Moreover, none addresses the planning cost: regardless of how faithful the predicted trajectories
+become, the objective still scores them solely by the final state proximity and cannot tell which
+ones genuinely realize their conditioning actions. What is needed is a complementary, decision-time
+mechanism that verifies action fidelity directly within the planning cost, while leaving the world
+model untouched and therefore composable with any of the above improvements. This raises a central
+question: without retraining the world model, how can the planning cost tell a trajectory that actually
+reaches the goal from one that only appears to?
+The standard cost scores only the terminal state’s proximity to the goal, leaving the intermediate
+transition that reaches it uncosted; a candidate can thus score well through a predicted trajectory the
+environment could never realize. We target this blind spot by costing the whole trajectory, not only
+its terminal state. What makes this measurable is a property specific to embodied control: unlike
+polysemous multi-modal mappings—–a single caption admits many valid images [21, 22, 23]—–a
+pair of consecutive observations strongly constrains the action between them, so an inverse dynamics
+model (IDM) can tell whether each predicted step is consistent with its conditioning action. We call
+this per-step agreement cycle action consistency: the action the IDM infers from a predicted transition
+should match the one conditioned on. Aggregated over the horizon, this places a per-step realizability
+check on the trajectory that previously ignored, so a low goal cost counts only when the route to it
+is realizable. Building on this principle, we introduce Action Consistency via Inverse Dynamics
+(ACID), a decision-time planning framework for world models that elevates cycle action consistency
+into a planning cost. The new cost prefers candidate action sequences whose predicted trajectory
+both reaches a goal-like final state and remains step-by-step realizable; a per-transition property that
+the terminal-only planning cost cannot see. To this end, we repurpose the IDM as a decision-time
+verifier, rather than the offline action decoder or pseudo-labeler it has conventionally been.
+By augmenting decision-time planning with cycle action consistency, ACID delivers consistent gains
+across four action-conditioned world models—spanning three JEPA-style latent predictors and one
+video generative model—and six tasks spanning rigid and deformable object manipulation, articulated
+control, and visual navigation. These gains are robust to hyperparameter choices and come with
+substantially less total planning compute than the baseline.
+
+
+2     Related Work
+
+2.1   World models
+
+World models that learn environment dynamics and predict future states have rapidly diversified. We
+group prior work into three families by how each obtains executable actions. Action-conditioned world
+models take a current state and action as input and predict the resulting next state, and therefore rely
+on test-time search or optimization to find goal-reaching action sequences [5, 6, 8, 2, 24]. They span
+latent predictors such as JEPA-based models as well as large video backbones. State-only generative
+models take no action as input, but instead synthesize a goal- or language-conditioned sequence of
+future states and recover the action at each timestep afterward [18, 25]. World action models instead
+generate future states and their corresponding actions together over a horizon, so a single forward
+pass emits an action sequence already aligned with the predicted visual future [16, 26, 27]. This
+removes the need for both a separate inverse dynamics model and test-time search. Our work targets
+action-conditioned world models, where the action is left to test-time search and a planning cost can
+intervene; ACID adds its consistency cost at this decision-time stage without altering the model.
+
+2.2   Learning inverse dynamics for robot learning
+
+The inverse dynamics model (IDM) maps a pair of consecutive states to the action that produced the
+transition between them, and is widely used in robot learning. In prior work, the IDM has typically
+been cast in three roles, none of which influences which action sequence the planner selects: they
+
+
+                                                    2
+operate after the planner has already chosen a trajectory, or only during training. As an action decoder,
+an IDM extracts executable actions from the output of a state-only or video-only planner. UniPi [18]
+first generates a future video and LDP [25] first generates a latent state trajectory, after which an IDM
+recovers the actions; the trajectory is already chosen, and the IDM only decodes it. As an auxiliary
+task, inverse-dynamics prediction supplies a loss term that shapes representations during training [28],
+with no role at inference. As a pseudo-labeler, an IDM assigns action labels to otherwise action-free
+video, enabling policy pretraining [29, 30]. In contrast, we cast the IDM as a verifier at decision time,
+where its consistency signal enters the planning cost directly and shapes which action sequence the
+planner commits to.
+
+3     Method
+In this section, we present ACID, which augments decision-time planning with a per-step measure of
+how realizable a world model’s predicted transitions are. We first formulate world models and MPC
+with CEM-based planning (Sec. 3.1), introduce cycle action consistency and the IDM that verifies it
+(Sec. 3.2), and fold this signal into the planning cost with a scale-invariant adaptive weight (Sec. 3.3).
+
+3.1   Preliminaries
+
+Action-conditioned world model. An action-conditioned world model captures the environment’s
+transition dynamics: given a current observation and an action, it predicts the resulting next observa-
+tion. By chaining such one-step predictions, the model can forecast the outcome of an entire action
+sequence, enabling multi-step prediction. Rather than modeling these dynamics in pixel space, we
+primarily adopt the JEPA-style design of recent latent world models [4, 5, 7], which learn transitions
+in a compact latent space. Concretely, an encoder Eθ maps a raw image observation ot to a latent
+state zt = Eθ (ot ), and a world model Fθ predicts the next latent state ẑt+1 from zt given action at ,
+i.e., ẑt+1 = Fθ (zt , at ). The same formulation also applies to pixel-space models by taking Eθ to be
+the identity, which we revisit in our experiments. Fθ is trained with trajectories collected offline in
+advance without reward or task labels. Our target in this work is the goal-conditioned visual control,
+where the agent must reach a goal specified by an RGB image og . We address this task by planning
+action sequences through the learned world model Fθ .
+Decision-time planning with action-conditioned world models. We instantiate decision-time
+planning as the MPC over action sequences optimized with CEM. Given a current observation
+o0 and a goal observation og , both are encoded into latent states z0 = Eθ (o0 ) and zg = Eθ (og ).
+For a candidate action sequence a0:H−1 over a planning horizon of H steps, the world model
+autoregressively predicts a latent trajectory:
+                                    ẑt+1 = Fθ (ẑt , at ),       ẑ0 = z0 .                            (1)
+Each candidate is then scored by a goal cost measuring its proximity to the goal,
+                                                                        2
+                                      cg (a0:H−1 ) =          ẑH − zg 2 .                              (2)
+CEM optimizes this cost by iteratively sampling action sequences from a Gaussian distribution and
+in turn fitting the distribution to the top-K elite candidates under cg . Following MPC, the optimized
+H-step action sequence is executed in the environment, after which the next H-step action sequence
+is replanned using the resulting observation.
+
+3.2   Cycle action consistency via inverse dynamics
+
+Cycle action consistency. We introduce cycle action consistency, a verifier-based cost that detects
+when a predicted trajectory drifts from its conditioning actions: if ẑt+1 = Fθ (ẑt , at ) truly reflects
+at , then the action inferred from the transition (ẑt , ẑt+1 ) should recover at . As an external verifier
+that performs this backward inference, we introduce an IDM Gϕ that infers the action responsible
+for a latent transition, ât = Gϕ (zt , zt+1 ). At each step of the predicted trajectory, we measure
+the per-step consistency residual between the conditioning action and the action recovered by the
+
+
+                                                       3
+

@@ -1,0 +1,182 @@
+                                        ATM: ACTION -C ONSISTENCY T RANSFER M ATRIX
+                                        FOR D IAGNOSING AND I MPROVING L ATENT W ORLD
+                                        M ODELS
+                                         Jiaheng Chen
+                                         School of Software, Northeastern University
+                                         jiac41752@gmail.com
+
+
+
+                                                                                   A BSTRACT
+
+
+
+
+arXiv:2606.09028v1 [cs.CV] 8 Jun 2026
+                                                 Latent world models are increasingly used for control and goal-conditioned plan-
+                                                 ning, yet assessing whether their learned representations are useful for planning
+                                                 usually requires slow, planner-coupled simulator evaluation with CEM or similar
+                                                 planners. Such evaluation is black-box and model-complexity-dependent: un-
+                                                 der the same protocol, different world models may require minutes to hours per
+                                                 checkpoint. In this work, we propose ATM, an Action-Consistency Transfer Ma-
+                                                 trix for diagnosing whether latent transitions preserve action semantics relevant
+                                                 to planning. ATM compares action information in real encoded transitions and
+                                                 model-predicted transitions through lightweight post-hoc probes, producing an
+                                                 interpretable matrix that reveals representation quality, transition-domain incon-
+                                                 sistency, and failure modes without simulator rollout. It can also be collapsed
+                                                 into a simple screening score for within-task ranking across checkpoints, vari-
+                                                 ants, and world models. When the true success gap is non-trivial, ATM achieves
+                                                 highly reliable pairwise ranking, while reducing minutes-to-hours CEM evalua-
+                                                 tion to seconds-level transition analysis, yielding more than 100× speedup in our
+                                                 setup. We further introduce AITS, showing that action-identifiability is not only
+                                                 diagnostic but also a useful training signal for improving downstream planning
+                                                 without changing the planner.
+
+
+
+                                        1   I NTRODUCTION
+
+                                        Latent world models have become an important tool for control and goal-conditioned planning (Ha
+                                        & Schmidhuber, 2018; Hafner et al., 2019; 2020; Hansen et al., 2022). Rather than directly predict-
+                                        ing future observations, these methods typically learn compact action-conditioned latent dynamics
+                                        and roll them out in a representation space to support planning, policy learning, or action-sequence
+                                        optimization. Recent methods such as DINO-WM (Zhou et al., 2025), PLDM (Sobal et al., 2025),
+                                        and LeWM (Maes et al., 2026) further show that learned latent dynamics can be combined with
+                                        planners such as CEM (Rubinstein, 1999) to search for action sequences that reach a target, even in
+                                        reward-free or weakly supervised settings.
+                                        Although simulator-based planning evaluation remains indispensable as a final endpoint test, it is not
+                                        an ideal diagnostic for understanding whether learned representations are planning-relevant. First,
+                                        such evaluation is tightly coupled with the planner, making it difficult to determine whether success
+                                        or failure comes from the representation or from planner search behavior. Second, obtaining reliable
+                                        success estimates usually requires averaging over many simulator episodes to reduce variance from
+                                        initial states, CEM sampling, environment stochasticity, and success thresholds. More importantly,
+                                        its wall-clock cost is strongly affected by the rollout complexity of the world model itself. In our
+                                        experiments, under the same evaluation protocol, evaluating a single LeWM-style (Maes et al.,
+                                        2026) checkpoint usually takes minutes, whereas DINO-WM (Zhou et al., 2025) can take over an
+                                        hour. These limitations motivate a low-cost, interpretable diagnostic that does not require simulator
+                                        rollout and can quickly assess the representation quality of latent world models.
+
+                                            Code will be released at https://github.com/11isnotavailable/ATM.
+
+
+                                                                                          1
+We focus on action-identifiability of latent transitions. In latent planning systems, a planner typ-
+ically starts from the current latent state, rolls out candidate action sequences, and compares the
+resulting future latent states with a latent goal (Zhou et al., 2025; Sobal et al., 2025; Maes et al.,
+2026). It then selects the action sequence whose predicted future state is closest to the target. Thus,
+although the planner appears to optimize a latent goal distance, it ultimately relies on the predicted
+latent transitions induced by candidate actions in the learned representation space. Beyond whether
+individual latent states are informative, the action-induced transitions themselves must therefore
+encode clear, stable, and environment-consistent action semantics (Pathak et al., 2017; Brandfon-
+brener et al., 2023; Cui et al., 2024). Intuitively, if an action moves the latent state from zt to zt+1 ,
+the transition should preserve semantic structure related to that action. If real encoded transitions
+and model-predicted transitions encode action effects weakly, inconsistently, or through shortcuts
+that only hold in one transition domain, the representation may provide unreliable guidance for
+action selection; a single final success rate often cannot distinguish these internal failure modes.
+We therefore aim to diagnose whether action semantics are decodable, transferable, and consistent
+across real and predicted transitions.
+To this end, we propose ATM, an Action-Consistency Transfer Matrix, as a model-agnostic post-hoc
+diagnostic. ATM treats real encoded transitions and model-predicted transitions as two transition
+domains and constructs an action-semantics transfer matrix. This matrix diagnoses whether action
+semantics are decodable, transferable, and asymmetric across the two domains, thereby revealing
+representation quality, transition-domain inconsistency, and potential failure modes. In this way,
+ATM turns representation-quality diagnosis for latent world models into a fast and interpretable
+process without simulator rollout.
+ATM can also be collapsed into a simple screening score for within-task ranking across candidate
+models. Experiments show that this score effectively predicts which candidates are more likely to
+achieve stronger downstream planning performance. When the true success gap between two candi-
+dates is non-trivial, ATM ranks the pair correctly in nearly all cases; on OGBench-Cube (Park et al.,
+2025), it reaches 98.8% pairwise ranking accuracy at a 5% margin. Meanwhile, ATM avoids re-
+peated CEM-based simulator evaluation, reducing minutes-to-hours evaluation to seconds-level di-
+agnostics and yielding more than 100× speedup. We further introduce Action-Identifiable Transition
+Supervision (AITS), which directly improves action-identifiable transition structure during training.
+Experiments show that AITS consistently improves ATM diagnostics and downstream planning per-
+formance without changing the planner; on OGBench-Cube, AITS improves the LeWM (Maes et al.,
+2026) baseline by about 10 success-rate points.
+Our contributions are as follows:
+
+      1. We identify action-identifiability as a planning-relevant transition-level property of latent
+         world models, revealing internal representation and transition-structure issues that rollout
+         evaluation alone cannot explain.
+      2. We propose ATM, a model-agnostic post-hoc transfer matrix over true and predicted latent
+         transition domains, to diagnose action-semantic decodability, transferability, and domain-
+         transfer asymmetry.
+      3. We show that ATM enables efficient within-task screening across candidate models with
+         strong OGBench-Cube ranking accuracy at over 100× lower evaluation cost, and introduce
+         AITS to consistently improve action-identifiable transitions without changing the planner.
+
+2    R ELATED W ORK
+
+Latent world models for control and planning. World models learn predictive dynamics that can
+be used for planning, policy learning, or action-sequence optimization. Early methods such as World
+Models (Ha & Schmidhuber, 2018) and PlaNet (Hafner et al., 2019) showed that compact latent dy-
+namics can support control from high-dimensional observations, while Dreamer (Hafner et al., 2020;
+2023) and TD-MPC-style methods (Hansen et al., 2022; 2024) further combine latent rollouts with
+value learning, policy optimization, or model predictive control. More recent reward-free or goal-
+conditioned latent planning methods, including DINO-WM (Zhou et al., 2025), PLDM (Sobal et al.,
+2025), and LeWM (Maes et al., 2026), learn dynamics in representation spaces and use test-time
+planners such as CEM (Rubinstein, 1999) for goal-conditioned control. These works demonstrate
+
+
+                                                    2
+that learned latent dynamics can support planning without directly reconstructing future pixels. Our
+work builds on this line, but addresses a different question: rather than proposing another latent dy-
+namics architecture or planner, we study how to diagnose whether learned latent transitions preserve
+action semantics useful for planning.
+
+Evaluation and diagnostics for world models. Latent world models are commonly evaluated by
+downstream success rates, returns, or CEM-based rollout performance (Hafner et al., 2020; Hansen
+et al., 2022; Zhou et al., 2025; Maes et al., 2026). While such endpoint evaluation directly measures
+task performance, it is planner-coupled, simulator-dependent, and often costly when many rollout
+episodes are required. Recent works have studied related post-hoc repairs or verifiers, such as learn-
+ing reachability metrics to replace or hybridize the CEM terminal cost (Li et al., 2026), or checking
+whether world models respect action reachability or action-consistency constraints (Liu et al., 2026;
+Wang et al., 2026). Recent work on world action models evaluates the compatibility between gen-
+erated future observations and actions as a reliability signal for value-free test-time selection (Ruan
+et al., 2026). In contrast, ATM focuses on simulator-free diagnosis rather than planner-cost repair:
+it compares real encoded transitions and model-predicted transitions through a 2 × 2 cross-domain
+inverse-probing matrix to assess transition-level action semantics.
+
+Inverse dynamics and action-centric world modeling. Inverse dynamics objectives have long
+been used to learn control-relevant representations, exploration signals, and action-conditioned fea-
+tures. For example, curiosity-driven exploration uses inverse dynamics to learn features that ignore
+uncontrollable visual variation and support intrinsic motivation (Pathak et al., 2017), while inverse-
+dynamics pretraining has been studied as a general representation-learning objective for imitation
+and visuomotor control (Brandfonbrener et al., 2023). More recent action-centric world modeling
+methods further couple dynamics prediction with action generation or action-conditioned represen-
+tation learning (Tian et al., 2026). These works show that action information is useful for learning
+control-oriented representations. Our work is related to this line, but uses action decodability pri-
+marily as a post-hoc diagnostic lens for trained latent world models; AITS is a lightweight training
+extension, while the main contribution is the transition-level diagnostic and its failure-mode analy-
+sis.
+
+
+3     ACTION -C ONSISTENCY T RANSFER M ATRIX
+
+This section presents the proposed ATM framework. We first introduce the latent planning setting
+and the action-conditioned latent transitions on which the planner relies. We then define two la-
+tent transition domains, real encoded transitions and model-predicted transitions, and use them to
+construct the Action-Consistency Transfer Matrix. Finally, we describe how ATM provides inter-
+pretable diagnostics and a screening score, and how action-identifiability can be further encouraged
+during training through Action-Identifiable Transition Supervision.
+
+3.1   OVERVIEW
+
+Figure 1 gives an overview of ATM. Given a trained latent world model and offline transition data,
+ATM performs post-hoc analysis on the frozen encoder and dynamics predictor without modifying
+the model. Specifically, ATM constructs two transition domains from the same offline transitions:
+the real encoded transition domain, which reflects how the encoder represents actual environment
+evolution, and the model-predicted transition domain, which reflects the latent rollout produced by
+the dynamics predictor under a given action. Lightweight inverse probes are then used to compare
+how action information is decoded and transferred across the two domains, resulting in a 2 × 2
+transfer matrix.
+The matrix serves two purposes. First, it provides an interpretable diagnostic for whether the
+transition representation of a latent world model preserves action-identifiable semantics, and fur-
+ther reveals inconsistencies or shortcut-like failure modes between real and predicted transition
+domains. Second, ATM can be collapsed into a simple screening score for within-task compar-
+ison across checkpoints, model variants, and different world models, without repeatedly running
+simulator-based planning evaluation. Beyond post-hoc diagnosis, we also introduce AITS, which
+
+
+                                                  3
+

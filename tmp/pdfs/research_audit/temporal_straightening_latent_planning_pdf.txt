@@ -1,0 +1,177 @@
+                                         Temporal Straightening for Latent Planning
+                                         Ying Wang1 , Oumayma Bounou1 , Gaoyue Zhou1 , Randall Balestriero2 , Tim G. J. Rudner3 ,
+                                         Yann LeCun1∗ , and Mengye Ren1∗
+                                         1
+                                           New York University 2 Brown University 3 University of Toronto
+                                         Correspondence to {yw3076,yann.lecun,mengye}@nyu.edu
+                                         https://agenticlearning.ai/temporal-straightening
+
+
+
+
+arXiv:2603.12231v1 [cs.LG] 12 Mar 2026
+                                             Abstract
+                                             Learning good representations is essential for latent planning with world models. While pretrained
+                                             visual encoders produce strong semantic visual features, they are not tailored to planning and contain
+                                             information irrelevant—or even detrimental—to planning. Inspired by the perceptual straightening
+                                             hypothesis in human visual processing, we introduce temporal straightening to improve representation
+                                             learning for latent planning. Using a curvature regularizer that encourages locally straightened latent
+                                             trajectories, we jointly learn an encoder and a predictor. We show that reducing curvature this way
+                                             makes the Euclidean distance in latent space a better proxy for the geodesic distance and improves
+                                             the conditioning of the planning objective. We demonstrate empirically that temporal straightening
+                                             makes gradient-based planning more stable and yields significantly higher success rates across a suite
+                                             of goal-reaching tasks.
+
+
+
+
+                                         1     Introduction
+
+                                         Latent world models offer a compelling solution for        Original Space       PCA(DINO)            PCA(Ours)
+
+
+                                         planning because they introduce abstraction that
+                                         improves efficiency and generalization (Nguyen and                          PC2                 PC2
+                                         Widrow, 1989; Sutton, 1991; Ha and Schmidhuber,
+                                         2018; Hafner et al., 2020, 2021, 2023; Hansen et al.,
+                                         2022, 2024). They compress high-dimensional obser-                                 PC1                  PC1
+
+
+                                         vations into compact latent representations, learn
+                                                                                               Figure 1: Latent trajectories encoded by a pretrained
+                                         predictive dynamics in that latent space, and enable
+                                                                                               visual encoder are usually highly curved, increasing the
+                                         imaginary rollouts for action optimization. Com-
+                                                                                               difficulty of prediction and planning. We learn a repre-
+                                         pared to operating directly in pixel or state space,
+                                                                                               sentation space where feasible trajectories are straighter.
+                                         the latent abstraction reduces dimensionality and
+                                         ignores noise, making dynamics learning easier and more efficient. At test time, planning is typically posed
+                                         as optimizing an action sequence by rolling the model forward and minimizing a cost function between the
+                                         goal and the predicted terminal state in the latent space.
+                                         In practice, however, optimization in the learned latent space remains challenging. The induced planning
+                                         objective is typically highly non-convex, potentially causing gradient-based optimizers to struggle. As a
+
+                                         * Equal advising.
+
+
+                                                                                                                                               Page 1 of 33
+Temporal Straightening for Latent Planning                                                                    Wang et al.
+
+
+
+                              PCA(DINO)                       MSE(DINO)         PCA(Ours)                   MSE(Ours)
+
+
+
+
+                                              MSE to target                                 MSE to target
+                        PC2                                               PC2
+
+
+
+
+                                 PC1                            time              PC1                         time
+
+                              PCA(DINO)                       MSE(DINO)         PCA(Ours)                   MSE(Ours)
+
+
+
+
+                                              MSE to target                                 MSE to target
+                        PC2                                               PC2
+
+
+
+
+                                 PC1                            time              PC1                         time
+
+
+Figure 2: Latent trajectories before vs. after straightening. The upper PushT example is a rotation and the
+bottom UMaze example shows the agent traveling from the left top to the right top, with the star denoting
+the target. Straightening yields less curved and smoother trajectories, and makes Euclidean distance a more
+faithful proxy for geodesic progress towards the goal. More examples are shown in Section D.2.
+
+result, many successful practices (Hafner et al., 2019; Hansen et al., 2024; Zhou et al., 2025; Sobal et al.,
+2025; Terver et al., 2025) rely on search-based methods such as CEM (Rubinstein, 1997) or MPPI (Williams
+et al., 2015), which achieve competitive performance but introduce a substantial compute burden and
+latency. Moreover, commonly used goal cost metrics based on Euclidean distance can be misleading if
+the embedding space is not properly regularized. In particular, when latent trajectories are highly curved,
+straight-line distances in embedding space misrepresent the geodesic distance along feasible transitions.
+These challenges call for better representations that are tailored for latent planning.
+What is a “good” representation for latent planning? Large-scale visual pretraining provides powerful
+semantic-aware features, but it is not tailored to the dynamics of the environments and often retains
+plenty of planning-irrelevant low-level details. We argue that planning could benefit from representations
+that are (i) sufficient for predicting dynamics but without task-irrelevant information and (ii) properly
+regularized so that embedding distances reflect the geodesic distance and gradient-based optimization is
+reliable. With such representations, we can exploit the differentiability of latent world models and enable
+efficient gradient-based planning, bypassing the need for computationally expensive search-based methods.
+Inspired by the perceptual straightening hypothesis in human vision (Hénaff et al., 2019), which posits
+that visual systems transform complex videos into straighter internal representations, we introduce a
+simple approach to straighten latent trajectories for planning. Concretely, we jointly learn an encoder
+and a predictor of a world model, while imposing regularization on the curvature of latent trajectories
+during training. The resulting encoded trajectories are significantly straighter, with Euclidean distances
+better aligned with geodesic distances (Figure 2). We prove that reducing curvature improves convergence
+of gradient-based planners, and observe superior empirical gains across a suite of goal-reaching tasks:
+open-loop planning success improves by 20–60% and MPC by 20-30% with a simple gradient-based planner.
+
+
+2    Related Work
+
+While early visual world models directly predict in pixel spaces and use generated images for control (Oh
+et al., 2015; Finn and Levine, 2017; Ebert et al., 2018; Du et al., 2023), an increasing number of recent works
+
+                                                                                                             Page 2 of 33
+Temporal Straightening for Latent Planning                                                           Wang et al.
+
+
+
+first encode high-dimensional sensory inputs into compact latent representations and plan in the resulting
+latent space. Learning representations is central to these latent world models.
+To obtain meaningful representations for world modeling, prior methods add reconstruction-based objectives
+when training the encoder along with the predictor (Watter et al., 2015; Zhang et al., 2019; Levine et al., 2020;
+Ha and Schmidhuber, 2018; Hafner et al., 2019, 2020; Micheli et al., 2023; Robine et al., 2023). However, these
+reconstruction objectives overemphasize low-level visual details that are unnecessary for planning and may
+fail to capture task-relevant information. More recent approaches decouple perception from dynamics by
+leveraging strong pretrained visual encoders (Nair et al., 2022; Zhou et al., 2025; Bar et al., 2025; Goswami
+et al., 2025; Bai et al., 2025; Assran et al., 2025). Closest to our setup, DINO-WM (Zhou et al., 2025) trains
+task-agnostic predictors and plans directly in frozen DINOv2 (Oquab et al., 2024) feature space. While
+DINOv2 features provide high-quality visual representations, they are not optimized for planning and may
+lead to planning objectives that are challenging to optimize. In this work, we improve the representation
+space for planning by introducing a straightening regularization during world model training.
+Joint-Embedding Predictive Architecture (JEPA) emerges as a promising paradigm for world models by
+learning representations through prediction (LeCun, 2022; Bardes et al., 2024; Assran et al., 2025). It aims to
+capture predictable structure without retaining unpredictable low-level details, making it more effective
+and efficient than reconstruction-based objectives (Assel et al., 2025). This paradigm has been shown to be
+effective for predictive modeling and planning, with training from scratch on offline simulator data (Sobal
+et al., 2025) and large-scale real-world video pretraining followed by action-conditioned post-training for
+robotic planning (Assran et al., 2025). Our work also belongs to the JEPA family and focuses on learning
+better representations.
+Temporal Contrastive Learning (Sermanet et al., 2018; Dave et al., 2022; Eysenbach et al., 2024; Yang and Ren,
+2025) is also a popular paradigm for learning representations that can reflect the temporal relationships. It
+encourages temporally close frames to have similar embeddings while distant frames have more dissimilar
+embeddings through InfoNCE loss (Radford et al., 2021). However, how to choose positive and negative
+samples requires careful tuning and this objective might push away geodesically close states if suboptimal
+trajectories are used. Instead, our regularization-based method doesn’t require negatives and applies local
+straightening without requiring expert trajectories.
+Motivated by the perceptual straightening hypothesis in human vision (Hénaff et al., 2019), some prior
+works have examined implicit straightening in pretrained visual encoders (Harrington et al., 2023; Internò
+et al., 2025) or used it as an objective to obtain robust video models (Niu et al., 2024; Bagad and Zisserman,
+2025). Implicit straightening is also observed in autoregressive language models optimized for next-word
+prediction (Hosseini and Fedorenko, 2023; Hosseini et al., 2026). To the best of our knowledge, however,
+none of these prior works have studied the impact of straightening on planning.
+
+
+3    Temporal Straightening
+
+We consider control tasks with high-dimensional observations ot ∈ Rno of an agent interacting with its
+environment using actions at ∈ Rna . Our goal is to learn a world model that maps observations to a latent
+space and models the dynamics in this space, which we use for latent planning.
+In this section, we first outline the architecture of our world model, then define the training objectives with
+a novel geometric regularization that straightens latent trajectories.
+
+
+
+
+                                                                                                     Page 3 of 33
+

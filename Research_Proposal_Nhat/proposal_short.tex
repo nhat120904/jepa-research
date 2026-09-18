@@ -1,0 +1,350 @@
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[left=0.9in,right=0.9in,top=0.85in,bottom=0.85in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,tabularx,array}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage[round,sort&compress]{natbib}
+\usepackage{multicol}
+\usepackage[hidelinks]{hyperref}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\captionsetup{font=small,labelfont=bf,skip=4pt}
+\setlist{itemsep=1pt,parsep=0pt,topsep=2pt}
+\titleformat{\paragraph}[runin]{\normalfont\bfseries}{}{0pt}{}[.]
+\titlespacing*{\section}{0pt}{7pt plus 1pt minus 2pt}{3pt}
+\titlespacing*{\subsection}{0pt}{7pt plus 1pt minus 1pt}{3pt}
+
+\title{\vspace{-1.2em}\bfseries Latent World Models for Robot Planning:\\
+Attributing Failure to Representation, Search, or Cost}
+\author{Nhat Nguyen Cuong}
+\date{Research Proposal \quad$\cdot$\quad August 2026}
+
+\begin{document}
+\maketitle
+\vspace{-1.6em}
+
+\begin{abstract}
+\noindent\small
+Robots that plan directly from camera images have converged on one architecture:
+an encoder maps images to a latent state, an action-conditioned predictor rolls
+that state forward, and an optimiser searches action sequences for the one whose
+predicted outcome minimises a distance to a goal image. Its four blocks are
+studied in separate literatures but evaluated by one joint statistic ---
+end-to-end success rate --- so failures cannot be traced to a cause. This
+proposal builds an instrument that makes the attribution tractable: a taxonomy
+of four failure surfaces, each carrying an explicit condition that would refute
+attributing a failure to it. Read against the literature, it exposes a
+methodological gap --- nearly every published repair is evaluated under learned
+dynamics, so its gain cannot be separated from ordinary prediction error. A
+completed pilot runs the discriminating experiment for one surface and finds
+that removing prediction error does not close the gap, motivating a programme on
+costs and representations trained on the distribution the planner induces.
+\end{abstract}
+
+% ================================================================
+\section{Introduction}
+% ================================================================
+
+Modern visual world models descend from the observation that a compact latent
+state suffices to train a controller inside a model's own
+imagination~\citep{ha2018worldmodels} and can be planned in directly from
+pixels~\citep{hafner2019planet}. The field has since split along two axes that
+are rarely co-designed. One shapes the latent: reconstruction-based latent
+dynamics~\citep{hafner2025dreamerv3}, joint-embedding predictive
+architectures~\citep{lecun2022path,assran2025vjepa2}, frozen pretrained visual
+features~\citep{zhou2024dinowm}, and value-aware
+latents~\citep{hansen2024tdmpc2}. The other searches over it: sampling-based
+MPC~\citep{rubinstein1997cem,williams2017mppi}, gradient-based
+planning, amortised control, and hierarchical
+decomposition~\citep{zhang2026hwm}.
+
+Failures are reported against the composition of the two, which is why the
+diagnostic literature disagrees about mechanism: prediction error and its
+exploitation~\citep{lambert2020objective,bhamidipaty2026imperfect}, proposal
+coverage~\citep{imwm2026}, action grounding~\citep{acid2026,chen2026atm}, and
+cost geometry~\citep{trm2026,straightening2026} each claim to be the binding
+constraint, on different systems and under different conditions. Success rate
+cannot distinguish a bad encoder from a bad predictor, proposal distribution or
+cost, and prediction error is measured on a distribution the planner never
+visits. This proposal argues the disagreement is largely an artifact of
+protocol, and supplies the instrument and experiments that would settle it.
+
+% ================================================================
+\section{Failure surfaces and the methodological gap}
+% ================================================================
+
+We organise the problem around four \emph{failure surfaces}
+(Table~\ref{tab:surfaces}). The distinguishing feature is the third column: for
+each surface, the observation that would \emph{refute} attributing a failure to
+it. A taxonomy without refutation conditions organises vocabulary; one with them
+organises experiments. One asymmetry is load-bearing: S1 is the only surface
+that can be closed \emph{by construction}, by supplying exact dynamics to the
+candidates, which makes it the natural control condition for studying the other
+three.
+
+\begin{table}[!ht]
+\centering\small
+\caption{Four failure surfaces, each with the condition that refutes attributing
+a failure to it.}\label{tab:surfaces}
+\begin{tabularx}{\textwidth}{@{}L{2.35cm} L{4.6cm} Y@{}}
+\toprule
+Surface & Observable signature & What refutes an attribution to it \\
+\midrule
+S1. Prediction error & A physically good action sequence is rolled out
+incorrectly & Failure persists when candidate dynamics are made exact \\
+S2. Proposal coverage & No physically good candidate ever enters the population
+& Good candidates are demonstrably present and are not selected \\
+S3. Transition realizability & Predicted transitions are inconsistent with the
+actions conditioning them & Failure persists when transitions are exact by
+construction \\
+S4. Cost geometry / selection & Low-proxy-cost candidates have poor physical
+outcome; the gap widens with search & Proxy and physical rankings agree on the
+optimiser's own realised populations \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Reading the literature through this taxonomy exposes the gap that is the
+analytical core of the proposal: \emph{nearly every published repair for S2, S3
+or S4 is evaluated under learned dynamics}, where S1 is open. A gain measured
+there cannot be attributed to the surface it claims to fix, because improving
+any component correlated with prediction quality helps whenever prediction is
+the binding constraint. The discriminating experiment --- rerunning the repair
+with candidate dynamics held exact --- has, to our knowledge, not been reported
+for any of them.
+
+% ================================================================
+\section{Preliminary results: a controlled pilot}
+% ================================================================
+
+A completed pilot shows the gap is consequential rather than pedantic. In
+tabletop Franka manipulation, candidate dynamics are made exact by snapshotting
+simulator state at each replanning step, executing every candidate and encoding
+the true rendered outcome, with encoder, optimiser, budget and horizon held
+fixed so that only the terminal cost varies. A privileged state-based cost then
+solves \emph{push} in $64/64$ episodes while the latent $L_2$ cost used by
+released systems solves $0/64$, and a supervised state readout with
+$1.6$--$1.7$\,cm held-out decoding error --- inside the $5$\,cm success radius
+--- reaches at most $5/64$ (Table~\ref{tab:pilot}).
+
+\begin{table}[!ht]
+\centering\small
+\caption{Terminal-cost comparison under \emph{exact} candidate dynamics; 64
+paired seeds, strict episode-end success, two released frozen encoders. The
+reference row is a privileged positive control for the search budget, not a
+deployable method.}\label{tab:pilot}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Terminal cost & DINO push & DINO pick & JEPA push & JEPA pick \\
+\midrule
+Simulator-state reference (control) & 64/64 & 49/64 & 64/64 & 49/64 \\
+Latent $L_2$ (as deployed) & 0/64 & 0/64 & 0/64 & 0/64 \\
+Supervised state readout & 5/64 & 0/64 & 1/64 & 1/64 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Conditioning on the optimiser explains why an apparently accurate readout fails.
+Readout and physical rankings agree moderately on initial candidate populations
+(Spearman $0.43$--$0.55$) and collapse on the populations the optimiser itself
+produces after refitting ($0.11$--$0.16$), and the excess selection regret over
+a residual-matched permutation null exceeds the optimizer's-curse
+baseline~\citep{smith2006optimizer} with all confidence intervals above zero.
+Eight interventions run in the same harness --- off-policy-robust readouts,
+relearned adapters, LoRA fine-tuning to $94$--$100\%$ grounding accuracy,
+ensemble-disagreement penalties, a grounded dynamics channel, amortised
+search-free control --- each improved the fidelity quantity it targeted, and
+none moved contact planning outside the baseline band.
+
+% ================================================================
+\section{Research questions}
+% ================================================================
+
+\begin{enumerate}[label=\textbf{RQ\arabic*.},leftmargin=2.6em]
+\item \textbf{Which failure surface binds where?} The diagnostic literature's
+apparent disagreement may be an artifact of protocol --- different systems,
+tasks and dynamics conditions --- rather than a real disagreement about
+mechanism. Running the field's existing S3 and S4 repairs under exact candidate
+dynamics would settle, for each, whether its reported gain survives when
+prediction error is removed.
+\item \textbf{Can a cost or representation be trained on the distribution the
+planner itself induces?} Every objective in the representation literature is fit
+on a distribution chosen by the experimenter; what a planner consumes is an
+\emph{ordering} on a distribution chosen by the \emph{optimiser}, after its
+search distribution has refitted. Whether an objective can be defined directly
+on that induced distribution is open, and the pilot's recurring pattern ---
+fidelity improves, planning does not --- suggests it is the consequential
+question.
+\item \textbf{Does the mechanism generalise beyond one optimiser and one
+representation family?} The pilot evidence comes from CEM and two frozen-encoder
+checkpoints. Because the mechanism depends on distribution refitting, it should
+transfer to MPPI and iCEM and behave differently under gradient-based and
+amortised control --- a prediction, not yet a finding. The strongest competing
+explanation, that frozen features lack the spatial precision contact
+requires~\citep{murlabadia2026vjepa21}, must be tested in the same harness,
+since the two imply opposite research programmes.
+\end{enumerate}
+
+% ================================================================
+\section{Significance, impact, and originality}
+% ================================================================
+
+\paragraph{Scientific significance} The proposal supplies what the field lacks:
+a way to say \emph{why} a visual planner failed. Refutation conditions turn an
+informal vocabulary of failure into experiments with defined outcomes, making
+the literature's competing diagnoses commensurable for the first time.
+
+\paragraph{Corrective impact on an active literature} If the pilot's finding
+generalises, a body of reported gains is misattributed: repairs credited to
+coverage, grounding or cost geometry may be repairing prediction error. Either
+outcome is informative --- a repair that loses its benefit under exact dynamics
+was repairing S1; one that survives is a counterexample --- and both redirect
+effort now spent on the wrong surface.
+
+\paragraph{Practical impact on robot learning} The evidence points at a widely
+shared design assumption --- that a representation faithful on a fixed dataset
+yields a cost usable by search --- and shows it failing where manipulation is
+hardest: contact-rich tasks with centimetre-scale success criteria. Objectives
+defined on rankings within the populations a planner realises are the natural
+response and are untested at scale; and because the diagnosis targets the cost
+rather than the backbone, any resulting method composes with the frozen-encoder
+checkpoints the field already trains at great expense.
+
+\paragraph{Methodological impact} Three quantities are cheap to compute and
+essentially never reported: candidate availability, selection regret against the
+best available candidate, and proxy--physical rank correlation at the first and
+last search iteration. Standardising them makes negative results interpretable,
+and is a contribution independent of any new method.
+
+\paragraph{Originality} Three elements are, to our knowledge, new: refutation
+conditions attached to a failure taxonomy; the exact-dynamics control used as a
+general instrument for attribution rather than a one-off ablation; and measuring
+proxy--physical agreement \emph{on the optimiser's own realised populations}
+rather than on a fixed evaluation set --- where the pilot's agreement collapses
+and the mechanism becomes visible.
+
+% ================================================================
+\section{Methodology and work plan}
+% ================================================================
+
+The programme is a sequence of controlled comparisons in which one component
+varies and every other is pinned. Three commitments recur: (i)~\emph{exact
+candidate dynamics} as a control, closing S1 by construction; (ii)~\emph{matched
+harnesses}, holding encoder, optimiser, budget, horizon and success criterion
+identical across arms; and (iii)~\emph{reporting conditioned on the optimiser},
+measuring agreement and regret on realised populations at both the first and the
+final search iteration. Contact-rich and free-space cells are reported
+separately, because pooled suite-level rates conceal complete failure on the
+contact subset.
+
+\vspace{2pt}\noindent\textbf{WP1 --- Discriminating reruns of existing repairs (RQ1).}~ Reimplement representative S3 and S4 repairs (inverse-consistency and
+action-grounding costs, reachability heads, learned terminal metrics) in the
+shared harness. For each: reproduce its reported gain under \emph{learned}
+dynamics as a positive control, then rerun it unchanged under \emph{exact}
+candidate dynamics. Outcome: a per-repair statement of how much of the gain
+survives removal of prediction error.
+
+\vspace{2pt}\noindent\textbf{WP2 --- Selection-aware objectives (RQ2).}~ Develop costs and representations trained on the distribution the planner
+induces. Two families are compared against scalar regression onto true cost:
+group-relative \emph{ranking} objectives over realised candidate populations,
+and a \emph{decision-equivalence} criterion asking the latent to preserve the
+$\arg\min$ over a family of goals --- far weaker than reconstructing state, far
+stronger than predicting the next latent, and the reward-free analogue of
+TD-MPC2's value supervision~\citep{hansen2024tdmpc2}. Training uses populations
+harvested from planner rollouts, refreshed as the induced distribution shifts.
+
+\vspace{2pt}\noindent\textbf{WP3 --- Generality and the competing explanation (RQ3).}~ Two sweeps in the same harness: (i)~representation families, including a
+dense-feature checkpoint~\citep{murlabadia2026vjepa21} that no published study
+has run through a cost-attribution protocol, adjudicating between the
+cost-geometry and representation-precision accounts; and (ii)~optimisers --- CEM,
+MPPI, iCEM and an amortised controller --- testing whether the failure tracks
+distribution refitting. Hierarchical decomposition~\citep{zhang2026hwm} is a
+stretch arm.
+
+\vspace{2pt}\noindent\textbf{WP4 --- Evaluation protocol and release.}~ Formalise the three reporting quantities and ship the harness,
+the exact-dynamics control and the diagnostic suite as an open benchmark with
+per-regime reporting; developed continuously alongside WP1--WP3.
+
+\begin{table}[!ht]
+\centering\small
+\caption{Indicative schedule for a two-year Master's programme; WP4 runs
+continuously.}\label{tab:plan}
+\begin{tabularx}{\textwidth}{@{}L{2.05cm} Y L{3.55cm}@{}}
+\toprule
+Period & Activity & Output \\
+\midrule
+Months 1--6 & Consolidate the pilot into the shared harness; add a second
+contact-rich task family; run the dense-feature checkpoint through the protocol
+(WP3-i) & Harness release; attribution paper \\
+Months 7--12 & WP1: reproduce three S3/S4 repairs under learned dynamics as
+positive controls, then rerun each under exact dynamics &
+Discriminating-experiment paper \\
+Months 13--18 & WP2: ranking and decision-equivalence objectives on
+planner-induced populations & Method paper; protocol spec \\
+Months 19--24 & WP3-ii optimiser sweep; offline real-robot check; benchmark
+release; thesis writing & Benchmark; Master's thesis \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{Scope} WP1 and WP2 are the core and are sized to complete in full:
+the pilot harness, checkpoints and simulator infrastructure already exist,
+removing the setup cost that would otherwise dominate year one. WP3's hierarchy
+arm can be dropped without loss to the thesis argument. Claims are stated at the
+scope the evidence supports: two checkpoint lineages and two task families, not
+latent planning in general.
+
+\paragraph{Threats to validity} A null result under exact dynamics is
+uninterpretable without a reproduced positive control, so every WP1 arm carries
+one. Seed variance is real --- one pilot arm produced $5/16$ against a
+$0$--$2/16$ band --- so claims are made over paired environment seeds with
+clustered bootstrap intervals, and over checkpoint training seeds where
+feasible. Where an intervention is null, the targeted quantity is reported
+alongside the planning outcome, so that ``the repair did not work'' stays
+distinguishable from ``the repair did not engage''.
+
+% ================================================================
+\section{Resources and facilities required}
+% ================================================================
+
+The programme is computationally moderate: it trains no large backbone, and
+operates on released frozen checkpoints, small probes and terminal-cost heads.
+\begin{itemize}[leftmargin=1.2em]
+\item \textbf{Compute.} A GPU cluster with 40--80\,GB-class accelerators (H100
+or equivalent). The exact-dynamics condition dominates, since every candidate is
+executed and rendered --- roughly $10^{5}$ simulator rollouts per experimental
+cell. Indicatively 8--12 GPUs in bursts with SLURM-style batch scheduling; the
+pilot ran at this scale.
+\item \textbf{Simulation and storage.} MuJoCo-based manipulation suites
+(MetaWorld~\citep{yu2020metaworld} and a second contact-rich suite) with
+privileged state access, required for the positive control and for regime
+stratification; 5--10\,TB for cached latents, candidate populations and logs.
+\item \textbf{Datasets and checkpoints.} Publicly released world-model
+checkpoints across scales and lineages~\citep{zhou2024dinowm,jepawms2025,
+assran2025vjepa2,murlabadia2026vjepa21}, plus an offline real-robot dataset for
+the transfer check. No new data collection is required.
+\item \textbf{Robot hardware (optional).} A Franka-class arm with wrist and
+third-person cameras would allow closed-loop confirmation, but is desirable
+rather than necessary: the exact-dynamics control is unavailable on real
+hardware, so the core experiments are inherently simulator-based and the arm
+serves only the final transfer check, for which an offline dataset substitutes.
+\item \textbf{Supervision.} Supervision spanning self-supervised representation
+learning and model-based control, since the central hypothesis lives at their
+interface. No fieldwork, human subjects or restricted data are involved.
+\end{itemize}
+
+{\setlength{\columnsep}{12pt}\setlength{\bibsep}{0pt}\setlength{\bibhang}{1em}%
+\begin{multicols}{2}\raggedright\fontsize{7.2}{8.3}\selectfont
+\bibliographystyle{plainnat}
+\bibliography{refs_short}
+\end{multicols}}
+
+\end{document}

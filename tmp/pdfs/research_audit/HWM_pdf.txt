@@ -1,0 +1,187 @@
+                                            Hierarchical Planning with Latent World Models
+                                            Wancong Zhang1,2,∗ , Basile Terver1 , Artem Zholus1,3 , Soham Chitnis2 , Harsh Sutaria2 , Mido Assran1 ,
+                                            Randall Balestriero1,4 , Amir Bar1 , Adrien Bardes1 , Yann LeCun2,† , Nicolas Ballas1,†
+                                            1
+                                                FAIR at Meta, 2 New York University, 3 Mila - Québec AI Institute, 4 Brown University
+                                            ∗
+                                                Work done at Meta, † Joint last author
+
+                                            Model predictive control (MPC) with learned world models has emerged as a promising paradigm for
+                                            embodied control, particularly for its ability to generalize zero-shot when deployed in new environments.
+                                            However, learned world models often struggle with long-horizon control due to the accumulation of
+                                            prediction errors and the exponentially growing search space. In this work, we address these challenges
+                                            by learning latent world models at multiple temporal scales and performing hierarchical planning across
+
+
+
+
+arXiv:2604.03208v1 [cs.LG] 3 Apr 2026
+                                            these scales, enabling long-horizon reasoning while substantially reducing inference-time planning
+                                            complexity. Our approach serves as a plug-in planning abstraction that applies across diverse latent
+                                            world-model architectures and domains. We demonstrate that this hierarchical approach enables
+                                            zero-shot control on real-world non-greedy robotic tasks, achieving a 70% success rate on pick-&-place
+                                            using only a final goal specification, compared to 0% for a single-level world model. In addition, across
+                                            physics-based simulated environments including push manipulation and maze navigation, hierarchical
+                                            planning achieves higher success while requiring up to 3× less planning-time compute.
+
+                                            Date: 2026-04-06
+                                            Correspondence: Wancong Zhang at wz1232@nyu.edu
+                                            Code: https://github.com/kevinghst/HWM_PLDM
+                                            Website: https://kevinghst.github.io/HWM/
+
+
+
+
+                                        1    Introduction
+                                        Planning with learned world models has emerged as a powerful paradigm for embodied decision making.
+                                        By learning predictive models of environment dynamics from experience and using them to simulate future
+                                        outcomes, world models enable agents to reason about the long-term consequences of actions (Sutton, 1981;
+                                        Deisenroth and Rasmussen, 2011). Recent advances in representation learning and latent-space modeling
+                                        have improved the scalability of this approach, making it possible to train world models directly from high-
+                                        dimensional observations such as images and videos (Ha and Schmidhuber, 2018; Hafner et al., 2023; Hansen
+                                        et al., 2023). More recently, self-supervised learning has enabled training world models from large collections
+                                        of unlabeled, task-agnostic offline trajectories, allowing zero-shot deployment in downstream robotic control
+                                        and navigation (Assran et al., 2025; Sobal et al., 2025; Bar et al., 2025; Zhou et al., 2024; Terver et al.,
+                                        2026b). Despite this progress, learned world models continue to struggle with long-horizon control due to two
+                                        fundamental challenges: (i) prediction errors compound over time, leading to increasingly inaccurate rollouts
+                                        (Talvitie, 2014; Janner et al., 2019), and (ii) even under a perfect model, planning becomes computationally
+                                        expensive as the search space grows exponentially with horizon (Ichter et al., 2020).
+                                        A classic approach to long-horizon control is to introduce hierarchy into the decision-making structure. By
+                                        reasoning at multiple temporal scales, agents can plan coarsely over long horizons while retaining fine-grained
+                                        control at short horizons. This intuition underlies a large body of work on temporal abstraction in reinforcement
+                                        learning, including options, skills, and hierarchical policies (Sutton et al., 1999; Bacon et al., 2017; Hafner et al.,
+                                        2022; Park et al., 2023), as well as hierarchical world models that capture dynamics at multiple timescales
+                                        (Gumbsch et al., 2023; Chitnis et al., 2024; Schiewer et al., 2024; Hansen et al., 2024). In parallel, the optimal
+                                        control literature has explored hierarchical model predictive control (MPC) for multi-task settings (Fang et al.,
+                                        2019; Li et al., 2021; Kögel et al., 2025). However, these approaches remain limited in complementary ways.
+                                        Reinforcement learning methods typically rely on task-specific rewards, which restrict their applicability in
+                                        zero-shot settings; even goal-conditioned and zero-shot RL methods (Park et al., 2023, 2024b) still struggle
+
+
+                                                                                                  1
+                                                                  High Level Plan to Goal                                     Goal Obs
+
+
+
+                                  High Level
+           Current Obs
+                                     WM
+
+                                         generate
+                                         subgoal                                                                               Subgoal
+
+
+
+                                  Low Level
+                                    WM
+
+                                     actions                     Low Level Plan to Subgoal
+
+                                                                                                      1.0
+  World Model                    Task                  SR     SR w/ ∆ SR %                                             HWM             Flat WM
+                                                             hierarchy
+
+
+                                                                                       Success Rate
+  VJEPA2-AC Pick&Place (oracle subgoals) 80%                      80%           0                                 franka              maze
+                                                                                                      0.5
+            Pick&Place (no oracle)        0%                      70%         +70
+            Open / Close Drawer          30%                      70%         +40                                          push t
+  DINO-WM          Push-T                              17%        61%         +44
+                                                                                                      0.0
+  PLDM             Diverse Maze                        44%        83%         +39                           0.0                 0.5              1.0
+                                                                                                                      Plan Time (norm.)
+Figure 1 Top: Hierarchical planning in latent space. A high-level planner optimizes macro-actions using a long-horizon world
+model to reach the goal; the first predicted latent state serves as a subgoal for a low-level planner, which optimizes
+primitive actions with a short-horizon world model. Solid borders denote ground-truth observations; others are decoder
+reconstructions shown for interpretability only. Bottom Left: Empirical coverage. Hierarchical planning improves success
+on non-greedy, long-horizon tasks across multiple latent world models. ∆SR denotes the absolute success-rate gain
+from hierarchy. Oracle subgoals use externally provided subgoal images; otherwise, planning relies only on the final
+goal. Bottom Right: Planning efficiency. Success rate versus normalized planning time for flat and hierarchical planners;
+hierarchical planning matches or exceeds success with ≈ 3× lower planning time. Highlighted HWM results prioritize
+planning efficiency rather than peak performance.
+
+to generalize to environments and tasks beyond the training distribution (Sobal et al., 2025). Conversely,
+existing hierarchical MPC methods are not task-specific but are largely restricted to low-dimensional state
+spaces, hand-engineered representations, or known dynamics, limiting their applicability to high-dimensional
+observation spaces such as raw pixels. As a result, it remains unclear how to realize hierarchical planning for
+zero-shot control directly on learned world models from high-dimensional observations.
+In this work, we propose Hierarchical Planning with Latent World Models (HWM), a framework for zero-shot
+hierarchical model predictive control using learned latent world models. Rather than learning hierarchical
+policies, HWM introduces temporal hierarchy directly at inference time by planning over multiple timescales
+on task-agnostic world models trained via next-latent prediction. Crucially, our approach is defined by how
+the hierarchical levels interact. HWM learns world models operating at different temporal resolutions within a
+shared latent space, enabling a direct coupling between levels: high-level predictions act as subgoals for low-level
+MPC via latent-state matching. This removes the need for inverse models, skill learning, or goal-conditioned
+policies, and allows hierarchical planning to operate entirely on pretrained world models. To support efficient
+long-horizon planning, we further introduce a learned action encoder that compresses sequences of primitive
+actions between waypoint states into latent macro-actions. This reduces the dimensionality of the high-level
+search space and makes planning more tractable. By decoupling long-horizon reasoning from fine-grained
+control, HWM mitigates error accumulation and reduces overall planning complexity.
+
+
+
+
+                                                             2
+                                   P (2)           ẑt2               P (2)                         P (2)             ẑH
+
+
+                                    lt1           Llow                  lt2       · · · · ·        ltH−1             Lhigh
+
+
+
+
+          z1         P (1)            P (1)        ẑh                                                               zgoal
+                                                            High-Level Planning
+                                                                   to Goal
+                                                               arg min{l} Lhigh
+                      a1     ...          ah
+          E                                                                                                           E
+                                                                         Model key
+
+                   Low-Level Planning          P (1)      Low-level world model     P (2)   High-level world model
+                     to 1st Subgoal
+          s1         arg min{a} Llow                                                                                 sgoal
+
+
+Figure 2 Hierarchical planning in latent space. A high-level planner optimizes macro actions using a long-horizon latent
+world model to reach the final goal embedding. The resulting first predicted latent state serves as a subgoal for low-level
+planning, where a short-horizon world model optimizes primitive actions to reach this subgoal.
+
+We summarize our contributions as follows:
+
+• We introduce HWM, a hierarchical MPC framework that couples multiple learned world models via a
+  shared latent space, enabling direct subgoal transfer across levels without hierarchical policies, skill learning,
+  or task-specific rewards.
+• We show that HWM unlocks a new capability for zero-shot world-model planning: solving non-greedy
+  real-robot tasks from visual inputs, where success requires temporarily moving away from the goal. HWM
+  achieves 70% success on Franka pick-&-place from a single goal image, compared to 0% for VJEPA2-AC,
+  and also outperforms strong vision-language-action models trained on ∼ 77× more robotic interaction data.
+• We demonstrate that HWM is a modular, model-agnostic planning abstraction, consistently improving
+  zero-shot performance across diverse latent world models, including VJEPA2-AC (robot manipulation),
+  DINO-WM (push manipulation), and PLDM (maze navigation).
+• We show that hierarchical planning improves both performance and efficiency on long-horizon tasks,
+  achieving substantial success-rate gains (up to +44% and +39%) while reducing inference-time planning
+  cost by up to 4× compared to single-level planners.
+
+
+2     Hierarchical Planning with Latent World Models
+
+2.1   Problem Setting
+We consider a Markov decision process (MDP) M = (S, A, µ, p), where S is the state space, A is the action
+space, µ ∈ P(S) is the initial state distribution, and p : S × A → S denotes the transition dynamics. We
+work in the offline setting with access to a dataset D of state–action trajectories τ = (s1 , a1 , s2 , . . . , aT −1 , sT ).
+Our objective is to use D to enable zero-shot control across a variety of goal-conditioned tasks. Rather than
+learning an explicit parametric policy, we learn world models to approximate the true transition dynamics p,
+and select actions at inference time via model predictive control (MPC), which induces a goal-conditioned
+policy. We consider goal-reaching tasks at evaluation time, where the agent is provided with a goal state sg
+and succeeds by reaching it. In this setting, the task space Z coincides with the state space S.
+
+2.2    Latent World Models
+A world model is a learned dynamical model that approximates how an environment evolves in response to
+an agent’s actions, estimating transition dynamics of the form p(st+1 | st , at ). In high-dimensional settings,
+world models are typically learned in a latent space to improve efficiency and robustness. An encoder maps
+
+
+                                                                 3
+

@@ -1,0 +1,219 @@
+Published as a conference paper at ICLR 2023
+
+
+
+
+N EURAL C AUSAL M ODELS FOR C OUNTERFACTUAL
+I DENTIFICATION AND E STIMATION
+ Kevin Xia and Yushu Pan and Elias Bareinboim
+ Causal Artificial Intelligence Laboratory
+ Columbia University, USA
+ {kevinmxia,yushupan,eb}@cs.columbia.edu
+
+
+                                             A BSTRACT
+         Evaluating hypothetical statements about how the world would be had a different
+         course of action been taken is arguably one key capability expected from mod-
+         ern AI systems. Counterfactual reasoning underpins discussions in fairness, the
+         determination of blame and responsibility, credit assignment, and regret. In this
+         paper, we study the evaluation of counterfactual statements through neural models.
+         Specifically, we tackle two causal problems required to make such evaluations,
+         i.e., counterfactual identification and estimation from an arbitrary combination of
+         observational and experimental data. First, we show that neural causal models
+         (NCMs) are expressive enough and encode the structural constraints necessary
+         for performing counterfactual reasoning. Second, we develop an algorithm for
+         simultaneously identifying and estimating counterfactual distributions. We show
+         that this algorithm is sound and complete for deciding counterfactual identification
+         in general settings. Third, considering the practical implications of these results, we
+         introduce a new strategy for modeling NCMs using generative adversarial networks.
+         Simulations corroborate with the proposed methodology.
+
+
+1    I NTRODUCTION
+Counterfactual reasoning is one of human’s high-level cognitive capabilities, used across a wide
+range of affairs, including determining how objects interact, assigning responsibility, credit and
+blame, and articulating explanations. Counterfactual statements underpin prototypical questions of
+the form "what if–" and "why–", which inquire about hypothetical worlds that have not necessarily
+been realized (Pearl & Mackenzie, 2018). If a patient Alice had taken a drug and died, one may
+wonder, "why did Alice die?"; "was it the drug that killed her?"; "would she be alive had she not
+taken the drug?". In the context of fairness, why did an applicant, Joe, not get the job offer? Would
+the outcome have changed had Joe been a Ph.D.? Or perhaps of a different race? These are examples
+of fundamental questions about attribution and explanation, which evoke hypothetical scenarios that
+disagree with the current reality and which not even experimental studies can reconstruct.
+We build on the semantics of counterfactuals based on a generative process called structural causal
+model (SCM) (Pearl, 2000). A fully instantiated SCM M∗ describes a collection of causal mecha-
+nisms and distribution over exogenous conditions. Each M∗ induces families of qualitatively different
+distributions related to the activities of seeing (called observational), doing (interventional), and
+imagining (counterfactual), which together are known as the ladder of causation (Pearl & Mackenzie,
+2018; Bareinboim et al., 2022); also called the Pearl Causal Hierarchy (PCH). The PCH is a contain-
+ment hierarchy in which distributions can be put in increasingly refined layers: observational content
+goes into layer 1 (L1 ); experimental to layer 2 (L2 ); counterfactual to layer 3 (L3 ). It is understood
+that there are questions about layers 2 and 3 that cannot be answered (i.e. are underdetermined), even
+given all information in the world about layer 1; further, layer 3 questions are still underdetermined
+given data from layers 1 and 2 (Bareinboim et al., 2022; Ibeling & Icard, 2020).
+Counterfactuals represent the more detailed, finest type of knowledge encoded in the PCH, so
+naturally, having the ability to evaluate counterfactual distributions is an attractive proposition. In
+practice, a fully specified model M∗ is almost never observable, which leads to the question – how
+can a counterfactual statement, from L∗3 , be evaluated using a combination of observational and
+experimental data (from L∗1 and L∗2 )? This question embodies the challenge of cross-layer inferences,
+which entail solving two challenging causal problems in tandem, identification and estimation.
+
+
+                                                   1
+Published as a conference paper at ICLR 2023
+
+
+
+
+In the more traditional literature of causal inference,               (a)                                       (b)
+                                                                  Unobserved                                 Learned/
+there are different symbolic methods for solving these           Nature/Truth                              Hypothesized
+problems in various settings and under different as-
+sumptions. In the context of identification, there ex-             SCM M∗                  Causal
+                                                                                          Diagram
+                                                                                                             NCM M  c
+ists an arsenal of results that includes celebrated meth-       = hF ∗ , P (U∗ )i            G             = h F,
+                                                                                                               b  P (U)i
+                                                                                                                      b
+
+ods such as Pearl’s do-calculus (Pearl, 1995), and go                                       G-Constraint
+
+through different algorithmic methods when consid- PCH: L1∗ L2∗ L3∗                                       L1     L2     L3
+ering inferences for L2 - (Tian & Pearl, 2002; Shpitser
+& Pearl, 2006; Huang & Valtorta, 2006; Bareinboim                      Training (L = L ,
+                                                                                       1
+                                                                                           ∗
+                                                                                            ∗
+                                                                                            1
+                                                                                L =L )2
+& Pearl, 2012; Lee et al., 2019; Lee & Bareinboim,                                         2
+
+
+
+2020; 2021) and L3 -distributions (Heckman, 1992; Figure 1: The l.h.s. contains the true SCM
+Pearl, 2001; Avin et al., 2005; Shpitser & Pearl, 2009; M∗ that induces PCH’s three layers. The
+Shpitser & Sherman, 2018; Zhang & Bareinboim,
+2018; Correa et al., 2021). On the estimation side, r.h.s. contains a neural model M constrained
+                                                                                                         c
+                                                                                                                     ∗
+there are various methods including the celebrated by inductive∗ bias G (entailed by M ) and
+Propensity Score/IPW for the backdoor case (Rubin,        matching    M         on  L 1  and    L  2   through    training.
+1978; Horvitz & Thompson, 1952; Kennedy, 2019; Kallus & Uehara, 2020), and some more relaxed
+settings (Fulcher et al., 2019; Jung et al., 2020; 2021), but the literature is somewhat scarcer and less
+developed. In fact, there is a lack of estimation methods for L3 quantities in most settings.
+On another thread in the literature, deep learning methods have achieved outstanding empirical
+success in solving a wide range of tasks in fields such as computer vision (Krizhevsky et al., 2012),
+speech recognition (Graves & Jaitly, 2014), and game playing (Mnih et al., 2013). One key feature
+of deep learning is its ability to allow inferences to scale with the data to high dimensional settings.
+We study here the suitability of the neural approach to tackle the problems of causal identification
+and estimation while trying to leverage the benefits of these new advances experienced in non-causal
+settings. 1 The idea behind the approach pursued here is illustrated in Fig. 1. Specifically, we will
+search for a neural model M  c (r.h.s.) that has the same generative capability of the true, unobserved
+          ∗
+SCM M (l.h.s.); in other words, M      c should be able to generate the same observed/inputted data,
+             ∗              ∗ 2
+i.e., L1 = L1 and L2 = L2 . To tackle this task in practice, we use an inductive bias for the neural
+model in the form of a causal diagram (Pearl, 2000; Spirtes et al., 2000; Bareinboim & Pearl, 2016),
+which is a parsimonious description of the mechanisms (F ∗ ) and exogenous conditions (P (U∗ )) of
+the generating SCM. 3 The question then becomes: under what conditions can a model trained using
+this combination of qualitative inductive bias and the available data be suitable to answer questions
+about hypothetical counterfactual worlds, as if we had access to the true M∗ ?
+There exists a growing literature that leverages modern neural methods to solve causal inference
+tasks.1 Our approach based on proxy causal models will answer causal queries by direct evaluation
+through a parameterized neural model M     c fitted on the data generated by M∗ . 4 For instance, some
+recent work solves the estimation of interventional (L2 ) or counterfactual (L3 ) distributions from
+observational (L1 ) data in Markovian settings, implemented through architectures such as GANs,
+flows, GNNs, and VGAEs (Kocaoglu et al., 2018; Pawlowski et al., 2020; Zecevic et al., 2021;
+Sanchez-Martin et al., 2021). In some real-world settings, Markovianity is a too stringent condition
+(see discussion in App. D.4) and may be violated, which leads to the separation between layers 1 and
+2, and, in turn, issues of causal identification. 5 The proxy approach discussed above was pursued in
+Xia et al. (2021) to solve the identification and estimation of interventional distributions (L2 ) from
+observational data (L1 ) in non-Markovian settings. 6 This work introduced an object we leverage
+throughout this paper called Neural Causal Model (NCM, for short), which is a class of SCMs
+constrained to neural network functions and fixed distributions over the exogenous variables. While
+    1
+       One of our motivations is that these methods showed great promise at estimating effects from observational
+data under backdoor/ignorability conditions (Shalit et al., 2017; Louizos et al., 2017; Li & Fu, 2017; Johansson
+et al., 2016; Yao et al., 2018; Yoon et al., 2018; Kallus, 2020; Shi et al., 2019; Du et al., 2020; Guo et al., 2020).
+    2
+      This represents an extreme case where all L1 - and L2 -distributions are provided as data. In practice, this
+may be unrealistic, and our method takes as input any arbitrary subset of distributions from L1 and L2 .
+    3
+      When imposed on neural models, they enforce equality constraints connecting layer 1 and layer 2 quantities,
+defined formally through the causal Bayesian network (CBN) data structure (Bareinboim et al., 2022, Def. 16).
+    4
+      In general, Mc does not need to, and will not be equal to the true SCM M∗ .
+    5
+      Layer 3 differs from lower layers even in Markovian models; see Bareinboim et al. (2022, Ex. 7).
+    6
+      Witty et al. (2021) shows a related approach taking the Bayesian route; further details, see Appendix C.
+
+
+                                                            2
+Published as a conference paper at ICLR 2023
+
+
+
+
+NCMs have been shown to be able to solve the identification and estimation tasks for L2 queries,
+their potential for counterfactual inferences is still largely unexplored, and existing implementations
+have been constrained to low-dimensional settings.
+Despite all the progress achieved so far, no practical methods exist for estimating counterfactual
+(L3 ) distributions in the general setting where an arbitrary combination of observational (L1 ) and
+experimental (L2 ) distributions is available, and unobserved confounders exist (i.e. Markovianity
+does not hold). Hence, in addition to providing the first neural method of counterfactual identification,
+this paper establishes the first general counterfactual estimation technique even among non-neural
+methods, leveraging the neural toolkit for scalable inferences. Specifically, our contributions are:
+1. We prove that when fitted with a graphical inductive bias, the NCM encodes the L3 -constraints
+necessary for performing counterfactual inference (Thm. 1), and that they are still expressive enough
+to model the underlying data-generating model, which is not necessarily a neural network (Thm. 2).
+2. We show that counterfactual identification within a neural proxy model setting is equivalent to
+established symbolic approaches (Thm. 3). We leverage this duality to develop an optimization
+procedure (Alg. 1) for counterfactual identification and estimation that is both sound and complete
+(Corol. 2). The approach is general in that it accepts any combination of inputs from L1 and L2 , it
+works in any causal diagram setting, and it does not require the Markovianity assumption to hold.
+3. We develop a new approach to modeling the NCM using generative adversarial networks (GANs)
+(Goodfellow et al., 2014), capable of robustly scaling inferences to high dimensions (Alg. 3). We
+then show how GAN-NCMs can solve the challenging optimization problems in identifying and
+estimating counterfactuals in practice. Experiments are provided in Sec. 5 and proofs in Appendix A.
+All supplementary material can be found in the full technical report (Xia et al., 2022).
+Preliminaries. We now introduce the notation and definitions used throughout the paper. We use
+uppercase letters (X) to denote random variables and lowercase letters (x) to denote corresponding
+values. Similarly, bold uppercase (X) and lower case (x) letters are used to denote sets of random
+variables and values respectively. We use DX to denote the domain of X and DX = DX1 ×· · ·×DXk
+for the domain of X = {X1 , . . . , Xk }. We denote P (X = x) (which we will often shorten to P (x))
+as the probability of X taking the values x under the probability distribution P (X).
+We utilize the basic semantic framework of structural causal models (SCMs), as defined in (Pearl,
+2000, Ch. 7). An SCM M consists of endogenous variables V, exogenous variables U with
+distribution P (U), and mechanisms F. F contains a function fVi for each variable Vi that maps
+endogenous parents PaVi and exogenous parents UVi to Vi . Each M induces a causal diagram G,
+where every Vi ∈ V is a vertex, there is a directed arrow (Vj → Vi ) for every Vi ∈ V and Vj ∈ PaVi ,
+and there is a dashed-bidirected arrow (Vj L9999K Vi ) for every pair Vi , Vj ∈ V such that UVi and
+UVj are not independent. For further details, see (Bareinboim et al., 2022, Def. 13/16, Thm. 4). The
+exogenous UVi ’s are not assumed independent (i.e. Markovianity is not required). Our treatment is
+constrained to recursive SCMs (implying acyclic causal diagrams) with finite domains over V (see
+Apps. A/E for details). Each SCM M assigns values to each counterfactual distribution as follows:
+Definition 1 (Layer 3 Valuation). An SCM M induces layer L3 (M), a set of distributions over V,
+each with the form P (Y∗ ) = P (Y1[x1 ] , Y2[x2 ],... ) such that
+                                            Z
+         P M (y1[x1 ] , y2[x2 ] , . . . ) =   1 Y1[x1 ] (u) = y1 , Y2[x2 ] (u) = y2 , . . . dP (u),
+                                                                                          
+                                                                                                    (1)
+                                        DU
+
+where Yi[xi ] (u) is evaluated under Fxi := {fVj : Vj ∈ V \ Xi } ∪ {fX ← x : X ∈ Xi }.                    
+Each Yi corresponds to a set of variables in a world where the original mechanisms fX are replaced
+with constants xi for each X ∈ Xi ; this is also known as the mutilation procedure. This procedure
+corresponds to interventions, and we use subscripts to denote the intervening variables (e.g. Yx ) or
+subscripts with brackets when the variables are indexed (e.g. Y1[x1 ] ). For instance, P (yx , yx0 0 ) is the
+probability of the joint counterfactual event Y = y had X been x and Y = y 0 had X been x0 .
+SCM M2 is said to be P (Li ) -consistent (for short, Li -consistent) with SCM M1 if Li (M1 ) =
+Li (M2 ). We will use Z to denote a set of quantities from Layer 2 (i.e. Z = {P (Vzk )}`k=1 ), and we
+use Z(M) to denote those same quantities induced by SCM M (i.e. Z(M) = {P M (Vzk )}`k=1 ).
+We use neural causal models (NCMs) as a substitute (proxy) model for the true SCM, as follows:
+Definition 2 (G-Constrained Neural Causal Model (G-NCM) (Xia et al., 2021, Def. 7)). Given a
+causal diagram G, a G-constrained Neural Causal Model (for short, G-NCM) M c(θ) over variables V
+
+
+                                                     3
+
