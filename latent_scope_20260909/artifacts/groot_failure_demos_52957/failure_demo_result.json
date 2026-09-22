@@ -1,0 +1,268 @@
+{
+  "completed_utc": "2026-09-17T23:40:29.209858+00:00",
+  "config": {
+    "checkpoint": {
+      "files": [
+        {
+          "path": "config.json",
+          "size": 1706
+        },
+        {
+          "path": "experiment_cfg/metadata.json",
+          "size": 14127
+        },
+        {
+          "path": "model-00001-of-00002.safetensors",
+          "sha256": "672b8e49d32ff124e13c3c4e4e70380ab29cd25f013ff41db768639347f8057e",
+          "size": 4999367032
+        },
+        {
+          "path": "model-00002-of-00002.safetensors",
+          "sha256": "95c52f05a00141ce4e433305a8ccfa41fd219e8d988f2a4c991f3f4f5cdb677c",
+          "size": 2586705312
+        },
+        {
+          "path": "model.safetensors.index.json",
+          "size": 104606
+        }
+      ],
+      "relative_path": "gr00t_n1-5/foundation_model_learning/target_posttraining/composite_seen/checkpoint-60000",
+      "repo_id": "robocasa/robocasa365_checkpoints",
+      "revision": "c484448aba1a9b60a04c9b0ca117241518ea69f3"
+    },
+    "demo": {
+      "cameras": [
+        "video.robot0_agentview_left",
+        "video.robot0_eye_in_hand"
+      ],
+      "episodes": 6,
+      "fps": 20,
+      "frame_stride": 2,
+      "seed_base": 7100,
+      "split": "target",
+      "task": "ScrubCuttingBoard"
+    },
+    "policy": {
+      "data_config": "panda_omron",
+      "denoising_steps": 4,
+      "embodiment_tag": "new_embodiment",
+      "n_action_steps": 16
+    },
+    "purpose": "Render annotated GR00T rollouts showing which latched milestone of the native ScrubCuttingBoard success predicate each episode fails to reach. Diagnostic only; six episodes is not a success-rate estimate.",
+    "runtime_root": "/mnt/data/nhatnc129/jepa/latent_scope_baseline",
+    "shared_robocasa_runtime_root": "/mnt/data/nhatnc129/jepa/latent_scope_stage_a",
+    "source_revisions": {
+      "isaac_groot": "9d7d7a9eb7ad30bd8ce30448d9ab53a918b45b10",
+      "robocasa": "4f8a2980def75a55dff96b990745b83540425f09",
+      "robosuite": "5ce6643f3092639d08f7b0f90ed1c6a84f50552c"
+    },
+    "stage": "GROOT_FAILURE_DEMO"
+  },
+  "created_utc": "2026-09-17T23:12:43.664591+00:00",
+  "episodes": [
+    {
+      "chunks": 75,
+      "elapsed_seconds": 246.02962707541883,
+      "ever_grasped": true,
+      "ever_released": true,
+      "explanation": "All three cumulative conditions held simultaneously.",
+      "failure_mode": "SUCCESS",
+      "final": {
+        "contacts": 10,
+        "contacts_ok": true,
+        "grasped": false,
+        "gripper_far": true,
+        "native_step": 1200,
+        "success": true,
+        "sweep": 0.17271991543589107,
+        "sweep_ok": true
+      },
+      "frames": 601,
+      "horizon": 1200,
+      "native_steps": 1200,
+      "peak_contacts": 10,
+      "peak_sweep": 0.17271991543589107,
+      "seed": 7100,
+      "steps_scrub_met_but_holding": 251,
+      "steps_with_scrub_conditions_met": 893,
+      "success": true,
+      "task": "ScrubCuttingBoard",
+      "video": "/home/nhatnc129/nhat.nc/jepa-research/latent_scope_20260909/artifacts/groot_failure_demos_52957/videos/ep00_seed7100_success.mp4"
+    },
+    {
+      "chunks": 75,
+      "elapsed_seconds": 282.5867621488869,
+      "ever_grasped": true,
+      "ever_released": true,
+      "explanation": "Swept 0.282 m but latched only 4/5 distinct contacts.",
+      "failure_mode": "CONTACT_COUNT_SHORT",
+      "final": {
+        "contacts": 4,
+        "contacts_ok": false,
+        "grasped": false,
+        "gripper_far": true,
+        "native_step": 1200,
+        "success": false,
+        "sweep": 0.28167049820825085,
+        "sweep_ok": true
+      },
+      "frames": 601,
+      "horizon": 1200,
+      "native_steps": 1200,
+      "peak_contacts": 4,
+      "peak_sweep": 0.28167049820825085,
+      "seed": 7101,
+      "steps_scrub_met_but_holding": 0,
+      "steps_with_scrub_conditions_met": 0,
+      "success": false,
+      "task": "ScrubCuttingBoard",
+      "video": "/home/nhatnc129/nhat.nc/jepa-research/latent_scope_20260909/artifacts/groot_failure_demos_52957/videos/ep01_seed7101_contact_count_short.mp4"
+    },
+    {
+      "chunks": 75,
+      "elapsed_seconds": 281.9918206948787,
+      "ever_grasped": true,
+      "ever_released": true,
+      "explanation": "Both scrub conditions were latched; the policy never put the sponge down far enough.",
+      "failure_mode": "NEVER_RELEASED",
+      "final": {
+        "contacts": 17,
+        "contacts_ok": true,
+        "grasped": true,
+        "gripper_far": false,
+        "native_step": 1200,
+        "success": false,
+        "sweep": 0.2531858318336454,
+        "sweep_ok": true
+      },
+      "frames": 601,
+      "horizon": 1200,
+      "native_steps": 1200,
+      "peak_contacts": 17,
+      "peak_sweep": 0.2531858318336454,
+      "seed": 7102,
+      "steps_scrub_met_but_holding": 889,
+      "steps_with_scrub_conditions_met": 889,
+      "success": false,
+      "task": "ScrubCuttingBoard",
+      "video": "/home/nhatnc129/nhat.nc/jepa-research/latent_scope_20260909/artifacts/groot_failure_demos_52957/videos/ep02_seed7102_never_released.mp4"
+    },
+    {
+      "chunks": 75,
+      "elapsed_seconds": 254.84360583126545,
+      "ever_grasped": true,
+      "ever_released": true,
+      "explanation": "All three cumulative conditions held simultaneously.",
+      "failure_mode": "SUCCESS",
+      "final": {
+        "contacts": 9,
+        "contacts_ok": true,
+        "grasped": false,
+        "gripper_far": true,
+        "native_step": 1200,
+        "success": true,
+        "sweep": 0.13144678821157066,
+        "sweep_ok": true
+      },
+      "frames": 601,
+      "horizon": 1200,
+      "native_steps": 1200,
+      "peak_contacts": 9,
+      "peak_sweep": 0.13144678821157066,
+      "seed": 7103,
+      "steps_scrub_met_but_holding": 232,
+      "steps_with_scrub_conditions_met": 880,
+      "success": true,
+      "task": "ScrubCuttingBoard",
+      "video": "/home/nhatnc129/nhat.nc/jepa-research/latent_scope_20260909/artifacts/groot_failure_demos_52957/videos/ep03_seed7103_success.mp4"
+    },
+    {
+      "chunks": 75,
+      "elapsed_seconds": 286.69930535554886,
+      "ever_grasped": true,
+      "ever_released": true,
+      "explanation": "Swept 0.148 m but latched only 4/5 distinct contacts.",
+      "failure_mode": "CONTACT_COUNT_SHORT",
+      "final": {
+        "contacts": 4,
+        "contacts_ok": false,
+        "grasped": true,
+        "gripper_far": false,
+        "native_step": 1200,
+        "success": false,
+        "sweep": 0.1484777761621569,
+        "sweep_ok": true
+      },
+      "frames": 601,
+      "horizon": 1200,
+      "native_steps": 1200,
+      "peak_contacts": 4,
+      "peak_sweep": 0.1484777761621569,
+      "seed": 7104,
+      "steps_scrub_met_but_holding": 0,
+      "steps_with_scrub_conditions_met": 0,
+      "success": false,
+      "task": "ScrubCuttingBoard",
+      "video": "/home/nhatnc129/nhat.nc/jepa-research/latent_scope_20260909/artifacts/groot_failure_demos_52957/videos/ep04_seed7104_contact_count_short.mp4"
+    },
+    {
+      "chunks": 75,
+      "elapsed_seconds": 220.3655016105622,
+      "ever_grasped": true,
+      "ever_released": true,
+      "explanation": "Both scrub conditions were latched; the policy never put the sponge down far enough.",
+      "failure_mode": "NEVER_RELEASED",
+      "final": {
+        "contacts": 9,
+        "contacts_ok": true,
+        "grasped": false,
+        "gripper_far": false,
+        "native_step": 1200,
+        "success": false,
+        "sweep": 0.18384512319638885,
+        "sweep_ok": true
+      },
+      "frames": 601,
+      "horizon": 1200,
+      "native_steps": 1200,
+      "peak_contacts": 9,
+      "peak_sweep": 0.18384512319638885,
+      "seed": 7105,
+      "steps_scrub_met_but_holding": 314,
+      "steps_with_scrub_conditions_met": 314,
+      "success": false,
+      "task": "ScrubCuttingBoard",
+      "video": "/home/nhatnc129/nhat.nc/jepa-research/latent_scope_20260909/artifacts/groot_failure_demos_52957/videos/ep05_seed7105_never_released.mp4"
+    }
+  ],
+  "node": "worker-0",
+  "policy_server_state": {
+    "checkpoint_path": "/mnt/data/nhatnc129/jepa/latent_scope_baseline/checkpoints/robocasa365_checkpoints/gr00t_n1-5/foundation_model_learning/target_posttraining/composite_seen/checkpoint-60000",
+    "created_utc": "2026-09-17T23:12:36.573574+00:00",
+    "gpu": "NVIDIA H100 80GB HBM3",
+    "node": "worker-0",
+    "packages": {
+      "flash-attn": "2.7.1.post4",
+      "gr00t": "1.1.0",
+      "torch": "2.5.1",
+      "torchvision": "0.20.1",
+      "transformers": "4.51.3"
+    },
+    "phase": "READY",
+    "port": 32957,
+    "ready_utc": "2026-09-17T23:13:00.507948+00:00",
+    "seed": null,
+    "slurm_job_id": "52957"
+  },
+  "slurm_job_id": "52957",
+  "summary": {
+    "episodes": 6,
+    "failure_modes": {
+      "CONTACT_COUNT_SHORT": 2,
+      "NEVER_RELEASED": 2,
+      "SUCCESS": 2
+    },
+    "successes": 2
+  },
+  "verdict": "FAILURE_DEMO_COMPLETE"
+}

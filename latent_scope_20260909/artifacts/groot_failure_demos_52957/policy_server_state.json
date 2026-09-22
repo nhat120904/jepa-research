@@ -1,0 +1,18 @@
+{
+  "checkpoint_path": "/mnt/data/nhatnc129/jepa/latent_scope_baseline/checkpoints/robocasa365_checkpoints/gr00t_n1-5/foundation_model_learning/target_posttraining/composite_seen/checkpoint-60000",
+  "created_utc": "2026-09-17T23:12:36.573574+00:00",
+  "gpu": "NVIDIA H100 80GB HBM3",
+  "node": "worker-0",
+  "packages": {
+    "flash-attn": "2.7.1.post4",
+    "gr00t": "1.1.0",
+    "torch": "2.5.1",
+    "torchvision": "0.20.1",
+    "transformers": "4.51.3"
+  },
+  "phase": "READY",
+  "port": 32957,
+  "ready_utc": "2026-09-17T23:13:00.507948+00:00",
+  "seed": null,
+  "slurm_job_id": "52957"
+}

@@ -1,0 +1,58 @@
+{
+  "stage": "GROOT_FAILURE_DEMO",
+  "runtime_root": "/mnt/data/nhatnc129/jepa/latent_scope_baseline",
+  "shared_robocasa_runtime_root": "/mnt/data/nhatnc129/jepa/latent_scope_stage_a",
+  "source_revisions": {
+    "isaac_groot": "9d7d7a9eb7ad30bd8ce30448d9ab53a918b45b10",
+    "robocasa": "4f8a2980def75a55dff96b990745b83540425f09",
+    "robosuite": "5ce6643f3092639d08f7b0f90ed1c6a84f50552c"
+  },
+  "checkpoint": {
+    "repo_id": "robocasa/robocasa365_checkpoints",
+    "revision": "c484448aba1a9b60a04c9b0ca117241518ea69f3",
+    "relative_path": "gr00t_n1-5/foundation_model_learning/target_posttraining/composite_seen/checkpoint-60000",
+    "files": [
+      {
+        "path": "config.json",
+        "size": 1706
+      },
+      {
+        "path": "experiment_cfg/metadata.json",
+        "size": 14127
+      },
+      {
+        "path": "model-00001-of-00002.safetensors",
+        "size": 4999367032,
+        "sha256": "672b8e49d32ff124e13c3c4e4e70380ab29cd25f013ff41db768639347f8057e"
+      },
+      {
+        "path": "model-00002-of-00002.safetensors",
+        "size": 2586705312,
+        "sha256": "95c52f05a00141ce4e433305a8ccfa41fd219e8d988f2a4c991f3f4f5cdb677c"
+      },
+      {
+        "path": "model.safetensors.index.json",
+        "size": 104606
+      }
+    ]
+  },
+  "policy": {
+    "data_config": "panda_omron",
+    "embodiment_tag": "new_embodiment",
+    "denoising_steps": 4,
+    "n_action_steps": 16
+  },
+  "demo": {
+    "task": "ScrubCuttingBoard",
+    "split": "target",
+    "episodes": 6,
+    "seed_base": 7100,
+    "cameras": [
+      "video.robot0_agentview_left",
+      "video.robot0_eye_in_hand"
+    ],
+    "frame_stride": 2,
+    "fps": 20
+  },
+  "purpose": "Render annotated GR00T rollouts showing which latched milestone of the native ScrubCuttingBoard success predicate each episode fails to reach. Diagnostic only; six episodes is not a success-rate estimate."
+}

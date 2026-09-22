@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "seed": 20260921,
+  "upstream_root": "/mnt/data/nhatnc129/jepa/dino_wm_original",
+  "layouts": [[32, 20], [32, 30], [32, 40]],
+  "prefixes_per_layout": 8,
+  "candidates": 64,
+  "horizon": 32,
+  "knots": 5,
+  "action_max_norm": 1.8,
+  "eval_radius": 4.5,
+  "train_episodes": 64,
+  "val_episodes": 16,
+  "test_episodes": 16,
+  "episode_steps": 128,
+  "dataset_layout": [32, 30],
+  "save_example_banks": 2
+}

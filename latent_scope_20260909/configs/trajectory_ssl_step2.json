@@ -1,0 +1,15 @@
+{
+  "feature_root": "/mnt/data/nhatnc129/jepa/latent_scope_comp_pilot/features",
+  "seed": 20260920,
+  "max_train_episodes": 32,
+  "max_val_episodes": 16,
+  "visual_channels": 4,
+  "proprio_channels": 4,
+  "degree": 3,
+  "dt_seconds": 0.05,
+  "lengths": [32, 64, 128],
+  "window_stride": 16,
+  "max_seconds": 900,
+  "algebra_atol": 1e-8,
+  "algebra_rtol": 1e-8
+}

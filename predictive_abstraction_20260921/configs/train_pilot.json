@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "feature_root": "/mnt/data/nhatnc129/jepa/predictive_abstraction/ENCODE_RUN/output",
+  "dataset_root": "/mnt/data/nhatnc129/jepa/predictive_abstraction/preflight_53521/dataset",
+  "seed": 20260921,
+  "width": 128,
+  "summary_tokens": 4,
+  "history": 4,
+  "queries_per_window": 8,
+  "train_horizons": [16, 32],
+  "eval_horizons": [16, 32, 48],
+  "batch_size": 32,
+  "codec_steps": 1200,
+  "generic_steps": 1200,
+  "reader_steps": 600,
+  "predictor_steps": 1800,
+  "eval_batches": 40,
+  "learning_rate": 0.0003,
+  "weight_decay": 0.0001,
+  "latent_weight": 0.1,
+  "profile_scale": 0.02
+}

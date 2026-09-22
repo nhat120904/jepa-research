@@ -1,0 +1,33 @@
+{
+  "feature_root": "/mnt/data/nhatnc129/jepa/latent_scope_comp_pilot/features",
+  "seed": 20260920,
+  "frame_latent_dim": 16,
+  "model_dim": 128,
+  "summary_dim": 64,
+  "summary_tokens": 4,
+  "samples_per_segment": 20,
+  "history_tokens": 24,
+  "history_stride": 4,
+  "train_lengths": [32, 64],
+  "eval_splits": {"64=32+32": [32, 32], "64=24+40": [24, 40], "128=64+64": [64, 64]},
+  "dt_seconds": 0.05,
+  "batch_size": 48,
+  "frame_ae_steps": 3000,
+  "target_ae_steps": 3000,
+  "predictor_steps": 6000,
+  "lr": 0.0003,
+  "weight_decay": 0.0001,
+  "grad_clip": 1.0,
+  "eval_windows_per_length": 512,
+  "time_budget_seconds": 9000,
+  "profile": {
+    "max_train_episodes": 12,
+    "max_val_episodes": 8,
+    "frame_ae_steps": 100,
+    "target_ae_steps": 100,
+    "predictor_steps": 200,
+    "batch_size": 16,
+    "eval_windows_per_length": 64,
+    "time_budget_seconds": 1200
+  }
+}
