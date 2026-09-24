@@ -1,0 +1,10 @@
+\section{Experiments}
+\label{sec:experiments}
+
+\TODO{Not yet written. Planned structure, following the pre-registered gate sequence:
+(1) arenas: PushT with the released Diffusion Policy (pipeline and interface qualification; single fixed goal), LIBERO-Goal with released SmolVLA / $\pi_0$ chunk policies (main arena; ten goals in one scene, held-out goals);
+(2) interface qualification: policy reproduction, proposal-bank headroom under a physical reference score, and whether the query-based score selects well on \emph{actual} futures;
+(3) codec on actual futures: query distortion vs.\ bits for the segment code, the per-frame code at equal total bits, the endpoint code, and a reader without history, including held-out goals and queries;
+(4) full world model in closed loop: \method vs.\ policy only, a direct scorer, a DINO-WM-style frame world model, and GPC, on the same proposal bank; accuracy--latency frontier over $M\in\{8,16,32\}$;
+(5) ablations: $\lambda{=}0$, uniform temporal pooling, MAP vs.\ sampled codes;
+(6) confirmation on fresh episodes with three training seeds and episode-clustered confidence intervals.}

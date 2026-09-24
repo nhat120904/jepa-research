@@ -1,0 +1,275 @@
+\begin{thebibliography}{39}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Arumugam and Van~Roy(2022)]{arumugam2022deciding}
+Dilip Arumugam and Benjamin Van~Roy.
+\newblock Deciding what to model: Value-equivalent sampling for reinforcement
+  learning.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2022.
+
+\bibitem[Assran et~al.(2023)Assran, Duval, Misra, Bojanowski, Vincent, Rabbat,
+  LeCun, and Ballas]{assran2023ijepa}
+Mahmoud Assran, Quentin Duval, Ishan Misra, Piotr Bojanowski, Pascal Vincent,
+  Michael Rabbat, Yann LeCun, and Nicolas Ballas.
+\newblock Self-supervised learning from images with a joint-embedding
+  predictive architecture.
+\newblock In \emph{IEEE/CVF Conference on Computer Vision and Pattern
+  Recognition (CVPR)}, 2023.
+
+\bibitem[Assran et~al.(2025)Assran, Bardes, Fan, Garrido, Howes,
+  et~al.]{assran2025vjepa2}
+Mido Assran, Adrien Bardes, David Fan, Quentin Garrido, Russell Howes, et~al.
+\newblock {V-JEPA} 2: Self-supervised video models enable understanding,
+  prediction and planning.
+\newblock \emph{arXiv preprint arXiv:2506.09985}, 2025.
+
+\bibitem[Ball{\'e} et~al.(2017)Ball{\'e}, Laparra, and
+  Simoncelli]{balle2017end}
+Johannes Ball{\'e}, Valero Laparra, and Eero~P. Simoncelli.
+\newblock End-to-end optimized image compression.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}, 2017.
+
+\bibitem[Bardes et~al.(2024)Bardes, Garrido, Ponce, Chen, Rabbat, LeCun,
+  Assran, and Ballas]{bardes2024vjepa}
+Adrien Bardes, Quentin Garrido, Jean Ponce, Xinlei Chen, Michael Rabbat, Yann
+  LeCun, Mahmoud Assran, and Nicolas Ballas.
+\newblock Revisiting feature prediction for learning visual representations
+  from video.
+\newblock \emph{Transactions on Machine Learning Research (TMLR)}, 2024.
+
+\bibitem[Barreto et~al.(2017)Barreto, Dabney, Munos, Hunt, Schaul, van Hasselt,
+  and Silver]{barreto2017sf}
+Andr{\'e} Barreto, Will Dabney, R{\'e}mi Munos, Jonathan~J. Hunt, Tom Schaul,
+  Hado van Hasselt, and David Silver.
+\newblock Successor features for transfer in reinforcement learning.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2017.
+
+\bibitem[Chen et~al.(2023)Chen, Zhu, Agrawal, Zhang, and Gupta]{chen2023ramp}
+Boyuan Chen, Chuning Zhu, Pulkit Agrawal, Kaiqing Zhang, and Abhishek Gupta.
+\newblock Self-supervised reinforcement learning that transfers using random
+  features.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2023.
+
+\bibitem[Chi et~al.(2023)Chi, Feng, Du, Xu, Cousineau, Burchfiel, and
+  Song]{chi2023diffusion}
+Cheng Chi, Siyuan Feng, Yilun Du, Zhenjia Xu, Eric Cousineau, Benjamin
+  Burchfiel, and Shuran Song.
+\newblock Diffusion policy: Visuomotor policy learning via action diffusion.
+\newblock In \emph{Robotics: Science and Systems (RSS)}, 2023.
+
+\bibitem[Cui et~al.(2026)]{cui2026dreamsteer}
+Hanchen Cui et~al.
+\newblock {DreamSteer}: Latent world models can steer {VLA} policies during
+  deployment without any finetuning.
+\newblock \emph{arXiv preprint arXiv:2607.02865}, 2026.
+
+\bibitem[Ding et~al.(2024)Ding, Zhang, Tian, and Zheng]{ding2024dwm}
+Zihan Ding, Amy Zhang, Yuandong Tian, and Qinqing Zheng.
+\newblock Diffusion world model: Future modeling beyond step-by-step rollout
+  for offline reinforcement learning.
+\newblock \emph{arXiv preprint arXiv:2402.03570}, 2024.
+
+\bibitem[Du and Song(2025)]{du2025dynaguide}
+Maximilian Du and Shuran Song.
+\newblock {DynaGuide}: Steering diffusion policies with active dynamic
+  guidance.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2025.
+
+\bibitem[Farebrother et~al.(2025)Farebrother, Pirotta, Tirinzoni, Munos,
+  Lazaric, and Touati]{farebrother2025tdflow}
+Jesse Farebrother, Matteo Pirotta, Andrea Tirinzoni, R{\'e}mi Munos, Alessandro
+  Lazaric, and Ahmed Touati.
+\newblock Temporal difference flows.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, 2025.
+
+\bibitem[Farebrother et~al.(2026)Farebrother, Pirotta, Tirinzoni, Bellemare,
+  Lazaric, and Touati]{farebrother2026jumpy}
+Jesse Farebrother, Matteo Pirotta, Andrea Tirinzoni, Marc~G. Bellemare,
+  Alessandro Lazaric, and Ahmed Touati.
+\newblock Compositional planning with jumpy world models.
+\newblock \emph{arXiv preprint arXiv:2602.19634}, 2026.
+
+\bibitem[Florence et~al.(2021)Florence, Lynch, Zeng, Ramirez, Wahid, Downs,
+  Wong, Lee, Mordatch, and Tompson]{florence2021ibc}
+Pete Florence, Corey Lynch, Andy Zeng, Oscar Ramirez, Ayzaan Wahid, Laura
+  Downs, Adrian Wong, Johnny Lee, Igor Mordatch, and Jonathan Tompson.
+\newblock Implicit behavioral cloning.
+\newblock In \emph{Conference on Robot Learning (CoRL)}, 2021.
+
+\bibitem[Gao et~al.(2023)Gao, Schulman, and Hilton]{gao2023overoptimization}
+Leo Gao, John Schulman, and Jacob Hilton.
+\newblock Scaling laws for reward model overoptimization.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, 2023.
+
+\bibitem[Grimm et~al.(2020)Grimm, Barreto, Singh, and Silver]{grimm2020value}
+Christopher Grimm, Andr{\'e} Barreto, Satinder Singh, and David Silver.
+\newblock The value equivalence principle for model-based reinforcement
+  learning.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2020.
+
+\bibitem[Hafner et~al.(2019)Hafner, Lillicrap, Fischer, Villegas, Ha, Lee, and
+  Davidson]{hafner2019planet}
+Danijar Hafner, Timothy Lillicrap, Ian Fischer, Ruben Villegas, David Ha,
+  Honglak Lee, and James Davidson.
+\newblock Learning latent dynamics for planning from pixels.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, 2019.
+
+\bibitem[Hafner et~al.(2025)Hafner, Pasukonis, Ba, and
+  Lillicrap]{hafner2023dreamerv3}
+Danijar Hafner, Jurgis Pasukonis, Jimmy Ba, and Timothy Lillicrap.
+\newblock Mastering diverse control tasks through world models.
+\newblock \emph{Nature}, 2025.
+
+\bibitem[Hansen et~al.(2024)Hansen, Su, and Wang]{hansen2024tdmpc2}
+Nicklas Hansen, Hao Su, and Xiaolong Wang.
+\newblock {TD-MPC2}: Scalable, robust world models for continuous control.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}, 2024.
+
+\bibitem[Janner et~al.(2019)Janner, Fu, Zhang, and Levine]{janner2019mbpo}
+Michael Janner, Justin Fu, Marvin Zhang, and Sergey Levine.
+\newblock When to trust your model: Model-based policy optimization.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2019.
+
+\bibitem[Kim et~al.(2026)Kim, Seo, Lee, Cho, and Kwak]{kim2026compact}
+Dongwon Kim, Gawon Seo, Jinsung Lee, Minsu Cho, and Suha Kwak.
+\newblock Planning in 8 tokens: A compact discrete tokenizer for latent world
+  model.
+\newblock In \emph{IEEE/CVF Conference on Computer Vision and Pattern
+  Recognition (CVPR)}, 2026.
+
+\bibitem[Kwok et~al.(2025)Kwok, Agia, Sinha, Foutter, Li, Stoica, Mirhoseini,
+  and Pavone]{kwok2025robomonkey}
+Jacky Kwok, Christopher Agia, Rohan Sinha, Matt Foutter, Shulu Li, Ion Stoica,
+  Azalia Mirhoseini, and Marco Pavone.
+\newblock {RoboMonkey}: Scaling test-time sampling and verification for
+  vision-language-action models.
+\newblock In \emph{Conference on Robot Learning (CoRL)}, 2025.
+
+\bibitem[Lambert et~al.(2021)Lambert, Wilcox, Zhang, Pister, and
+  Calandra]{lambert2021longterm}
+Nathan~O. Lambert, Albert Wilcox, Howard Zhang, Kristofer S.~J. Pister, and
+  Roberto Calandra.
+\newblock Learning accurate long-term dynamics for model-based reinforcement
+  learning.
+\newblock In \emph{IEEE Conference on Decision and Control (CDC)}, 2021.
+
+\bibitem[LeCun(2022)]{lecun2022path}
+Yann LeCun.
+\newblock A path towards autonomous machine intelligence.
+\newblock OpenReview preprint, version 0.9.2, 2022.
+
+\bibitem[Li et~al.(2021)Li, Li, and Lu]{li2021dcvc}
+Jiahao Li, Bin Li, and Yan Lu.
+\newblock Deep contextual video compression.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2021.
+
+\bibitem[Liu et~al.(2023)Liu, Zhu, Gao, Feng, Liu, Zhu, and
+  Stone]{liu2023libero}
+Bo Liu, Yifeng Zhu, Chongkai Gao, Yihao Feng, Qiang Liu, Yuke Zhu, and Peter
+  Stone.
+\newblock {LIBERO}: Benchmarking knowledge transfer for lifelong robot
+  learning.
+\newblock In \emph{Advances in Neural Information Processing Systems (NeurIPS),
+  Datasets and Benchmarks Track}, 2023.
+
+\bibitem[Mentzer et~al.(2024)Mentzer, Minnen, Agustsson, and
+  Tschannen]{mentzer2024fsq}
+Fabian Mentzer, David Minnen, Eirikur Agustsson, and Michael Tschannen.
+\newblock Finite scalar quantization: {VQ-VAE} made simple.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}, 2024.
+
+\bibitem[Micheli et~al.(2023)Micheli, Alonso, and Fleuret]{micheli2023iris}
+Vincent Micheli, Eloi Alonso, and Fran{\c{c}}ois Fleuret.
+\newblock Transformers are sample-efficient world models.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}, 2023.
+
+\bibitem[Micheli et~al.(2024)Micheli, Alonso, and
+  Fleuret]{micheli2024deltairis}
+Vincent Micheli, Eloi Alonso, and Fran{\c{c}}ois Fleuret.
+\newblock Efficient world models with context-aware tokenization.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, 2024.
+
+\bibitem[Nakamoto et~al.(2024)Nakamoto, Mees, Kumar, and
+  Levine]{nakamoto2024vgps}
+Mitsuhiko Nakamoto, Oier Mees, Aviral Kumar, and Sergey Levine.
+\newblock Steering your generalists: Improving robotic foundation models via
+  value guidance.
+\newblock In \emph{Conference on Robot Learning (CoRL)}, 2024.
+
+\bibitem[Oquab et~al.(2024)Oquab, Darcet, Moutakanni, Vo,
+  et~al.]{oquab2024dinov2}
+Maxime Oquab, Timoth{\'e}e Darcet, Th{\'e}o Moutakanni, Huy Vo, et~al.
+\newblock {DINOv2}: Learning robust visual features without supervision.
+\newblock \emph{Transactions on Machine Learning Research (TMLR)}, 2024.
+
+\bibitem[Peng et~al.(2025)Peng, Dong, and Wu]{peng2025gcq}
+Xiangyuan Peng, Xingsi Dong, and Si Wu.
+\newblock Vector quantization in the brain: Grid-like codes in world models.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2025.
+
+\bibitem[Qi et~al.(2025)Qi, Yin, Zhu, Du, and Yang]{qi2025gpc}
+Han Qi, Haocheng Yin, Aris Zhu, Yilun Du, and Heng Yang.
+\newblock Inference-time enhancement of generative robot policies via
+  predictive world modeling.
+\newblock \emph{IEEE Robotics and Automation Letters (RA-L)}, 2025.
+
+\bibitem[Schrittwieser et~al.(2020)Schrittwieser, Antonoglou, Hubert, Simonyan,
+  Sifre, Schmitt, Guez, Lockhart, Hassabis, Graepel, Lillicrap, and
+  Silver]{schrittwieser2020muzero}
+Julian Schrittwieser, Ioannis Antonoglou, Thomas Hubert, Karen Simonyan,
+  Laurent Sifre, Simon Schmitt, Arthur Guez, Edward Lockhart, Demis Hassabis,
+  Thore Graepel, Timothy Lillicrap, and David Silver.
+\newblock Mastering {A}tari, {G}o, chess and shogi by planning with a learned
+  model.
+\newblock \emph{Nature}, 588:\penalty0 604--609, 2020.
+
+\bibitem[Shukor et~al.(2025)Shukor, Aubakirova, Capuano,
+  et~al.]{shukor2025smolvla}
+Mustafa Shukor, Dana Aubakirova, Francesco Capuano, et~al.
+\newblock {SmolVLA}: A vision-language-action model for affordable and
+  efficient robotics.
+\newblock \emph{arXiv preprint arXiv:2506.01844}, 2025.
+
+\bibitem[Sutton et~al.(1999)Sutton, Precup, and Singh]{sutton1999options}
+Richard~S. Sutton, Doina Precup, and Satinder Singh.
+\newblock Between {MDP}s and semi-{MDP}s: A framework for temporal abstraction
+  in reinforcement learning.
+\newblock \emph{Artificial Intelligence}, 112\penalty0 (1--2):\penalty0
+  181--211, 1999.
+
+\bibitem[Wu et~al.(2025)Wu, Tian, Swamy, and Bajcsy]{wu2025forewarn}
+Yilin Wu, Ran Tian, Gokul Swamy, and Andrea Bajcsy.
+\newblock From foresight to forethought: {VLM}-in-the-loop policy steering via
+  latent alignment.
+\newblock In \emph{Robotics: Science and Systems (RSS)}, 2025.
+
+\bibitem[Wyner and Ziv(1976)]{wyner1976ratedistortion}
+Aaron~D. Wyner and Jacob Ziv.
+\newblock The rate-distortion function for source coding with side information
+  at the decoder.
+\newblock \emph{IEEE Transactions on Information Theory}, 22\penalty0
+  (1):\penalty0 1--10, 1976.
+
+\bibitem[Zhou et~al.(2025)Zhou, Pan, LeCun, and Pinto]{zhou2025dinowm}
+Gaoyue Zhou, Hengkai Pan, Yann LeCun, and Lerrel Pinto.
+\newblock {DINO-WM}: World models on pre-trained visual features enable
+  zero-shot planning.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, 2025.
+
+\end{thebibliography}

@@ -1,0 +1,41 @@
+\section{Introduction}
+\label{sec:intro}
+
+A world model lets an agent evaluate an action before taking it.
+The dominant recipe for visual control predicts future observations, in pixels, discrete tokens, or the features of a pretrained encoder, one frame after another, and a planner then scores the imagined frames against a goal~\cite{hafner2019planet,micheli2023iris,zhou2025dinowm,assran2025vjepa2}.
+Predicting frames keeps the model general, because any question about the future can in principle be answered from them.
+It also makes the model expensive in exactly the place where planning is most demanding.
+The cost of evaluating one candidate grows with the horizon and with the number of tokens per frame, errors compound over the rollout, and most of every predicted frame restates what the observed history already shows: the scene layout, the identity and appearance of objects, and everything the action does not touch.
+
+The opposite extreme is to skip prediction altogether and learn a \emph{direct scorer} that maps the history, a candidate action, and a goal to a score~\cite{nakamoto2024vgps}.
+A direct scorer is cheap, but it entangles two different things: what the action will do, which does not depend on the goal, and how the outcome relates to the goal, which does.
+It must therefore learn the consequences of actions separately for every goal, and it has no reason to generalize to goals, or to questions, that it was not trained on.
+
+This paper asks whether a world model can occupy the space between these extremes: \emph{instead of simulating the future frame by frame, can a world model predict a compact abstraction of an entire future segment that is still sufficient for decision making?}
+Two observations make this plausible.
+First, a planner never needs the future as such, only the answers to a few questions about it: how much closer to the goal the segment ends, whether it passes through a state resembling a reference image, or whether one event happens before another.
+Second, whatever the observed history already determines need not be predicted again.
+Learned video compression exploits the same fact through \emph{conditional coding}, where both the encoder and the decoder see the temporal context and bits are spent only on what the context cannot predict~\cite{li2021dcvc}.
+We apply this principle to the \emph{unexecuted} future of an action.
+
+We propose \emph{Conditional Trajectory Abstraction} (\method), summarized in \cref{fig:overview}.
+A cached context $C$ encodes the observed history once per decision.
+During training only, a source encoder compresses the actual future segment of an action chunk into $M$ discrete tokens $S$ conditioned on $C$.
+A reader that receives $C$, $S$, and a query answers self-supervised visual--temporal questions about the segment, whose ground truth is computed from frozen features of the actual future.
+The reader never receives the action, so everything the action changes must pass through $S$.
+The world model is an action-conditioned predictor of $S$ given $C$ and a candidate chunk.
+Because a code is useful only if it can be forecast, the source code is \emph{co-designed} with the world model: it is trained to retain query answers at a bounded rate while remaining predictable from the action.
+In policy-guided planning, a frozen pretrained policy proposes a small bank of candidate chunks, the world model predicts one code per candidate, and the reader scores each code against the goal.
+Since codes do not depend on the goal, one prediction per candidate serves any number of goals and queries: \emph{predict once, query many}.
+
+Each ingredient of \method has precedents in world models, video compression, and policy steering, so a new name is not a contribution by itself.
+Our claims are therefore stated as comparisons at matched history, proposal bank, and compute, against the two extremes above and against controls that remove one ingredient at a time.
+Our contributions are as follows.
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+\item We formulate trajectory abstraction for world models as \emph{conditional} rate--distortion over a family of self-supervised visual--temporal queries, subject to predictability from actions, and show how frame-level world models and direct scorers arise as its two limiting cases.
+\item We introduce \method, a world model that predicts a history-conditioned, segment-level discrete code of an action's future, together with a query reader and a co-design objective that trades query distortion, code rate, and action predictability. No component uses rewards, success labels, or simulator state.
+\item We define an evaluation protocol that first qualifies the planning interface, namely whether the proposal bank contains better candidates and whether the query-based score selects them when given actual futures, and then isolates each claim with a matched control: per-frame codes at equal total bits, a reader without history, a code trained without the predictability term, a direct scorer on held-out goals, and a frame-level world model at matched compute.
+\item On PushT~\cite{florence2021ibc,chi2023diffusion} and LIBERO-Goal~\cite{liu2023libero} with frozen released policies, \result{[result placeholder]}.
+\end{itemize}
+
+\input{fig/overview}

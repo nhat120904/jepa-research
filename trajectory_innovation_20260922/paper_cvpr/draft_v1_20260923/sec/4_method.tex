@@ -1,0 +1,137 @@
+\section{Conditional Trajectory Abstraction}
+\label{sec:method}
+
+\method consists of a context encoder (\cref{sec:context}), a source encoder used only in training (\cref{sec:source}), a query reader (\cref{sec:reader}), and the world model that predicts codes from actions (\cref{sec:wm}).
+\Cref{sec:codesign} describes how the code and the world model are trained jointly, \cref{sec:planning} how they are used for planning, and \cref{sec:rationale} which control tests each design choice.
+
+\subsection{Context encoder}
+\label{sec:context}
+Images are embedded by a frozen DINOv2 ViT-S/14~\cite{oquab2024dinov2}, following DINO-WM~\cite{zhou2025dinowm}, and the full patch grid is kept.
+A small Transformer $E$ maps the patch features of the most recent $n$ frames and the corresponding proprioceptive states to a set of context tokens $C_t$.
+The context is computed once per decision and shared by all $K$ candidates and all queries; its cost is reported once and not multiplied by $K$.
+Every compared model receives the same history.
+
+\subsection{Source encoder}
+\label{sec:source}
+The source encoder $q_\phi(S\mid C,\tau)$ turns the actual future segment into a code and exists only during training.
+The patch features of the $\He$ future frames receive spatial and native-time position embeddings.
+$M$ learned segment queries cross-attend jointly to these future tokens and to the context tokens, and each output is projected and quantized by finite scalar quantization~\cite{mentzer2024fsq} with an implicit vocabulary of $V{=}256$.
+Because the segment queries attend to the context, the encoder can learn which parts of the future are already implied by the history instead of relying on a hand-designed residual such as subtracting current from future features.
+The code $S$ describes the whole segment at a declared temporal resolution; it is not a set of $M$ tokens per frame.
+
+\subsection{Query reader}
+\label{sec:reader}
+The reader $D_\psi(C,S,q)$ answers a query from the context and the code.
+A query encoder maps the query type to a learned embedding and its parameters to tokens: goal and anchor images through $\varphi$, and time windows through a learned embedding.
+The query tokens cross-attend to the context tokens and the embedded code tokens over several layers, and a type-specific head produces the answer.
+The reader has no access to the action, so the code is the only channel through which the action's consequences reach it.
+We use squared error for the continuous query types and logistic loss for the order query.
+
+\paragraph{Self-supervised query targets.}
+All targets are computed from the frozen feature space of the actual future, using fixed feature kernels and normalization statistics estimated on training episodes only.
+For the progress query (iii), the goal is a frame sampled from later in the same episode and the target is $\log(1+\Delta t)$, where $\Delta t$ is the number of steps from the end of the segment to that frame. This is a form of hindsight relabeling~\cite{andrychowicz2017her,hartikainen2020ddl} that turns every episode, successful or not, into supervision.
+For the similarity and order queries, anchors are sampled from the data together with hard negatives.
+Anchors, goal sets, and windows used for evaluation are fixed independently of the candidate being scored, the query family and its weights are frozen before any planning evaluation, and episodes are split by root trajectory before any query is constructed.
+No reward, success label, simulator state, contact label, or human annotation enters the training of the context encoder, the source encoder, the reader, or the world model.
+The frozen proposal policy is a separately pretrained imitation-learning model, so the complete system is not free of expert data, and we state this explicitly.
+
+\subsection{Action-conditioned world model}
+\label{sec:wm}
+The world model $p_\theta(S\mid C,\bA)$ predicts the code of a candidate's future before it is executed.
+Each action of the executed prefix $\bA_{1:\He}$ is embedded linearly with a temporal embedding.
+A Transformer attends over the context tokens and the action tokens and decodes the $M$ code tokens autoregressively as categorical distributions over the vocabulary, which preserves the dependencies between code positions.
+The world model does not receive future images, future proprioception, the query, or any label.
+It is trained with teacher forcing on source codes.
+At test time we decode either the most likely code or a small number of sampled codes; with samples, we average the reader's \emph{answers} rather than the code embeddings, since the reader is nonlinear.
+
+\subsection{Co-designing the code and the world model}
+\label{sec:codesign}
+Training alternates between the code and the world model in three stages.
+Let $D_{\mathcal{Q}}=\E_{q\sim\mathcal{Q}}\,d\big(D_\psi(C,S,q),y_q\big)$ denote the query distortion with $S\sim q_\phi(\cdot\mid C,\tau)$, and let $r_\omega(S\mid C)$ be a context-only autoregressive model of the code that serves as a rate estimate.
+
+\paragraph{Stage 1: codec warm-up.}
+The source encoder, the reader, and the rate model are trained on actual futures and sampled queries by minimizing $D_{\mathcal{Q}}+\beta\,\E[-\log r_\omega(S\mid C)]$.
+
+\paragraph{Stage 2: world model.}
+The world model is trained to predict the stop-gradient source codes,
+\begin{equation}
+  \mathcal{L}_{\mathrm{WM}}=\E\big[-\log p_\theta(\sg(S)\mid C,\bA)\big].
+  \label{eq:wm}
+\end{equation}
+
+\paragraph{Stage 3: alternating co-design.}
+A fixed, predeclared number of source updates alternates with a fixed number of world-model updates.
+The source objective adds a predictability term under a frozen copy $\bar p_\theta$ of the world model,
+\begin{equation}
+\begin{aligned}
+  \mathcal{L}_{\mathrm{source}}={}&D_{\mathcal{Q}}+\beta\,\E\big[-\log r_\omega(S\mid C)\big]\\
+  &+\lambda\,\E\big[-\log \bar p_\theta(S\mid C,\bA)\big],
+\end{aligned}
+  \label{eq:source}
+\end{equation}
+which favors codes that the world model can forecast from the action.
+Within each world-model block, the targets are fixed codes from an exponential moving average of the source encoder.
+Gradients pass through the quantizer with the straight-through estimator, which is an estimator rather than an exact gradient.
+Setting $\lambda{=}0$ recovers a code trained for query retention and rate only, and this ablation tests whether predictability-aware co-design adds anything.
+
+\paragraph{Training data and collapse diagnostics.}
+Training tuples $(h_t,\bA,\tau,\text{continuation})$ come from demonstrations and from rollouts of the proposal policy, including several chunks branched from the same simulator state so that the world model observes different actions from identical histories.
+All branches of a root episode belong to the same data split.
+A code can satisfy the losses while ignoring the action.
+We therefore monitor code usage, the query accuracy of a history-only baseline that receives no code, and whether codes differ between chunks proposed from the same state.
+
+\subsection{Planning with predicted codes}
+\label{sec:planning}
+\Cref{alg:cta} summarizes deployment.
+The planning score of a candidate is the reader's answer to the progress query (iii) for the task's goal images, averaged over the goal images and negated, so that the candidate predicted to leave the fewest remaining steps is selected.
+At deployment, the goal images are final frames of successful demonstrations of the task.
+The query type used for planning is fixed before evaluation, and other types serve as training signal and as held-out evaluations of the code.
+Per decision, \method encodes the context once, runs the world model on $K$ candidates in one batch, and runs the reader on $K|\cG|$ candidate--goal pairs.
+Because codes do not depend on the goal, a new goal or query on the same candidates costs only additional reader evaluations.
+
+\begin{algorithm}[t]
+\caption{Policy-guided planning with \method.}
+\label{alg:cta}
+\small
+\begin{algorithmic}[1]
+\Require frozen policy $\pi$; context encoder $E$; world model $p_\theta$; reader $D_\psi$; goal images $\cG$; $K$; $\He$
+\While{episode not finished}
+  \State $C\gets E(h_t)$ \Comment{once per decision}
+  \State $\bA^{(k)}\gets\pi(h_t;\xi_k)$ for $k=1,\dots,K$ \Comment{shared bank}
+  \State $\hat S^{(k)}\gets$ decode $p_\theta(\cdot\mid C,\bA^{(k)}_{1:\He})$ for all $k$ \Comment{batched}
+  \State $s_k\gets-\frac{1}{|\cG|}\sum_{g\in\cG}D_\psi\big(C,\hat S^{(k)},q_{\mathrm{prog}}(g)\big)$
+  \State $k^\star\gets$ smallest index attaining $\max_k s_k$ \Comment{ties keep the default}
+  \State execute $\bA^{(k^\star)}_{1:\He}$; $t\gets t+\He$
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Design choices and the controls that test them}
+\label{sec:rationale}
+Each design choice is a hypothesis with a matched control, evaluated at the same history, proposal bank, data, and training budget.
+
+\paragraph{A segment code rather than per-frame codes.}
+A decision is made once per chunk and the chunk is executed open loop, so no intermediate state is ever selected.
+Some queries nevertheless depend on the path, not only on its endpoint.
+A segment code can allocate its bits across the segment where they matter, whereas a per-frame code must spend them uniformly.
+Because the source encoder sees the entire segment, a brief event such as the onset of contact is present in the target whenever it changes a query's answer.
+\emph{Controls:} a conditional per-frame code with the same context and the same total number of bits, a code of the endpoint only, and uniform temporal pooling of per-frame features.
+If the per-frame code matches \method, the segment claim fails.
+
+\paragraph{Conditioning on the history.}
+The reader and the source encoder both see $C$, so the code need not restate the scene.
+\emph{Control:} a reader without $C$, which forces scene information through the same bottleneck.
+
+\paragraph{Predictability-aware co-design.}
+A code that is informative but not forecastable from the action is of no use to a world model.
+\emph{Control:} $\lambda{=}0$ in~\eqref{eq:source}.
+
+\paragraph{Predicting a code rather than a score.}
+A direct scorer $D(C,\bA,q)$ is the minimal model sufficient for the goals it was trained on.
+The advantage of factoring prediction from reading should appear on goals and queries that were not seen during training.
+\emph{Control:} a direct scorer with the same data and capacity, evaluated on held-out goals of LIBERO-Goal, whose ten tasks share one scene.
+
+\paragraph{Predicting a code rather than frames.}
+A frame-level world model answers any query but pays for every frame.
+\emph{Control:} a DINO-WM-style patch-feature world model trained on the same data, with the same queries computed on its predicted frames, compared at matched compute and on the full accuracy--latency frontier over $M\in\{8,16,32\}$.
+We also compare against GPC~\cite{qi2025gpc} as a policy-steering system, against a compact per-frame tokenizer in the style of CompACT~\cite{kim2026compact}, and against the sequence quantization of GCQ~\cite{peng2025gcq} where its released mechanism applies to our interface.

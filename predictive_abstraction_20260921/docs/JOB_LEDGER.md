@@ -178,3 +178,133 @@ Output: `/mnt/data/nhatnc129/jepa/predictive_abstraction/metric_bridge_53674/out
 Expected artifacts: `result.json`, `REPORT.md`, `checkpoints.pt`.
 Submission-time status verified with both `squeue` and `sacct`: PENDING (Resources).
 Not running/holding a GPU at this snapshot; completion not yet claimed.
+
+53674 completion: both queue/accounting checked, COMPLETED, exit 0, 1m39s. 22 tests
+passed and frozen metric reference reproduced. Learned summary4 failed all retention
+gates; summary16 only passed H32, so NO summary student was trained. Fixed 16-bin
+compression preserves queries much better, but full metric-frame forecast remains
+weak versus the no-action control on validation A-before-B. No control benefit.
+Follow-up: `FIXED_SUMMARY_FORECAST_PROTOCOL.md`, tiny forecast fit then (only if it
+passes) compact fixed-bin vs full-frame prediction with matched coarse-loss control.
+
+## 53698 — fixed-summary forecast feasibility
+
+Submitted via `scripts/slurm_fixed_summary_forecast.sh` after queue/accounting checks.
+One GPU, 8 CPU, 64 GB, explicit 20-minute cap. Runs all tests first and reproduces
+the 53674 fixed-bin reference. Two tiny TRAIN forecast fits (1,000 updates each).
+Only if at least one passes: four fresh 1,800-update arms (dense-frame, coarse-loss
+frame, compact16, compact16-no-action). No data expansion, encoding, privileged labels,
+test reads, policy training, MPC or automatic follow-on jobs.
+
+Log: `/mnt/data/nhatnc129/jepa/predictive_abstraction/logs/fixed_summary_53698.out`.
+Output: `/mnt/data/nhatnc129/jepa/predictive_abstraction/fixed_summary_53698/output/`.
+Expected: `result.json`, `REPORT.md`, `checkpoints.pt`. Source/docs/tests and input
+hashes snapshotted in run directory. Completion not yet claimed.
+
+53698 completion: queue/accounting both checked, COMPLETED exit 0, 1m41s. 25 tests
+passed. Compact prediction contains action signal (H48 bin MSE .533 vs no-action
+.881; shuffled actions 1.009), but ordered query/ranking did not improve. No-action
+ties favor default under argmax-first; do not equate this with prediction skill.
+Next bounded scope: READOUT_DIAGNOSTIC_PROTOCOL.md, frozen predictors and tiny readers
+only. Conditional architecture plan: ARCHITECTURE_DECISION_AFTER_FORECAST_FAILURE.md.
+
+## 53700 — frozen-predictor readout diagnostic
+
+Submitted after empty queue and completed prior-job accounting checks. One GPU,
+8 CPU, 64 GB, explicit 15-minute cap. Existing 53698 metric/predictors remain frozen;
+four small readers fit on 18 old train prefixes, with 6 readout-held-out old training
+prefixes and 12 reused development validation prefixes. Tests run first on compute.
+Includes frozen-reference reproduction, event/order diagnostics, no-action control,
+argmax-first and uniform-tie regret, paired prefix bootstrap. No test reads, new
+rollouts, encoding, policy training, WM retraining or automatic follow-on jobs.
+
+Log: `/mnt/data/nhatnc129/jepa/predictive_abstraction/logs/readout_53700.out`.
+Artifacts: `/mnt/data/nhatnc129/jepa/predictive_abstraction/readout_53700/output/`.
+Expected `result.json`, `REPORT.md`, `readers.pt`; source/docs/tests and input hashes
+snapshotted in the run directory. Local Python/shell syntax checks passed before
+submission; compute test outcomes and diagnostic results not yet claimed.
+Submission-time `squeue` and `sacct` both report RUNNING on worker-0 (elapsed 16s).
+
+53700 completion: both queue/accounting checked, COMPLETED exit 0, 31 seconds; 29
+tests passed. Reference reproduced. Readout adaptation does not rescue validation
+ordered prediction/ranking consistently across horizons. No-action first-argmax
+advantage is tie-breaking, not prediction skill. See READOUT_RESULT_53700.md.
+Proceed to LOCAL_TRANSITION_PROTOCOL.md, the previously specified short-dynamics
+branch, without new data/encoding/policy/MPC or another summary/readout sweep.
+
+## 53741 — local spatial transition feasibility
+
+Submitted through `scripts/slurm_local_transition.sh` after empty queue and completed
+53700 accounting checks. One GPU, 8 CPU, 64 GB, explicit 20-minute limit. Cached
+features only; no new data/encoding. Tests first, then 400-step tiny fit; only if tiny
+fit beats persistence by 50% train step1 / step4 / step4-no-action for 1,200 updates
+each. Image-feature training targets, frozen RGB-affinity metric for evaluation only.
+Teacher-forced and open-loop eval, persistence and action-shuffle controls, explicit
+bank vs evaluated horizon. No new summary, VLA, physical labels or planning rollout.
+
+Protocol: LOCAL_TRANSITION_PROTOCOL.md. Local Python/shell syntax and diff checks
+passed; compute tests/results not yet claimed. Source/docs/tests and input hashes
+snapshotted per run. Log:
+`/mnt/data/nhatnc129/jepa/predictive_abstraction/logs/local_transition_53741.out`.
+Outputs: `/mnt/data/nhatnc129/jepa/predictive_abstraction/local_transition_53741/output/`.
+Expected `result.json`, `REPORT.md`, and model checkpoints if full training runs.
+Submission snapshot: both `squeue` and `sacct` report PENDING (Priority); not yet
+running or holding a GPU. No automatic follow-on jobs submitted.
+
+53741 completion: squeue/accounting checked, COMPLETED exit 0, 54 seconds; 33 tests
+passed. Tiny fit and observed reference reproduced; short-dynamics gate passed
+(14.5% TF, 51.8% H8 vs persistence, 46.0% H8 vs no-action feature-error reductions).
+Long query selection still fails: H48 step4 misses 31/41 events, regret .19435 vs
+default .02369. H8 bank has no positive events, and TF persistence also reads events
+well; do not call the gate a planning/event-success result. See LOCAL_TRANSITION_RESULT_53741.md.
+Next bounded scope: ROLLOUT_EXTENSION_PROTOCOL.md, matched continuation budget controls.
+
+## 53748 — controlled rollout extension
+
+Submitted via scripts/slurm_rollout_extension.sh after empty queue and accounting
+checks. One GPU, 8 CPU, 64 GB, explicit 20-minute cap. Tests first; reproduce frozen
+53741 reference before new training. Same step4 checkpoint initializes all three
+continuations: 4x600, 16x600, 4x2400 (unroll length x optimizer updates). Image-feature
+loss only; metric frozen for evaluation. Includes matched observation-refresh controls,
+train/val query and feature metrics, prefix bootstrap, default and tie handling.
+No new data/encoding, physical labels, VLA, composer or control/MPC rollouts.
+
+Log: `/mnt/data/nhatnc129/jepa/predictive_abstraction/logs/rollout_extension_53748.out`.
+Output: `/mnt/data/nhatnc129/jepa/predictive_abstraction/rollout_extension_53748/output/`.
+Expected result.json, REPORT.md and checkpoints.pt; source/docs/tests/input hashes
+snapshotted. Local syntax/diff checks passed; compute test and training outcomes not
+yet claimed. No automatic follow-on jobs.
+Submission-time squeue and sacct both report RUNNING, worker-0, elapsed 15 seconds.
+
+53748 completion: both queue/accounting checked, COMPLETED exit 0, 1m38s; 37 tests
+passed and reference reproduced. Query-progress gate fails H48 and H64. Feature
+errors decrease but ordered queries/ranking do not improve enough; close longer-
+rollout rescue, no additional unroll sweep. See ROLLOUT_EXTENSION_RESULT_53748.md.
+Last scoped implementation test: QUERY_NATIVE_STOP_PROTOCOL.md with explicit stop
+rules, matched query-supervised arms, no latent-coordinate loss and no physical labels.
+
+## 53750 — final query-native Wall implementation pilot
+
+Submitted after empty queue/accounting checks, via scripts/slurm_query_native.sh.
+One GPU, 8 CPU, 64 GB, explicit 20-minute limit. Tests first, then four 2,000-update
+arms: summary16, ordered frame tokens, cached direct query predictor, summary no-action.
+Same RGB-derived dense/query/pair loss, no latent-coordinate alignment loss. Same
+cached data and frozen anchor features; no physical labels, policy or MPC. Cross-query
+anchor donors locked by same-layout prefix order, validation-only labels never trained.
+Operational stopping rule locked in QUERY_NATIVE_STOP_PROTOCOL.md. No automatic
+follow-on job; negative result closes the current implementation repair cycle.
+
+Log: `/mnt/data/nhatnc129/jepa/predictive_abstraction/logs/query_native_53750.out`.
+Outputs: `/mnt/data/nhatnc129/jepa/predictive_abstraction/query_native_53750/output/`.
+Expected result.json, REPORT.md, checkpoints.pt; immutable code/docs/test snapshot
+and input hashes. Local syntax/diff checks passed; compute tests/results not yet claimed.
+Submission snapshot: squeue and sacct both RUNNING on worker-0, elapsed 15 seconds.
+
+53750 completion: squeue/accounting checked, COMPLETED exit 0, 2m05s; 41 tests
+passed. Predeclared verdict `STOP_CURRENT_WALL_METHOD_IMPLEMENTATION`: summary,
+frame-token and direct action-aware arms all fail native H48/H64 feasibility gates.
+Summary H48/H64 ordered MSE .04876/.05870 and regret .11694/.17948, versus actual
+default regret .02369/.00615. No-action's low first-argmax regret is a tie artifact;
+uniform-tie regret .15629/.15999. Summary and frame are statistically unresolved on
+ordered MSE. See QUERY_NATIVE_RESULT_53750.md. Current Wall repair cycle is closed;
+no automatic follow-on job submitted.

@@ -31,6 +31,35 @@ readers remain weak. Next bounded pilot: [metric-space bridge](docs/METRIC_BRIDG
 with the frozen RGB-trained metric as target, common temporal query readout, fixed
 pooling controls and gated summary forecasting versus a matched metric-frame WM.
 
+53674 completed: neither learned codec passed every retention gate; no summary
+students trained. Fixed 16-bin pooling retains queries, while action forecasting
+is still weak. Current bounded follow-up: [fixed-summary forecast feasibility](docs/FIXED_SUMMARY_FORECAST_PROTOCOL.md),
+including a tiny-fit gate and matched full-frame/coarse-target control. No new control claim.
+
+53698 completed: action conditioning improves latent forecast error, but not query
+ranking. Next: [frozen-predictor readout diagnostic](docs/READOUT_DIAGNOSTIC_PROTOCOL.md).
+See [conditional architecture changes](docs/ARCHITECTURE_DECISION_AFTER_FORECAST_FAILURE.md)
+for the decision tree; no automatic architecture sweep or MPC job is authorized by it.
+
+53700 completed: [readout result](docs/READOUT_RESULT_53700.md) shows no consistent
+rescue. Next authorized bounded experiment: [local patch transitions](docs/LOCAL_TRANSITION_PROTOCOL.md),
+separating one-step capability from open-loop error accumulation. Not a new summary
+method win or control result.
+
+53741 completed: [short dynamics passed, long queries failed](docs/LOCAL_TRANSITION_RESULT_53741.md).
+Next authorized diagnostic is [controlled rollout extension](docs/ROLLOUT_EXTENSION_PROTOCOL.md):
+same checkpoint/architecture, longer unroll versus extra short-unroll training.
+
+53748 completed: [longer rollout failed the query gate](docs/ROLLOUT_EXTENSION_RESULT_53748.md).
+The [last query-native pilot and stop rule](docs/QUERY_NATIVE_STOP_PROTOCOL.md) closes
+this implementation repair cycle on a negative result; no automatic architecture sweep.
+
+53750 completed with the predeclared verdict
+`STOP_CURRENT_WALL_METHOD_IMPLEMENTATION`. See the
+[final result and scope](docs/QUERY_NATIVE_RESULT_53750.md). No summary/frame/direct
+arm generalized candidate ranking at both main horizons; the current Wall repair
+cycle is closed and no follow-on job is queued.
+
 Learn a query-independent summary of an unexecuted action-conditioned trajectory;
 read visual-temporal queries from it. Compare with frame prediction, generic compression,
 and direct query prediction, then use identical action proposals for control.

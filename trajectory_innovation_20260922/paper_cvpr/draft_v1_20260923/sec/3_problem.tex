@@ -1,0 +1,78 @@
+\section{Problem Formulation}
+\label{sec:problem}
+
+\paragraph{Setting.}
+A robot observes images $o_t$ and proprioceptive states $q_t$.
+A frozen visual encoder $\varphi$ maps each image to a grid of patch features, and a context $C_t=E(h_t)$ summarizes the observed history $h_t$ using only present and past information.
+At a decision time $t$, a candidate action chunk $\bA=(a_t,\dots,a_{t+H-1})$ is executed for its first $\He$ steps.
+The \emph{future segment} of $\bA$ is $\tau=\big(\varphi(o_{t+1}),\dots,\varphi(o_{t+\He})\big)$, the frozen features of the observations that executing $\bA$ produces, at the native temporal resolution.
+A world model must say something about $\tau$ \emph{before} $\bA$ is executed.
+
+\paragraph{Queries.}
+What a planner needs to know about $\tau$ is expressed as a family $\mathcal{Q}$ of queries.
+A query $q$ has a type and parameters, such as a goal image, one or two anchor images, or a time window.
+Its answer $y_q$ is computed from frozen features of the actual future, so no annotation is required.
+We use five types:
+\begin{enumerate*}[label=(\roman*)]
+\item the similarity of the segment's end to a goal image;
+\item the maximum similarity to an anchor image over the segment;
+\item the number of steps from the end of the segment to a goal frame later in the same episode;
+\item whether anchor $u$ is matched before anchor $v$ within the segment; and
+\item masked local probes of spatial features, which retain fine motion.
+\end{enumerate*}
+Types (ii) and (iv) depend on the path and not only on the endpoint.
+Type (iii) measures temporal progress rather than visual similarity, which matters in multi-stage tasks where the distance to a goal image is a poor measure of how far along the task is.
+
+\paragraph{Conditional trajectory abstraction.}
+A \emph{conditional trajectory code} is a sequence of $M$ discrete tokens $S\in\{1,\dots,V\}^M$ produced by a source encoder $q_\phi(S\mid C,\tau)$, which sees the actual future and is used only during training.
+A reader $D_\psi(C,S,q)$ answers queries from the context and the code, and a world model $p_\theta(S\mid C,\bA)$ predicts the code from the context and the candidate chunk.
+The reader never receives $\bA$, so any information about the action's consequences must pass through $S$.
+In its idealized form, the code solves a conditional rate--distortion problem,
+\begin{equation}
+  \min_{q_\phi,\,D_\psi}\ \E_{q\sim\mathcal{Q}}\,\E\big[d\big(D_\psi(C,S,q),\,y_q\big)\big]\quad\text{s.t.}\quad I(\tau;S\mid C)\le R,
+  \label{eq:crd}
+\end{equation}
+in which the context is available to both the encoder and the reader.
+We count rate by the code itself: $M\in\{8,16,32\}$ tokens with vocabulary $V{=}256$ correspond to at most $64$, $128$, and $256$ bits per segment.
+This count excludes the codebook, the reader, and the context cache, which we report separately.
+
+\paragraph{Predictability.}
+At deployment the code is not observed but predicted, $\hat S\sim p_\theta(\cdot\mid C,\bA)$, so what matters is the \emph{deployment} distortion $\E\,d\big(D_\psi(C,\hat S,q),y_q\big)$.
+A code that minimizes~\eqref{eq:crd} alone may spend its rate on aspects of $\tau$ that the action does not determine, and those aspects cannot be forecast.
+We therefore also require the code to be predictable, $\E[-\log p_\theta(S\mid C,\bA)]$ small, and design the code and the world model jointly (\cref{sec:codesign}).
+
+\paragraph{Two limiting cases.}
+The formulation contains the two common designs as extremes.
+A \emph{frame-level world model} sets $S=\tau$: it has no codec distortion and unbounded rate, and it must forecast $\He$ frames of patch features per candidate.
+A \emph{direct scorer} $D(C,\bA,q)$ removes $S$ altogether: it has zero rate, but prediction and reading are fused, so each candidate--query pair requires a separate evaluation and generalization to new queries must be learned jointly with the effect of the action.
+\method operates at a finite, explicit rate between them.
+The questions we study are whether, at such a rate, predicted codes answer queries as accurately as a frame-level model at lower cost, and whether they generalize to held-out goals better than a direct scorer.
+\Cref{tab:designs} summarizes the design properties.
+
+\paragraph{Policy-guided planning.}
+We evaluate world models in the planning interface of recent policy steering work~\cite{qi2025gpc,cui2026dreamsteer}.
+At every decision, a frozen pretrained policy $\pi$ proposes $K$ chunks $\bA^{(1)},\dots,\bA^{(K)}$ from independent noise seeds, where $\bA^{(1)}$ is the chunk the unmodified policy would execute.
+Each world model scores every proposal with the same goal query, the highest-scoring proposal is executed for $\He$ steps with ties resolved in favor of $\bA^{(1)}$, and the policy replans.
+Selecting among proposals of a competent policy, rather than optimizing actions against the model, keeps candidates on the policy's support, where a learned model is less exposed to adversarial exploitation of its errors~\cite{janner2019mbpo,gao2023overoptimization}.
+The same proposal bank is given to every compared model.
+Because no world model can recover an action that is absent from the bank, our evaluation first verifies that the bank contains better candidates (\cref{sec:experiments}).
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+ & Predicted per & Sequential & New goal & Path \\
+ & candidate & steps & or query & queries \\
+\midrule
+Frame-level WM & $\He\cdot P$ tokens & $\He$ & reader only & \checkmark \\
+Endpoint latent & $P$ tokens & $1$ & reader only & -- \\
+Direct scorer & one score & $1$ per query & new evaluation & trained only \\
+\method (ours) & $M$ tokens & $M$ & reader only & \checkmark \\
+\bottomrule
+\end{tabular}}
+\caption{\textbf{Design properties} (not results) of world models for evaluating a candidate chunk. $P$ is the number of patch tokens per frame (hundreds), $M\in\{8,16,32\}$ the number of code tokens. \method's $M$ autoregressive steps are short but not automatically cheaper than $\He$ frame steps, so latency is measured, not assumed.}
+\label{tab:designs}
+\end{table}

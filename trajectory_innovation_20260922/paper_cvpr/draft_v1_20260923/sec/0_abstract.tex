@@ -1,0 +1,13 @@
+\begin{abstract}
+World models for visual control usually predict the future frame by frame and leave it to a planner to extract what matters for a decision.
+This is general but costly: prediction cost grows with the horizon and the number of tokens per frame, errors compound over the rollout, and most of each predicted frame restates what the observed history already shows.
+At the other extreme, a direct scorer maps history, action, and goal to a score; it is cheap but entangles dynamics with the goal and must generalize anew to every goal it was not trained on.
+We ask whether a world model can instead predict a \emph{compact abstraction of an entire future segment} that remains sufficient for decision making.
+We propose \emph{Conditional Trajectory Abstraction} (\method).
+During training only, a source encoder compresses the actual future segment of an action chunk into a few discrete tokens conditioned on the observed history, so that the code spends its capacity on what the action changes.
+A reader that sees the same history answers self-supervised visual--temporal queries from the code, such as progress toward a goal image or the order of two events, without ever seeing the action.
+An action-conditioned world model predicts the code autoregressively from the history and a candidate chunk, and the code is co-designed for query retention, rate, and predictability from actions.
+In policy-guided planning, a frozen policy proposes candidate chunks, the world model predicts one code per candidate, and the reader scores it against any goal without further prediction.
+No component uses rewards or success labels.
+On PushT and LIBERO-Goal, \method{} \result{[main result placeholder]}.
+\end{abstract}

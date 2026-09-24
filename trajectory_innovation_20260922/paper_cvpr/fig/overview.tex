@@ -1,0 +1,95 @@
+\begin{figure*}[t]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  font=\small,
+  >={Stealth[length=2.2mm]},
+  mod/.style={draw, rounded corners=2pt, thick, align=center, minimum height=10mm, inner sep=3pt},
+  frozen/.style={mod, fill=gray!12},
+  learned/.style={mod, fill=cvprblue!12, draw=cvprblue!80!black},
+  ours/.style={mod, fill=cvprblue!28, draw=cvprblue!80!black, line width=1.2pt},
+  data/.style={align=center, inner sep=1pt},
+  tok/.style={draw, minimum size=2.2mm, inner sep=0pt, fill=cvprblue!45},
+  chunk/.style={draw, minimum width=10mm, minimum height=2.2mm, inner sep=0pt, fill=orange!35},
+  frame/.style={draw, fill=white, minimum width=5.5mm, minimum height=4.5mm, inner sep=0pt},
+  lab/.style={font=\footnotesize, align=center, text=black!75},
+  flow/.style={->, thick},
+  aux/.style={->, thick, dashed, black!60}
+]
+% ================= deployment (top)
+\node[data] (hist) at (0,0) {history $h_t$\\[1pt]\footnotesize images, proprio};
+\node[frozen, anchor=west] (enc) at ($(hist.east)+(0.8,0.85)$) {frozen encoder $\varphi$\\\footnotesize DINOv2 ViT-S/14};
+\node[frozen, anchor=west] (pi) at ($(hist.east)+(0.8,-0.85)$) {policy $\pi$\\\footnotesize frozen, released};
+\node[data, right=7mm of enc] (C) {$C$\,{\footnotesize(cached)}};
+\node[chunk, anchor=west] (a2) at ($(pi.east)+(0.7,0)$) {};
+\node[chunk] (a1) at ($(a2)+(0,0.3)$) {};
+\node[chunk] (aK) at ($(a2)+(0,-0.3)$) {};
+\node[lab, below=0.5mm of aK] {$K$ chunks $\bA^{(k)}$};
+\node[ours, anchor=west] (wm) at ({$(a2.east)+(1.3,0)$} |- hist.east) {world model $p_\theta(S\mid C,\bA)$\\\footnotesize JEPA predictor, $M$ code tokens};
+\begin{scope}[shift={($(wm.east)+(0.75,0)$)}]
+  \foreach \y in {0.3,0,-0.3}{\foreach \c in {0,...,3}{\node[tok] at (\c*0.26,\y) {};}}
+  \coordinate (codesW) at (-0.25,0);
+  \coordinate (codesE) at (1.03,0);
+  \coordinate (codesS) at (0.39,-0.45);
+\end{scope}
+\node[lab, below=0.5mm of codesS] {codes $\hat S^{(k)}$};
+\node[learned, anchor=west] (reader) at ($(codesE)+(0.7,0)$) {reader $D_\psi(C,S,g)$\\\footnotesize never sees the action};
+\node[data, anchor=south] (query) at ($(reader.north)+(1.0,1.05)$) {goal images $g\in\cG$};
+\node[data, right=7mm of reader] (score) {$s_k$};
+\node[mod, fill=white, right=7mm of score] (sel) {select $\arg\max_k s_k$\\\footnotesize execute, replan};
+
+\draw[flow] (hist.north) |- (enc.west);
+\draw[flow] (hist.south) |- (pi.west);
+\draw[flow] (enc) -- (C);
+\draw[flow] (pi) -- ($(a2.west)+(-0.1,0)$);
+\draw[flow] (C.east) -- ++(0.3,0) |- ($(wm.west)+(0,0.25)$);
+\draw[flow] ($(a2.east)+(0.1,0)$) -- ++(0.35,0) |- ($(wm.west)+(0,-0.25)$);
+\draw[flow] (wm) -- (codesW);
+\draw[flow] (codesE) -- (reader);
+\draw[flow] (C.north) -- ++(0,0.3) -| ($(reader.north)+(-0.8,0)$);
+\draw[flow] (query.south -| {$(reader.north)+(0.8,0)$}) -- ($(reader.north)+(0.8,0)$);
+\draw[flow] (reader) -- (score);
+\draw[flow] (score) -- (sel);
+\coordinate (loopY) at (0,-2.0);
+\draw[flow] (sel.south) -- (sel.south |- loopY) -- node[lab, fill=white, inner sep=1pt, pos=0.7] {observe and replan every $\He$ steps} (hist.south |- loopY) -- ($(hist.south)+(0,-0.05)$);
+
+% ================= training (bottom), code grid aligned under the world model
+\coordinate (trow) at (0,-3.8);
+\begin{scope}[shift={({$(wm.center)+(-0.39,0)$} |- trow)}]
+  \foreach \y in {0.3,0,-0.3}{\foreach \c in {0,...,3}{\node[tok] at (\c*0.26,\y) {};}}
+  \coordinate (tcW) at (-0.25,0);
+  \coordinate (tcE) at (1.03,0);
+  \coordinate (tcN) at (0.39,0.45);
+  \coordinate (tcS) at (0.39,-0.45);
+\end{scope}
+\node[lab, below=0.5mm of tcS] {code $S$};
+\node[learned, anchor=east] (src) at ($(tcW)+(-0.6,0)$) {target encoder $q_\phi(S\mid C,\tau)$\\\footnotesize sees the actual future};
+\foreach \i in {0,...,3}{\node[frame] (f\i) at ($(src.west)+(-2.95+\i*0.65,0)$) {};}
+\node[lab, anchor=north] at ($(f1.south)!0.5!(f2.south)+(0,-0.08)$) {actual future segment $\tau$};
+\node[learned, anchor=west] (rtrain) at ($(tcE)+(0.6,0)$) {reader $D_\psi$, decoder $G_\psi$\\\footnotesize see only $C$ and $S$};
+\node[data, right=6mm of rtrain] (loss) {rank siblings by progress $\ell_g$\\\footnotesize reconstruct $\varphi$-features of $\tau$};
+\node[lab, anchor=west, align=left, text=black, right=7mm of loss] (eqs)
+{$\mathcal{L}_{\mathrm{code}}=\mathcal{L}_{\mathrm{rank}}+\alpha\,\mathcal{L}_{\mathrm{feat}}\;(+\lambda\,\text{predictability})$\\[2pt]
+ $\mathcal{L}_{\mathrm{WM}}=-\log p_\theta(\sg(S)\mid C,\bA)$\\[2pt]
+ \footnotesize rate fixed by $M\log_2 V$ bits (\cref{sec:problem})};
+\draw[flow] (f3.east) -- (src.west);
+\draw[flow] (src) -- (tcW);
+\draw[flow] (tcE) -- (rtrain);
+\draw[flow] (rtrain) -- (loss);
+\draw[aux] (tcN) -- node[lab, right, fill=black!3, inner sep=1pt, pos=0.35] {target for the world model (stop-gradient)} (wm.south);
+\begin{scope}[on background layer]
+  \node[draw=black!30, fill=black!3, rounded corners=3pt, fit=(f0)(src)(eqs)(tcS)(tcN), inner xsep=4mm, inner ysep=5mm] (tbox) {};
+\end{scope}
+\node[lab, anchor=north west, font=\footnotesize\bfseries, text=black] at ($(tbox.north west)+(1.5mm,-1mm)$) {Training only};
+\node[lab, anchor=south west, font=\footnotesize\bfseries, text=black] at ($(hist.north west)+(-0.2,1.5)$) {Deployment: predict once, query many};
+\end{tikzpicture}}
+\caption{\textbf{Conditional Trajectory Abstraction.}
+\emph{Top:} at each decision, the history is encoded once into a context $C$ of frozen DINOv2 features, and a frozen policy proposes $K$ action chunks.
+The world model, a joint-embedding predictor, forecasts for each chunk a short discrete code $\hat S$ of the chunk's entire future segment, conditioned on $C$.
+A reader that sees $C$ and the code, but never the action, scores each code against goal images.
+Since codes do not depend on the goal, one prediction per candidate serves any number of goals.
+\emph{Bottom:} during training, a target encoder compresses the actual future segment into the code given $C$.
+A reader ranks sibling candidates by their progress labels, and a decoder reconstructs the future's frozen features from $(C,S)$.
+The world model learns to predict the stop-gradient code; optionally, code and world model are co-designed for predictability.}
+\label{fig:overview}
+\end{figure*}
