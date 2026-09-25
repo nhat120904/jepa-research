@@ -20,7 +20,7 @@ from ti_wm.cta_runtime import Planner, run_episode
 from ti_wm.pusht_runtime import CLONERS, PolicyRunner, VisualScorer
 from ti_wm.wb import Logger
 
-PREFLIGHT_DECISIONS, PREFLIGHT_MEDIAN_REL, PREFLIGHT_ARGMAX = 32, 0.05, 0.85
+PREFLIGHT_DECISIONS, PREFLIGHT_MEDIAN_REL, PREFLIGHT_ARGMAX, PREFLIGHT_RHO = 32, 0.05, 0.85, 0.80
 PREFLIGHT_TIERS = {"FULL8": "full", "CODE8": "code", "CTA8": "pred", "DIRECT8": "direct"}
 
 
@@ -57,7 +57,11 @@ def preflight(planner, dev_shard, train_run):
                     "argmax_agreement": float(agree[clear].mean()) if clear.any() else 1.0, "clear_banks": int(clear.sum()),
                     "all_banks_argmax_agreement": float(agree.mean()),
                     "within_bank_spearman": float(np.mean(rho)) if rho else float("nan")}
-        if out[arm]["median_rel"] > PREFLIGHT_MEDIAN_REL or out[arm]["argmax_agreement"] < PREFLIGHT_ARGMAX:
+        # CTA8 decodes discrete codes greedily: bf16 noise can flip a token, so for it the within-bank rank
+        # agreement is the pipeline check (a feature/proprio/action bug drives it toward 0), not argmax equality
+        bad_argmax = out[arm]["argmax_agreement"] < PREFLIGHT_ARGMAX and arm != "CTA8"
+        if (out[arm]["median_rel"] > PREFLIGHT_MEDIAN_REL or bad_argmax
+                or not out[arm]["within_bank_spearman"] >= PREFLIGHT_RHO):
             raise RuntimeError(f"closed-loop {arm} disagrees with the training job's dev scores: {out[arm]}")
     return out
 

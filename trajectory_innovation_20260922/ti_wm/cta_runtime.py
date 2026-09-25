@@ -18,7 +18,8 @@ from ti_wm.pusht_runtime import MAX_STEPS, Branch, done, physical_scores, reset_
 from ti_wm.sibling import project
 
 K = 8
-BEFORE = ("CTA8", "DIRECT8")          # scored from actions only
+BEFORE = ("CTA8", "CTA8S", "CTA8E", "DIRECT8")  # scored from actions only
+SAMPLES = 4                           # CTA8S: sampled codes per candidate, reader answers averaged
 AFTER = ("PHYS8", "FULL8", "CODE8")   # scored from simulated candidates
 KEEP = (2, 4, 6)          # intermediate frames kept per segment; the end frame (step 8) is the branch's last frame
 
@@ -87,18 +88,27 @@ class Planner:
         return fut
 
     @torch.inference_mode()
-    def scores(self, arm, state, chunks=None, branches=None, segs=None):
+    def scores(self, arm, state, chunks=None, branches=None, segs=None, seed=0):
         k = len(chunks) if chunks is not None else len(branches)
         ctx, agent = self.context(state, k)
         with self.amp():
             if arm in BEFORE:
                 act = action_features(torch.as_tensor(np.asarray(chunks), device=self.device), agent)
+                wm = self.models["wm"]
                 if arm == "DIRECT8":
                     s = goal_scores(self.models["direct"], ctx, act, self.goals)
-                else:
-                    wm = self.models["wm"]
+                elif arm == "CTA8":
                     code = self.codebook[wm.decode(wm.encode(ctx, act))]
                     s = goal_scores(self.models["reader"], ctx, code, self.goals)
+                elif arm == "CTA8E":   # expected code under the WM given its greedy prefix (ladder tier pred_soft)
+                    mem = wm.encode(ctx, act)
+                    code = wm.logits(mem, wm.decode(mem)).float().softmax(-1) @ self.codebook
+                    s = goal_scores(self.models["reader"], ctx, code, self.goals)
+                else:   # CTA8S: the paper's sampled variant, answers (not codes) averaged; seeded per decision
+                    mem = wm.encode(ctx, act)
+                    torch.manual_seed(seed)
+                    s = sum(goal_scores(self.models["reader"], ctx, self.codebook[wm.decode(mem, sample=True)],
+                                        self.goals) for _ in range(SAMPLES)) / SAMPLES
             elif arm == "FULL8":
                 s = goal_scores(self.models["full"], ctx, self.future(branches), self.goals)
             elif arm == "CODE8":
@@ -118,7 +128,7 @@ def run_episode(root, arm, runner, cloner, planner=None, log_candidates=True, ma
         record = {"d": d, "t": state.t}
         if arm in BEFORE:
             t0 = time.perf_counter()
-            record["score"] = planner.scores(arm, state, chunks=bank)
+            record["score"] = planner.scores(arm, state, chunks=bank, seed=candidate_seed(root, d, 1000))
             record["score_seconds"] = time.perf_counter() - t0
         if arm == "P0":
             branches = {0: run_prefix(state, bank[0], cloner=cloner)}
