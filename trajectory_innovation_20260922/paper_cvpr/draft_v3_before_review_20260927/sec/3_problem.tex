@@ -1,0 +1,59 @@
+\section{Problem Formulation}
+\label{sec:problem}
+
+\paragraph{Setting.}
+At decision time $t$, a frozen encoder $\varphi$ maps the robot's images to patch features, and the context $C_t$ collects the features of the current and previous images together with recent proprioception.
+A candidate chunk $\bA=(a_t,\dots,a_{t+\He-1})$ would produce a \emph{future segment} $\tau$: the features of the images it generates, subsampled in time, and the final proprioception.
+The world model must describe $\tau$ before $\bA$ is executed.
+
+\paragraph{Selecting among policy proposals.}
+At each decision, a frozen pretrained policy $\pi$ proposes $K$ chunks, $\bA^{(1)}$ being the one it would execute on its own.
+A scorer ranks them, the best is executed (ties keep $\bA^{(1)}$), and the policy replans~\cite{qi2025gpc,cui2026dreamsteer}.
+Selecting among a competent policy's proposals, rather than optimizing actions against the model, keeps candidates where a learned model is reliable~\cite{janner2019mbpo,gao2023overoptimization}.
+All scorers rank the same proposals.
+
+\paragraph{Goals and labels.}
+Goals are given as images $g\in\cG$.
+During training, the simulator labels each candidate with its task progress $\ell$ at the end of the segment; on PushT, this is the negative mean distance between the block's vertices and their target positions, as in GPC~\cite{qi2025gpc}.
+Candidates share a starting state, so only their order matters.
+No label is used at test time.
+
+\paragraph{Conditional trajectory code.}
+A target encoder $q_\phi(S\mid C,\tau)$, used only in training, maps the actual future to $M$ discrete tokens $S\in\{1,\dots,V\}^M$.
+Two heads read the code with the context but never the action: a reader $D_\psi(C,S,g)$ that scores progress toward $g$, and a feature decoder $G_\psi(C,S)$ that reconstructs $\tau$.
+A world model $p_\theta(S\mid C,\bA)$ predicts the code before execution.
+The code solves a conditional compression problem,
+\begin{equation}
+\begin{aligned}
+  \min_{q_\phi,\,\psi}\ &\E\big[d_{\mathrm{rank}}\big(D_\psi(C,S,g),\ell\big)+\alpha\,d_{\mathrm{feat}}\big(G_\psi(C,S),\tau\big)\big]\\
+  \text{s.t.}\ &I(\tau;S\mid C)\le R,
+\end{aligned}
+\label{eq:crd}
+\end{equation}
+where both the encoder and the heads see the context.
+Since $S$ is a deterministic function of $(C,\tau)$, the code length bounds the rate: $I(\tau;S\mid C)=H(S\mid C)\le M\log_2 V$, or 128 bits for $M{=}16$ and $V{=}256$.
+Only the part of the code that the action determines, $I(S;\bA\mid C)$, can be forecast; we estimate it in \cref{sec:wm}.
+
+\paragraph{Two limiting cases.}
+A \emph{per-step latent world model} such as DINO-WM sets $S=\tau$: it predicts every patch of every step, without compression.
+A \emph{direct scorer} $D(C,\bA,g)$ removes $S$: prediction and evaluation are fused, so every candidate--goal pair costs a full evaluation.
+\method sits between them at an explicit rate (\cref{tab:designs}).
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{@{}llll@{}}
+\toprule
+ & Goal-independent & Per candidate & Sequential \\
+ & prediction & and goal & passes \\
+\midrule
+Per-step latent WM & $\He\cdot P$ tokens & readout & $\He$ \\
+Endpoint latent WM & $P$ tokens & readout & $1$ \\
+Direct scorer & none & full model & $1$ \\
+\method (ours) & $M$ tokens & reader & $1$ \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Design properties} of models that evaluate a candidate chunk ($P{=}256$ patch tokens per image, $M{=}16$ code tokens). A direct scorer has no goal-independent part, so its whole cost recurs for every goal.}
+\label{tab:designs}
+\end{table}

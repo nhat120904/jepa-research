@@ -1,0 +1,42 @@
+%% Packages and macros (loaded before hyperref).
+\usepackage{mathtools}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,calc,backgrounds}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{microtype}
+
+%% Draft annotations. Disable for submission by uncommenting the two lines below.
+\newcommand{\TODO}[1]{\textbf{\color{red}[TODO: #1]}}
+\newcommand{\result}[1]{{\color{BrickRed}#1}}
+% \renewcommand{\TODO}[1]{}
+% \renewcommand{\result}[1]{#1}
+
+%% Method name.
+\newcommand{\method}{CTA\xspace}
+
+%% Math.
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\cG}{\mathcal{G}}
+\newcommand{\cD}{\mathcal{D}}
+\newcommand{\sg}{\operatorname{sg}}
+\newcommand{\bA}{\mathbf{A}}
+\newcommand{\bz}{\mathbf{z}}
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\by}{\mathbf{y}}
+\newcommand{\bc}{\mathbf{c}}
+\newcommand{\He}{H_{\mathrm{e}}}
+\newcommand{\Jpi}{J}
+\newcommand{\reader}{R_\psi}
+\newcommand{\creader}{R^{\bz}_\psi}
+
+%% Paragraph headers.
+\renewcommand{\paragraph}[1]{\vspace{2pt}\noindent\textbf{#1}\hspace{0.5em}}
+
+%% Theorem-like environments.
+\newtheorem{proposition}{Proposition}
+\AtBeginDocument{\crefname{proposition}{Prop.}{Props.}\Crefname{proposition}{Proposition}{Propositions}%
+  \crefname{algorithm}{Alg.}{Algs.}\Crefname{algorithm}{Algorithm}{Algorithms}}

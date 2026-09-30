@@ -1,0 +1,10 @@
+{
+  "purpose": "Native temporal semantics plus short intervention evidence, without models or simulation",
+  "robocasa_revision": "4f8a2980def75a55dff96b990745b83540425f09",
+  "rinse_bowls_source": "/mnt/data/nhatnc129/jepa/latent_scope_stage_a/src/robocasa365/robocasa/environments/kitchen/composite/washing_dishes/rinse_bowls.py",
+  "saved_results": [
+    "/mnt/data/nhatnc129/jepa/latent_scope_baseline/outputs/qualification_52419/qualification_result.json",
+    "/mnt/data/nhatnc129/jepa/latent_scope_baseline/outputs/qualification_52524/qualification_result.json"
+  ],
+  "automatic_followup": false
+}

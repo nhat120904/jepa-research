@@ -1,0 +1,35 @@
+\section{Introduction}
+\label{sec:intro}
+
+A world model lets a robot check an action before taking it.
+Latent world models for visual control, such as DINO-WM~\cite{zhou2025dinowm} and V-JEPA~2-AC~\cite{assran2025vjepa2}, do so by predicting the features of every future frame and measuring how close the last one is to a goal image.
+For choosing between candidate actions, this is both expensive and uninformative.
+It is expensive because every candidate requires predicting hundreds of patch features per step, most of which repeat what the robot already sees.
+It is uninformative because feature distance to a goal is a weak signal of task progress.
+On PushT, even when computed on the \emph{true} future frames, it barely separates the good proposals of a diffusion policy from the bad ones: it improves success by \result{3} points, while a learned ranking of the same true futures improves it by \result{8.5}.
+
+The opposite extreme skips prediction.
+A direct scorer maps the observation, a candidate action, and the goal straight to a score~\cite{nakamoto2024vgps}.
+It is cheap, but it entangles what the action does with how the outcome relates to the goal, and must learn the former anew for every goal.
+
+We argue that a world model for decision making should predict neither every frame nor nothing, but a compact description of what the action will do: only as much as the decision needs, and only what the history does not already reveal.
+The second part is the principle of conditional video coding~\cite{li2021dcvc}: when encoder and decoder share the past frames, bits are spent only on what is new.
+We apply it to the future of an action that has not been executed yet.
+
+We call the resulting model \emph{Conditional Trajectory Abstraction} (\method, \cref{fig:overview}).
+During training, a target encoder compresses the actual future of an action chunk into 16 discrete tokens, conditioned on the history.
+A reader scores the code against a goal image, and a feature decoder reconstructs the future from it.
+Neither sees the action, so everything the action changes must pass through the code.
+The world model learns to predict the code from the history and the action in a single forward pass, as the predictor of a joint-embedding architecture~\cite{lecun2022path,assran2023ijepa}.
+At test time, a frozen policy proposes candidate chunks, the world model predicts one code per candidate, and the reader ranks them.
+Because codes do not depend on the goal, one prediction serves any number of goals.
+
+Our contributions are:
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+\item a formulation of a world model's target as a conditional code of an action's future segment, with per-step latent world models and direct scorers as its two limiting cases;
+\item \method, a joint-embedding world model that learns this code with a ranking reader and a conditional feature decoder, and predicts it in one pass;
+\item an attribution ladder that separates what is lost by compressing the future from what is lost by predicting it;
+\item experiments on PushT with a released diffusion policy, where \method \result{[result vs.\ policy, direct scorer, endpoint and per-step latent world models, with latency]}. \TODO{Second task in which progress depends on the path.}
+\end{itemize}
+
+\input{fig/overview}

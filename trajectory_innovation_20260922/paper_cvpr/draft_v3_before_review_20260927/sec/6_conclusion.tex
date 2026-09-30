@@ -1,0 +1,10 @@
+\section{Conclusion and Limitations}
+\label{sec:conclusion}
+
+\result{[Conclusion, written after results.]}
+
+\paragraph{Limitations.}
+\method is not label-free: task-progress labels from the simulator train the reader and the ranking term of the world model, although nothing uses labels at test time.
+The proposal policy is pretrained on expert demonstrations.
+Training data require branching the simulator at every decision.
+A selector cannot exceed the best candidate in the bank, so gains are bounded by the policy's proposals.

@@ -1,105 +1,64 @@
 # AGENTS.md
 
-## Compute policy (mandatory)
+## Current priority: CTA for CVPR
 
-This checkout is on a Slurm **login node**. Never run MuJoCo, rendering, model loading,
-training, encoding, or bulk result scans here — `sbatch` them to a compute node, including
-CPU-only analysis (several programmes enforce this in code by raising unless
-`SLURM_JOB_ID` is set). Login-node work is `rg`/`sed`/`git`, small metadata reads,
-`python -m py_compile`, and `squeue`/`sacct`. Verify claimed job state with **both**
-`squeue` and `sacct` before acting on it — peer sessions submit into the same queue, so
-check for duplicate work before launching a long array, and never overwrite another
-session's dirty files.
-**Never leave a job holding a GPU.** Do not run long-lived or blocking commands from an
-agent session, and never launch an interactive/`salloc` GPU allocation or a training run
-that sits idle occupying a node. All GPU work goes through `sbatch` with an explicit
-`--time` limit, and the session ends after submission — do not poll in a foreground loop.
-If a job is submitted, record the job id and let it run; if a submitted job turns out to be
-wrong or is no longer needed, `scancel` it immediately rather than letting it hold the GPU.
-Never submit speculative or duplicate arrays "just in case".
+The active direction is **Conditional Trajectory Abstraction (CTA)** in
+`trajectory_innovation_20260922/`. Build and improve a working learned planner, with
+reproducible control results and a defensible quality/compute contribution for CVPR.
 
+CTA encodes a future trajectory into a compact code S conditional on observed context C.
+At deployment, a world model predicts S from C and a proposed action chunk A; a reader
+scores the prediction for a task/goal query. The reader must not bypass S by reading A,
+and deployment must not use privileged future observations. Endpoint tasks and tasks
+with important intermediate events are both valid; S should retain what decisions need.
+Do not require a temporal-task pivot before improving the end-to-end pipeline.
 
-## What the research is about
+## Default workflow: implement, run, debug, improve
 
-**JEPA-style latent world models for robot planning.** An encoder maps images to a latent,
-an action-conditioned predictor rolls it forward, a cost scores the imagined outcome, and
-a sampling planner (usually CEM) selects actions. The repo exists to answer one question:
-when this stack fails on contact-rich manipulation, which component is actually broken?
+- Carry authorized work through implementation, training and closed-loop evaluation;
+  then fix the observed bottleneck and iterate. Do not stop at a plan or an offline probe.
+- Do not add chains of novelty, headroom or go/no-go gates before implementation.
+  Integrate focused diagnostics and useful controls into the end-to-end run. Run a
+  separate check only when it resolves a concrete implementation or experiment decision.
+- Fix correctness failures (leakage, alignment, simulator restore, numerical errors)
+  before trusting results. A weak metric or failed configuration calls for diagnosis;
+  it is not an automatic reason to abandon CTA. Do not assume the WM or cost is always
+  the bottleneck based on a different experiment.
+- Continue routine fixes and bounded iterations within the authorized scope and compute
+  budget without repeatedly asking permission. Avoid speculative sweeps and redundant
+  experiments; explain what each substantive run is meant to improve or establish.
+- Report actual progress plainly: changes, verified job state, results, remaining issue
+  and next action. Keep method explanations understandable and distinguish hypotheses
+  from findings.
 
-The programme is falsification-first. Most directories are pilots built to kill an idea
-cheaply, and most of them did. The current state is a well-localized negative result plus
-one live positive lead.
+## Evidence and context
 
-## Established arc
+- Compare relevant baselines with matched candidates, horizons, data and compute, or
+  disclose differences. Separate offline ranking, oracle results and learned closed-loop
+  success. Development wins need held-out evaluation and uncertainty before strong claims.
+- Older programmes are historical evidence, not the current agenda or universal prohibitions. 
+  Consult their reports when relevant; do not reopen them by default. Latest user instructions 
+  take precedence over old protocols.
 
-1. The starting hypothesis was **action-blindness**: released world models predict nearly
-   the same future for different actions, worst around contact. That effect is real and
-   does not disappear with model scale.
-2. The **oracle ladder relocated the problem**. Give the planner perfect dynamics (the
-   simulator itself) with the same encoder, planner and budget, and contact tasks still
-   fail — while a physically grounded reference cost solves them. The wall is the **cost**
-   the planner descends, not the prediction.
-3. The mechanism is **optimizer-conditioned misranking**: a cost accurate on data can be
-   badly wrong on the candidates a strong search invents. Search is an adversary against
-   its own objective, and proxy-versus-physical agreement degrades further after the
-   planner refits toward its optimum. This is Goodhart, not a missing-information problem.
-4. **Every attempt to fix the cost's inputs has failed to fix planning.** Better grounding,
-   better predictors, better geometry, extra sensing — all improved their own metric and
-   none improved control.
-5. The **live lead changes what the cost measures**. Progress in multi-stage manipulation
-   is *latched* (milestones are irreversible), so a single frame cannot express it and
-   distance-to-a-goal-image is structurally the wrong quantity. That is `scene_progress_wm/`.
+## Compute and shared workspace (mandatory)
 
-## Directory map and verdicts
-
-| Directory | Question | Outcome |
-|---|---|---|
-| `diagnosis/` | the original diagnostic, oracle ladder, all post-hoc cost fixes | source of the arc above; claim discipline in `docs/CURRENT_STATUS.md`, `docs/CLAIMS_EVIDENCE.md` |
-| `contactworld_h0/` | does tactile add the missing object state? | no |
-| `hys_h0/` | gate a straightening loss on contact | refuted; matched random gating does as well |
-| `action_curvature_h0/` | is the action→outcome map distorted? | real diagnostic, failed intervention |
-| `counterfactual_flow/`, `crod_h0/`, `gfpr_h0/`, `physical_search_distillation/`, `rollout_repair_gate/` | repair the planner's choice with physical supervision, disagreement, reranking or rollout-matched training | all STOP |
-| `moment_wm_h0/` | recover hidden physics with a moment regularizer | STOP; see `docs/DECISION_REPORT.md` |
-| `belief_compression/` | decision-equivalent belief compression | paused on prior art |
-| `event_smdp_h0/` | does backing up intermediate event state beat terminal success? | established the latching and observer findings, under privileged dynamics |
-| `scene_progress_wm/` | latched, history-conditioned progress cost vs latent-L2, with a *learned* world model | **active** |
-| `paper/` | TMLR paper of record: a mechanistic audit of terminal-cost misranking | writing |
-
-`proposal/` is historical. `refine_jepa_h0/` is an empty shell.
-
-## Why each direction failed (intuitive, no numbers)
-
-- **Latent distance to a goal image** is not task progress. It works when the task is
-  moving the arm and collapses when the task is moving an object, because the object is a
-  small, badly-conditioned part of a representation trained for prediction, not control.
-- **Decoding state from the latent and planning on it** fails because any readout has
-  residual error and the planner spends its budget finding it. Hardening the readout fixed
-  the readout, not the planning — so this is exploitation, not missing information.
-- **Relearning a grounded adapter** produced excellent grounding and unchanged planning.
-- **Ensembles / disagreement penalties**, the standard fix for model exploitation, fail
-  because members share a frozen backbone: they agree precisely where they are all wrong,
-  so disagreement is flat exactly where the penalty was needed.
-- **Encoder fine-tuning (LoRA)** did not cross the wall; the one promising seed did not
-  replicate.
-- **A counterfactual predictor objective** is the clearest positive — the model gets much
-  better at distinguishing what different actions do — but it does not deliver closed-loop
-  contact success, exactly as the oracle ladder predicts.
-- **Straightening the action→outcome geometry**: curvature genuinely predicts false valleys
-  (minima the model believes and the simulator denies), and reducing it changes planning by
-  nothing. The metric is also gameable, since flattening deletes true minima along with
-  false ones.
-- **Contact-gating that straightening**: the physical premise held, the mechanism did not —
-  dropping the same number of terms at random did as well. Losing to matched randomness
-  means the information you extracted was not what was doing the work.
-- **Reranking / distilling / acquiring with physical supervision**: all stopped against
-  cheap matched controls, usually just proposing more diverse actions. Physical-outcome
-  oracles help a great deal, which pins the gap on getting that signal without querying
-  physics.
-- **Removing the search** (amortized control) does not cross the wall either, so the
-  problem is not merely that CEM is too strong.
-- **Supplying the hidden variable**: in a hidden-physics arena the latent variable was easy
-  to recover and recovering it did not lower true planned cost — the same proxy-versus-truth
-  gap under optimizer selection, in a different setting.
-- **Adding memory/belief machinery**: the scene-aliasing premise was refuted almost
-  immediately, because a single frozen latent already probes the latched variables and
-  recurrence adds nothing. Run the cheap probe before building the machinery.
+- This is a Slurm **login node**. Use it only for source/git work, small metadata reads,
+  syntax checks and scheduler queries. Run physics, rendering, model loading, training,
+  encoding and bulk result analysis through `sbatch` on compute nodes, including CPU work.
+- Give each batch job explicit resources and a `--time` limit. Never use interactive
+  GPU allocations/`salloc`, idle GPU holders, or long blocking commands from an agent
+  session. After submission, record the job ID and let it run; do not foreground-poll.
+- Verify job state with **both `squeue` and `sacct`** before reporting or acting on it.
+  Check for peer/duplicate work before submission. Never submit speculative duplicate arrays.
+- Immediately `scancel` jobs found to be wrong or unnecessary. Never leave an idle job
+  holding a GPU.
+- Preserve other sessions' dirty files. Use distinct run directories; record source/config,
+  checkpoints, partial results and job IDs in the direction's ledger. Do not overwrite runs.
+- **Monthly usage cap (user rule):** the account `nhatnc129` must never be among the
+  top 5 users of the cluster in the current calendar month for GPU, CPU or memory hours.
+  Before every GPU submission and every CPU array, check the month-to-date ranking:
+  `sreport -t hours -T gres/gpu,cpu,mem cluster UserUtilizationByAccount start=$(date +%Y-%m-01) end=now -P -n`
+  (column 6 = hours). Stay at or below **50% of the 5th-ranked user's hours**, *counting
+  the planned job at its time limit*. If a submission would cross that, make it smaller
+  (fewer episodes/seeds, shorter limit) or wait, and tell the user. The CVPR deadline
+  does not relax this rule; spend the budget on the runs the paper needs, not on sweeps.

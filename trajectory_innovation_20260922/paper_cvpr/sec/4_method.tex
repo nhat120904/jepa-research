@@ -1,132 +1,101 @@
 \section{Conditional Trajectory Abstraction}
 \label{sec:method}
 
-\method is a joint-embedding predictive world model.
-A target encoder turns the actual future into a code (\cref{sec:source}), two heads read the code (\cref{sec:reader}), and a predictor forecasts the code from the action (\cref{sec:wm}).
-\Cref{sec:codesign} describes training, \cref{sec:planning} planning, and \cref{sec:impl} implementation details.
+\method has three learned components: a target encoder that turns the actual future into a code (\cref{sec:source}), two heads that read the code (\cref{sec:reader}), and a world model that predicts the code from an action chunk (\cref{sec:wm}).
+We describe them, the training procedure (\cref{sec:codesign}), and deployment (\cref{sec:planning}) in turn.
 
 \subsection{Inputs}
 \label{sec:context}
-Images are embedded by a frozen DINOv2 ViT-S/14~\cite{oquab2024dinov2}, following DINO-WM~\cite{zhou2025dinowm}.
-We keep the full $16{\times}16$ patch grid and project the patch features to 128 dimensions with a PCA fitted on training frames.
-The context $C$ contains the patch tokens of the current image, the tokens of the previous image pooled to an $8{\times}8$ grid, and the proprioceptive states at both times.
-The future segment $\tau$ contains the tokens of the segment's final image on the full grid, the tokens of intermediate images pooled to $8{\times}8$ with temporal embeddings, and the final proprioceptive state.
+As in DINO-WM~\cite{zhou2025dinowm}, the image encoder $f$ is a frozen DINOv2 ViT-S/14~\cite{oquab2024dinov2}; we project its patch features to 128 dimensions with PCA fitted on training frames.
+The context $C$ contains the $16{\times}16$ patch tokens of the current image, the previous image pooled to $8{\times}8$ tokens, and the proprioception at both times.
+The future segment $\tau$ contains the full token grid of the final image, the pooled tokens of three intermediate images with temporal embeddings, and the final proprioception.
 Features are computed once per image and shared by all candidates and goals.
-Each module embeds $C$ and $\tau$ with its own linear projections and learned position and type embeddings.
 
 \subsection{Target encoder}
 \label{sec:source}
-The target encoder $q_\phi(S\mid C,\tau)$ exists only during training.
-$M$ learned segment queries cross-attend jointly to the future tokens and the context tokens in a Transformer decoder.
-Each output is projected to three dimensions and quantized by finite scalar quantization (FSQ)~\cite{mentzer2024fsq} with levels $(8,8,4)$, an implicit vocabulary of $V{=}256$ per token.
-Because the queries attend to the context, the encoder can learn which parts of the future the history already implies, instead of relying on a hand-designed residual such as the difference between future and current features.
-The code describes the whole segment; it is not a set of $M$ tokens per time step.
+The target encoder $q_\phi(C,\tau)$ is used only during training.
+$M$ learned queries cross-attend to the tokens of the future and of the context, and each output is quantized with FSQ~\cite{mentzer2024fsq} using levels $(8,8,4)$, so that each token takes one of $V{=}256$ values.
+Because the queries also attend to the context, the encoder can learn which parts of the future the history already implies and spend the code on the rest.
+The $M$ tokens describe the segment as a whole rather than one frame each.
 
 \subsection{Reader and feature decoder}
 \label{sec:reader}
-\paragraph{Reader.}
-The reader $D_\psi(C,S,g)$ is a Transformer over a summary token, the context tokens, the embedded code tokens, and the patch tokens of a goal image $g$.
-It outputs a scalar score from the summary token.
-It never receives the action, so the code is the only channel through which the action's consequences reach it.
-The reader is trained on the $K$ candidates branched from one state, whose futures and labels are known during training.
-It uses a pairwise logistic ranking loss over the pairs whose labels differ by more than a margin $\epsilon$:
+The reader $D_\psi(C,S,g)$ is a Transformer over the context tokens, the code tokens, and the patch tokens of a goal image, and it outputs a single score.
+It is trained on sibling candidates that branch from the same state, with a pairwise logistic loss over the sibling pairs whose labels differ by more than a margin $\epsilon$:
 \begin{equation}
-\begin{aligned}
-  \mathcal{L}_{\mathrm{rank}}&=\E_{(i,j):\,\ell_i>\ell_j+\epsilon}\big[\log\big(1+e^{-(s_i-s_j)}\big)\big],\\
-  s_i&=D_\psi(C,S_i,g),\quad \ell_i=\ell_g(\tau_i).
-\end{aligned}
+  \mathcal{L}_{\mathrm{rank}}=\E_{(i,j):\,\ell_i>\ell_j+\epsilon}\Big[w_{ij}\log\big(1+e^{-(s_i-s_j)}\big)\Big],
 \label{eq:rank}
 \end{equation}
-Ranking within a bank matches how the score is used: it compares candidates from one state and need not be calibrated across states.
-These labels are the only task supervision in \method, and they are used in training only.
+where $s_i=D_\psi(C,S_i,g)$ and $w_{ij}{=}1$ when training the reader.
+When the loss is applied to predicted codes (\cref{sec:wm}), $w_{ij}=\min\big(1,(\ell_i-\ell_j)/\sigma\big)$ down-weights pairs whose labels barely differ.
+Ranking within a decision matches how the score is used, so the score does not need to be calibrated across states.
 
-\paragraph{Feature decoder.}
-A ranking loss alone lets the code shrink to whatever orders the training goals, which would not transfer to new goals.
-The feature decoder $G_\psi(C,S)$ therefore reconstructs the future tokens from the context and the code.
-One learned query per future token position cross-attends to the context and code tokens, and the decoder predicts how each token changes from the corresponding token of the current image.
-Its loss $\mathcal{L}_{\mathrm{feat}}$ is the squared error divided by that of a copy baseline that predicts no change, computed separately for the final and the intermediate images, so a code that carries nothing about the change scores one.
-In JEPA terms, the feature decoder is the regularizer that keeps the target representation from collapsing~\cite{lecun2022path}.
-The world model's prediction target remains the code, and no image is ever generated.
+A ranking loss alone would let the code shrink to whatever orders the candidates for the training goals.
+The feature decoder $G_\xi(C,S)$ prevents this by reconstructing the future tokens from the context and the code.
+It predicts the change of each token relative to the current image, and its squared-error loss $\mathcal{L}_{\mathrm{feat}}$ is normalized by the error of predicting no change, so that a code that carries no information scores one.
+The decoder thus plays the role that EMA targets and variance regularizers play in other JEPAs~\cite{assran2023ijepa,lecun2022path}: it keeps the target from degenerating, here into a score for the training goals.
+No image is ever generated.
 
-\subsection{Action-conditioned world model}
+\subsection{World model}
 \label{sec:wm}
-The world model $p_\theta(S\mid C,\bA)$ is the predictor of the joint-embedding architecture.
-A Transformer encoder attends over the context tokens and one token per executed action.
-A Transformer decoder then generates the $M$ code tokens autoregressively as categorical distributions over the vocabulary, which preserves the dependencies between code positions.
-The world model never receives future images, future proprioception, the goal, or any label.
-It is trained by teacher forcing against stop-gradient codes of the target encoder,
+The world model $p_\theta(S\mid C,\bA)$ is the predictor of the JEPA.
+A Transformer encoder reads the context tokens and one token per action, and $M$ learned queries decode all code tokens in parallel.
+Each FSQ coordinate of each token is predicted as a categorical distribution over its levels, so one forward pass yields a distribution over codes for every candidate in the batch.
+The reader receives the expected codeword $\hat S=\E_{p_\theta}[S]$, which exposes the world model's uncertainty to the reader and avoids the ties that the most likely code produces among similar candidates (\cref{sec:ablations}).
+The 128-bit bound therefore applies to the target code; the deployed input to the reader is the predictive mean, $M{\times}3$ numbers in the FSQ cube.
+The world model never sees future images, the goal, or labels.
+
+The target encoder and the reader are frozen while the world model is trained against the stop-gradient code $S=\sg\big(q_\phi(C,\tau)\big)$:
 \begin{equation}
-  \mathcal{L}_{\mathrm{WM}}=\E\big[-\log p_\theta(\sg(S)\mid C,\bA)\big].
+  \mathcal{L}_{\mathrm{WM}}=\mathcal{L}_{\mathrm{NLL}}+\mathcal{L}_{\mathrm{cons}}+\mathcal{L}^{\hat S}_{\mathrm{rank}}.
   \label{eq:wm}
 \end{equation}
-A context-only model $r_\omega(S\mid C)$ with the same architecture but no action tokens is trained alongside.
-It estimates the rate of the code.
-Its excess cross-entropy over the world model estimates $I(S;\bA\mid C)$, the part of the code that the action explains; a code that ignores the action would show none.
-At test time we decode the most likely code greedily.
-We also evaluate two variants: the expected FSQ codeword under the world model at each position, given the greedy prefix, and the reader's scores averaged over four sampled codes.
+$\mathcal{L}_{\mathrm{NLL}}$ is the cross-entropy of each coordinate of $S$.
+The other two terms pass gradients through the frozen reader into the world model.
+$\mathcal{L}_{\mathrm{cons}}$ matches the within-decision differences between the reader's scores of $\hat S$ and of $S$, and $\mathcal{L}^{\hat S}_{\mathrm{rank}}$ applies the weighted form of \eqref{eq:rank} to the scores of the predicted codes.
+A context-only model $r_\omega(S\mid C)$ is trained with $\mathcal{L}_{\mathrm{NLL}}$ alongside the world model.
+Its excess cross-entropy over the world model estimates $I(S;\bA\mid C)$, the part of the code that the action explains.
 
 \subsection{Training}
 \label{sec:codesign}
-\paragraph{Data.}
-Training tuples come from rollouts of the frozen proposal policy.
-At every decision of a rollout, all $K$ proposals are executed for $\He$ steps from clones of the simulator state.
-This yields $K$ futures and their labels from an identical history, and the rollout then continues with the default proposal.
-All branches of a root episode belong to the same data split.
-Branching is what lets both the ranking loss and the world model observe different actions from the same history.
 
-\paragraph{Stage 1: code.}
-The target encoder, reader, and feature decoder are trained jointly on actual futures with
-\begin{equation}
-  \mathcal{L}_{\mathrm{code}}=\mathcal{L}_{\mathrm{rank}}+\alpha\,\mathcal{L}_{\mathrm{feat}}.
-  \label{eq:code}
-\end{equation}
-One goal image per decision is sampled from the training goals, and gradients pass through the quantizer with the straight-through estimator.
+\paragraph{Branched data.}
+We roll out the frozen policy and, at every decision, execute each of its $K$ proposals for $\He$ steps from an exact copy of the simulator state.
+This yields $K$ sibling futures and labels that share one history.
+The proposals of a competent policy often lead to nearly identical futures, so we also branch a perturbed copy of each proposal, shifted by a constant planar offset whose scale grows across the copies.
+To cover the states that a selector visits, not only those that the policy visits, some rollouts execute the best-labeled proposal at a random half of their decisions.
+All branches of a rollout stay in the same data split.
 
-\paragraph{Stage 2: world model.}
-With the target encoder frozen, the world model and the context-only model are trained on its codes by~\eqref{eq:wm}.
+\paragraph{Stages.}
+Stage~1 trains the target encoder, the reader, and the feature decoder on actual futures with $\mathcal{L}_{\mathrm{code}}=\mathcal{L}_{\mathrm{rank}}+\alpha\,\mathcal{L}_{\mathrm{feat}}$, using straight-through gradients through the quantizer.
+Stage~2 freezes them and trains the world model with \eqref{eq:wm}.
+Each network keeps the checkpoint with the best value of its own objective on held-out development rollouts.
+Throughout training we monitor the code perplexity, the number of distinct codes per decision, the decoder's $R^2$, and $I(S;\bA\mid C)$ to detect collapse.
 
-\paragraph{Stage 3: co-design (optional).}
-A code that retains the future well may still be hard to forecast.
-In this stage, fixed blocks of code updates alternate with fixed blocks of world-model updates.
-Code updates add a predictability term under a frozen copy $\bar p_\theta$ of the world model:
-\begin{equation}
-\begin{aligned}
-  \mathcal{L}^{\lambda}_{\mathrm{code}}={}&\mathcal{L}_{\mathrm{rank}}+\alpha\,\mathcal{L}_{\mathrm{feat}}\\
-  &+\lambda\,\big\lVert S-\E_{\bar p_\theta(\cdot\mid C,\bA)}[S]\big\rVert^2.
-\end{aligned}
-  \label{eq:source}
-\end{equation}
-The last term is a differentiable surrogate of $-\log\bar p_\theta(S\mid C,\bA)$.
-It pulls each quantized token, viewed as its FSQ codeword, toward the codeword the frozen world model expects given the preceding tokens.
-World-model updates use targets from an exponential moving average of the target encoder, which replaces the encoder at the end.
-Setting $\lambda{=}0$ reduces training to stages 1 and 2, and this ablation tests whether predictability-aware co-design adds anything.
-\TODO{Optional reader adaptation (fine-tuning $D_\psi$ on a mix of target and predicted codes with everything else frozen) is a debugging option; describe it here only if the locked configuration uses it.}
+\paragraph{Co-design (ablation).}
+The code can also be shaped to be predictable.
+An optional third stage alternates blocks of target-encoder and world-model updates and adds $\lambda\,\E\big[-\log \bar p_\theta(S\mid C,\bA)\big]$ to $\mathcal{L}_{\mathrm{code}}$, where $\bar p_\theta$ is a frozen copy of the world model and the discrete likelihood is interpolated multilinearly on the FSQ grid to obtain a gradient.
+We report it as an ablation (\cref{sec:ablations}).
 
-\paragraph{Collapse diagnostics.}
-A code can satisfy the losses while ignoring the action or the future.
-We monitor code perplexity, the fraction of distinct codes within a bank, the feature decoder's $R^2$ relative to the copy baseline, and the action information $I(S;\bA\mid C)$.
-
-\subsection{Planning with predicted codes}
+\subsection{Planning}
 \label{sec:planning}
 \Cref{alg:cta} summarizes deployment.
-The planning score of a candidate is the reader's score averaged over the goal images, which are final frames of successful episodes of the task.
-All candidates are scored from the context and their actions, before any of them is executed.
-Per decision, \method computes the image features once, runs the world model on the $K$ candidates in one batch, and runs the reader on $K|\cG|$ candidate--goal pairs.
-Because codes do not depend on the goal, a new goal on the same candidates costs only additional reader evaluations.
+At each decision, \method encodes the images once, runs the world model once on all proposals, and runs the reader on every candidate--goal pair.
+A new goal therefore costs only reader evaluations.
 
 \begin{algorithm}[t]
-\caption{Policy-guided planning with \method.}
+\caption{Selecting among policy proposals with \method.}
 \label{alg:cta}
 \small
 \begin{algorithmic}[1]
-\Require frozen policy $\pi$; frozen encoder $\varphi$; world model $p_\theta$; reader $D_\psi$; goal images $\cG$; $K$; $\He$
+\Require frozen policy $\pi$ and image encoder $f$; world model $p_\theta$; reader $D_\psi$; goal images $\cG$
 \While{episode not finished}
-  \State $C\gets$ features of $h_t$ under $\varphi$ \Comment{once per decision}
-  \State $\bA^{(k)}\gets\pi(h_t;\xi_k)$ for $k=1,\dots,K$ \Comment{shared bank}
-  \State $\hat S^{(k)}\gets$ greedy decode of $p_\theta(\cdot\mid C,\bA^{(k)})$ \Comment{batched}
+  \State $C\gets$ context from $f$ applied to the history \Comment{once per decision}
+  \State $\{\bA^{(k)}\}_{k=1}^{K}\gets$ proposals of $\pi$
+  \State $\hat S^{(k)}\gets\E_{p_\theta(\cdot\mid C,\bA^{(k)})}[S]$ for all $k$ \Comment{one batched pass}
   \State $s_k\gets\frac{1}{|\cG|}\sum_{g\in\cG}D_\psi\big(C,\hat S^{(k)},g\big)$
-  \State $k^\star\gets$ smallest index attaining $\max_k s_k$ \Comment{ties keep the default}
-  \State execute $\bA^{(k^\star)}_{1:\He}$; $t\gets t+\He$
+  \State $k^\star\gets$ smallest index attaining $\max_k s_k$ \Comment{ties keep $\bA^{(1)}$}
+  \State execute $\bA^{(k^\star)}$; $t\gets t+\He$
 \EndWhile
 \end{algorithmic}
 \end{algorithm}
@@ -134,12 +103,10 @@ Because codes do not depend on the goal, a new goal on the same candidates costs
 \subsection{Implementation details}
 \label{sec:impl}
 All modules have width 256 and 8 attention heads.
-The target encoder has three decoder layers, the reader four encoder layers, and the feature decoder two decoder layers.
-The world model and the context-only model each have four encoder and four decoder layers.
-Unless stated otherwise, $M{=}16$ (128 bits per candidate), $\alpha{=}1$, and $\epsilon{=}10^{-3}$.
-We train with AdamW (learning rate $3{\times}10^{-4}$, weight decay $0.05$, 500 warm-up steps, cosine decay) in bfloat16.
-Stage 1 runs 10k steps with 16 decisions (128 candidates) per batch, and stage 2 runs 20k steps with 32 decisions per batch.
-Stage 3 alternates 200 code steps with 400 world-model steps at learning rate $10^{-4}$, with EMA rate $0.99$.
-On PushT, images are $96{\times}96$ and resized to $224{\times}224$ for DINOv2, $\He{=}8$, the intermediate images are those after steps 2, 4, and 6, and $K{=}8$.
-Each action is a target position of the agent, embedded both in absolute coordinates and relative to the current position.
-\TODO{LIBERO-Goal: action embedding, $\He$, intermediate frames, camera views.}
+The target encoder has three Transformer decoder layers, the reader four encoder layers, the feature decoder two decoder layers, and the world model four encoder and four decoder layers.
+We use $M{=}16$ (128 bits per target code), $\alpha{=}1$, $\epsilon{=}10^{-3}$, and $\sigma{=}10^{-2}$.
+A small penalty on FSQ pre-activations beyond $\pm1.5$ keeps the quantizer out of saturation, where straight-through gradients vanish.
+Stage~2 runs 8{,}000 AdamW updates with learning rate $10^{-4}$, weight decay $0.05$, and bfloat16 autocast, with 32 decisions per update.
+\TODO{Final stage-1 schedule, trained from scratch; current checkpoints are warm-started across development rounds.}
+On PushT, the $96{\times}96$ images are resized to $224{\times}224$ for DINOv2, $\He{=}8$, and the intermediate images follow steps 2, 4, and 6 of the chunk.
+Each action is a target position of the agent and is embedded in absolute coordinates and relative to the agent's current position.

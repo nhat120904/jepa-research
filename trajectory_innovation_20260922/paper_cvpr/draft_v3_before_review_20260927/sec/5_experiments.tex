@@ -1,0 +1,97 @@
+\section{Experiments}
+\label{sec:experiments}
+
+We use \method to select among the proposals of a frozen diffusion policy and compare it with latent world models and a direct scorer that rank the same proposals.
+We then locate where ranking quality is lost and ablate the design.
+
+\subsection{Setup}
+\label{sec:setup}
+
+\paragraph{Task and policy.}
+On PushT~\cite{florence2021ibc}, an episode succeeds when the block covers over 95\% of the target within 300 steps.
+We use the released LeRobot Diffusion Policy~\cite{chi2023diffusion}, which executes 8 of 16 denoised actions; unmodified, it succeeds on 65 of 100 episodes (65.4\% reported).
+At each decision it proposes $K{=}8$ chunks. \TODO{Lock whether the bank also holds a perturbed copy of each proposal.}
+
+\paragraph{Data.}
+We train on 2{,}000 branched rollouts (\cref{sec:codesign}), 87{,}860 decisions in total.
+Separate episodes are used for development (300) and for a sealed test set (400) that is evaluated once, with three training seeds.
+Goal images are the final frames of 16 successful episodes outside all splits.
+
+\paragraph{Baselines.}
+The \emph{direct scorer} $D(C,\bA,g)$ is trained with the same data and loss as \method.
+The \emph{endpoint} and \emph{per-step latent world models} predict the DINOv2 features of the final frame or of every frame, in the manner of DINO-WM, and are scored by a reader trained on real futures.
+\TODO{Implement the per-step latent world model; retrain the endpoint model on the same data.}
+We also report three references that simulate every candidate and are therefore not deployable: the \emph{oracle}, which picks the best label; a \emph{reader on the true future}; and \emph{feature distance on the true future}, DINO-WM's planning cost under perfect prediction.
+
+\paragraph{Metrics.}
+We report closed-loop success, with episode-paired bootstrap intervals and exact McNemar tests, and planning time per decision.
+Offline, the \emph{retained gap} is the fraction of the oracle's gain over $\bA^{(1)}$ that a scorer's choices recover.
+
+\subsection{Main results}
+\label{sec:main}
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+ & Success (\%) & ms / decision \\
+\midrule
+Policy only & \result{--} & \result{--} \\
+Direct scorer & \result{--} & \result{--} \\
+Endpoint latent WM & \result{--} & \result{--} \\
+Per-step latent WM & \result{--} & \result{--} \\
+\method (ours) & \result{--} & \result{--} \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Simulates every candidate (not deployable)}} \\
+Feature distance, true future & \result{--} & -- \\
+Reader, true future & \result{--} & -- \\
+Oracle & \result{--} & -- \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Closed-loop success on PushT} (sealed test set, three training seeds) and planning time per decision, including proposal sampling. All methods select among the same proposals.}
+\label{tab:main}
+\end{table}
+
+\result{[Main result: \method vs.\ policy only and vs.\ the direct scorer; fraction of the oracle's and the true-future reader's gain recovered; time relative to the latent world models.]}
+
+\subsection{Where is ranking lost?}
+\label{sec:ladder}
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{@{}lc@{}}
+\toprule
+Reader input & Retained gap \\
+\midrule
+True future, uncompressed & \result{--} \\
+Code of the true future & \result{--} \\
+Predicted code (\method) & \result{--} \\
+Predicted code, NLL-only WM & \result{--} \\
+Predicted final-frame features & \result{--} \\
+Actions only (direct scorer) & \result{--} \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Attribution ladder} on development decisions (episode-clustered 95\% intervals). The drop from row 1 to 2 is lost to compression; from row 2 to 3, to prediction.}
+\label{tab:ladder}
+\end{table}
+
+\Cref{tab:ladder} scores the same decisions as the reader's input moves from the true future to its code to the code predicted from actions.
+\result{[Interpretation, with code diagnostics: perplexity, distinct codes per decision, $I(S;\bA\mid C)$ in bits, feature $R^2$.]}
+
+\subsection{Ablations}
+\label{sec:ablations}
+Each ablation changes one choice and keeps the data and training budget fixed:
+the target encoder without the history, or with only the final frame;
+a per-step code with the same total bits, which would refute the segment design if it matched \method;
+no feature decoder ($\alpha{=}0$);
+a world model trained with $\mathcal{L}_{\mathrm{NLL}}$ only;
+co-design with $\lambda{>}0$;
+and code lengths $M\in\{8,16,32\}$.
+\result{[Ablation table.]}
+
+\subsection{When progress depends on the path}
+\label{sec:path}
+\TODO{Second task whose success depends on what happens inside a segment. Key contrast: \method vs.\ the final-frame code at equal bits, and vs.\ the per-step latent world model at equal quality.}

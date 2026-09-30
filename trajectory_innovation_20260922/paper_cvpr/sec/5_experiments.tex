@@ -1,90 +1,50 @@
 \section{Experiments}
 \label{sec:experiments}
 
-We ask four questions.
-\textbf{(i)}~Does a released policy's proposal bank contain better candidates, and can a generic feature distance find them (\cref{sec:headroom})?
-\textbf{(ii)}~Does \method select better than the policy and than matched baselines in closed loop (\cref{sec:main})?
-\textbf{(iii)}~Where along the chain from actual future to predicted code is ranking lost (\cref{sec:ladder})?
-\textbf{(iv)}~Which design choices matter, and does a predicted code transfer to held-out goals better than a direct scorer (\cref{sec:ablations,sec:heldout})?
+We use \method to select among the proposals of a frozen diffusion policy and ask three questions.
+Does \method improve the policy, and how does it compare in success and planning time with latent world models and a direct scorer that rank the same proposals (\cref{sec:main})?
+Where between the true future and the predicted code is ranking quality lost (\cref{sec:ladder})?
+Which design choices matter (\cref{sec:ablations})?
+\Cref{sec:path} turns to a task whose success depends on what happens within a segment.
 
 \subsection{Setup}
 \label{sec:setup}
 
-\paragraph{Arenas and policies.}
-\emph{PushT}~\cite{florence2021ibc}: we use the released LeRobot Diffusion Policy~\cite{chi2023diffusion}, which observes two frames, denoises a 16-step action tensor, and executes 8 actions.
-An episode succeeds when the block covers more than 95\% of the target within 300 steps.
-The unmodified policy succeeds on 65 of 100 evaluation episodes; the model card reports 65.4\%.
-\emph{LIBERO-Goal}~\cite{liu2023libero}: ten goals in one kitchen scene, with the released SmolVLA~\cite{shukor2025smolvla} checkpoint executing 10 actions per chunk.
-With the unmodified evaluation script it reaches 71.3\% over three seeds, below the 91\% reported; we use the policy as measured and do not tune it.
-\TODO{LIBERO branching harness, clone fidelity, and the split into training and held-out goals.}
+\paragraph{Task and policy.}
+On PushT~\cite{florence2021ibc}, an episode succeeds when the block covers more than 95\% of the target region within 300 steps.
+We use the released LeRobot Diffusion Policy~\cite{chi2023diffusion}, which conditions on two observations, denoises 16 actions, and executes 8 of them.
+Unmodified, it succeeds in 65 of 100 of our qualification episodes, against 65.4\% reported on 500 episodes.
+At each decision, it proposes $K{=}8$ chunks from independent, pre-generated denoising noise, and the policy-only baseline executes $\bA^{(1)}$ at every decision.
+\TODO{Lock the deployment bank: the $K{=}8$ proposals only, or also their perturbed copies.}
 
-\paragraph{Proposal banks.}
-At every decision the policy draws $K{=}8$ chunks from independently seeded noise; the bank is shared by all methods, and $\bA^{(1)}$ is the policy's own draw.
-Simulator clones used for branching are verified to reproduce the live continuation of the episode.
+\paragraph{Data.}
+Training uses 2{,}000 branched rollouts (\cref{sec:codesign}) with 55{,}270 decisions.
+In 1{,}200 of these rollouts each decision is also branched with perturbed copies of the proposals, and half of them execute the best-labeled proposal at a random half of their decisions; this gives 87{,}860 banks of eight sibling segments.
+A further 100 rollouts are used for offline model selection and the attribution ladder, 200 episodes for closed-loop development, and a sealed set of 400 episodes, evaluated once, for the results we report, with three training seeds.
+PushT has a single target pose, so the 16 goal images, the final frames of successful episodes outside all splits, differ only in the position of the agent and small deviations of the block.
+PushT therefore does not test the reuse of predictions across different goals.
 
-\paragraph{Data and splits.}
-On PushT, training uses 800 policy rollouts with all eight proposals branched at every decision.
-Separate episodes serve offline development (100), closed-loop development (200), and a sealed confirmation set (400).
-The confirmation set is opened once, for the locked configuration trained with three seeds.
-Goal images are the final frames of 16 successful episodes outside all splits.
-
-\paragraph{Compared scorers.}
-All scorers rank the same bank.
-\emph{Policy only} executes $\bA^{(1)}$.
-The \emph{oracle} simulates every candidate and picks the highest 8-step progress label; it is privileged and bounds myopic selection.
-The \emph{actual-future reader} is a reader of the same size, trained with the same data and loss on the uncompressed actual future; it is not deployable and bounds any predictor of the future.
-\emph{Code of the actual future} applies \method's reader to the target encoder's code of the simulated future.
-The \emph{direct scorer} $D(C,\bA,g)$ has eight layers and is trained with the same data, loss, and steps.
-The \emph{per-step latent world model} is a DINO-WM-style predictor of the patch features of every future step, trained on the same data and read by the actual-future reader.
-We also compare with \emph{GPC}~\cite{qi2025gpc}.
-\TODO{Per-step latent world model and GPC are not implemented yet.}
-Finally, \emph{feature distance} scores the actual final frame by its negative mean squared DINOv2 patch-feature distance to the mean feature map of the goal images, which is DINO-WM's planning cost under perfect prediction.
+\paragraph{Baselines.}
+All learned scorers use the same frozen DINOv2 features, context, proposals, training data, labels, ranking loss, and checkpoint selection.
+The \emph{direct scorer} $D(C,\bA,g)$ is a Transformer over the context, action, and goal tokens, with eight layers so that its capacity is comparable to that of the world model and reader combined.
+The \emph{factorized direct scorer} maps $(C,\bA)$ to a vector of the same size as $\hat S$ and reads it with the reader architecture; it is trained with the ranking loss only, and isolates the effect of supervising this bottleneck with the future.
+The \emph{endpoint latent world model} predicts the features of the final image and the final proprioception in one pass and is read by a reader trained on true futures.
+The \emph{per-step latent world model} predicts the features of every frame autoregressively, in the manner of DINO-WM~\cite{zhou2025dinowm}, and is read in the same way.
+\TODO{Implement the factorized direct scorer and the per-step latent world model.}
+We also report three privileged references that simulate every candidate and are therefore not deployable: the \emph{oracle}, which picks the candidate with the best label; the \emph{reader on the true future}, which reads the true final image and proprioception; and \emph{feature distance on the true future}, which is DINO-WM's planning cost under perfect prediction.
 
 \paragraph{Metrics.}
-The primary metric is closed-loop success.
-Differences are paired by episode, with bootstrap confidence intervals (10{,}000 resamples) and exact McNemar tests.
-Offline, on development decisions, we report the within-bank Spearman correlation between a score and the 8-step label.
-We also report the retained gap: the fraction of the oracle's per-decision label gain over $\bA^{(1)}$ that the scorer's choice obtains.
+We report closed-loop success and the mean episode score, defined as the maximum coverage reached in an episode divided by the 95\% success threshold and clipped at one.
+Intervals are paired bootstrap intervals over episodes, and success differences are also tested with exact McNemar tests.
+\TODO{Fix the primary metric before the sealed evaluation (the development protocol uses the score).}
+For planning time we report the scoring time, meaning the world model and reader for all $K$ candidates, and the total time per decision including image encoding and proposal sampling, on the same GPU.
+Offline, the \emph{retained gap} of a scorer is the fraction of the oracle's gain over the default that its choices recover,
+\begin{equation}
+  \mathrm{RG}=\frac{\sum_d\big(\ell_d(\hat k_d)-\ell_d(1)\big)}{\sum_d\big(\max_k\ell_d(k)-\ell_d(1)\big)},
+\end{equation}
+where $d$ ranges over decisions, $\hat k_d$ is the scorer's choice, and $\ell_d(1)$ is the label of $\bA^{(1)}$.
 
-\subsection{Headroom in the proposal bank}
-\label{sec:headroom}
-
-\begin{table}[t]
-\centering
-\small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}lcc@{}}
-\toprule
-Selection among $K{=}8$ proposals & Set A & Set B \\
- & \scriptsize(100 ep.) & \scriptsize(400 ep.) \\
-\midrule
-Policy, unmodified inference & 65 & -- \\
-Policy only ($\bA^{(1)}$, our sampler) & 64 & 62.5 \\
-Bank medoid (no future information) & 68 & -- \\
-Feature distance on the true future & 67 & -- \\
-Learned reader on the true future & -- & 71.0 \\
-Oracle, 8-step progress (privileged) & 79 & 76.5 \\
-\bottomrule
-\end{tabular}
-\caption{\textbf{PushT headroom}: closed-loop success (\%) when selecting among the policy's own proposals, on two disjoint sets of episodes. The two rows on the true future are not deployable; they bound what a world model that predicted the future perfectly could obtain with that scorer.}
-\label{tab:headroom}
-\end{table}
-
-\Cref{tab:headroom} shows that the bank has headroom.
-On set B, selecting by the privileged oracle raises success by 14 points, 95\% CI $[8.8,19.3]$ (94 episodes solved only by the oracle, 38 only by the policy; McNemar $p{<}10^{-5}$).
-On set A the gain is 15 points $[5,25]$, and on a third set of 100 episodes it was 10 points $[-1,22]$.
-Per decision the gain is small: a strictly better candidate exists at 54\% of decisions, and the oracle's choice improves coverage by only 0.007 on average.
-Swapping a single chunk barely changes the outcome (+2 points $[-3,7.5]$ in a split-seed estimate).
-Success therefore comes from being slightly better at many decisions, and a scorer must resolve small differences in progress at every one of them.
-
-Feature distance fails to do so even on the true future.
-On set A it gains 3 points $[-8,14]$, and its within-bank Spearman correlation with the label is 0.06 over 1{,}742 decisions.
-A per-step latent world model that plans with this cost is thus capped near the policy even under perfect prediction.
-A reader trained with the ranking loss of \cref{sec:reader} on the true future does much better.
-On set B it gains 8.5 points $[2.8,14.3]$ (McNemar $p{=}0.005$), 61\% of the oracle's gain, with a within-bank Spearman correlation of 0.23.
-This learned reader on the true future is the upper bound that \method approaches from compressed and then predicted futures.
-
-\subsection{Closed-loop results}
+\subsection{Main results}
 \label{sec:main}
 
 \begin{table}[t]
@@ -93,64 +53,87 @@ This learned reader on the true future is the upper bound that \method approache
 \setlength{\tabcolsep}{3pt}
 \begin{tabular}{@{}lcccc@{}}
 \toprule
- & PushT & \multicolumn{2}{c}{LIBERO-Goal} & ms per \\
- & & seen & held-out & decision \\
+ & & & \multicolumn{2}{c}{ms / decision} \\
+\cmidrule(l){4-5}
+ & Success (\%) & Score & Scoring & Total \\
 \midrule
-Policy only & \result{--} & \result{--} & \result{--} & \result{--} \\
-Oracle$^\dagger$ & \result{--} & \result{--} & \result{--} & -- \\
-Actual-future reader$^\dagger$ & \result{--} & \result{--} & \result{--} & -- \\
+Policy only & \result{--} & \result{--} & -- & \result{--} \\
 Direct scorer & \result{--} & \result{--} & \result{--} & \result{--} \\
+Factorized direct scorer & \result{--} & \result{--} & \result{--} & \result{--} \\
+Endpoint latent WM & \result{--} & \result{--} & \result{--} & \result{--} \\
 Per-step latent WM & \result{--} & \result{--} & \result{--} & \result{--} \\
-GPC~\cite{qi2025gpc} & \result{--} & \result{--} & \result{--} & \result{--} \\
 \method (ours) & \result{--} & \result{--} & \result{--} & \result{--} \\
+\midrule
+\multicolumn{5}{@{}l}{\emph{Privileged: simulates every candidate}} \\
+Feature distance, true future & \result{--} & \result{--} & -- & -- \\
+Reader, true future & \result{--} & \result{--} & -- & -- \\
+Oracle & \result{--} & \result{--} & -- & -- \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{Closed-loop success} (\%) on sealed episodes, averaged over three training seeds, and planning latency per decision, including proposal sampling. $^\dagger$Not deployable: simulates every candidate.}
+\caption{\textbf{Closed-loop results on PushT} (sealed set of 400 episodes, mean over three training seeds). All methods select among the same $K{=}8$ proposals. \emph{Scoring} is the time of the world model and reader for all candidates; \emph{Total} adds image encoding and proposal sampling.}
 \label{tab:main}
 \end{table}
 
-\result{[Main result: \method vs.\ policy only (primary contrast), vs.\ the direct scorer, and retention relative to the actual-future reader and the oracle.]}
+\result{[Main result, in this order: \method vs.\ policy only; vs.\ the direct and factorized direct scorers; vs.\ the endpoint and per-step latent world models at their measured cost; fraction of the oracle's and the true-future reader's gain recovered.]}
 
-\subsection{Attribution ladder}
+\subsection{Where is ranking quality lost?}
 \label{sec:ladder}
 
 \begin{table}[t]
 \centering
 \small
-\begin{tabular}{@{}lcc@{}}
+\begin{tabular}{@{}lc@{}}
 \toprule
-Scorer input & Spearman & Retained gap \\
+Reader input & Retained gap \\
 \midrule
-Actual future (uncompressed) & \result{--} & \result{--} \\
-Code of the actual future & \result{--} & \result{--} \\
-Predicted code, greedy & \result{--} & \result{--} \\
-Predicted code, expected codeword & \result{--} & \result{--} \\
-Predicted code, 4 samples & \result{--} & \result{--} \\
-Direct scorer (actions) & \result{--} & \result{--} \\
+True future (final image and proprioception) & \result{--} \\
+Code of the true future, $S$ & \result{--} \\
+Predicted code, $\hat S$ (\method) & \result{--} \\
+Predicted code, NLL-only world model & \result{--} \\
+Predicted final-image features (endpoint WM) & \result{--} \\
+Actions only (direct scorer) & \result{--} \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{Attribution ladder} on PushT development decisions: within-bank Spearman correlation with the 8-step label and retained gap, with episode-clustered 95\% intervals. A drop from one row to the next locates the loss: compression (row 1 to 2) or prediction (row 2 to 3).}
+\caption{\textbf{Attribution ladder} on the development decisions, with 95\% intervals clustered by episode. The drop from the second to the third row is lost to prediction. The first row reads a different view of the true future than the code does, so it is a reference rather than an upper bound.}
 \label{tab:ladder}
 \end{table}
 
-\Cref{tab:ladder} scores the same decisions with the same reader architecture as the input moves from the actual future, to its code, to the code predicted from actions.
-\result{[Interpretation; code diagnostics: perplexity, distinct codes per bank, $I(S;\bA\mid C)$ in bits, feature $R^2$.]}
+\Cref{tab:ladder} scores the same decisions while the reader's input moves from the true future to its code and then to the code predicted from the action.
+\result{[Interpretation, with code diagnostics: perplexity, distinct codes per decision, distinct token values per code, $I(S;\bA\mid C)$ in bits, feature $R^2$.]}
 
 \subsection{Ablations}
 \label{sec:ablations}
-Each ablation changes one design choice, at the same history, proposal bank, data, and training budget.
-\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-\item \emph{Conditioning on history.} The target encoder does not see $C$, at the same number of bits. The heads still see $C$.
-\item \emph{Segment versus endpoint.} The target encoder sees only the final image. A decision is made once per chunk, but some differences between chunks lie in the path.
-\item \emph{Segment versus per-step codes.} A conditional code per time step with the same context and the same total number of bits. If it matches \method, the segment claim fails. \TODO{Not implemented.}
-\item \emph{Feature decoder.} $\alpha{=}0$ tests whether reconstruction is what keeps the code useful for goals outside training.
-\item \emph{Predictability.} $\lambda{=}0$ versus co-design with $\lambda{>}0$ in~\eqref{eq:source}.
-\item \emph{Rate.} $M\in\{8,16,32\}$, which traces the accuracy--latency frontier.
-\end{itemize}
-\result{[Ablation table.]}
 
-\subsection{Held-out goals}
-\label{sec:heldout}
-The advantage of predicting a goal-independent code over scoring actions directly should appear on goals that were not seen in training.
-On LIBERO-Goal, the reader and the direct scorer are trained with labels for a subset of the ten goals, and both are evaluated on the remaining goals with the same world model and bank.
-\result{[Held-out goal result.]}
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+ & RG & Success (\%) \\
+\midrule
+\method & \result{--} & \result{--} \\
+\midrule
+Target encoder without history & \result{--} & \result{--} \\
+Target from the final frame only & \result{--} & \result{--} \\
+Per-step code, same total bits & \result{--} & \result{--} \\
+No feature decoder ($\alpha{=}0$) & \result{--} & \result{--} \\
+World model with $\mathcal{L}_{\mathrm{NLL}}$ only & \result{--} & \result{--} \\
+Most likely code instead of $\hat S$ & \result{--} & \result{--} \\
+Co-design, $\lambda{>}0$ & \result{--} & \result{--} \\
+$M{=}8$ / $M{=}32$ & \result{--} & \result{--} \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Ablations.} Each row changes one choice and keeps the data and training budget fixed. RG: offline retained gap on development decisions; success on the closed-loop development episodes.}
+\label{tab:ablations}
+\end{table}
+
+Each ablation in \cref{tab:ablations} changes one choice.
+Removing the history from the target encoder tests conditional coding.
+Restricting the target to the final frame, or replacing the segment code with one code per frame at the same total number of bits, tests the segment design; if either matched \method, the segment design would not be supported.
+The remaining rows test the feature decoder, the decision terms of the world-model loss, deployment with the expected code, co-design for predictability, and the code length.
+\result{[Findings.]}
+
+\subsection{When progress depends on the path}
+\label{sec:path}
+\TODO{Second task whose success depends on what happens within a segment. Key contrasts: \method vs.\ the final-frame code at equal bits, and vs.\ the per-step latent world model at equal quality.}

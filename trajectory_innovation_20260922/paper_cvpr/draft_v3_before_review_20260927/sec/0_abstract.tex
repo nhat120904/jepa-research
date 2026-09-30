@@ -1,0 +1,10 @@
+\begin{abstract}
+A world model lets a robot check candidate actions before executing them.
+Latent world models such as DINO-WM predict the features of every future frame and compare the last one with a goal image, which is costly and a weak signal of task progress.
+Direct scorers skip prediction, but must learn what an action does separately for every goal.
+We propose \emph{Conditional Trajectory Abstraction} (\method), a joint-embedding world model that predicts a compact code of an action's entire future segment, conditioned on the observed history.
+During training, a target encoder learns this code from real futures.
+A reader that never sees the action scores the code against goal images, and a feature decoder keeps the code a description of the future rather than a score.
+The world model predicts the code from the history and a candidate action chunk in a single pass, so one prediction serves any number of goals.
+Used to select among the proposals of a frozen diffusion policy on PushT, \method \result{[main result]}.
+\end{abstract}

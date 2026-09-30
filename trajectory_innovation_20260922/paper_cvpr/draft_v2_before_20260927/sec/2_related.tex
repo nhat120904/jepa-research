@@ -1,0 +1,40 @@
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Latent and joint-embedding world models.}
+Latent world models learn dynamics in a compact state space and plan or learn behaviors in imagination~\cite{hafner2019planet,hafner2023dreamerv3,hansen2024tdmpc2}.
+Token-based models cast dynamics as autoregressive modeling of discrete image tokens~\cite{micheli2023iris}.
+$\Delta$-IRIS encodes only the stochastic change between consecutive frames given the past~\cite{micheli2024deltairis}, which makes it the closest per-step relative of conditional coding.
+Joint-embedding predictive architectures predict the representation of a target from the representation of its context instead of reconstructing the target~\cite{lecun2022path,assran2023ijepa,bardes2024vjepa}.
+In control, DINO-WM~\cite{zhou2025dinowm} and V-JEPA~2-AC~\cite{assran2025vjepa2} predict the patch features of a frozen encoder~\cite{oquab2024dinov2} one time step at a time, and they plan by minimizing the feature distance between a predicted latent state and a goal image.
+CompACT~\cite{kim2026compact} compresses each observation into as few as eight tokens to accelerate such planning, and GCQ~\cite{peng2025gcq} compresses observation--action sequences with an action-conditioned codebook.
+In all of these models the prediction target is fixed in advance: the observation at each time step, or a per-step latent representation of it.
+\method keeps the joint-embedding recipe, a predictor trained against the stop-gradient output of a target encoder, but learns the target itself.
+The target is one code per action segment, conditioned on history that the reader also sees, and shaped by what decisions need.
+Compact per-step codes are therefore our most important control.
+
+\paragraph{Temporally extended prediction.}
+Option models~\cite{sutton1999options} and multi-step or trajectory-level dynamics models~\cite{lambert2021longterm,ding2024dwm} predict the outcome of a temporally extended action without stepping through every intermediate state, and jumpy world models compose such predictions across timescales~\cite{farebrother2026jumpy}.
+Successor features and their random-feature variants predict cumulative features of a policy or an action sequence~\cite{barreto2017sf,chen2023ramp}, and TD-Flow learns generative models of discounted future-state occupancy~\cite{farebrother2025tdflow}.
+These models summarize the future as a state at a given time or as an order-free aggregate, and they predict it from scratch.
+\method codes the whole segment, including its intermediate frames, and spends its bits only on what the observed history does not already determine.
+
+\paragraph{Policy steering with world models.}
+A frozen generative policy can be improved at deployment by sampling several proposals and selecting one with an external scorer.
+GPC~\cite{qi2025gpc} ranks diffusion-policy proposals with a reward model applied to the future observations predicted by an action-conditioned world model; it is the closest system to ours.
+FOREWARN~\cite{wu2025forewarn} aligns a vision--language model to latent predictions of candidate plans.
+DreamSteer~\cite{cui2026dreamsteer} ranks imagined latent futures of VLA chunks with a language-conditioned value model.
+DynaGuide~\cite{du2025dynaguide} steers denoising with a DINOv2-space dynamics model.
+Value- or verifier-based methods rank proposals without a world model~\cite{nakamoto2024vgps,kwok2025robomonkey}.
+We adopt the same propose-then-select interface and, like GPC and V-GPS, train the scorer with task-progress labels.
+Our contribution concerns what the world model predicts.
+It predicts a goal-independent code that one reader evaluates for any goal image, where GPC predicts future observations that a reward model must read and a direct scorer outputs a score that must be recomputed for every goal.
+
+\paragraph{Conditional coding and decision-aware compression.}
+Learned image and video codecs optimize a rate--distortion trade-off end to end~\cite{balle2017end}.
+DCVC~\cite{li2021dcvc} replaces residual coding with conditional coding, in which both encoder and decoder use the temporal context.
+Unlike the Wyner--Ziv setting~\cite{wyner1976ratedistortion}, where side information is available only to the decoder, our encoder and heads both see the context.
+In reinforcement learning, value-equivalent models~\cite{grimm2020value,schrittwieser2020muzero} retain only what is needed to predict values, and value-equivalent sampling~\cite{arumugam2022deciding} formalizes decision-relevant lossy model compression.
+\method differs in two ways.
+Its source is the unexecuted future of an action, which must be predicted before execution, so predictability is part of the design.
+Its distortion combines a decision term, the ranking of candidates toward a goal, with a generic term, the reconstruction of the future's features, so that the code is not specialized to the goals seen in training.

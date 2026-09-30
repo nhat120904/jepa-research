@@ -1,11 +1,13 @@
 \begin{abstract}
-World models for visual control usually roll the future out one time step at a time, predicting an observation or its latent representation for every future step, and leave it to a planner to extract what matters for a decision.
-Prediction cost grows with the horizon and the number of tokens per step, and most of each predicted state restates what the observed history already shows.
-We propose \emph{Conditional Trajectory Abstraction} (\method), a joint-embedding predictive world model whose prediction target is not one latent state per time step but a short discrete code of an action chunk's entire future segment, conditioned on the observed history.
-During training only, a target encoder compresses the actual future segment into a few tokens given the history.
-Two heads see the history and the code but never the action: a reader that ranks candidate chunks by progress toward a goal image, and a decoder that reconstructs the future's frozen image features, which keeps the code a description of the future rather than a score.
-The world model predicts the code from the history and a candidate chunk against a stop-gradient target, and an optional predictability term co-designs the code with the world model.
-At deployment, a frozen policy proposes candidate chunks, the world model predicts one code per candidate, and the reader scores each code against any number of goal images without predicting again.
-Task-progress labels enter only the reader's training loss; the world model never sees a label, and nothing uses labels at test time.
-On PushT and LIBERO-Goal, \method{} \result{[main result placeholder]}.
+A world model predicts how the environment will respond to an agent's actions, and a planner uses these predictions to choose among candidate actions.
+Latent world models such as DINO-WM predict the visual features of every future frame, and plan by comparing the last predicted frame with a goal image in feature space.
+When a robot must choose among a few candidate action chunks, much of this prediction restates what the history already shows, and feature distance to a goal image can be a poor measure of task progress.
+We ask whether a world model can instead predict a compact abstraction of an action's entire future that keeps what the decision needs and omits what the history already reveals.
+We propose \emph{Conditional Trajectory Abstraction} (\method), a joint-embedding world model whose prediction target is learned.
+During training, a target encoder compresses the actual future of an action chunk into 16 discrete tokens, conditioned on the observed history.
+A goal-conditioned reader ranks sibling futures by task progress from the history and this code alone, and a feature decoder reconstructs the future's frozen image features, so that the code describes the future instead of merely scoring the training goals.
+The world model predicts the code from the history and a candidate chunk in a single forward pass.
+Because the code does not depend on the goal, each candidate is predicted once and can then be evaluated by the reader for any goal.
+Selecting among the proposals of a frozen diffusion policy on PushT, \method{} \result{[main result]}.
+An attribution ladder separates the ranking quality lost by compressing the future from that lost by predicting it.
 \end{abstract}

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2026.5.10)  24 SEP 2026 04:19
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2026.5.10)  27 SEP 2026 16:37
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -940,8 +940,8 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
 )
 (./sec/0_abstract.tex) (./sec/1_intro.tex
-LaTeX Font Info:    Trying to load font information for OT1+phv on input line 3
-1.
+LaTeX Font Info:    Trying to load font information for OT1+phv on input line 2
+6.
 
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1phv.fd
 File: ot1phv.fd 2020/03/25 scalable font definitions for OT1/phv.
@@ -954,66 +954,151 @@ Package microtype Info: Loading generic protrusion settings for font family
 
 
 ]
-LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 4
-6.
+LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 3
+9.
 
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
-) (./fig/overview.tex)) (./sec/2_related.tex [2]) (./sec/3_problem.tex [3]) (./
-sec/4_method.tex
-[4] [5]
+) (./fig/overview.tex
+(./fig/fig1_data.tex)
+<fig/pusht/prev.png, id=108, 513.92pt x 513.92pt>
+File: fig/pusht/prev.png Graphic file (type png)
+<use fig/pusht/prev.png>
+Package pdftex.def Info: fig/pusht/prev.png  used on input line 31.
+(pdftex.def)             Requested size: 58.32823pt x 58.32713pt.
+<fig/pusht/cur.png, id=109, 513.92pt x 513.92pt>
+File: fig/pusht/cur.png Graphic file (type png)
+<use fig/pusht/cur.png>
+Package pdftex.def Info: fig/pusht/cur.png  used on input line 33.
+(pdftex.def)             Requested size: 58.32823pt x 58.32713pt.
+File: fig/pusht/cur.png Graphic file (type png)
+<use fig/pusht/cur.png>
+Package pdftex.def Info: fig/pusht/cur.png  used on input line 45.
+(pdftex.def)             Requested size: 62.59596pt x 62.59709pt.
+<fig/pusht/goal0.png, id=111, 385.44pt x 385.44pt>
+File: fig/pusht/goal0.png Graphic file (type png)
+<use fig/pusht/goal0.png>
+Package pdftex.def Info: fig/pusht/goal0.png  used on input line 70.
+(pdftex.def)             Requested size: 22.1931pt x 22.19026pt.
+<fig/pusht/goal1.png, id=112, 385.44pt x 385.44pt>
+File: fig/pusht/goal1.png Graphic file (type png)
+<use fig/pusht/goal1.png>
+Package pdftex.def Info: fig/pusht/goal1.png  used on input line 70.
+(pdftex.def)             Requested size: 22.1931pt x 22.19026pt.
+<fig/pusht/goal2.png, id=113, 385.44pt x 385.44pt>
+File: fig/pusht/goal2.png Graphic file (type png)
+<use fig/pusht/goal2.png>
+Package pdftex.def Info: fig/pusht/goal2.png  used on input line 70.
+(pdftex.def)             Requested size: 22.1931pt x 22.19026pt.
+<fig/pusht/c6s8.png, id=114, 513.92pt x 513.92pt>
+File: fig/pusht/c6s8.png Graphic file (type png)
+<use fig/pusht/c6s8.png>
+Package pdftex.def Info: fig/pusht/c6s8.png  used on input line 81.
+(pdftex.def)             Requested size: 59.75095pt x 59.751pt.
+<fig/pusht/c6s2.png, id=116, 513.92pt x 513.92pt>
+File: fig/pusht/c6s2.png Graphic file (type png)
+<use fig/pusht/c6s2.png>
+Package pdftex.def Info: fig/pusht/c6s2.png  used on input line 100.
+(pdftex.def)             Requested size: 27.88358pt x 27.89667pt.
+<fig/pusht/c3s2.png, id=118, 513.92pt x 513.92pt>
+File: fig/pusht/c3s2.png Graphic file (type png)
+<use fig/pusht/c3s2.png>
+Package pdftex.def Info: fig/pusht/c3s2.png  used on input line 100.
+(pdftex.def)             Requested size: 27.88358pt x 27.89667pt.
+<fig/pusht/c6s4.png, id=120, 513.92pt x 513.92pt>
+File: fig/pusht/c6s4.png Graphic file (type png)
+<use fig/pusht/c6s4.png>
+Package pdftex.def Info: fig/pusht/c6s4.png  used on input line 100.
+(pdftex.def)             Requested size: 27.88358pt x 27.89667pt.
+<fig/pusht/c3s4.png, id=122, 513.92pt x 513.92pt>
+File: fig/pusht/c3s4.png Graphic file (type png)
+<use fig/pusht/c3s4.png>
+Package pdftex.def Info: fig/pusht/c3s4.png  used on input line 100.
+(pdftex.def)             Requested size: 27.88358pt x 27.89667pt.
+<fig/pusht/c6s6.png, id=124, 513.92pt x 513.92pt>
+File: fig/pusht/c6s6.png Graphic file (type png)
+<use fig/pusht/c6s6.png>
+Package pdftex.def Info: fig/pusht/c6s6.png  used on input line 100.
+(pdftex.def)             Requested size: 27.88358pt x 27.89667pt.
+<fig/pusht/c3s6.png, id=126, 513.92pt x 513.92pt>
+File: fig/pusht/c3s6.png Graphic file (type png)
+<use fig/pusht/c3s6.png>
+Package pdftex.def Info: fig/pusht/c3s6.png  used on input line 100.
+(pdftex.def)             Requested size: 27.88358pt x 27.89667pt.
+File: fig/pusht/c6s8.png Graphic file (type png)
+<use fig/pusht/c6s8.png>
+Package pdftex.def Info: fig/pusht/c6s8.png  used on input line 100.
+(pdftex.def)             Requested size: 27.88358pt x 27.89667pt.
+<fig/pusht/c3s8.png, id=129, 513.92pt x 513.92pt>
+File: fig/pusht/c3s8.png Graphic file (type png)
+<use fig/pusht/c3s8.png>
+Package pdftex.def Info: fig/pusht/c3s8.png  used on input line 100.
+(pdftex.def)             Requested size: 27.88358pt x 27.89667pt.
+)) (./sec/2_related.tex) (./sec/3_problem.tex [2] [3 <./fig/pusht/cur.png (PNG 
+copy)> <./fig/pusht/c6s8.png (PNG copy)> <./fig/pusht/c6s2.png (PNG copy)> <./f
+ig/pusht/c3s2.png (PNG copy)> <./fig/pusht/c6s4.png (PNG copy)> <./fig/pusht/c3
+s4.png (PNG copy)> <./fig/pusht/c6s6.png (PNG copy)> <./fig/pusht/c3s6.png (PNG
+ copy)> <./fig/pusht/c3s8.png (PNG copy)> <./fig/pusht/prev.png (PNG copy)> <./
+fig/pusht/goal0.png (PNG copy)> <./fig/pusht/goal1.png (PNG copy)> <./fig/pusht
+/goal2.png (PNG copy)>]) (./sec/4_method.tex [4]
 Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
-put line 118.
-) (./sec/5_experiments.tex [6] [7]) (./sec/6_conclusion.tex) (./main.bbl (./mai
-n.brf)
+put line 87.
+)
+(./sec/5_experiments.tex [5] [6]) (./sec/6_conclusion.tex) (./main.bbl
+(./main.brf)
 \tf@brf=\write5
 \openout5 = `main.brf'.
 
- [8]) [9] (./main.aux)
+ [7] [8]) [9
+
+] (./main.aux)
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 2176A7DCF801C10887177A1473441D45;2793.
+(rerunfilecheck)             Checksum: 189463B037E2A1F5868D73A17874DC53;2507.
 Package rerunfilecheck Info: File `main.brf' has not changed.
-(rerunfilecheck)             Checksum: FC44C16389C230AA3BF24C67F2748454;2831.
+(rerunfilecheck)             Checksum: E403C7BD4581DAB931EC5A0B35688173;2601.
  ) 
 Here is how much of TeX's memory you used:
- 29698 strings out of 480171
- 553046 string characters out of 5894489
- 890990 words of memory out of 5000000
- 46573 multiletter control sequences out of 15000+600000
- 527475 words of font info for 398 fonts, out of 8000000 for 9000
+ 30131 strings out of 480171
+ 560150 string characters out of 5894489
+ 969512 words of memory out of 5000000
+ 47011 multiletter control sequences out of 15000+600000
+ 527254 words of font info for 384 fonts, out of 8000000 for 9000
  59 hyphenation exceptions out of 8191
- 89i,11n,91p,1082b,1082s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 89i,11n,91p,1553b,1157s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texliv
 e/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texlive/texm
-f-dist/fonts/type1/public/amsfonts/cm/cmbx7.pfb></usr/share/texlive/texmf-dist/
-fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/share/texlive/texmf-dist/fonts/t
-ype1/public/amsfonts/cm/cmbx9.pfb></usr/share/texlive/texmf-dist/fonts/type1/pu
-blic/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/a
-msfonts/cmextra/cmex9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/ams
-fonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
-cm/cmmi5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi
-6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><
-/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/sh
-are/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/tex
-live/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/te
-xmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/share/texlive/texmf-dist
-/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/t
-ype1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/pub
-lic/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsf
-onts/cm/cmr9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/
-cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.
-pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></u
-sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/shar
-e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/share/texli
-ve/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/share/texliv
-e/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/share/texlive/texmf-dist
-/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1
-/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr
-8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (9 pages, 378585 bytes).
+f-dist/fonts/type1/public/amsfonts/cm/cmbx6.pfb></usr/share/texlive/texmf-dist/
+fonts/type1/public/amsfonts/cm/cmbx7.pfb></usr/share/texlive/texmf-dist/fonts/t
+ype1/public/amsfonts/cm/cmbx8.pfb></usr/share/texlive/texmf-dist/fonts/type1/pu
+blic/amsfonts/cm/cmbx9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/am
+sfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts
+/cmextra/cmex9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/c
+m/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi
+5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb><
+/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/sh
+are/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/tex
+live/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/texlive/te
+xmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dis
+t/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/share/texlive/texmf-dist/fonts/
+type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/pu
+blic/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/ams
+fonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm
+/cmr9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.
+pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></u
+sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/shar
+e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texli
+ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive/texm
+f-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/share/texlive/texmf-dist/
+fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/share/texlive/texmf-dist/f
+onts/type1/public/amsfonts/symbols/msbm10.pfb></usr/share/texlive/texmf-dist/fo
+nts/type1/urw/helvetic/uhvb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/ur
+w/helvetic/uhvr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb
+8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/sh
+are/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on main.pdf (9 pages, 469388 bytes).
 PDF statistics:
- 490 PDF objects out of 1000 (max. 8388607)
- 416 compressed objects within 5 object streams
- 87 named destinations out of 1000 (max. 500000)
- 70309 words of extra memory for PDF output out of 74296 (max. 10000000)
+ 524 PDF objects out of 1000 (max. 8388607)
+ 421 compressed objects within 5 object streams
+ 84 named destinations out of 1000 (max. 500000)
+ 70426 words of extra memory for PDF output out of 74296 (max. 10000000)
 

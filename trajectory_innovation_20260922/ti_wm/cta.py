@@ -10,6 +10,7 @@ The reader never receives actions; the world model never receives tau, the goal,
 """
 
 import math
+import itertools
 
 import torch
 from torch import nn
@@ -69,13 +70,13 @@ def _param(*shape):
     return nn.Parameter(torch.randn(*shape) * 0.02)
 
 
-def _encoder(width, layers, heads):
-    layer = nn.TransformerEncoderLayer(width, heads, 4 * width, dropout=0.0, batch_first=True, norm_first=True)
+def _encoder(width, layers, heads, dropout=0.0):
+    layer = nn.TransformerEncoderLayer(width, heads, 4 * width, dropout=dropout, batch_first=True, norm_first=True)
     return nn.TransformerEncoder(layer, layers, norm=nn.LayerNorm(width), enable_nested_tensor=False)
 
 
-def _decoder(width, layers, heads):
-    layer = nn.TransformerDecoderLayer(width, heads, 4 * width, dropout=0.0, batch_first=True, norm_first=True)
+def _decoder(width, layers, heads, dropout=0.0):
+    layer = nn.TransformerDecoderLayer(width, heads, 4 * width, dropout=dropout, batch_first=True, norm_first=True)
     return nn.TransformerDecoder(layer, layers, norm=nn.LayerNorm(width))
 
 
@@ -115,12 +116,13 @@ class FutureTokens(nn.Module):
 class SourceEncoder(nn.Module):
     """q_phi(S | C, tau), training only: M segment queries cross-attend to the actual future and to C, then FSQ."""
 
-    def __init__(self, m=16, levels=LEVELS, width=256, layers=3, heads=8, conditional=True, path=True, dim=PCA_DIM):
+    def __init__(self, m=16, levels=LEVELS, width=256, layers=3, heads=8, conditional=True, path=True, dim=PCA_DIM,
+                 dropout=0.0):
         super().__init__()
         self.fut = FutureTokens(width, path, dim)
         self.ctx = ContextTokens(width, dim) if conditional else None
         self.queries = _param(m, width)
-        self.decoder = _decoder(width, layers, heads)
+        self.decoder = _decoder(width, layers, heads, dropout)
         self.to_code = nn.Linear(width, len(levels))
         self.fsq = IndexedFSQ(levels)
 
@@ -141,6 +143,31 @@ def saturation_penalty(pre, bound=1.5):
     return torch.relu(pre.abs() - bound).pow(2).mean()
 
 
+def fsq_predictability_nll(code, logits, fsq):
+    """Multilinear interpolation of frozen categorical NLL on the FSQ grid.
+
+    At a quantized code the forward value is exactly its categorical NLL (mean
+    per token). The backward pass follows neighboring codeword NLLs through the
+    FSQ straight-through code. Prefix indices and logits are treated as fixed;
+    this is a local surrogate, NOT an unbiased gradient of the discrete loss.
+    Unlike distance to E[code], two likely modes do not attract to an unlikely
+    midpoint. Only the source encoder receives gradients from this function.
+    """
+    digits = code.float() * fsq.half_w + fsq.half_w
+    # Choose the cell from the hard forward code; at the top edge use the
+    # last interior cell so a gradient toward an interior neighbor still exists.
+    low = torch.minimum(digits.detach().round().long(), fsq.levels - 2).clamp(min=0)
+    frac = digits - low
+    nll = -logits.detach().float().log_softmax(-1)
+    result = torch.zeros_like(digits[..., 0])
+    for corner in itertools.product((0, 1), repeat=code.shape[-1]):
+        offset = torch.tensor(corner, device=code.device)
+        idx = ((low + offset) * fsq.basis).sum(-1)
+        weight = torch.where(offset.bool(), frac, 1 - frac).prod(-1)
+        result = result + weight * nll.gather(-1, idx[..., None]).squeeze(-1)
+    return result.mean()
+
+
 class Scorer(nn.Module):
     """Goal-conditioned score from C and one evidence channel about a candidate.
 
@@ -149,7 +176,7 @@ class Scorer(nn.Module):
              "action": the direct scorer D_direct(C, A, q), the required strong baseline (RESEARCH_DESIGN §4).
     """
 
-    def __init__(self, evidence, width=256, layers=4, heads=8, m=16, levels=LEVELS, dim=PCA_DIM):
+    def __init__(self, evidence, width=256, layers=4, heads=8, m=16, levels=LEVELS, dim=PCA_DIM, dropout=0.0):
         super().__init__()
         self.evidence = evidence
         self.ctx = ContextTokens(width, dim)
@@ -163,14 +190,28 @@ class Scorer(nn.Module):
             raise ValueError(evidence)
         self.goal, self.goal_pos = nn.Linear(dim, width), _param(TOKENS, width)
         self.type_embed, self.cls = _param(3, width), _param(1, 1, width)
-        self.encoder = _encoder(width, layers, heads)
+        self.encoder = _encoder(width, layers, heads, dropout)
         self.head = nn.Linear(width, 1)
 
-    def forward(self, ctx, x, goal):
+    def forward(self, ctx, x, goal, drop=None):
+        """drop: optional (B, n_evidence) bool, True = evidence token hidden (nested-dropout training of code readers)."""
         ev = self.ev(x) if self.evidence == "future" else self.ev(x.float()) + self.ev_pos
-        tokens = torch.cat([self.cls.expand(goal.shape[0], -1, -1), self.ctx(ctx) + self.type_embed[0], ev + self.type_embed[1],
-                            self.goal(goal.float()) + self.goal_pos + self.type_embed[2]], dim=1)
-        return self.head(self.encoder(tokens)[:, 0]).squeeze(-1)
+        c = self.ctx(ctx) + self.type_embed[0]
+        g = self.goal(goal.float()) + self.goal_pos + self.type_embed[2]
+        tokens = torch.cat([self.cls.expand(goal.shape[0], -1, -1), c, ev + self.type_embed[1], g], dim=1)
+        mask = None
+        if drop is not None:
+            b = goal.shape[0]
+            mask = torch.cat([torch.zeros(b, 1 + c.shape[1], dtype=torch.bool, device=drop.device), drop,
+                              torch.zeros(b, g.shape[1], dtype=torch.bool, device=drop.device)], dim=1)
+        return self.head(self.encoder(tokens, src_key_padding_mask=mask)[:, 0]).squeeze(-1)
+
+
+def nested_drop(b, m, device, generator=None):
+    """Nested dropout (Rippel et al., 2014): keep a random prefix of k >= 1 code tokens per row, k uniform in 1..m.
+    Returns (b, m) bool, True = hidden. A token helps only if it adds information beyond the tokens before it."""
+    k = torch.randint(1, m + 1, (b, 1), device=device, generator=generator)
+    return torch.arange(m, device=device)[None] >= k
 
 
 def goal_scores(scorer, ctx, x, goals):
@@ -186,17 +227,21 @@ class FutureDecoder(nn.Module):
     Predicts the change from the decision frame, so a code that carries nothing scores the copy baseline.
     """
 
-    def __init__(self, m=16, levels=LEVELS, width=256, layers=2, heads=8, dim=PCA_DIM):
+    def __init__(self, m=16, levels=LEVELS, width=256, layers=2, heads=8, dim=PCA_DIM, dropout=0.0):
         super().__init__()
         self.ctx = ContextTokens(width, dim)
         self.code, self.code_pos = nn.Linear(len(levels), width), _param(m, width)
         self.queries = _param(TOKENS + N_SEG * SMALL, width)
-        self.decoder = _decoder(width, layers, heads)
+        self.decoder = _decoder(width, layers, heads, dropout)
         self.out = nn.Linear(width, dim)
 
-    def forward(self, ctx, code):
-        mem = torch.cat([self.ctx(ctx), self.code(code.float()) + self.code_pos], dim=1)
-        y = self.out(self.decoder(self.queries.expand(code.shape[0], -1, -1), mem)).float()
+    def forward(self, ctx, code, drop=None):
+        """drop: optional (B, M) bool, True = code token hidden (nested-dropout training)."""
+        c = self.ctx(ctx)
+        mem = torch.cat([c, self.code(code.float()) + self.code_pos], dim=1)
+        mask = None if drop is None else torch.cat(
+            [torch.zeros(code.shape[0], c.shape[1], dtype=torch.bool, device=drop.device), drop], dim=1)
+        y = self.out(self.decoder(self.queries.expand(code.shape[0], -1, -1), mem, memory_key_padding_mask=mask)).float()
         cur = ctx["cur"].float()
         end = cur + y[:, :TOKENS]
         seg = pool_grid(cur, int(math.isqrt(SMALL)))[:, None] + y[:, TOKENS:].reshape(-1, N_SEG, SMALL, y.shape[-1])

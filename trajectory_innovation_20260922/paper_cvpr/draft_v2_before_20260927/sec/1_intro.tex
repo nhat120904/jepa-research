@@ -1,0 +1,53 @@
+\section{Introduction}
+\label{sec:intro}
+
+A world model lets an agent evaluate an action before taking it.
+The dominant recipe for visual control rolls the future out one time step at a time, predicting pixels, discrete tokens, or the latent features of a pretrained encoder for every future step, and a planner then scores the imagined states against a goal~\cite{hafner2019planet,micheli2023iris,zhou2025dinowm,assran2025vjepa2}.
+Joint-embedding predictive architectures (JEPA)~\cite{lecun2022path,assran2023ijepa} moved this recipe away from pixels.
+DINO-WM~\cite{zhou2025dinowm} and V-JEPA~2-AC~\cite{assran2025vjepa2} predict, entirely in latent space, the patch features of a frozen self-supervised encoder for every future step, and plan by minimizing the feature distance between a predicted state and a goal image.
+Their prediction target, however, is still one latent state per time step.
+The cost of evaluating one candidate grows with the horizon and with the number of patch tokens per step, and errors compound over the rollout.
+Most of every predicted state restates what the observed history already shows: the scene layout, the appearance of objects, and everything the action does not touch.
+
+Predicting per-step states also leaves the planner with the task of turning them into a decision, and a generic feature distance is a poor measure of task progress.
+On PushT, the proposals of a released diffusion policy often contain a better chunk than the one it executes.
+Choosing the best of eight proposals with a privileged physical oracle raises closed-loop success by 14 points on 400 episodes.
+On a separate set of 100 episodes, where the oracle gains 15 points, choosing by DINOv2 feature distance to goal images gains only 3, even though the distance is computed on the \emph{true} future frames.
+A reader trained to rank the true futures by task progress gains 8.5 points on the 400 episodes (\cref{sec:headroom}).
+A per-step latent world model that plans with feature distance would inherit the first ceiling even if it predicted perfectly.
+\method instead learns the reader, and asks how much of its gain survives when the future is first compressed and then predicted.
+
+The opposite extreme skips prediction and learns a \emph{direct scorer} that maps the history, a candidate action, and a goal to a score~\cite{nakamoto2024vgps}.
+A direct scorer is cheap, but it entangles two different things: what the action will do, which does not depend on the goal, and how the outcome relates to the goal, which does.
+It must learn the consequences of actions separately for every goal, and it has no reason to generalize to goals it was not trained on.
+
+This paper asks whether a world model can sit between these extremes: \emph{instead of rolling out a latent state for every future time step, can a world model predict a compact abstraction of an entire future segment that is still sufficient for decision making?}
+Two observations make this plausible.
+First, a planner never needs the future as such, only the answers to a few questions about it, such as how much closer to the goal the segment ends.
+Second, whatever the observed history already determines need not be predicted again.
+Learned video compression exploits the same fact through \emph{conditional coding}, where both the encoder and the decoder see the temporal context and bits are spent only on what the context cannot predict~\cite{li2021dcvc}.
+We apply this principle to the \emph{unexecuted} future of an action, inside a joint-embedding predictive world model.
+All world models in this paper, ours and the baselines, predict in latent space and never generate images; they differ in their unit of prediction, one latent state per time step or one code per segment.
+
+We propose \emph{Conditional Trajectory Abstraction} (\method), summarized in \cref{fig:overview}.
+During training only, a target encoder compresses the actual future segment of an action chunk into $M$ discrete tokens $S$, conditioned on the observed history.
+Two heads read the code together with the history.
+A reader ranks the candidates that branch from the same state by progress toward a goal image.
+A feature decoder reconstructs the frozen features of the future frames, which keeps the code a description of the future rather than a score for the training goals.
+Neither head receives the action, so everything the action changes must pass through $S$.
+The world model is an action-conditioned predictor of $S$, trained against the stop-gradient output of the target encoder as in other joint-embedding predictive architectures.
+Optionally, the code is also co-designed to be predictable from the action.
+In policy-guided planning, a frozen pretrained policy proposes a bank of candidate chunks, the world model predicts one code per candidate, and the reader scores each code against the goal images.
+Since codes do not depend on the goal, one prediction per candidate serves any number of goals: \emph{predict once, query many}.
+
+Each ingredient of \method has precedents in world models, video compression, and policy steering, so a new name is not a contribution by itself.
+Our claims are therefore stated as comparisons at matched history, proposal bank, and data, against the two extremes above and against controls that remove one ingredient at a time.
+Our contributions are as follows.
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+\item We formulate the prediction target of a world model as a \emph{conditional} code of an action's future segment, bounded in rate and required to be predictable from the action, with per-step latent world models and direct scorers as its two limiting cases.
+\item We introduce \method, a joint-embedding predictive world model whose target is a learned, history-conditioned, segment-level discrete code. It is trained with a goal-conditioned ranking reader, a conditional feature decoder, and an autoregressive code predictor. Task-progress labels enter only the reader's training loss, and the world model never sees a label.
+\item We define an attribution ladder that scores the same candidates from the actual future, from its code, and from the predicted code. It separates ranking lost to compression from ranking lost to prediction.
+\item On PushT~\cite{florence2021ibc,chi2023diffusion} and LIBERO-Goal~\cite{liu2023libero} with frozen released policies, \result{[result placeholder: \method vs.\ policy only, direct scorer, per-step latent world model, and GPC; held-out goals]}.
+\end{itemize}
+
+\input{fig/overview}

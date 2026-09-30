@@ -29,14 +29,19 @@ class _Stored:
         self.hist = [{"pixels": frame, "agent_pos": prev_pos}, {"pixels": frame, "agent_pos": pos}]
 
 
-def preflight(planner, dev_shard, train_run):
+def preflight(planner, dev_shard, train_run, tiers=None, allow_matching_flat=False):
     """Scores from stored dev decisions (raw frames) must match the training job's cached-feature dev scores."""
-    d = np.load(dev_shard)
+    # NpzFile.__getitem__ decompresses an entire array on every access. The old
+    # arm/decision loop repeatedly decompressed whole image shards. Materialize
+    # only the needed prefix once; keep the same panel, scores and thresholds.
+    with np.load(dev_shard) as raw:
+        d = {key: raw[key][:PREFLIGHT_DECISIONS].copy() for key in
+             ("root", "ctx", "ctx_prev", "ctx_pos", "end", "end_pos", "end_prev_pos", "chunk", "seg")}
     saved = np.load(train_run / "dev_scores.npz")
     n = min(PREFLIGHT_DECISIONS, len(d["root"]))
     assert np.array_equal(saved["root"][:n], d["root"][:n]), "dev shard does not match the saved dev scores"
     out = {}
-    for arm, tier in PREFLIGHT_TIERS.items():
+    for arm, tier in (PREFLIGHT_TIERS if tiers is None else tiers).items():
         now = []
         for i in range(n):
             state = _Stored(d["ctx"][i], d["ctx_pos"][i][0], d["ctx_pos"][i][1])
@@ -60,8 +65,15 @@ def preflight(planner, dev_shard, train_run):
         # CTA8 decodes discrete codes greedily: bf16 noise can flip a token, so for it the within-bank rank
         # agreement is the pipeline check (a feature/proprio/action bug drives it toward 0), not argmax equality
         bad_argmax = out[arm]["argmax_agreement"] < PREFLIGHT_ARGMAX and arm != "CTA8"
+        # A new predictor may legitimately be uninformative. Identically flat
+        # cached/runtime banks have undefined rho, not an inference mismatch.
+        # This opt-in keeps old experiment behavior unchanged; score-error and
+        # argmax checks still apply and non-flat rank thresholds are unchanged.
+        matching_flat = bool(allow_matching_flat and not rho
+                             and (np.ptp(now, axis=1) == 0).all() and (np.ptp(ref, axis=1) == 0).all())
+        out[arm]['matching_flat_banks_only'] = matching_flat
         if (out[arm]["median_rel"] > PREFLIGHT_MEDIAN_REL or bad_argmax
-                or not out[arm]["within_bank_spearman"] >= PREFLIGHT_RHO):
+                or (not matching_flat and not out[arm]["within_bank_spearman"] >= PREFLIGHT_RHO)):
             raise RuntimeError(f"closed-loop {arm} disagrees with the training job's dev scores: {out[arm]}")
     return out
 

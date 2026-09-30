@@ -1,0 +1,83 @@
+\section{Problem Formulation}
+\label{sec:problem}
+
+\paragraph{Setting.}
+A robot observes images $o_t$ and proprioceptive states $q_t$.
+A frozen visual encoder $\varphi$ maps each image to a grid of patch features.
+At a decision time $t$, the context $C_t$ consists of the features of the current and previous images and the recent proprioceptive states; it uses only present and past information.
+A candidate action chunk $\bA=(a_t,\dots,a_{t+\He-1})$ is executed for $\He$ steps.
+Its \emph{future segment} $\tau$ consists of the frozen features of the images that executing $\bA$ produces, $\varphi(o_{t+1}),\dots,\varphi(o_{t+\He})$, subsampled in time, together with the final proprioceptive state.
+A world model must say something about $\tau$ \emph{before} $\bA$ is executed.
+
+\paragraph{Policy-guided planning.}
+At every decision, a frozen pretrained policy $\pi$ proposes $K$ chunks $\bA^{(1)},\dots,\bA^{(K)}$ from independent noise seeds, where $\bA^{(1)}$ is the chunk the unmodified policy would execute.
+A scorer rates each proposal for the goal.
+The highest-scoring proposal is executed, with ties resolved in favor of $\bA^{(1)}$, and the policy replans~\cite{qi2025gpc,cui2026dreamsteer}.
+Selecting among the proposals of a competent policy, rather than optimizing actions against the model, keeps candidates on the policy's support.
+There, a learned model is less exposed to adversarial exploitation of its errors~\cite{janner2019mbpo,gao2023overoptimization}.
+Every compared model receives the same proposal bank.
+No scorer can recover an action that is absent from the bank, so we first measure how much a privileged oracle gains by selecting from it (\cref{sec:headroom}).
+
+\paragraph{Goals and labels.}
+A goal is specified by a set of goal images $\cG$, such as final frames of successful episodes of the task.
+For each candidate, the planner needs to know how far its future segment advances the task toward $\cG$.
+The $K$ candidates branch from the same state, so only their \emph{order} matters.
+During training, the simulator provides a progress label $\ell_g(\tau)$ for each training goal $g$.
+In PushT the label is the fraction of the target region the block covers.
+In LIBERO it is a dense progress score built from the goal's BDDL predicates: object-to-target distance for placement predicates and normalized joint progress for articulation predicates.
+Labels train the reader only and are never available at test time; held-out goals are never labeled.
+
+\paragraph{Conditional trajectory code.}
+A \emph{conditional trajectory code} is a sequence of $M$ discrete tokens $S\in\{1,\dots,V\}^M$ produced by a target encoder $q_\phi(S\mid C,\tau)$, which sees the actual future and is used only during training.
+Two heads read the code together with the context, and neither receives $\bA$.
+A reader $D_\psi(C,S,g)$ scores progress toward a goal image $g$, and a feature decoder $G_\psi(C,S)$ reconstructs $\tau$.
+A world model $p_\theta(S\mid C,\bA)$ predicts the code from the context and the chunk.
+Since the heads never see the action, any information about its consequences must pass through $S$.
+The code solves a conditional compression problem,
+\begin{equation}
+\begin{aligned}
+  \min_{q_\phi,\,\psi}\ &\E\big[d_{\mathrm{rank}}\big(D_\psi(C,S,g),\ell_g\big)+\alpha\,d_{\mathrm{feat}}\big(G_\psi(C,S),\tau\big)\big]\\
+  \text{s.t.}\ &I(\tau;S\mid C)\le R,
+\end{aligned}
+\label{eq:crd}
+\end{equation}
+in which the context is available to both the encoder and the heads.
+We impose the rate through the code length.
+Because $S$ is a deterministic function of $(C,\tau)$, $I(\tau;S\mid C)=H(S\mid C)\le M\log_2 V$, which is 128 bits per segment for $M{=}16$ and $V{=}256$.
+This count excludes the codebook, the heads, and the context features, which we report separately.
+
+\paragraph{Predictability.}
+At deployment the code is not observed but predicted, $\hat S\sim p_\theta(\cdot\mid C,\bA)$, and what matters is the ranking that $D_\psi(C,\hat S,g)$ induces.
+A code that solves~\eqref{eq:crd} may spend bits on aspects of $\tau$ that the action does not determine, such as the outcome of an uncertain contact, and those bits cannot be forecast.
+The quantity that matters is the information the action carries about the code, $I(S;\bA\mid C)$.
+We estimate it by the difference in cross-entropy between a context-only model $r_\omega(S\mid C)$ and the world model (\cref{sec:wm}).
+Optionally, the code is made more predictable during training (\cref{sec:codesign}).
+
+\paragraph{Two limiting cases.}
+The formulation contains the two common designs as extremes.
+A \emph{per-step latent world model}, such as DINO-WM, sets $S=\tau$.
+It applies no compression, predicts the patch features of all $\He$ future steps for every candidate, and needs a readout that is designed or learned on the predicted features.
+A \emph{direct scorer} $D(C,\bA,g)$ removes $S$.
+Prediction and reading are fused, so every candidate--goal pair needs a full evaluation, and generalization to new goals must be learned jointly with the effect of the action.
+\method operates at a finite, explicit rate between them.
+We ask whether, at such a rate, predicted codes rank candidates as well as a per-step latent model at lower cost, and whether they transfer to held-out goals better than a direct scorer.
+\Cref{tab:designs} summarizes the design properties.
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{@{}llll@{}}
+\toprule
+ & Goal-independent & Per candidate & Sequential \\
+ & prediction & and goal & steps \\
+\midrule
+Per-step latent WM & $\He\cdot P$ tokens & readout & $\He$ \\
+Endpoint latent & $P$ tokens & readout & $1$ \\
+Direct scorer & none & full model & $1$ \\
+\method (ours) & $M$ tokens & reader & $M$ \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Design properties} (not results) of models that evaluate a candidate chunk. All four are latent models; $P$ is the number of patch tokens per step ($256$ here), and $M\in\{8,16,32\}$ is the number of code tokens. A direct scorer has no goal-independent part, so its whole cost recurs for every goal. \method's $M$ autoregressive steps are short but not automatically cheaper than $\He$ per-step predictions, so we measure latency rather than assume it.}
+\label{tab:designs}
+\end{table}

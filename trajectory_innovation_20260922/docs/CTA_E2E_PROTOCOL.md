@@ -62,6 +62,16 @@ Every closed-loop job runs a preflight: the scores computed from raw frames must
 
 ## Condition 4: bounded debugging, result fixed now
 
+**2026-09-26 amendment:** the user's explicit authorization to continue refinement
+and the accepted parallel-WM Round-3 plan supersede the historical three-round cap
+for the bounded reader-adaptation and parallel-WM iterations documented in
+`CTA_READER_REFINEMENT_PROTOCOL.md` and `CTA_PARALLEL_ROUND3_PROTOCOL.md`.
+Development remains separate from sealed roots; this is not an unlimited sweep.
+Round 3 prospectively uses normalized native episode score excluding reset as its
+primary, while still reporting success. Earlier experiments retain their registered
+primaries. Lock and document any final sealed-test amendment before opening that set.
+The original protocol below is retained as history:
+
 - At most **3 debug rounds** after round 0, on dev roots only.
 - Before a round, `docs/CTA_DEBUG_LOG.md` records:
   - the ladder numbers that motivate it;

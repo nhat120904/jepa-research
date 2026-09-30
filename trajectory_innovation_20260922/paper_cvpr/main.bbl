@@ -1,4 +1,4 @@
-\begin{thebibliography}{39}
+\begin{thebibliography}{38}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -142,6 +142,14 @@ Michael Janner, Justin Fu, Marvin Zhang, and Sergey Levine.
 \newblock In \emph{Advances in Neural Information Processing Systems
   (NeurIPS)}, 2019.
 
+\bibitem[Jiang et~al.(2023)Jiang, Zhang, Janner, Li, Rockt{\"a}schel,
+  Grefenstette, and Tian]{jiang2023tap}
+Zhengyao Jiang, Tianjun Zhang, Michael Janner, Yueying Li, Tim Rockt{\"a}schel,
+  Edward Grefenstette, and Yuandong Tian.
+\newblock Efficient planning in a compact latent action space.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}, 2023.
+
 \bibitem[Kim et~al.(2026)Kim, Seo, Lee, Cho, and Kwak]{kim2026compact}
 Dongwon Kim, Gawon Seo, Jinsung Lee, Minsu Cho, and Suha Kwak.
 \newblock Planning in 8 tokens: A compact discrete tokenizer for latent world
@@ -175,15 +183,6 @@ Jiahao Li, Bin Li, and Yan Lu.
 \newblock Deep contextual video compression.
 \newblock In \emph{Advances in Neural Information Processing Systems
   (NeurIPS)}, 2021.
-
-\bibitem[Liu et~al.(2023)Liu, Zhu, Gao, Feng, Liu, Zhu, and
-  Stone]{liu2023libero}
-Bo Liu, Yifeng Zhu, Chongkai Gao, Yihao Feng, Qiang Liu, Yuke Zhu, and Peter
-  Stone.
-\newblock {LIBERO}: Benchmarking knowledge transfer for lifelong robot
-  learning.
-\newblock In \emph{Advances in Neural Information Processing Systems (NeurIPS),
-  Datasets and Benchmarks Track}, 2023.
 
 \bibitem[Mentzer et~al.(2024)Mentzer, Minnen, Agustsson, and
   Tschannen]{mentzer2024fsq}
@@ -238,13 +237,6 @@ Julian Schrittwieser, Ioannis Antonoglou, Thomas Hubert, Karen Simonyan,
 \newblock Mastering {A}tari, {G}o, chess and shogi by planning with a learned
   model.
 \newblock \emph{Nature}, 588:\penalty0 604--609, 2020.
-
-\bibitem[Shukor et~al.(2025)Shukor, Aubakirova, Capuano,
-  et~al.]{shukor2025smolvla}
-Mustafa Shukor, Dana Aubakirova, Francesco Capuano, et~al.
-\newblock {SmolVLA}: A vision-language-action model for affordable and
-  efficient robotics.
-\newblock \emph{arXiv preprint arXiv:2506.01844}, 2025.
 
 \bibitem[Sutton et~al.(1999)Sutton, Precup, and Singh]{sutton1999options}
 Richard~S. Sutton, Doina Precup, and Satinder Singh.

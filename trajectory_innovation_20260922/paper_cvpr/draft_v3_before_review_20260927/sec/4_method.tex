@@ -1,0 +1,98 @@
+\section{Conditional Trajectory Abstraction}
+\label{sec:method}
+
+\method has three learned parts: a target encoder that turns the actual future into a code (\cref{sec:source}), two heads that read the code (\cref{sec:reader}), and a world model that predicts the code from an action (\cref{sec:wm}).
+
+\subsection{Inputs}
+\label{sec:context}
+As in DINO-WM~\cite{zhou2025dinowm}, images are embedded by a frozen DINOv2 ViT-S/14~\cite{oquab2024dinov2}; we project the patch features to 128 dimensions with PCA.
+The context $C$ contains the $16{\times}16$ patch tokens of the current image, the previous image pooled to $8{\times}8$, and the proprioception at both times.
+The future segment $\tau$ contains the full token grid of the final image, pooled tokens of intermediate images with temporal embeddings, and the final proprioception.
+Features are computed once per image and shared by all candidates and goals.
+
+\subsection{Target encoder}
+\label{sec:source}
+The target encoder $q_\phi(S\mid C,\tau)$ is used only during training.
+$M$ learned queries cross-attend to the future and context tokens, and each output is quantized by FSQ~\cite{mentzer2024fsq} with levels $(8,8,4)$, giving 256 values per token.
+Because the queries see the context, the encoder learns which parts of the future the history already implies and spends the code on the rest.
+The $M$ tokens describe the segment as a whole, not one frame each.
+
+\subsection{Reader and feature decoder}
+\label{sec:reader}
+The reader $D_\psi(C,S,g)$ is a Transformer over the context tokens, the code tokens, and the patch tokens of a goal image, and outputs one score.
+It is trained on candidates that branch from the same state, with a pairwise logistic loss over pairs whose labels differ by more than a margin $\epsilon$:
+\begin{equation}
+\begin{aligned}
+  \mathcal{L}_{\mathrm{rank}}&=\E_{(i,j):\,\ell_i>\ell_j+\epsilon}\big[\log\big(1+e^{-(s_i-s_j)}\big)\big],\\
+  s_i&=D_\psi(C,S_i,g).
+\end{aligned}
+\label{eq:rank}
+\end{equation}
+Ranking within a decision matches how the score is used, so it need not be calibrated across states.
+
+A ranking loss alone would let the code shrink to whatever orders the training goals.
+The feature decoder $G_\psi(C,S)$ prevents this by reconstructing the future tokens from the context and the code.
+It predicts each token's change from the current image, and its loss $\mathcal{L}_{\mathrm{feat}}$ is normalized by that of predicting no change, so an uninformative code scores one.
+In JEPA terms, the decoder keeps the target representation from collapsing~\cite{lecun2022path}; no image is ever generated.
+
+\subsection{World model}
+\label{sec:wm}
+The world model $p_\theta(S\mid C,\bA)$ is the JEPA predictor.
+A Transformer encoder reads the context tokens and one token per action, and $M$ learned queries decode all code tokens in parallel.
+Each FSQ coordinate of each token is predicted as a categorical distribution over its levels, and the reader receives the expected codeword $\hat S$.
+A single forward pass therefore scores the whole set of proposals.
+The world model never sees future images, the goal, or labels at test time.
+
+It is trained against the stop-gradient code $S=\sg(q_\phi(C,\tau))$:
+\begin{equation}
+  \mathcal{L}_{\mathrm{WM}}=\mathcal{L}_{\mathrm{NLL}}+\mathcal{L}_{\mathrm{cons}}+\mathcal{L}^{\hat S}_{\mathrm{rank}}.
+  \label{eq:wm}
+\end{equation}
+$\mathcal{L}_{\mathrm{NLL}}$ is the cross-entropy of each coordinate of $S$.
+The other two terms pass through the frozen reader: $\mathcal{L}_{\mathrm{cons}}$ matches the within-decision score differences of $\hat S$ to those of $S$, and $\mathcal{L}^{\hat S}_{\mathrm{rank}}$ applies~\eqref{eq:rank} to the predicted codes, weighting pairs by their label difference.
+A context-only model $r_\omega(S\mid C)$ is trained with $\mathcal{L}_{\mathrm{NLL}}$ alongside; its excess cross-entropy over the world model estimates $I(S;\bA\mid C)$, the part of the code the action explains.
+
+\subsection{Training}
+\label{sec:codesign}
+\paragraph{Branched data.}
+At every decision of a policy rollout, we execute each proposal for $\He$ steps from a clone of the simulator state, obtaining several futures and labels from one history.
+To make siblings differ enough to rank, we also branch a copy of each proposal shifted by a constant offset.
+In half of the rollouts, half of the decisions follow the best branch rather than the default one, so that the data cover the states a good selector visits.
+All branches of an episode stay in one split.
+
+\paragraph{Stages.}
+Stage 1 trains the target encoder, reader, and decoder on actual futures with $\mathcal{L}_{\mathrm{code}}=\mathcal{L}_{\mathrm{rank}}+\alpha\,\mathcal{L}_{\mathrm{feat}}$, using straight-through gradients through the quantizer.
+Stage 2 freezes them and trains the world model with~\eqref{eq:wm}; each network keeps the checkpoint with the best development objective.
+An optional stage co-designs the code for predictability, alternating code and world-model updates with a penalty $\lambda\lVert S-\E_{\bar p_\theta}[S]\rVert^2$ under a frozen copy of the world model; we treat it as an ablation.
+Throughout, we monitor code perplexity, distinct codes per decision, the decoder's $R^2$, and $I(S;\bA\mid C)$ to detect collapse.
+
+\subsection{Planning}
+\label{sec:planning}
+\Cref{alg:cta} summarizes deployment.
+Per decision, \method encodes the images once, runs the world model once on all proposals, and runs the reader on every candidate--goal pair; a new goal costs only reader evaluations.
+
+\begin{algorithm}[t]
+\caption{Selecting policy proposals with \method.}
+\label{alg:cta}
+\small
+\begin{algorithmic}[1]
+\Require frozen policy $\pi$ and encoder $\varphi$; world model $p_\theta$; reader $D_\psi$; goal images $\cG$
+\While{episode not finished}
+  \State $C\gets\varphi(h_t)$ \Comment{once per decision}
+  \State $\{\bA^{(k)}\}_{k=1}^{K}\gets$ proposals of $\pi$
+  \State $\hat S^{(k)}\gets$ expected code of $p_\theta(\cdot\mid C,\bA^{(k)})$ \Comment{one batched pass}
+  \State $s_k\gets\frac{1}{|\cG|}\sum_{g\in\cG}D_\psi\big(C,\hat S^{(k)},g\big)$
+  \State $k^\star\gets$ smallest index attaining $\max_k s_k$ \Comment{ties keep $\bA^{(1)}$}
+  \State execute $\bA^{(k^\star)}_{1:\He}$; $t\gets t+\He$
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Implementation details}
+\label{sec:impl}
+All modules have width 256 and 8 heads: the target encoder has three decoder layers, the reader four encoder layers, the feature decoder two decoder layers, and the world model four encoder and four decoder layers.
+We use $M{=}16$ (128 bits), $\alpha{=}1$, and $\epsilon{=}10^{-3}$.
+Stage 2 runs 8{,}000 AdamW updates (learning rate $10^{-4}$, weight decay $0.05$, bfloat16) with 32 decisions per update.
+\TODO{Final stage-1 schedule.}
+On PushT, $96{\times}96$ images are resized to $224{\times}224$ for DINOv2, $\He{=}8$, and the intermediate images follow steps 2, 4, and 6.
+Each action is a target position of the agent, embedded in absolute and relative coordinates.

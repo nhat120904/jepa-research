@@ -1,0 +1,11 @@
+\section{Conclusion and Limitations}
+\label{sec:conclusion}
+
+\result{[Conclusion, written after results.]}
+
+\paragraph{Limitations.}
+The reader is trained with task-progress labels from the simulator, so \method is not label-free, although the world model never sees a label and nothing uses labels at test time.
+The proposal policy is a pretrained imitation-learning model, so the complete system is not free of expert data.
+Training data require branching the simulator at every decision.
+PushT has a single fixed goal and cannot test transfer across goals; that claim rests on LIBERO-Goal.
+Our LIBERO-Goal policy reproduces below its reported success rate.

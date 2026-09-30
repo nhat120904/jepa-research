@@ -1,0 +1,31 @@
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Latent and joint-embedding world models.}
+Latent world models learn dynamics in a compact state space and plan or learn behaviors in imagination~\cite{hafner2019planet,hafner2023dreamerv3,hansen2024tdmpc2}; token-based models predict discrete image tokens autoregressively~\cite{micheli2023iris}.
+$\Delta$-IRIS encodes only the stochastic change between consecutive frames given the past~\cite{micheli2024deltairis}, the closest per-step relative of conditional coding.
+JEPAs predict the representation of a target from that of its context instead of reconstructing it~\cite{lecun2022path,assran2023ijepa,bardes2024vjepa}.
+For control, DINO-WM~\cite{zhou2025dinowm} and V-JEPA~2-AC~\cite{assran2025vjepa2} predict the patch features of a frozen encoder~\cite{oquab2024dinov2} step by step and plan by feature distance to a goal image.
+CompACT~\cite{kim2026compact} compresses each observation into a few tokens to speed up such planning, and GCQ~\cite{peng2025gcq} quantizes observation--action sequences with an action-conditioned codebook.
+In all of these, the prediction target is fixed in advance: an observation, or a latent of it, at each time step.
+\method keeps the JEPA recipe but learns the target: one code per action segment, conditioned on history that the reader also sees.
+
+\paragraph{Temporally extended prediction.}
+Option models~\cite{sutton1999options} and trajectory-level dynamics models~\cite{lambert2021longterm,ding2024dwm} predict the outcome of an extended action without stepping through every intermediate state, and jumpy models compose such predictions across timescales~\cite{farebrother2026jumpy}.
+Successor features and their action-sequence variants predict cumulative features~\cite{barreto2017sf,chen2023ramp}, and TD-Flow models discounted future-state occupancy~\cite{farebrother2025tdflow}.
+These summarize the future as a state at one time or as an order-free aggregate, predicted from scratch.
+\method codes the whole segment, including its intermediate frames, and spends its bits only on what the history does not determine.
+
+\paragraph{Policy steering with world models.}
+A frozen generative policy can be improved at deployment by sampling proposals and selecting one with an external scorer.
+GPC~\cite{qi2025gpc}, the closest system to ours, ranks diffusion-policy proposals with a reward model applied to futures predicted by an action-conditioned world model.
+FOREWARN~\cite{wu2025forewarn}, DreamSteer~\cite{cui2026dreamsteer}, and DynaGuide~\cite{du2025dynaguide} steer or rank with vision--language, value, or dynamics models on latent predictions, and V-GPS and RoboMonkey rank proposals without a world model~\cite{nakamoto2024vgps,kwok2025robomonkey}.
+We adopt the same propose-then-select interface and, like GPC and V-GPS, train the scorer with task-progress labels.
+Our difference is what the world model predicts: a goal-independent code that one reader evaluates for any goal image.
+Our endpoint and per-step latent baselines follow the GPC recipe in latent space.
+
+\paragraph{Conditional coding and decision-aware compression.}
+Learned codecs optimize a rate--distortion trade-off end to end~\cite{balle2017end}, and DCVC~\cite{li2021dcvc} conditions both encoder and decoder on the temporal context.
+Unlike the Wyner--Ziv setting~\cite{wyner1976ratedistortion}, where only the decoder has side information, our encoder and heads both see the context.
+Value-equivalent models~\cite{grimm2020value,schrittwieser2020muzero,arumugam2022deciding} keep only what is needed to predict values.
+\method differs in two ways: its source is the unexecuted future of an action, which must be predicted before execution, and its distortion combines a decision term with a generic reconstruction term so that the code is not specialized to the training goals.

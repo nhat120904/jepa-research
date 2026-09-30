@@ -3,6 +3,33 @@
 Each entry is written BEFORE its jobs run: the motivating ladder numbers, one change, what it should move.
 Results are appended after. At most 3 debug rounds after round 0. Dev roots only (2000–2099 offline, 2100–2299 closed loop).
 
+## Round 2 preregistration (2026-09-25, before submission)
+
+See [CTA_ROUND2_PROTOCOL.md](CTA_ROUND2_PROTOCOL.md) for the fixed experiment.
+Single treatment: predictability-aware co-design at lambda=.1, against an
+equal-update lambda=0 continuation of checkpoint 54717. Round-1 code gap .709
+vs greedy .323 / expected .454 motivates this intervention. Categorical NLL
+with an FSQ-grid interpolation gradient replaces the unused mean-code MSE.
+Expected effect: preserve source retention while increasing predicted retention
+and decreasing collisions among action siblings with different labels.
+Both arms receive 3k source + 6k alternating WM + 2k final alignment updates;
+FULL/DIRECT also receive the matched 3k ranking updates. No reader adaptation.
+Offline development only in this submission; closed-loop victory is untested.
+Submitted: CPU checks 54932 → training array 54933 (0 = lambda 0;
+1 = lambda .1, concurrency 1) → CPU paired comparison 54934.
+See JOB_LEDGER.md for resources and immutable snapshot.
+
+### Round 2 offline outcome (read 2026-09-26)
+
+Both jobs completed. Co-design lambda=.1 triggers the retention concern:
+CODE gap .458 vs control .706, difference -.248 [-.297,-.200]; source
+perplexity 1.37 vs 131.20. Greedy .243 vs .293 and expected .463 vs .501
+show no significant improvement. Label-distinct predicted-code collisions
+rise to .917 vs .719. This tested co-design loses information while lowering
+WM CE, so do not count prediction accuracy as a positive method result.
+See [full result and fixed follow-up](CTA_ROUND2_OFFLINE_RESULT_54933.md).
+Closed-loop evaluation of both fixed arms is the next registered step.
+
 ## Round 0: baseline configuration (tag `r0`)
 
 Written 2026-09-24, before any data.
@@ -141,3 +168,43 @@ Reading:
 - None is CI-clean. With 100 roots the paired half-width is about ±10 pp, so effects of 4-5 pp cannot be resolved; that would need several hundred roots.
 - The offline advantage of pred_soft over direct (+0.12 gap) did not show up clearly in closed loop: CTA8E beats DIRECT8 by +4 [−8, +16].
 - The offline gap still does not map linearly to success: FULL8 has gap 0.80 but reaches only +10 pp.
+
+## Round 3 planned intervention — 2026-09-26
+
+User requests parallel coordinate-FSQ WM and task losses through a frozen reader.
+Geometry parent 55018: offline gap FULL .693, CODE .549, greedy .294, expected
+.467, DIRECT .462. Closed-loop 55052 (10 dev roots): P0 7, CTA8 6, CTA8E 4;
+too small for a method verdict. Neither offline ranking nor teacher-forced CE
+alone establishes useful control. Reader-only 55066 completed (16m10s), its
+100-root closed loop 55067 is running; that matched experiment remains intact.
+
+Intervention: parallel 16-token FSQ coordinate distributions. NLL-only control
+versus identically initialized NLL + score consistency + weighted task ranking,
+gradients entering WM through fixed reader; source/reader remain unchanged.
+Expected effect: reduce information lost through categorical greedy prefixes,
+preserve task-relevant sibling differences, improve normalized episode score.
+Same-batch weighted DIRECT continuation and predicted-frame/proprio WM included.
+This is not a pure architecture ablation versus the old AR-WM (which receives no
+extra updates); the task-loss comparison is matched within the new architecture.
+
+Primary is prospectively normalized native score without reset, CTA3 minus P0,
+on all 100 reused dev roots; still report success and all baseline contrasts.
+User-reported center-distance strata will be recomputed alongside a rotation-aware
+vertex grouping inside the run. No standalone diagnostic gate/job added.
+Source 128-bit claim remains separate from the continuous predicted channel.
+See CTA_PARALLEL_ROUND3_PROTOCOL.md for fixed hyperparameters, limits and the
+explicit amendment of the old development-round cap. No sealed roots opened.
+
+### Round-3 budget amendment before execution — 2026-09-26
+
+User identified undertraining risk, especially for the new endpoint output head.
+55072/55073/55074 were verified PENDING and cancelled at zero elapsed time.
+Increase all four networks from 4000 x 8 to **6000 x 32 effective banks** using
+four 8-bank microbatches with exact global pair normalization, one clip/update.
+Add full dev evaluation every 1000 updates, prediction-error curves, per-update
+and per-network timing, optimizer/RNG checkpoints every 250 updates and resume.
+Final checkpoint remains fixed; a low dev metric does not gate evaluation.
+55067 array concurrency reduced to 1; running shards preserved. Training cap
+remains 3 hours; actual speed must be measured before claiming budget sufficiency.
+Protocol's oracle-gap stratification text now explicitly describes the selection
+of near-optimal candidate-0 states and asymmetric upside/downside of overrides.

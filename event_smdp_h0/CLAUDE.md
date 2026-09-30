@@ -2,13 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **Status (2026-09-28): closed, historical.** Its successor `scene_progress_wm/` was also
+> closed. The repo's active direction is CTA; follow the root `AGENTS.md`/`CLAUDE.md` (both
+> present). Do not reopen this programme by default.
+
 ## What this directory is
 
 `event_smdp_h0/` is one experiment program inside the larger `jepa-research` repo
 (git root is `..`). It runs **preregistered H0/H1/H2 gates** on whether backing up
 *intermediate event state* through a planner beats backing up only terminal
 success, on OGBench Cube-single (closed, negative) and OGBench-Scene tasks 4 and 5
-(active). MuJoCo is the oracle world model throughout, so these are causal-room
+(closed). MuJoCo is the oracle world model throughout, so these are causal-room
 experiments, not learned-world-model claims.
 
 Read `README.md` first — it is the running narrative of every gate and its verdict,
@@ -17,8 +21,8 @@ protocols; `docs/JOB_LEDGER.md` is the authoritative record of every Slurm job.
 `docs/SCENE_RESEARCH_POSITIONING.md` holds the literature positioning and the
 claim limits (`hint^2`, EV-WM, conformal prediction neighbours).
 
-The repo-root `CLAUDE.md`/`AGENTS.md` (older CAI-JEPA diagnostic orientation) are
-deleted in the working tree but still in git: `git show HEAD:CLAUDE.md`.
+The repo-root `CLAUDE.md`/`AGENTS.md` now describe the active CTA direction and the
+shared compute rules; they take precedence over this file.
 
 ## Cluster compute policy (mandatory)
 

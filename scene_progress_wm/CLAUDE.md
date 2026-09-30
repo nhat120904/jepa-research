@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **Status (2026-09-28): closed, historical.** The progress cost was refuted CI-clean against
+> latent-L2 (pure-progress arm -13.0 pp [-22.0, -4.0]); the mixture was null (33/100 vs 32/100).
+> The repo's active direction is CTA; follow the root `AGENTS.md`/`CLAUDE.md` (both present).
+> Do not reopen this programme by default.
+
 ## What this directory is
 
 `scene_progress_wm/` is one experiment program inside the larger `jepa-research`
@@ -21,9 +26,8 @@ made (with reasons) when a gate did not clear its threshold.
 command, dependency, output path, final state, headline numbers.
 
 Sibling programs each carry their own `CLAUDE.md` (`../event_smdp_h0/CLAUDE.md`).
-The repo-root `CLAUDE.md`/`AGENTS.md` describe the older CAI-JEPA diagnostic
-orientation and are deleted in the working tree but still in git:
-`git show HEAD:CLAUDE.md`.
+The repo-root `CLAUDE.md`/`AGENTS.md` now describe the active CTA direction and the
+shared compute rules; they take precedence over this file.
 
 ## Cluster compute policy (mandatory)
 

@@ -20,7 +20,7 @@ from ti_wm.sibling import project
 K = 8
 BEFORE = ("CTA8", "CTA8S", "CTA8E", "DIRECT8")  # scored from actions only
 SAMPLES = 4                           # CTA8S: sampled codes per candidate, reader answers averaged
-AFTER = ("PHYS8", "FULL8", "CODE8")   # scored from simulated candidates
+AFTER = ("PHYS8", "GEOM8", "FULL8", "CODE8")   # scored from simulated candidates; GEOM8 is a privileged diagnostic
 KEEP = (2, 4, 6)          # intermediate frames kept per segment; the end frame (step 8) is the branch's last frame
 
 
@@ -67,8 +67,13 @@ class Planner:
         """(..., H, W, 3) uint8 -> (..., tokens, D) fp16, as scripts/cta_encode.py."""
         frames = np.ascontiguousarray(frames)
         lead = frames.shape[:-3]
-        x = project(self.visual.features(frames.reshape(-1, *frames.shape[-3:])), self.mean, self.basis)
-        x = (pool_grid(x, side) if side else x).half()
+        # cta_encode.py computes DINO/PCA in float32 before storing fp16.
+        # Future tokens are requested inside scores()'s bf16 context; without
+        # this boundary they silently use a different visual encoder precision
+        # than cached training data (and than current-context/goal frames).
+        with torch.autocast(self.device.type, enabled=False):
+            x = project(self.visual.features(frames.reshape(-1, *frames.shape[-3:])), self.mean, self.basis)
+            x = (pool_grid(x, side) if side else x).half()
         return x.reshape(*lead, *x.shape[1:])
 
     def context(self, state, k):
@@ -89,6 +94,10 @@ class Planner:
 
     @torch.inference_mode()
     def scores(self, arm, state, chunks=None, branches=None, segs=None, seed=0):
+        if arm == "GEOM8":
+            from ti_wm.cta_geometry import registration_score
+            poses = np.array([[*b.env.block.position, b.env.block.angle] for b in branches])
+            return registration_score(poses, state.env.goal_pose).tolist()
         k = len(chunks) if chunks is not None else len(branches)
         ctx, agent = self.context(state, k)
         with self.amp():
