@@ -1,5 +1,7 @@
 # Một hướng cho CVPR 2027: Outcome-Transport Distillation
 
+> **Cập nhật sau phản biện, 30/09/2026:** OTD đã được rút khỏi vị trí khuyến nghị chính. Đây là proposal chưa chạy, không phải một method có kết quả thất bại. Bản dưới được giữ để bảo toàn lịch sử quyết định. Xem [kiểm chứng phản biện](OTD_REVIEW_VI.md) và [đề xuất thay thế PGC](PGC_RECOMMENDATION_VI.md). Các đánh giá arena và tính khả thi trong đề xuất gốc không còn là khuyến nghị hiện hành.
+
 Ngày nghiên cứu: 30/09/2026. Trạng thái: **đề xuất method chưa triển khai, chưa có kết quả thực nghiệm**. Các số liệu repo dưới đây lấy từ báo cáo và ledger đã lưu; không phải kết quả một run mới hay xác nhận trạng thái scheduler hiện tại.
 
 ## 1. Quyết định nghiên cứu
@@ -16,7 +18,7 @@ Tôi không kết luận proposal này chắc chắn mới hoặc sẽ được 
 
 ## 2. Những paper đơn giản đã làm đúng điều gì?
 
-Các công trình tham chiếu đều có bản được nhận ở hội nghị chính; CoRL được dùng thêm như hội nghị chuyên ngành robotics. Khi trang proceedings chỉ có abstract hoặc không tải được toàn văn, đọc bản tác giả và dùng proceedings để xác nhận venue. Danh mục nguồn nằm trong [SOURCE_LEDGER.md](/Users/nhatcuong/code_project/vin-research/research_method_20260930/SOURCE_LEDGER.md).
+Các công trình tham chiếu đều có bản được nhận ở hội nghị chính; CoRL được dùng thêm như hội nghị chuyên ngành robotics. Khi trang proceedings chỉ có abstract hoặc không tải được toàn văn, đọc bản tác giả và dùng proceedings để xác nhận venue. Danh mục nguồn nằm trong [SOURCE_LEDGER.md](SOURCE_LEDGER.md).
 
 | Paper | Vấn đề → giả thuyết → can thiệp | Điều cần học cho đề xuất này |
 |---|---|---|
@@ -34,13 +36,13 @@ Chuỗi thiết kế phù hợp ở đây là: xác định chi phí deployment 
 
 ### Nút thắt latency có số đo
 
-[CTA ledger, kết quả 55763](/Users/nhatcuong/code_project/vin-research/trajectory_innovation_20260922/JOB_LEDGER.md:733) ghi CTAV2 scorer khoảng **4,1 ms/decision** ở K=8, G=1, còn policy sampling khoảng **770 ms**. Các timing này thuộc cấu hình đã ghi trong ledger, không phải mức latency chung cho mọi phần cứng hoặc một comparison mới.
+[CTA ledger, kết quả 55763](../trajectory_innovation_20260922/JOB_LEDGER.md) ghi CTAV2 scorer khoảng **4,1 ms/decision** ở K=8, G=1, còn policy sampling khoảng **770 ms**. Các timing này thuộc cấu hình đã ghi trong ledger, không phải mức latency chung cho mọi phần cứng hoặc một comparison mới.
 
 Trong cấu hình ấy, loại bỏ cả scorer cũng chỉ tiết kiệm một phần nhỏ thời gian. Nhắm vào generator có tiềm năng thay đổi chi phí deployment lớn hơn. Từ đó chưa suy ra student sẽ giữ được quality; đây là điều phải đo.
 
 ### CTA có tín hiệu, nhưng tín hiệu ranking chưa chuyển thành separation đủ mạnh
 
-[Ledger PushT v2](/Users/nhatcuong/code_project/vin-research/trajectory_innovation_20260922/JOB_LEDGER.md:730) ghi trên 200 development roots: P0 122, CTA4 142, CTAV2 140, ENDV2 138, DIRV2 135 và DINO-WM 136 successes. Chênh lệch với các learned baseline vẫn chưa chắc chắn.
+[Ledger PushT v2](../trajectory_innovation_20260922/JOB_LEDGER.md) ghi trên 200 development roots: P0 122, CTA4 142, CTAV2 140, ENDV2 138, DIRV2 135 và DINO-WM 136 successes. Chênh lệch với các learned baseline vẫn chưa chắc chắn.
 
 Phép so parameter-matched giữ được khoảng cách offline CTA–DIRECT: retained gap 0,680 so với 0,502. Phân tích recovery ghi P0 bỏ lỡ một crossing ở 45 roots nhưng vẫn thành công sau đó ở 33 roots. Điều này giải thích vì sao một lợi thế quyết định thực không tự nhân tuyến tính thành success gain.
 
@@ -48,7 +50,7 @@ OTD vì thế không tiếp tục dựa vào giả định “retained gap cao h
 
 ### Không lấy lỗi baseline đã sửa làm đóng góp mới
 
-[State-estimation ledger](/Users/nhatcuong/code_project/vin-research/state_estimation_20260930/JOB_LEDGER.md:38) ghi Reacher tăng từ 76,7% lên 96,7% sau history prefill. Innovation/MHE không thêm gain đáng kể trên baseline đã sửa. Những sửa này phải đi vào comparison mới nếu sử dụng LeWM; không tái sử dụng baseline thiếu context để tạo separation.
+[State-estimation ledger](../state_estimation_20260930/JOB_LEDGER.md) ghi Reacher tăng từ 76,7% lên 96,7% sau history prefill. Innovation/MHE không thêm gain đáng kể trên baseline đã sửa. Những sửa này phải đi vào comparison mới nếu sử dụng LeWM; không tái sử dụng baseline thiếu context để tạo separation.
 
 ### Khoảng hụt mới vẫn là giả thuyết
 
@@ -197,11 +199,11 @@ Không mặc định real robot có sẵn. Simulation-only evidence khiến đ�
 
 ### Assets hiện có
 
-- [PolicyRunner](/Users/nhatcuong/code_project/vin-research/trajectory_innovation_20260922/ti_wm/pusht_runtime.py:147): load teacher DiffusionPolicy và tạo action banks từ history native.
-- [action_features](/Users/nhatcuong/code_project/vin-research/trajectory_innovation_20260922/ti_wm/cta.py:37): tensor action normalization liên tục.
-- [ParallelFSQWM](/Users/nhatcuong/code_project/vin-research/trajectory_innovation_20260922/ti_wm/cta_parallel.py:34): categorical predictor trả expected coordinates; có thể xây tensor training path từ đây.
-- [FutureDecoder](/Users/nhatcuong/code_project/vin-research/trajectory_innovation_20260922/ti_wm/cta.py:224): reconstruct endpoint và intermediate features từ C, S; không cần action trực tiếp.
-- [run_segment](/Users/nhatcuong/code_project/vin-research/trajectory_innovation_20260922/ti_wm/cta_runtime.py:26): semantics của intermediate frames, early success và padding.
+- [PolicyRunner](../trajectory_innovation_20260922/ti_wm/pusht_runtime.py): load teacher DiffusionPolicy và tạo action banks từ history native.
+- [action_features](../trajectory_innovation_20260922/ti_wm/cta.py): tensor action normalization liên tục.
+- [ParallelFSQWM](../trajectory_innovation_20260922/ti_wm/cta_parallel.py): categorical predictor trả expected coordinates; có thể xây tensor training path từ đây.
+- [FutureDecoder](../trajectory_innovation_20260922/ti_wm/cta.py): reconstruct endpoint và intermediate features từ C, S; không cần action trực tiếp.
+- [run_segment](../trajectory_innovation_20260922/ti_wm/cta_runtime.py): semantics của intermediate frames, early success và padding.
 
 Đã kiểm tra source, **chưa load model hoặc kiểm tra runtime gradients**. Các wrapper hiện có dùng inference_mode và trả NumPy; gọi qua chúng sẽ cắt gradient. Phải xây đường tensor riêng cho student→WM→decoder và kiểm tra gradient so với finite differences trên compute node trong smoke đầu.
 
