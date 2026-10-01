@@ -1,0 +1,147 @@
+{
+  "training": false,
+  "publication_reproduction": false,
+  "protocol": "Released Giant256;16 actual sampled frames;12 context; frame-step8;max8 windows; future removed before context attention; full-window EMA only for ground-truth scoring",
+  "primary_score": "global_max",
+  "adaptations": [
+    "centered_max",
+    "top10_max"
+  ],
+  "subset_scenes": [
+    "25",
+    "10",
+    "225",
+    "176",
+    "123",
+    "77",
+    "212",
+    "198_1",
+    "18",
+    "15",
+    "204",
+    "163",
+    "109",
+    "62",
+    "206",
+    "197_1",
+    "23",
+    "14",
+    "218",
+    "180",
+    "119",
+    "72",
+    "202",
+    "214_1"
+  ],
+  "videos": 96,
+  "metrics": {
+    "global_max": {
+      "relative_accuracy": 0.5416666666666666,
+      "scene_bootstrap_ci95": [
+        0.4166666666666667,
+        0.6666666666666666
+      ],
+      "auc": 0.5047743055555556,
+      "by_stratum": {
+        "Fixed": 0.5416666666666666,
+        "continuity": 0.5,
+        "Moving": 0.5416666666666666,
+        "immutability": 0.6875,
+        "permanence": 0.4375
+      }
+    },
+    "centered_max": {
+      "relative_accuracy": 0.5,
+      "scene_bootstrap_ci95": [
+        0.375,
+        0.625
+      ],
+      "auc": 0.4969618055555556,
+      "by_stratum": {
+        "Fixed": 0.5416666666666666,
+        "continuity": 0.5,
+        "Moving": 0.4583333333333333,
+        "immutability": 0.5625,
+        "permanence": 0.4375
+      }
+    },
+    "top10_max": {
+      "relative_accuracy": 0.5,
+      "scene_bootstrap_ci95": [
+        0.3541666666666667,
+        0.6458333333333334
+      ],
+      "auc": 0.4574652777777778,
+      "by_stratum": {
+        "Fixed": 0.5833333333333334,
+        "continuity": 0.375,
+        "Moving": 0.4166666666666667,
+        "immutability": 0.625,
+        "permanence": 0.5
+      }
+    },
+    "global_mean": {
+      "relative_accuracy": 0.5208333333333334,
+      "scene_bootstrap_ci95": [
+        0.375,
+        0.6666666666666666
+      ],
+      "auc": 0.4921875,
+      "by_stratum": {
+        "Fixed": 0.4583333333333333,
+        "continuity": 0.5,
+        "Moving": 0.5833333333333334,
+        "immutability": 0.625,
+        "permanence": 0.4375
+      }
+    },
+    "centered_mean": {
+      "relative_accuracy": 0.4375,
+      "scene_bootstrap_ci95": [
+        0.2911458333333334,
+        0.5833333333333334
+      ],
+      "auc": 0.4852430555555556,
+      "by_stratum": {
+        "Fixed": 0.375,
+        "continuity": 0.4375,
+        "Moving": 0.5,
+        "immutability": 0.5625,
+        "permanence": 0.3125
+      }
+    },
+    "top10_mean": {
+      "relative_accuracy": 0.4375,
+      "scene_bootstrap_ci95": [
+        0.2916666666666667,
+        0.5833333333333334
+      ],
+      "auc": 0.4774305555555555,
+      "by_stratum": {
+        "Fixed": 0.375,
+        "continuity": 0.4375,
+        "Moving": 0.5,
+        "immutability": 0.5625,
+        "permanence": 0.3125
+      }
+    }
+  },
+  "load_report": {
+    "encoder": "<All keys matched successfully>",
+    "target_encoder": "<All keys matched successfully>",
+    "predictor": "<All keys matched successfully>"
+  },
+  "compute": {
+    "encoder_calls": 1536,
+    "predictor_calls": 768,
+    "encoded_visible_tubelets": 10752,
+    "predicted_tubelets": 1536,
+    "gpu_seconds": 89.83354347199202
+  },
+  "wall_seconds": 131.51948191970587,
+  "limits": [
+    "Small discovery subset; not full benchmark or SOTA comparison",
+    "Modified clip/window protocol; published accuracy is not directly comparable",
+    "Adaptations are probes, not learned methods; inspect existing geometry/surprise prior art"
+  ]
+}

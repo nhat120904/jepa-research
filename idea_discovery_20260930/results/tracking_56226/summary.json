@@ -1,0 +1,5068 @@
+{
+  "status": "complete",
+  "protocol": "TAP-Vid-DAVIS first-query; fixed SHA256 key subset; 256x256",
+  "selected_keys": [
+    "parkour",
+    "drift-chicane",
+    "car-shadow",
+    "judo",
+    "dance-twirl",
+    "kite-surf",
+    "gold-fish",
+    "camel",
+    "lab-coat",
+    "goat",
+    "soapbox",
+    "pigs",
+    "libby",
+    "dogs-jump",
+    "drift-straight",
+    "car-roundabout",
+    "blackswan",
+    "scooter-black",
+    "breakdance",
+    "loading",
+    "bmx-trees",
+    "bike-packing",
+    "horsejump-high",
+    "shooting",
+    "cows",
+    "motocross-jump",
+    "dog",
+    "paragliding-launch",
+    "india",
+    "mbike-trick"
+  ],
+  "selection_rule": "ascending SHA256(UTF8(str(video_key))), no label filtering",
+  "arguments": {
+    "data_root": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/assets",
+    "out": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226",
+    "vjepa_source": "/home/nhatnc129/nhat.nc/jepa-research/idea_discovery_20260930/external/vjepa2",
+    "checkpoint": "/mnt/data/nhatnc129/jepa/ossckpt/vjepa2_opensource/vjepa2_vit_giant.pth",
+    "tracker_source": "/home/nhatnc129/nhat.nc/jepa-research/idea_discovery_20260930/external/co-tracker",
+    "max_videos": 30,
+    "stride": 4,
+    "max_runtime_seconds": 2400
+  },
+  "sources": {
+    "vjepa_git_revision": "204698b45b3712590f06245fbfba32d3be539812",
+    "cotracker_git_revision": "82e02e8029753ad4ef13cf06be7f4fc5facdda4d",
+    "vjepa_checkpoint": {
+      "path": "/mnt/data/nhatnc129/jepa/cache/hf/hub/models--facebook--vjepa2-vitg-fpc64-256/blobs/67129f011434e605d894e69f2c8e13d9db118deabe59d54bf6e0fa62c2c5cb8e",
+      "bytes": 16464208210,
+      "mtime_ns": 1782113505360649631
+    },
+    "cotracker_checkpoint": {
+      "path": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/assets/scaled_online.pth",
+      "bytes": 101695610,
+      "mtime_ns": 1790784183443214790
+    },
+    "dataset": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/assets/tapvid_davis/tapvid_davis/tapvid_davis.pkl"
+  },
+  "limitations": [
+    "Exploratory frozen-model adapter; no novelty or SOTA claim.",
+    "Sparse reader uses a 16x16 grid, fixed query prototype/patch offset and a radius4 patch prior.",
+    "Sparse arms are always visible after the query; no learned or fitted occlusion head.",
+    "Copy-last-position uses the same reader at observed anchors and holds positions on skipped frames.",
+    "Query-frame images augment stride anchors equally for all sparse arms.",
+    "CoTracker online checkpoint uses full-video forward sliding windows; not strictly per-frame causal.",
+    "CoTracker is a full-observation reference with a different reader and compute budget.",
+    "Predictor target tokens contain positions only; recursive latent rollout is not used.",
+    "Wrapper encode-call counts do not establish matched encoder FLOPs if predict_sparse re-encodes context.",
+    "Metrics are mean across complete selected videos; a partial pilot is not the full benchmark."
+  ],
+  "metric_units": "TAP-Vid metrics percent; visible_epe_pixels pixels; timing seconds",
+  "feature_space": "Observed EMA maps use non-affine layer_norm to match official predictor targets; both maps L2-normalized for cosine reader",
+  "videos": [
+    {
+      "key": "parkour",
+      "frames": 100,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 55.24256651017214,
+          "pts_within_1": 0.56657223796034,
+          "jaccard_1": 0.20202020202020202,
+          "pts_within_2": 2.7384324834749765,
+          "jaccard_2": 0.9840515778758059,
+          "pts_within_4": 7.554296506137866,
+          "jaccard_4": 2.7624309392265194,
+          "pts_within_8": 18.885741265344667,
+          "jaccard_8": 7.204610951008646,
+          "pts_within_16": 46.553352219074604,
+          "jaccard_16": 19.855014095851793,
+          "average_jaccard": 6.2016255531965925,
+          "average_pts_within_thresh": 15.259678942398489,
+          "visible_epe_pixels": 33.20808410644531
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 55.24256651017214,
+          "pts_within_1": 0.09442870632672333,
+          "jaccard_1": 0.03361344537815126,
+          "pts_within_2": 1.13314447592068,
+          "jaccard_2": 0.4048582995951417,
+          "pts_within_4": 5.288007554296506,
+          "jaccard_4": 1.9178082191780823,
+          "pts_within_8": 14.258734655335223,
+          "jaccard_8": 5.345132743362832,
+          "pts_within_16": 34.466477809254016,
+          "jaccard_16": 13.979318268862507,
+          "average_jaccard": 4.336146195275343,
+          "average_pts_within_thresh": 11.048158640226632,
+          "visible_epe_pixels": 38.64792251586914
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 55.24256651017214,
+          "pts_within_1": 0.56657223796034,
+          "jaccard_1": 0.20202020202020202,
+          "pts_within_2": 2.7384324834749765,
+          "jaccard_2": 0.9840515778758059,
+          "pts_within_4": 7.554296506137866,
+          "jaccard_4": 2.7624309392265194,
+          "pts_within_8": 18.319169027384323,
+          "jaccard_8": 6.9734004313443565,
+          "pts_within_16": 45.23135033050047,
+          "jaccard_16": 19.183019623548258,
+          "average_jaccard": 6.020984554803029,
+          "average_pts_within_thresh": 14.881964117091595,
+          "visible_epe_pixels": 34.34353256225586
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 61.606677099634844,
+          "pts_within_1": 6.704438149197356,
+          "jaccard_1": 3.569580962234868,
+          "pts_within_2": 20.302171860245515,
+          "jaccard_2": 11.843575418994414,
+          "pts_within_4": 34.183191690273844,
+          "jaccard_4": 20.52980132450331,
+          "pts_within_8": 55.712936732766764,
+          "jaccard_8": 34.72409152086137,
+          "pts_within_16": 75.44853635505193,
+          "jaccard_16": 44.236311239193085,
+          "average_jaccard": 22.980672093157413,
+          "average_pts_within_thresh": 38.47025495750708,
+          "visible_epe_pixels": 17.6199893951416
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 30,
+        "total_frames": 100,
+        "observed_fraction": 0.3,
+        "observed_times": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          45,
+          46,
+          48,
+          52,
+          55,
+          56,
+          57,
+          60,
+          61,
+          64,
+          68,
+          72,
+          76,
+          80,
+          84,
+          88,
+          92,
+          96
+        ],
+        "fixed_stride_frames": 25,
+        "extra_query_frames": [
+          45,
+          46,
+          55,
+          57,
+          61
+        ],
+        "wrapper_encode_calls_shared": 30,
+        "wrapper_predict_calls": 25,
+        "predicted_frame_maps": 70,
+        "encoder_seconds_shared": 1.7935005966573954,
+        "predictor_wrapper_seconds": 1.5907868910580873,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.12038077600300312,
+          "predicted_features": 0.019265323877334595,
+          "copy_last_position": 0.005293034017086029
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 3.6327378898859024,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 55,
+          "predictor_calls": 25,
+          "encoded_visible_tubelets": 343,
+          "predicted_tubelets": 70,
+          "gpu_seconds": 3.2980840411037207
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 30,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 30,
+            "predict": 25
+          },
+          "copy_last_position": {
+            "encode": 30,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 100,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.7956031318753958
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/058fe66ca2ecca23.npz"
+    },
+    {
+      "key": "drift-chicane",
+      "frames": 52,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 50.732899022801305,
+          "pts_within_1": 19.42215088282504,
+          "jaccard_1": 6.994219653179192,
+          "pts_within_2": 19.903691813804173,
+          "jaccard_2": 7.180081065431384,
+          "pts_within_4": 20.86677367576244,
+          "jaccard_4": 7.553747821034282,
+          "pts_within_8": 23.113964686998393,
+          "jaccard_8": 8.43585237258348,
+          "pts_within_16": 30.97913322632424,
+          "jaccard_16": 11.64053075995175,
+          "average_jaccard": 8.360886334436017,
+          "average_pts_within_thresh": 22.857142857142858,
+          "visible_epe_pixels": 22.180984497070312
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 50.732899022801305,
+          "pts_within_1": 50.7223113964687,
+          "jaccard_1": 20.58631921824104,
+          "pts_within_2": 52.487961476725516,
+          "jaccard_2": 21.456692913385826,
+          "pts_within_4": 53.45104333868379,
+          "jaccard_4": 21.936758893280633,
+          "pts_within_8": 55.53772070626003,
+          "jaccard_8": 22.990033222591364,
+          "pts_within_16": 61.79775280898876,
+          "jaccard_16": 26.26193724420191,
+          "average_jaccard": 22.646348298340158,
+          "average_pts_within_thresh": 54.79935794542536,
+          "visible_epe_pixels": 21.75969696044922
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 50.732899022801305,
+          "pts_within_1": 19.42215088282504,
+          "jaccard_1": 6.994219653179192,
+          "pts_within_2": 19.903691813804173,
+          "jaccard_2": 7.180081065431384,
+          "pts_within_4": 20.86677367576244,
+          "jaccard_4": 7.553747821034282,
+          "pts_within_8": 23.113964686998393,
+          "jaccard_8": 8.43585237258348,
+          "pts_within_16": 30.97913322632424,
+          "jaccard_16": 11.64053075995175,
+          "average_jaccard": 8.360886334436017,
+          "average_pts_within_thresh": 22.857142857142858,
+          "visible_epe_pixels": 21.981563568115234
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 92.75244299674267,
+          "pts_within_1": 78.1701444622793,
+          "jaccard_1": 57.848101265822784,
+          "pts_within_2": 86.51685393258427,
+          "jaccard_2": 67.83310901749664,
+          "pts_within_4": 97.59229534510433,
+          "jaccard_4": 82.57686676427525,
+          "pts_within_8": 98.5553772070626,
+          "jaccard_8": 84.19497784342688,
+          "pts_within_16": 99.67897271268058,
+          "jaccard_16": 86.11940298507463,
+          "average_jaccard": 75.71449157521923,
+          "average_pts_within_thresh": 92.10272873194221,
+          "visible_epe_pixels": 0.8339886665344238
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 15,
+        "total_frames": 52,
+        "observed_fraction": 0.28846153846153844,
+        "observed_times": [
+          0,
+          2,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          39,
+          40,
+          44,
+          48
+        ],
+        "fixed_stride_frames": 13,
+        "extra_query_frames": [
+          2,
+          39
+        ],
+        "wrapper_encode_calls_shared": 15,
+        "wrapper_predict_calls": 14,
+        "predicted_frame_maps": 37,
+        "encoder_seconds_shared": 0.7389135081321001,
+        "predictor_wrapper_seconds": 0.839728469029069,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.010560747236013412,
+          "predicted_features": 0.009153995662927628,
+          "copy_last_position": 0.0024885982275009155
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 1.6147417221218348,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 29,
+          "predictor_calls": 14,
+          "encoded_visible_tubelets": 161,
+          "predicted_tubelets": 37,
+          "gpu_seconds": 1.5430875197052956
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 15,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 15,
+            "predict": 14
+          },
+          "copy_last_position": {
+            "encode": 15,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 52,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.3708576038479805
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/1a925b688558c393.npz"
+    },
+    {
+      "key": "car-shadow",
+      "frames": 40,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 76.82051282051282,
+          "pts_within_1": 0.26702269692923897,
+          "jaccard_1": 0.11614401858304298,
+          "pts_within_2": 1.7356475300400533,
+          "jaccard_2": 0.7597895967270601,
+          "pts_within_4": 8.01068090787717,
+          "jaccard_4": 3.6057692307692304,
+          "pts_within_8": 20.5607476635514,
+          "jaccard_8": 9.80891719745223,
+          "pts_within_16": 32.44325767690254,
+          "jaccard_16": 16.407832545577314,
+          "average_jaccard": 6.1396905178217756,
+          "average_pts_within_thresh": 12.603471295060082,
+          "visible_epe_pixels": 84.81548309326172
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 76.82051282051282,
+          "pts_within_1": 0.13351134846461948,
+          "jaccard_1": 0.05803830528148578,
+          "pts_within_2": 1.7356475300400533,
+          "jaccard_2": 0.7597895967270601,
+          "pts_within_4": 6.5420560747663545,
+          "jaccard_4": 2.925373134328358,
+          "pts_within_8": 16.822429906542055,
+          "jaccard_8": 7.88485607008761,
+          "pts_within_16": 28.437917222963954,
+          "jaccard_16": 14.096624751819986,
+          "average_jaccard": 5.1449363716489005,
+          "average_pts_within_thresh": 10.734312416555406,
+          "visible_epe_pixels": 78.91426849365234
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 76.82051282051282,
+          "pts_within_1": 0.26702269692923897,
+          "jaccard_1": 0.11614401858304298,
+          "pts_within_2": 1.7356475300400533,
+          "jaccard_2": 0.7597895967270601,
+          "pts_within_4": 8.144192256341789,
+          "jaccard_4": 3.668069753457607,
+          "pts_within_8": 21.49532710280374,
+          "jaccard_8": 10.300703774792067,
+          "pts_within_16": 33.91188251001335,
+          "jaccard_16": 17.27891156462585,
+          "average_jaccard": 6.424723741637125,
+          "average_pts_within_thresh": 13.110814419225637,
+          "visible_epe_pixels": 85.71422576904297
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 95.48717948717949,
+          "pts_within_1": 71.82910547396529,
+          "jaccard_1": 56.85441020191286,
+          "pts_within_2": 96.26168224299066,
+          "jaccard_2": 89.23076923076924,
+          "pts_within_4": 100.0,
+          "jaccard_4": 94.21052631578948,
+          "pts_within_8": 100.0,
+          "jaccard_8": 94.21052631578948,
+          "pts_within_16": 100.0,
+          "jaccard_16": 94.21052631578948,
+          "average_jaccard": 85.7433516760101,
+          "average_pts_within_thresh": 93.61815754339119,
+          "visible_epe_pixels": 0.7446874380111694
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 10,
+        "total_frames": 40,
+        "observed_fraction": 0.25,
+        "observed_times": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36
+        ],
+        "fixed_stride_frames": 10,
+        "extra_query_frames": [],
+        "wrapper_encode_calls_shared": 10,
+        "wrapper_predict_calls": 10,
+        "predicted_frame_maps": 30,
+        "encoder_seconds_shared": 0.4789144992828369,
+        "predictor_wrapper_seconds": 0.584716172888875,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.008380163460969925,
+          "predicted_features": 0.0069312769919633865,
+          "copy_last_position": 0.0015929583460092545
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 1.090840270742774,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 20,
+          "predictor_calls": 10,
+          "encoded_visible_tubelets": 98,
+          "predicted_tubelets": 30,
+          "gpu_seconds": 1.0393992830067873
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 10,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 10,
+            "predict": 10
+          },
+          "copy_last_position": {
+            "encode": 10,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 40,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.2558476533740759
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/1db795b9d9c62612.npz"
+    },
+    {
+      "key": "judo",
+      "frames": 34,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 67.57425742574257,
+          "pts_within_1": 12.82051282051282,
+          "jaccard_1": 5.451713395638629,
+          "pts_within_2": 20.146520146520146,
+          "jaccard_2": 8.842443729903538,
+          "pts_within_4": 31.318681318681318,
+          "jaccard_4": 14.454775993237531,
+          "pts_within_8": 51.83150183150184,
+          "jaccard_8": 26.423902894491132,
+          "pts_within_16": 71.97802197802197,
+          "jaccard_16": 40.894901144641,
+          "average_jaccard": 19.213547431582366,
+          "average_pts_within_thresh": 37.61904761904762,
+          "visible_epe_pixels": 18.28961181640625
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 67.57425742574257,
+          "pts_within_1": 8.974358974358974,
+          "jaccard_1": 3.7547892720306515,
+          "pts_within_2": 13.553113553113553,
+          "jaccard_2": 5.78125,
+          "pts_within_4": 21.428571428571427,
+          "jaccard_4": 9.458367016976556,
+          "pts_within_8": 41.39194139194139,
+          "jaccard_8": 20.0354609929078,
+          "pts_within_16": 67.76556776556777,
+          "jaccard_16": 37.60162601626016,
+          "average_jaccard": 15.326298659635034,
+          "average_pts_within_thresh": 30.62271062271062,
+          "visible_epe_pixels": 19.640480041503906
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 67.57425742574257,
+          "pts_within_1": 12.82051282051282,
+          "jaccard_1": 5.451713395638629,
+          "pts_within_2": 19.963369963369964,
+          "jaccard_2": 8.755020080321286,
+          "pts_within_4": 30.76923076923077,
+          "jaccard_4": 14.165261382799327,
+          "pts_within_8": 51.28205128205128,
+          "jaccard_8": 26.0707635009311,
+          "pts_within_16": 71.42857142857143,
+          "jaccard_16": 40.45643153526971,
+          "average_jaccard": 18.979837978992013,
+          "average_pts_within_thresh": 37.252747252747255,
+          "visible_epe_pixels": 18.30879020690918
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 82.92079207920791,
+          "pts_within_1": 44.871794871794876,
+          "jaccard_1": 26.28135223555071,
+          "pts_within_2": 69.59706959706959,
+          "jaccard_2": 47.32824427480916,
+          "pts_within_4": 90.47619047619048,
+          "jaccard_4": 69.2982456140351,
+          "pts_within_8": 96.52014652014653,
+          "jaccard_8": 75.72078907435508,
+          "pts_within_16": 96.7032967032967,
+          "jaccard_16": 75.98784194528876,
+          "average_jaccard": 58.92329462880777,
+          "average_pts_within_thresh": 79.63369963369964,
+          "visible_epe_pixels": 4.8672027587890625
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 10,
+        "total_frames": 34,
+        "observed_fraction": 0.29411764705882354,
+        "observed_times": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          17,
+          20,
+          24,
+          28,
+          32
+        ],
+        "fixed_stride_frames": 9,
+        "extra_query_frames": [
+          17
+        ],
+        "wrapper_encode_calls_shared": 10,
+        "wrapper_predict_calls": 9,
+        "predicted_frame_maps": 24,
+        "encoder_seconds_shared": 0.4763718768954277,
+        "predictor_wrapper_seconds": 0.5264950897544622,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.007426178082823753,
+          "predicted_features": 0.006047777831554413,
+          "copy_last_position": 0.0016353745013475418
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 1.0275198686867952,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 19,
+          "predictor_calls": 9,
+          "encoded_visible_tubelets": 93,
+          "predicted_tubelets": 24,
+          "gpu_seconds": 0.9796764031052589
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 10,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 10,
+            "predict": 9
+          },
+          "copy_last_position": {
+            "encode": 10,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 34,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.25577894411981106
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/289856b4e4b71c79.npz"
+    },
+    {
+      "key": "dance-twirl",
+      "frames": 90,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 77.54256787850898,
+          "pts_within_1": 0.17804154302670622,
+          "jaccard_1": 0.07782101167315175,
+          "pts_within_2": 1.1869436201780417,
+          "jaccard_2": 0.5211047420531527,
+          "pts_within_4": 4.56973293768546,
+          "jaccard_4": 2.036498280878075,
+          "pts_within_8": 12.87833827893175,
+          "jaccard_8": 5.959901126064268,
+          "pts_within_16": 23.026706231454007,
+          "jaccard_16": 11.181556195965419,
+          "average_jaccard": 3.9553762713268132,
+          "average_pts_within_thresh": 8.367952522255193,
+          "visible_epe_pixels": 77.52249908447266
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 77.54256787850898,
+          "pts_within_1": 0.11869436201780414,
+          "jaccard_1": 0.05186721991701245,
+          "pts_within_2": 0.6528189910979229,
+          "jaccard_2": 0.28593709383935534,
+          "pts_within_4": 2.7299703264094957,
+          "jaccard_4": 1.2067156348373556,
+          "pts_within_8": 7.596439169139465,
+          "jaccard_8": 3.431635388739947,
+          "pts_within_16": 16.676557863501486,
+          "jaccard_16": 7.855745037741125,
+          "average_jaccard": 2.566380075014959,
+          "average_pts_within_thresh": 5.554896142433234,
+          "visible_epe_pixels": 84.02310943603516
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 77.54256787850898,
+          "pts_within_1": 0.17804154302670622,
+          "jaccard_1": 0.07782101167315175,
+          "pts_within_2": 1.1275964391691393,
+          "jaccard_2": 0.4949205522271425,
+          "pts_within_4": 4.27299703264095,
+          "jaccard_4": 1.9017432646592711,
+          "pts_within_8": 11.98813056379822,
+          "jaccard_8": 5.525164113785558,
+          "pts_within_16": 22.255192878338278,
+          "jaccard_16": 10.766580534022395,
+          "average_jaccard": 3.7532458952735035,
+          "average_pts_within_thresh": 7.96439169139466,
+          "visible_epe_pixels": 87.61909484863281
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 90.15186378278877,
+          "pts_within_1": 38.99109792284867,
+          "jaccard_1": 24.246987951807228,
+          "pts_within_2": 75.72700296735904,
+          "jaccard_2": 61.36919315403423,
+          "pts_within_4": 88.78338278931751,
+          "jaccard_4": 77.7059773828756,
+          "pts_within_8": 94.89614243323442,
+          "jaccard_8": 85.8108108108108,
+          "pts_within_16": 97.3887240356083,
+          "jaccard_16": 87.71331058020478,
+          "average_jaccard": 67.36925597594652,
+          "average_pts_within_thresh": 79.15727002967358,
+          "visible_epe_pixels": 2.494987726211548
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 25,
+        "total_frames": 90,
+        "observed_fraction": 0.2777777777777778,
+        "observed_times": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          25,
+          27,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48,
+          52,
+          56,
+          60,
+          64,
+          68,
+          72,
+          76,
+          80,
+          84,
+          88
+        ],
+        "fixed_stride_frames": 23,
+        "extra_query_frames": [
+          25,
+          27
+        ],
+        "wrapper_encode_calls_shared": 25,
+        "wrapper_predict_calls": 23,
+        "predicted_frame_maps": 65,
+        "encoder_seconds_shared": 1.2669994849711657,
+        "predictor_wrapper_seconds": 1.3792078141123056,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.019265759736299515,
+          "predicted_features": 0.01594126597046852,
+          "copy_last_position": 0.004265453666448593
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 2.709232421591878,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 48,
+          "predictor_calls": 23,
+          "encoded_visible_tubelets": 294,
+          "predicted_tubelets": 65,
+          "gpu_seconds": 2.578147642314434
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 25,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 25,
+            "predict": 23
+          },
+          "copy_last_position": {
+            "encode": 25,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 90,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.647947546094656
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/2d5a9bd2263da8d2.npz"
+    },
+    {
+      "key": "kite-surf",
+      "frames": 50,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 100.0,
+          "pts_within_1": 0.16420361247947454,
+          "jaccard_1": 0.08216926869350863,
+          "pts_within_2": 3.776683087027915,
+          "jaccard_2": 1.9246861924686192,
+          "pts_within_4": 13.382594417077176,
+          "jaccard_4": 7.171139463264408,
+          "pts_within_8": 39.49096880131363,
+          "jaccard_8": 24.603580562659847,
+          "pts_within_16": 79.72085385878489,
+          "jaccard_16": 66.27986348122867,
+          "average_jaccard": 20.01228779366301,
+          "average_pts_within_thresh": 27.307060755336614,
+          "visible_epe_pixels": 16.827428817749023
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 100.0,
+          "pts_within_1": 0.0,
+          "jaccard_1": 0.0,
+          "pts_within_2": 2.052545155993432,
+          "jaccard_2": 1.0369141435089175,
+          "pts_within_4": 6.9786535303776684,
+          "jaccard_4": 3.6154827732879626,
+          "pts_within_8": 23.316912972085387,
+          "jaccard_8": 13.197026022304833,
+          "pts_within_16": 55.41871921182266,
+          "jaccard_16": 38.33049403747871,
+          "average_jaccard": 11.235983395316085,
+          "average_pts_within_thresh": 17.553366174055828,
+          "visible_epe_pixels": 19.037487030029297
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 100.0,
+          "pts_within_1": 0.16420361247947454,
+          "jaccard_1": 0.08216926869350863,
+          "pts_within_2": 3.6124794745484397,
+          "jaccard_2": 1.839464882943144,
+          "pts_within_4": 12.889983579638752,
+          "jaccard_4": 6.888986397542782,
+          "pts_within_8": 38.99835796387521,
+          "jaccard_8": 24.22233554309026,
+          "pts_within_16": 79.22824302134647,
+          "jaccard_16": 65.60163154316791,
+          "average_jaccard": 19.726917527087522,
+          "average_pts_within_thresh": 26.97865353037767,
+          "visible_epe_pixels": 16.974618911743164
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 96.4696223316913,
+          "pts_within_1": 63.464696223316906,
+          "jaccard_1": 46.8999386126458,
+          "pts_within_2": 85.22167487684729,
+          "jaccard_2": 73.1548480463097,
+          "pts_within_4": 97.94745484400657,
+          "jaccard_4": 92.6731078904992,
+          "pts_within_8": 100.0,
+          "jaccard_8": 96.4696223316913,
+          "pts_within_16": 100.0,
+          "jaccard_16": 96.4696223316913,
+          "average_jaccard": 81.13342784256746,
+          "average_pts_within_thresh": 89.32676518883416,
+          "visible_epe_pixels": 1.0839691162109375
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 14,
+        "total_frames": 50,
+        "observed_fraction": 0.28,
+        "observed_times": [
+          0,
+          3,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48
+        ],
+        "fixed_stride_frames": 13,
+        "extra_query_frames": [
+          3
+        ],
+        "wrapper_encode_calls_shared": 14,
+        "wrapper_predict_calls": 13,
+        "predicted_frame_maps": 36,
+        "encoder_seconds_shared": 0.6856192536652088,
+        "predictor_wrapper_seconds": 0.7697775196284056,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.01011023111641407,
+          "predicted_features": 0.00871354155242443,
+          "copy_last_position": 0.002284359186887741
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 1.4893231019377708,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 27,
+          "predictor_calls": 13,
+          "encoded_visible_tubelets": 152,
+          "predicted_tubelets": 36,
+          "gpu_seconds": 1.4215340670198202
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 14,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 14,
+            "predict": 13
+          },
+          "copy_last_position": {
+            "encode": 14,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 50,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.37024777196347713
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/3b1348ae87c94af3.npz"
+    },
+    {
+      "key": "gold-fish",
+      "frames": 78,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 89.03728436282692,
+          "pts_within_1": 1.5,
+          "jaccard_1": 0.7115327601541654,
+          "pts_within_2": 5.6875,
+          "jaccard_2": 2.7525710828796126,
+          "pts_within_4": 15.875,
+          "jaccard_4": 8.081450843143493,
+          "pts_within_8": 34.875,
+          "jaccard_8": 19.65480803099683,
+          "pts_within_16": 63.74999999999999,
+          "jaccard_16": 42.91123264619268,
+          "average_jaccard": 14.822319072673357,
+          "average_pts_within_thresh": 24.3375,
+          "visible_epe_pixels": 21.561166763305664
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 89.03728436282692,
+          "pts_within_1": 0.5,
+          "jaccard_1": 0.23605783416937148,
+          "pts_within_2": 2.3125,
+          "jaccard_2": 1.1011904761904763,
+          "pts_within_4": 7.124999999999999,
+          "jaccard_4": 3.4724337496192503,
+          "pts_within_8": 17.8125,
+          "jaccard_8": 9.15809768637532,
+          "pts_within_16": 33.125,
+          "jaccard_16": 18.486222532263692,
+          "average_jaccard": 6.4908004557236225,
+          "average_pts_within_thresh": 12.174999999999999,
+          "visible_epe_pixels": 44.0505485534668
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 89.03728436282692,
+          "pts_within_1": 1.5,
+          "jaccard_1": 0.7115327601541654,
+          "pts_within_2": 5.6875,
+          "jaccard_2": 2.7525710828796126,
+          "pts_within_4": 15.812499999999998,
+          "jaccard_4": 8.0470737913486,
+          "pts_within_8": 34.875,
+          "jaccard_8": 19.65480803099683,
+          "pts_within_16": 63.6875,
+          "jaccard_16": 42.85113540790581,
+          "average_jaccard": 14.803424214657005,
+          "average_pts_within_thresh": 24.312499999999996,
+          "visible_epe_pixels": 19.078092575073242
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 92.37618252643294,
+          "pts_within_1": 28.499999999999996,
+          "jaccard_1": 16.69731518940787,
+          "pts_within_2": 59.0,
+          "jaccard_2": 41.651785714285715,
+          "pts_within_4": 85.0625,
+          "jaccard_4": 70.95905172413794,
+          "pts_within_8": 96.9375,
+          "jaccard_8": 87.30814639905549,
+          "pts_within_16": 100.0,
+          "jaccard_16": 91.72205438066466,
+          "average_jaccard": 61.66767068151033,
+          "average_pts_within_thresh": 73.9,
+          "visible_epe_pixels": 2.275852680206299
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 22,
+        "total_frames": 78,
+        "observed_fraction": 0.28205128205128205,
+        "observed_times": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48,
+          52,
+          56,
+          59,
+          60,
+          64,
+          68,
+          69,
+          72,
+          76
+        ],
+        "fixed_stride_frames": 20,
+        "extra_query_frames": [
+          59,
+          69
+        ],
+        "wrapper_encode_calls_shared": 22,
+        "wrapper_predict_calls": 20,
+        "predicted_frame_maps": 56,
+        "encoder_seconds_shared": 1.1098612397909164,
+        "predictor_wrapper_seconds": 1.1936232540756464,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.01618308760225773,
+          "predicted_features": 0.013882938772439957,
+          "copy_last_position": 0.003797350451350212
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 2.3569622095674276,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 42,
+          "predictor_calls": 20,
+          "encoded_visible_tubelets": 252,
+          "predicted_tubelets": 56,
+          "gpu_seconds": 2.2488238234072924
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 22,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 22,
+            "predict": 20
+          },
+          "copy_last_position": {
+            "encode": 22,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 78,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.5293507687747478
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/3f72b824fd3e386c.npz"
+    },
+    {
+      "key": "camel",
+      "frames": 90,
+      "query_points": 10,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 98.1675392670157,
+          "pts_within_1": 0.8,
+          "jaccard_1": 0.3978779840848806,
+          "pts_within_2": 2.933333333333333,
+          "jaccard_2": 1.4745308310991956,
+          "pts_within_4": 8.0,
+          "jaccard_4": 4.126547455295736,
+          "pts_within_8": 16.933333333333334,
+          "jaccard_8": 9.156452775775053,
+          "pts_within_16": 31.6,
+          "jaccard_16": 18.55912294440094,
+          "average_jaccard": 6.742906398131161,
+          "average_pts_within_thresh": 12.053333333333335,
+          "visible_epe_pixels": 41.144248962402344
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 98.1675392670157,
+          "pts_within_1": 0.26666666666666666,
+          "jaccard_1": 0.13227513227513227,
+          "pts_within_2": 1.2,
+          "jaccard_2": 0.5980066445182725,
+          "pts_within_4": 4.266666666666667,
+          "jaccard_4": 2.1592442645074224,
+          "pts_within_8": 10.8,
+          "jaccard_8": 5.652477320307049,
+          "pts_within_16": 23.200000000000003,
+          "jaccard_16": 12.985074626865673,
+          "average_jaccard": 4.30541559769471,
+          "average_pts_within_thresh": 7.946666666666665,
+          "visible_epe_pixels": 48.492591857910156
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 98.1675392670157,
+          "pts_within_1": 0.8,
+          "jaccard_1": 0.3978779840848806,
+          "pts_within_2": 2.933333333333333,
+          "jaccard_2": 1.4745308310991956,
+          "pts_within_4": 8.0,
+          "jaccard_4": 4.126547455295736,
+          "pts_within_8": 16.933333333333334,
+          "jaccard_8": 9.156452775775053,
+          "pts_within_16": 31.6,
+          "jaccard_16": 18.55912294440094,
+          "average_jaccard": 6.742906398131161,
+          "average_pts_within_thresh": 12.053333333333335,
+          "visible_epe_pixels": 40.969058990478516
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 99.73821989528795,
+          "pts_within_1": 43.46666666666666,
+          "jaccard_1": 27.721088435374146,
+          "pts_within_2": 81.73333333333333,
+          "jaccard_2": 68.95388076490438,
+          "pts_within_4": 90.26666666666667,
+          "jaccard_4": 82.06060606060606,
+          "pts_within_8": 97.33333333333334,
+          "jaccard_8": 94.55958549222798,
+          "pts_within_16": 100.0,
+          "jaccard_16": 99.7340425531915,
+          "average_jaccard": 74.60584066126081,
+          "average_pts_within_thresh": 82.56,
+          "visible_epe_pixels": 1.6378464698791504
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 27,
+        "total_frames": 90,
+        "observed_fraction": 0.3,
+        "observed_times": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          27,
+          28,
+          30,
+          32,
+          34,
+          35,
+          36,
+          40,
+          44,
+          48,
+          52,
+          56,
+          60,
+          64,
+          68,
+          72,
+          76,
+          80,
+          84,
+          88
+        ],
+        "fixed_stride_frames": 23,
+        "extra_query_frames": [
+          27,
+          30,
+          34,
+          35
+        ],
+        "wrapper_encode_calls_shared": 27,
+        "wrapper_predict_calls": 24,
+        "predicted_frame_maps": 63,
+        "encoder_seconds_shared": 1.3713504169136286,
+        "predictor_wrapper_seconds": 1.4363312739878893,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.01932103931903839,
+          "predicted_features": 0.016260111704468727,
+          "copy_last_position": 0.004659298807382584
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 2.871559562161565,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 51,
+          "predictor_calls": 24,
+          "encoded_visible_tubelets": 315,
+          "predicted_tubelets": 63,
+          "gpu_seconds": 2.7378899957984686
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 27,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 27,
+            "predict": 24
+          },
+          "copy_last_position": {
+            "encode": 27,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 90,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.6034090910106897
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/4812585e944994cb.npz"
+    },
+    {
+      "key": "lab-coat",
+      "frames": 47,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 79.56521739130434,
+          "pts_within_1": 1.3114754098360655,
+          "jaccard_1": 0.5845104724792985,
+          "pts_within_2": 4.699453551912568,
+          "jaccard_2": 2.126607319485658,
+          "pts_within_4": 10.491803278688524,
+          "jaccard_4": 4.875571356018284,
+          "pts_within_8": 26.885245901639344,
+          "jaccard_8": 13.523914238592633,
+          "pts_within_16": 49.39890710382514,
+          "jaccard_16": 28.022318660880348,
+          "average_jaccard": 9.826584409491243,
+          "average_pts_within_thresh": 18.557377049180328,
+          "visible_epe_pixels": 25.680925369262695
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 79.56521739130434,
+          "pts_within_1": 1.530054644808743,
+          "jaccard_1": 0.6825938566552902,
+          "pts_within_2": 4.043715846994536,
+          "jaccard_2": 1.824457593688363,
+          "pts_within_4": 8.852459016393443,
+          "jaccard_4": 4.08266129032258,
+          "pts_within_8": 24.153005464480877,
+          "jaccard_8": 11.984815618221258,
+          "pts_within_16": 46.22950819672131,
+          "jaccard_16": 25.761266747868454,
+          "average_jaccard": 8.86715902135119,
+          "average_pts_within_thresh": 16.96174863387978,
+          "visible_epe_pixels": 31.248624801635742
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 79.56521739130434,
+          "pts_within_1": 1.3114754098360655,
+          "jaccard_1": 0.5845104724792985,
+          "pts_within_2": 4.590163934426229,
+          "jaccard_2": 2.0761245674740483,
+          "pts_within_4": 10.382513661202186,
+          "jaccard_4": 4.822335025380711,
+          "pts_within_8": 26.666666666666668,
+          "jaccard_8": 13.399231191652937,
+          "pts_within_16": 48.63387978142077,
+          "jaccard_16": 27.469135802469136,
+          "average_jaccard": 9.670267411891228,
+          "average_pts_within_thresh": 18.316939890710383,
+          "visible_epe_pixels": 25.914073944091797
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 98.26086956521739,
+          "pts_within_1": 40.87431693989071,
+          "jaccard_1": 25.495557074504443,
+          "pts_within_2": 56.939890710382514,
+          "jaccard_2": 39.40774487471526,
+          "pts_within_4": 76.17486338797815,
+          "jaccard_4": 60.629921259842526,
+          "pts_within_8": 86.66666666666667,
+          "jaccard_8": 75.023832221163,
+          "pts_within_16": 94.86338797814207,
+          "jaccard_16": 88.50102669404517,
+          "average_jaccard": 57.81161642485409,
+          "average_pts_within_thresh": 71.10382513661202,
+          "visible_epe_pixels": 3.432269334793091
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 12,
+        "total_frames": 47,
+        "observed_fraction": 0.2553191489361702,
+        "observed_times": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44
+        ],
+        "fixed_stride_frames": 12,
+        "extra_query_frames": [],
+        "wrapper_encode_calls_shared": 12,
+        "wrapper_predict_calls": 12,
+        "predicted_frame_maps": 35,
+        "encoder_seconds_shared": 0.5855565834790468,
+        "predictor_wrapper_seconds": 0.7114112060517073,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.00952146202325821,
+          "predicted_features": 0.008326409384608269,
+          "copy_last_position": 0.0019605159759521484
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 1.3280529025942087,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 24,
+          "predictor_calls": 12,
+          "encoded_visible_tubelets": 126,
+          "predicted_tubelets": 35,
+          "gpu_seconds": 1.2671809196472168
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 12,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 12,
+            "predict": 12
+          },
+          "copy_last_position": {
+            "encode": 12,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 47,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.29996957816183567
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/4b71d31e3f3842e1.npz"
+    },
+    {
+      "key": "goat",
+      "frames": 90,
+      "query_points": 5,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 100.0,
+          "pts_within_1": 0.0,
+          "jaccard_1": 0.0,
+          "pts_within_2": 2.9213483146067416,
+          "jaccard_2": 1.4823261117445838,
+          "pts_within_4": 11.235955056179774,
+          "jaccard_4": 5.952380952380952,
+          "pts_within_8": 34.38202247191011,
+          "jaccard_8": 20.759837177747624,
+          "pts_within_16": 74.6067415730337,
+          "jaccard_16": 59.49820788530465,
+          "average_jaccard": 17.538550425435563,
+          "average_pts_within_thresh": 24.629213483146067,
+          "visible_epe_pixels": 13.574442863464355
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 100.0,
+          "pts_within_1": 0.22471910112359553,
+          "jaccard_1": 0.11248593925759282,
+          "pts_within_2": 1.7977528089887642,
+          "jaccard_2": 0.9070294784580499,
+          "pts_within_4": 7.191011235955057,
+          "jaccard_4": 3.7296037296037294,
+          "pts_within_8": 17.303370786516854,
+          "jaccard_8": 9.471094710947108,
+          "pts_within_16": 51.23595505617977,
+          "jaccard_16": 34.44108761329305,
+          "average_jaccard": 9.732260294311908,
+          "average_pts_within_thresh": 15.55056179775281,
+          "visible_epe_pixels": 17.308635711669922
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 100.0,
+          "pts_within_1": 0.0,
+          "jaccard_1": 0.0,
+          "pts_within_2": 2.9213483146067416,
+          "jaccard_2": 1.4823261117445838,
+          "pts_within_4": 11.01123595505618,
+          "jaccard_4": 5.826397146254459,
+          "pts_within_8": 33.70786516853933,
+          "jaccard_8": 20.27027027027027,
+          "pts_within_16": 73.93258426966293,
+          "jaccard_16": 58.64527629233511,
+          "average_jaccard": 17.244853964120885,
+          "average_pts_within_thresh": 24.314606741573037,
+          "visible_epe_pixels": 13.883606910705566
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 100.0,
+          "pts_within_1": 33.03370786516854,
+          "jaccard_1": 19.784656796769852,
+          "pts_within_2": 66.74157303370787,
+          "jaccard_2": 50.084317032040474,
+          "pts_within_4": 93.93258426966293,
+          "jaccard_4": 88.5593220338983,
+          "pts_within_8": 99.7752808988764,
+          "jaccard_8": 99.55156950672645,
+          "pts_within_16": 100.0,
+          "jaccard_16": 100.0,
+          "average_jaccard": 71.59597307388701,
+          "average_pts_within_thresh": 78.69662921348315,
+          "visible_epe_pixels": 1.7786173820495605
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 23,
+        "total_frames": 90,
+        "observed_fraction": 0.25555555555555554,
+        "observed_times": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48,
+          52,
+          56,
+          60,
+          64,
+          68,
+          72,
+          76,
+          80,
+          84,
+          88
+        ],
+        "fixed_stride_frames": 23,
+        "extra_query_frames": [],
+        "wrapper_encode_calls_shared": 23,
+        "wrapper_predict_calls": 23,
+        "predicted_frame_maps": 67,
+        "encoder_seconds_shared": 1.1626468189060688,
+        "predictor_wrapper_seconds": 1.3809247445315123,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.018344983458518982,
+          "predicted_features": 0.015744663774967194,
+          "copy_last_position": 0.0038825254887342453
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 2.6026902832090855,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 46,
+          "predictor_calls": 23,
+          "encoded_visible_tubelets": 280,
+          "predicted_tubelets": 67,
+          "gpu_seconds": 2.477986043319106
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 23,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 23,
+            "predict": 23
+          },
+          "copy_last_position": {
+            "encode": 23,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 90,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.5954963117837906
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/5480f08f35968440.npz"
+    },
+    {
+      "key": "soapbox",
+      "frames": 99,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 71.86666666666667,
+          "pts_within_1": 1.7934446505875077,
+          "jaccard_1": 0.7556018759770714,
+          "pts_within_2": 3.710575139146568,
+          "jaccard_2": 1.5760441292356184,
+          "pts_within_4": 7.050092764378478,
+          "jaccard_4": 3.037569944044764,
+          "pts_within_8": 16.883116883116884,
+          "jaccard_8": 7.595993322203673,
+          "pts_within_16": 35.55967841682127,
+          "jaccard_16": 17.466585662211422,
+          "average_jaccard": 6.08635898673451,
+          "average_pts_within_thresh": 12.999381570810142,
+          "visible_epe_pixels": 44.0498161315918
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 71.86666666666667,
+          "pts_within_1": 0.30921459492888065,
+          "jaccard_1": 0.12946659761781462,
+          "pts_within_2": 1.2368583797155226,
+          "jaccard_2": 0.5198856251624643,
+          "pts_within_4": 2.7210884353741496,
+          "jaccard_4": 1.150928590112477,
+          "pts_within_8": 8.596165739022881,
+          "jaccard_8": 3.7285407725321886,
+          "pts_within_16": 21.08843537414966,
+          "jaccard_16": 9.671015314804311,
+          "average_jaccard": 3.039967380045851,
+          "average_pts_within_thresh": 6.79035250463822,
+          "visible_epe_pixels": 58.60671615600586
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 71.86666666666667,
+          "pts_within_1": 1.7934446505875077,
+          "jaccard_1": 0.7556018759770714,
+          "pts_within_2": 3.710575139146568,
+          "jaccard_2": 1.5760441292356184,
+          "pts_within_4": 7.050092764378478,
+          "jaccard_4": 3.037569944044764,
+          "pts_within_8": 17.810760667903523,
+          "jaccard_8": 8.046940486169321,
+          "pts_within_16": 36.92022263450835,
+          "jaccard_16": 18.256880733944953,
+          "average_jaccard": 6.334607433874346,
+          "average_pts_within_thresh": 13.457019171304886,
+          "visible_epe_pixels": 42.562931060791016
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 93.24444444444444,
+          "pts_within_1": 45.887445887445885,
+          "jaccard_1": 28.189457601222305,
+          "pts_within_2": 62.21397649969078,
+          "jaccard_2": 42.444821731748725,
+          "pts_within_4": 78.66419294990723,
+          "jaccard_4": 60.03814973772056,
+          "pts_within_8": 91.15646258503402,
+          "jaccard_8": 76.91091196626252,
+          "pts_within_16": 98.39208410636982,
+          "jaccard_16": 88.53932584269663,
+          "average_jaccard": 59.22453337593014,
+          "average_pts_within_thresh": 75.26283240568954,
+          "visible_epe_pixels": 2.7008941173553467
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 29,
+        "total_frames": 99,
+        "observed_fraction": 0.29292929292929293,
+        "observed_times": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          25,
+          27,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48,
+          51,
+          52,
+          56,
+          60,
+          64,
+          68,
+          69,
+          72,
+          76,
+          80,
+          84,
+          88,
+          92,
+          96
+        ],
+        "fixed_stride_frames": 25,
+        "extra_query_frames": [
+          25,
+          27,
+          51,
+          69
+        ],
+        "wrapper_encode_calls_shared": 29,
+        "wrapper_predict_calls": 25,
+        "predicted_frame_maps": 70,
+        "encoder_seconds_shared": 1.4889492467045784,
+        "predictor_wrapper_seconds": 1.5113569740206003,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.02098250202834606,
+          "predicted_features": 0.017640817910432816,
+          "copy_last_position": 0.005002090707421303
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 3.0706822238862514,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 54,
+          "predictor_calls": 25,
+          "encoded_visible_tubelets": 336,
+          "predicted_tubelets": 70,
+          "gpu_seconds": 2.9222943987697363
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 29,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 29,
+            "predict": 25
+          },
+          "copy_last_position": {
+            "encode": 29,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 99,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.7157945893704891
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/721e8249a7f095d6.npz"
+    },
+    {
+      "key": "pigs",
+      "frames": 79,
+      "query_points": 15,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 71.48114075436982,
+          "pts_within_1": 0.7722007722007722,
+          "jaccard_1": 0.32292787944025836,
+          "pts_within_2": 2.3166023166023164,
+          "jaccard_2": 0.9750812567713976,
+          "pts_within_4": 6.177606177606178,
+          "jaccard_4": 2.643171806167401,
+          "pts_within_8": 19.176319176319176,
+          "jaccard_8": 8.68804664723032,
+          "pts_within_16": 41.312741312741316,
+          "jaccard_16": 20.803629293583928,
+          "average_jaccard": 6.686571376638661,
+          "average_pts_within_thresh": 13.951093951093952,
+          "visible_epe_pixels": 34.98008346557617
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 71.48114075436982,
+          "pts_within_1": 0.9009009009009009,
+          "jaccard_1": 0.3769520732364028,
+          "pts_within_2": 1.673101673101673,
+          "jaccard_2": 0.7023230686115614,
+          "pts_within_4": 3.346203346203346,
+          "jaccard_4": 1.4145810663764962,
+          "pts_within_8": 9.523809523809524,
+          "jaccard_8": 4.134078212290502,
+          "pts_within_16": 32.818532818532816,
+          "jaccard_16": 15.848353014294592,
+          "average_jaccard": 4.49525748696191,
+          "average_pts_within_thresh": 9.652509652509652,
+          "visible_epe_pixels": 38.02745819091797
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 71.48114075436982,
+          "pts_within_1": 0.7722007722007722,
+          "jaccard_1": 0.32292787944025836,
+          "pts_within_2": 2.3166023166023164,
+          "jaccard_2": 0.9750812567713976,
+          "pts_within_4": 5.9202059202059205,
+          "jaccard_4": 2.5302530253025304,
+          "pts_within_8": 19.176319176319176,
+          "jaccard_8": 8.68804664723032,
+          "pts_within_16": 40.92664092664093,
+          "jaccard_16": 20.56921086675291,
+          "average_jaccard": 6.617103935099484,
+          "average_pts_within_thresh": 13.822393822393822,
+          "visible_epe_pixels": 30.845815658569336
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 89.78840846366145,
+          "pts_within_1": 33.59073359073359,
+          "jaccard_1": 20.263975155279503,
+          "pts_within_2": 62.419562419562425,
+          "jaccard_2": 45.17338331771322,
+          "pts_within_4": 88.54568854568855,
+          "jaccard_4": 73.65470852017937,
+          "pts_within_8": 99.61389961389962,
+          "jaccard_8": 85.95438175270108,
+          "pts_within_16": 100.0,
+          "jaccard_16": 86.62650602409639,
+          "average_jaccard": 62.33459095399392,
+          "average_pts_within_thresh": 76.83397683397683,
+          "visible_epe_pixels": 1.9762251377105713
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 22,
+        "total_frames": 79,
+        "observed_fraction": 0.27848101265822783,
+        "observed_times": [
+          0,
+          4,
+          5,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          30,
+          32,
+          36,
+          40,
+          44,
+          48,
+          52,
+          56,
+          60,
+          64,
+          68,
+          72,
+          76
+        ],
+        "fixed_stride_frames": 20,
+        "extra_query_frames": [
+          5,
+          30
+        ],
+        "wrapper_encode_calls_shared": 22,
+        "wrapper_predict_calls": 21,
+        "predicted_frame_maps": 57,
+        "encoder_seconds_shared": 1.1153372172266245,
+        "predictor_wrapper_seconds": 1.268126791343093,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.0166106466203928,
+          "predicted_features": 0.014040431007742882,
+          "copy_last_position": 0.003769880160689354
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 2.4385055731981993,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 43,
+          "predictor_calls": 21,
+          "encoded_visible_tubelets": 264,
+          "predicted_tubelets": 57,
+          "gpu_seconds": 2.3242815043777227
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 22,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 22,
+            "predict": 21
+          },
+          "copy_last_position": {
+            "encode": 22,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 79,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.5045702643692493
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/7ca803c7fc3f8d5f.npz"
+    },
+    {
+      "key": "libby",
+      "frames": 49,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 67.91569086651053,
+          "pts_within_1": 0.0,
+          "jaccard_1": 0.0,
+          "pts_within_2": 0.3448275862068966,
+          "jaccard_2": 0.13966480446927373,
+          "pts_within_4": 4.482758620689655,
+          "jaccard_4": 1.8465909090909092,
+          "pts_within_8": 18.620689655172416,
+          "jaccard_8": 8.144796380090497,
+          "pts_within_16": 43.79310344827586,
+          "jaccard_16": 21.525423728813557,
+          "average_jaccard": 6.331295164492848,
+          "average_pts_within_thresh": 13.448275862068964,
+          "visible_epe_pixels": 29.21100425720215
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 67.91569086651053,
+          "pts_within_1": 0.0,
+          "jaccard_1": 0.0,
+          "pts_within_2": 0.6896551724137931,
+          "jaccard_2": 0.27972027972027974,
+          "pts_within_4": 3.4482758620689653,
+          "jaccard_4": 1.4144271570014144,
+          "pts_within_8": 14.482758620689657,
+          "jaccard_8": 6.222222222222222,
+          "pts_within_16": 38.275862068965516,
+          "jaccard_16": 18.316831683168317,
+          "average_jaccard": 5.246640268422446,
+          "average_pts_within_thresh": 11.379310344827587,
+          "visible_epe_pixels": 27.94434356689453
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 67.91569086651053,
+          "pts_within_1": 0.0,
+          "jaccard_1": 0.0,
+          "pts_within_2": 0.3448275862068966,
+          "jaccard_2": 0.13966480446927373,
+          "pts_within_4": 4.482758620689655,
+          "jaccard_4": 1.8465909090909092,
+          "pts_within_8": 18.620689655172416,
+          "jaccard_8": 8.144796380090497,
+          "pts_within_16": 43.79310344827586,
+          "jaccard_16": 21.525423728813557,
+          "average_jaccard": 6.331295164492848,
+          "average_pts_within_thresh": 13.448275862068964,
+          "visible_epe_pixels": 28.861722946166992
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 72.59953161592506,
+          "pts_within_1": 18.275862068965516,
+          "jaccard_1": 9.47176684881603,
+          "pts_within_2": 38.275862068965516,
+          "jaccard_2": 21.906693711967545,
+          "pts_within_4": 55.172413793103445,
+          "jaccard_4": 34.753363228699556,
+          "pts_within_8": 71.37931034482759,
+          "jaccard_8": 44.47115384615385,
+          "pts_within_16": 78.27586206896552,
+          "jaccard_16": 48.029556650246306,
+          "average_jaccard": 31.726506857176656,
+          "average_pts_within_thresh": 52.275862068965516,
+          "visible_epe_pixels": 11.826213836669922
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 21,
+        "total_frames": 49,
+        "observed_fraction": 0.42857142857142855,
+        "observed_times": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          33,
+          34,
+          36,
+          37,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          47,
+          48
+        ],
+        "fixed_stride_frames": 13,
+        "extra_query_frames": [
+          33,
+          34,
+          37,
+          41,
+          42,
+          43,
+          45,
+          47
+        ],
+        "wrapper_encode_calls_shared": 21,
+        "wrapper_predict_calls": 11,
+        "predicted_frame_maps": 28,
+        "encoder_seconds_shared": 1.0467320773750544,
+        "predictor_wrapper_seconds": 0.6363542210310698,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.010469188913702965,
+          "predicted_features": 0.008659075945615768,
+          "copy_last_position": 0.0035975370556116104
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 1.722893899306655,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 32,
+          "predictor_calls": 11,
+          "encoded_visible_tubelets": 182,
+          "predicted_tubelets": 28,
+          "gpu_seconds": 1.641859320923686
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 21,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 21,
+            "predict": 11
+          },
+          "copy_last_position": {
+            "encode": 21,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 49,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.3726572133600712
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/7cf7b152874767a5.npz"
+    },
+    {
+      "key": "dogs-jump",
+      "frames": 66,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 74.45652173913044,
+          "pts_within_1": 3.102189781021898,
+          "jaccard_1": 1.3417521704814523,
+          "pts_within_2": 6.204379562043796,
+          "jaccard_2": 2.7199999999999998,
+          "pts_within_4": 20.802919708029197,
+          "jaccard_4": 9.743589743589745,
+          "pts_within_8": 51.64233576642335,
+          "jaccard_8": 28.271728271728268,
+          "pts_within_16": 77.28102189781022,
+          "jaccard_16": 49.215572341661826,
+          "average_jaccard": 18.258528505492258,
+          "average_pts_within_thresh": 31.80656934306569,
+          "visible_epe_pixels": 16.37268829345703
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 74.45652173913044,
+          "pts_within_1": 2.18978102189781,
+          "jaccard_1": 0.9433962264150944,
+          "pts_within_2": 4.014598540145985,
+          "jaccard_2": 1.7432646592709984,
+          "pts_within_4": 15.875912408759124,
+          "jaccard_4": 7.268170426065162,
+          "pts_within_8": 44.25182481751825,
+          "jaccard_8": 23.28372539606337,
+          "pts_within_16": 73.17518248175182,
+          "jaccard_16": 45.413363533408834,
+          "average_jaccard": 15.73038404824469,
+          "average_pts_within_thresh": 27.901459854014597,
+          "visible_epe_pixels": 17.143936157226562
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 74.45652173913044,
+          "pts_within_1": 3.102189781021898,
+          "jaccard_1": 1.3417521704814523,
+          "pts_within_2": 6.295620437956205,
+          "jaccard_2": 2.7611044417767108,
+          "pts_within_4": 21.350364963503647,
+          "jaccard_4": 10.025706940874036,
+          "pts_within_8": 52.18978102189781,
+          "jaccard_8": 28.65731462925852,
+          "pts_within_16": 77.73722627737226,
+          "jaccard_16": 49.65034965034965,
+          "average_jaccard": 18.487245566548076,
+          "average_pts_within_thresh": 32.13503649635037,
+          "visible_epe_pixels": 14.72801399230957
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 92.52717391304348,
+          "pts_within_1": 30.29197080291971,
+          "jaccard_1": 18.40180078784468,
+          "pts_within_2": 71.71532846715328,
+          "jaccard_2": 58.314522197140704,
+          "pts_within_4": 89.96350364963503,
+          "jaccard_4": 82.32235701906413,
+          "pts_within_8": 97.44525547445255,
+          "jaccard_8": 88.19320214669052,
+          "pts_within_16": 99.81751824817519,
+          "jaccard_16": 90.06323396567299,
+          "average_jaccard": 67.45902322328261,
+          "average_pts_within_thresh": 77.84671532846714,
+          "visible_epe_pixels": 1.9890408515930176
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 21,
+        "total_frames": 66,
+        "observed_fraction": 0.3181818181818182,
+        "observed_times": [
+          0,
+          4,
+          8,
+          11,
+          12,
+          16,
+          20,
+          24,
+          26,
+          27,
+          28,
+          29,
+          32,
+          36,
+          40,
+          44,
+          48,
+          52,
+          56,
+          60,
+          64
+        ],
+        "fixed_stride_frames": 17,
+        "extra_query_frames": [
+          11,
+          26,
+          27,
+          29
+        ],
+        "wrapper_encode_calls_shared": 21,
+        "wrapper_predict_calls": 17,
+        "predicted_frame_maps": 45,
+        "encoder_seconds_shared": 1.0511959176510572,
+        "predictor_wrapper_seconds": 1.0081134866923094,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.013678701594471931,
+          "predicted_features": 0.011646945029497147,
+          "copy_last_position": 0.003571353852748871
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 2.106842592358589,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 38,
+          "predictor_calls": 17,
+          "encoded_visible_tubelets": 227,
+          "predicted_tubelets": 45,
+          "gpu_seconds": 2.0084019005298615
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 21,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 21,
+            "predict": 17
+          },
+          "copy_last_position": {
+            "encode": 21,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 66,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.4873181451112032
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/95cac52a230c55b9.npz"
+    },
+    {
+      "key": "drift-straight",
+      "frames": 50,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 31.852472757753564,
+          "pts_within_1": 0.2631578947368421,
+          "jaccard_1": 0.06361323155216285,
+          "pts_within_2": 1.0526315789473684,
+          "jaccard_2": 0.25493945188017847,
+          "pts_within_4": 3.1578947368421053,
+          "jaccard_4": 0.7687379884689303,
+          "pts_within_8": 19.473684210526315,
+          "jaccard_8": 4.936624416277518,
+          "pts_within_16": 43.94736842105263,
+          "jaccard_16": 11.877667140825036,
+          "average_jaccard": 3.580316445800765,
+          "average_pts_within_thresh": 13.578947368421051,
+          "visible_epe_pixels": 40.90393829345703
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 31.852472757753564,
+          "pts_within_1": 0.0,
+          "jaccard_1": 0.0,
+          "pts_within_2": 0.5263157894736842,
+          "jaccard_2": 0.1273074474856779,
+          "pts_within_4": 2.368421052631579,
+          "jaccard_4": 0.5754475703324808,
+          "pts_within_8": 12.368421052631579,
+          "jaccard_8": 3.079947575360419,
+          "pts_within_16": 30.263157894736842,
+          "jaccard_16": 7.887517146776406,
+          "average_jaccard": 2.334043947990997,
+          "average_pts_within_thresh": 9.105263157894736,
+          "visible_epe_pixels": 54.94278335571289
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 31.852472757753564,
+          "pts_within_1": 0.2631578947368421,
+          "jaccard_1": 0.06361323155216285,
+          "pts_within_2": 0.7894736842105263,
+          "jaccard_2": 0.1910828025477707,
+          "pts_within_4": 2.631578947368421,
+          "jaccard_4": 0.6397952655150352,
+          "pts_within_8": 17.894736842105264,
+          "jaccard_8": 4.51827242524917,
+          "pts_within_16": 41.05263157894737,
+          "jaccard_16": 11.009174311926607,
+          "average_jaccard": 3.284387607358149,
+          "average_pts_within_thresh": 12.526315789473683,
+          "visible_epe_pixels": 43.44852828979492
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 98.49119865884325,
+          "pts_within_1": 70.0,
+          "jaccard_1": 52.06286836935167,
+          "pts_within_2": 88.42105263157895,
+          "jaccard_2": 76.30979498861048,
+          "pts_within_4": 97.36842105263158,
+          "jaccard_4": 91.11111111111111,
+          "pts_within_8": 98.15789473684211,
+          "jaccard_8": 92.53731343283582,
+          "pts_within_16": 100.0,
+          "jaccard_16": 95.45454545454545,
+          "average_jaccard": 81.4951266712909,
+          "average_pts_within_thresh": 90.78947368421053,
+          "visible_epe_pixels": 1.0221147537231445
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 13,
+        "total_frames": 50,
+        "observed_fraction": 0.26,
+        "observed_times": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48
+        ],
+        "fixed_stride_frames": 13,
+        "extra_query_frames": [],
+        "wrapper_encode_calls_shared": 13,
+        "wrapper_predict_calls": 13,
+        "predicted_frame_maps": 37,
+        "encoder_seconds_shared": 0.6332511361688375,
+        "predictor_wrapper_seconds": 0.7626756932586432,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.009950729086995125,
+          "predicted_features": 0.008678082376718521,
+          "copy_last_position": 0.002118173986673355
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 1.428947389125824,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 26,
+          "predictor_calls": 13,
+          "encoded_visible_tubelets": 140,
+          "predicted_tubelets": 37,
+          "gpu_seconds": 1.3636182229965925
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 13,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 13,
+            "predict": 13
+          },
+          "copy_last_position": {
+            "encode": 13,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 50,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.3698340095579624
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/97225486d2cf29f5.npz"
+    },
+    {
+      "key": "car-roundabout",
+      "frames": 75,
+      "query_points": 20,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 42.42867593269934,
+          "pts_within_1": 1.0344827586206897,
+          "jaccard_1": 0.3091190108191654,
+          "pts_within_2": 4.310344827586207,
+          "jaccard_2": 1.3007284079084287,
+          "pts_within_4": 10.689655172413794,
+          "jaccard_4": 3.2891246684350133,
+          "pts_within_8": 25.689655172413794,
+          "jaccard_8": 8.28698553948832,
+          "pts_within_16": 50.689655172413794,
+          "jaccard_16": 17.78584392014519,
+          "average_jaccard": 6.194360309359224,
+          "average_pts_within_thresh": 18.48275862068966,
+          "visible_epe_pixels": 28.85202407836914
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 42.42867593269934,
+          "pts_within_1": 1.3793103448275863,
+          "jaccard_1": 0.4125838060856112,
+          "pts_within_2": 4.310344827586207,
+          "jaccard_2": 1.3007284079084287,
+          "pts_within_4": 10.86206896551724,
+          "jaccard_4": 3.343949044585987,
+          "pts_within_8": 24.482758620689655,
+          "jaccard_8": 7.867036011080332,
+          "pts_within_16": 55.00000000000001,
+          "jaccard_16": 19.594594594594593,
+          "average_jaccard": 6.503778372850991,
+          "average_pts_within_thresh": 19.20689655172414,
+          "visible_epe_pixels": 26.536563873291016
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 42.42867593269934,
+          "pts_within_1": 1.0344827586206897,
+          "jaccard_1": 0.3091190108191654,
+          "pts_within_2": 4.310344827586207,
+          "jaccard_2": 1.3007284079084287,
+          "pts_within_4": 10.689655172413794,
+          "jaccard_4": 3.2891246684350133,
+          "pts_within_8": 25.689655172413794,
+          "jaccard_8": 8.28698553948832,
+          "pts_within_16": 50.3448275862069,
+          "jaccard_16": 17.643504531722055,
+          "average_jaccard": 6.165892431674595,
+          "average_pts_within_thresh": 18.413793103448278,
+          "visible_epe_pixels": 28.966520309448242
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 86.24725676664228,
+          "pts_within_1": 41.55172413793103,
+          "jaccard_1": 28.235294117647058,
+          "pts_within_2": 52.58620689655172,
+          "jaccard_2": 37.10691823899371,
+          "pts_within_4": 71.03448275862068,
+          "jaccard_4": 54.82954545454546,
+          "pts_within_8": 84.13793103448276,
+          "jaccard_8": 64.40422322775264,
+          "pts_within_16": 91.72413793103448,
+          "jaccard_16": 68.73065015479877,
+          "average_jaccard": 50.66132623874753,
+          "average_pts_within_thresh": 68.20689655172413,
+          "visible_epe_pixels": 7.0257391929626465
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 26,
+        "total_frames": 75,
+        "observed_fraction": 0.3466666666666667,
+        "observed_times": [
+          0,
+          3,
+          4,
+          6,
+          7,
+          8,
+          9,
+          10,
+          12,
+          16,
+          20,
+          21,
+          24,
+          28,
+          32,
+          36,
+          37,
+          40,
+          44,
+          48,
+          52,
+          56,
+          60,
+          64,
+          68,
+          72
+        ],
+        "fixed_stride_frames": 19,
+        "extra_query_frames": [
+          3,
+          6,
+          7,
+          9,
+          10,
+          21,
+          37
+        ],
+        "wrapper_encode_calls_shared": 26,
+        "wrapper_predict_calls": 19,
+        "predicted_frame_maps": 49,
+        "encoder_seconds_shared": 1.3070358000695705,
+        "predictor_wrapper_seconds": 1.1453787963837385,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.015527497977018356,
+          "predicted_features": 0.01337391510605812,
+          "copy_last_position": 0.0044984519481658936
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 2.508021866902709,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 45,
+          "predictor_calls": 19,
+          "encoded_visible_tubelets": 284,
+          "predicted_tubelets": 49,
+          "gpu_seconds": 2.390552641823888
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 26,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 26,
+            "predict": 19
+          },
+          "copy_last_position": {
+            "encode": 26,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 75,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.5078510902822018
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/9a369d0334b411d2.npz"
+    },
+    {
+      "key": "blackswan",
+      "frames": 50,
+      "query_points": 5,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 100.0,
+          "pts_within_1": 0.0,
+          "jaccard_1": 0.0,
+          "pts_within_2": 2.0408163265306123,
+          "jaccard_2": 1.0309278350515463,
+          "pts_within_4": 10.612244897959183,
+          "jaccard_4": 5.603448275862069,
+          "pts_within_8": 39.59183673469388,
+          "jaccard_8": 24.681933842239186,
+          "pts_within_16": 74.28571428571429,
+          "jaccard_16": 59.09090909090909,
+          "average_jaccard": 18.08144380881238,
+          "average_pts_within_thresh": 25.306122448979597,
+          "visible_epe_pixels": 12.863619804382324
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 100.0,
+          "pts_within_1": 0.0,
+          "jaccard_1": 0.0,
+          "pts_within_2": 0.8163265306122449,
+          "jaccard_2": 0.4098360655737705,
+          "pts_within_4": 2.857142857142857,
+          "jaccard_4": 1.4492753623188406,
+          "pts_within_8": 23.26530612244898,
+          "jaccard_8": 13.163972286374134,
+          "pts_within_16": 56.326530612244895,
+          "jaccard_16": 39.20454545454545,
+          "average_jaccard": 10.84552583376244,
+          "average_pts_within_thresh": 16.653061224489797,
+          "visible_epe_pixels": 14.938743591308594
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 100.0,
+          "pts_within_1": 0.0,
+          "jaccard_1": 0.0,
+          "pts_within_2": 2.0408163265306123,
+          "jaccard_2": 1.0309278350515463,
+          "pts_within_4": 10.612244897959183,
+          "jaccard_4": 5.603448275862069,
+          "pts_within_8": 39.59183673469388,
+          "jaccard_8": 24.681933842239186,
+          "pts_within_16": 74.28571428571429,
+          "jaccard_16": 59.09090909090909,
+          "average_jaccard": 18.08144380881238,
+          "average_pts_within_thresh": 25.306122448979597,
+          "visible_epe_pixels": 12.45233154296875
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 100.0,
+          "pts_within_1": 96.73469387755102,
+          "jaccard_1": 93.67588932806325,
+          "pts_within_2": 100.0,
+          "jaccard_2": 100.0,
+          "pts_within_4": 100.0,
+          "jaccard_4": 100.0,
+          "pts_within_8": 100.0,
+          "jaccard_8": 100.0,
+          "pts_within_16": 100.0,
+          "jaccard_16": 100.0,
+          "average_jaccard": 98.73517786561266,
+          "average_pts_within_thresh": 99.3469387755102,
+          "visible_epe_pixels": 0.4007170498371124
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 13,
+        "total_frames": 50,
+        "observed_fraction": 0.26,
+        "observed_times": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48
+        ],
+        "fixed_stride_frames": 13,
+        "extra_query_frames": [],
+        "wrapper_encode_calls_shared": 13,
+        "wrapper_predict_calls": 13,
+        "predicted_frame_maps": 37,
+        "encoder_seconds_shared": 0.6435100808739662,
+        "predictor_wrapper_seconds": 0.7858670279383659,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.010788112878799438,
+          "predicted_features": 0.009200509637594223,
+          "copy_last_position": 0.0022110622376203537
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 1.4643176812678576,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 26,
+          "predictor_calls": 13,
+          "encoded_visible_tubelets": 140,
+          "predicted_tubelets": 37,
+          "gpu_seconds": 1.3941826857626438
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 13,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 13,
+            "predict": 13
+          },
+          "copy_last_position": {
+            "encode": 13,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 50,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.3448585160076618
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/9a422e3437f39526.npz"
+    },
+    {
+      "key": "scooter-black",
+      "frames": 43,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 96.55891553701773,
+          "pts_within_1": 0.32397408207343414,
+          "jaccard_1": 0.1594048884165781,
+          "pts_within_2": 1.4038876889848813,
+          "jaccard_2": 0.6944444444444444,
+          "pts_within_4": 7.127429805615551,
+          "jaccard_4": 3.628367234744365,
+          "pts_within_8": 22.24622030237581,
+          "jaccard_8": 12.269207861822514,
+          "pts_within_16": 47.40820734341253,
+          "jaccard_16": 30.35961272475795,
+          "average_jaccard": 9.42220743083717,
+          "average_pts_within_thresh": 15.701943844492442,
+          "visible_epe_pixels": 23.940811157226562
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 96.55891553701773,
+          "pts_within_1": 0.32397408207343414,
+          "jaccard_1": 0.1594048884165781,
+          "pts_within_2": 1.4038876889848813,
+          "jaccard_2": 0.6944444444444444,
+          "pts_within_4": 5.831533477321814,
+          "jaccard_4": 2.9492080830147462,
+          "pts_within_8": 18.898488120950326,
+          "jaccard_8": 10.23391812865497,
+          "pts_within_16": 41.360691144708426,
+          "jaccard_16": 25.499334221038616,
+          "average_jaccard": 7.9072619531138715,
+          "average_pts_within_thresh": 13.563714902807774,
+          "visible_epe_pixels": 27.315887451171875
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 96.55891553701773,
+          "pts_within_1": 0.32397408207343414,
+          "jaccard_1": 0.1594048884165781,
+          "pts_within_2": 1.4038876889848813,
+          "jaccard_2": 0.6944444444444444,
+          "pts_within_4": 7.127429805615551,
+          "jaccard_4": 3.628367234744365,
+          "pts_within_8": 22.24622030237581,
+          "jaccard_8": 12.269207861822514,
+          "pts_within_16": 47.51619870410367,
+          "jaccard_16": 30.44982698961938,
+          "average_jaccard": 9.440250283809457,
+          "average_pts_within_thresh": 15.723542116630668,
+          "visible_epe_pixels": 24.06818199157715
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 96.24608967674662,
+          "pts_within_1": 29.913606911447083,
+          "jaccard_1": 17.07936507936508,
+          "pts_within_2": 57.88336933045356,
+          "jaccard_2": 39.16981132075472,
+          "pts_within_4": 83.04535637149027,
+          "jaccard_4": 68.09480401093893,
+          "pts_within_8": 97.0842332613391,
+          "jaccard_8": 90.6928645294726,
+          "pts_within_16": 100.0,
+          "jaccard_16": 96.17021276595744,
+          "average_jaccard": 62.24141154129775,
+          "average_pts_within_thresh": 73.585313174946,
+          "visible_epe_pixels": 2.3734920024871826
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 16,
+        "total_frames": 43,
+        "observed_fraction": 0.37209302325581395,
+        "observed_times": [
+          0,
+          2,
+          4,
+          6,
+          8,
+          11,
+          12,
+          16,
+          20,
+          24,
+          28,
+          30,
+          32,
+          34,
+          36,
+          40
+        ],
+        "fixed_stride_frames": 11,
+        "extra_query_frames": [
+          2,
+          6,
+          11,
+          30,
+          34
+        ],
+        "wrapper_encode_calls_shared": 16,
+        "wrapper_predict_calls": 15,
+        "predicted_frame_maps": 27,
+        "encoder_seconds_shared": 0.7897082976996899,
+        "predictor_wrapper_seconds": 0.8885445855557919,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.009023822844028473,
+          "predicted_features": 0.007769951596856117,
+          "copy_last_position": 0.0027287472039461136
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 1.7118899337947369,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 31,
+          "predictor_calls": 15,
+          "encoded_visible_tubelets": 176,
+          "predicted_tubelets": 27,
+          "gpu_seconds": 1.63779285736382
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 16,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 16,
+            "predict": 15
+          },
+          "copy_last_position": {
+            "encode": 16,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 43,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.3002629913389683
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/a162d2208d2e3637.npz"
+    },
+    {
+      "key": "breakdance",
+      "frames": 84,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 68.23289070480082,
+          "pts_within_1": 8.383233532934131,
+          "jaccard_1": 3.519798868636078,
+          "pts_within_2": 12.350299401197605,
+          "jaccard_2": 5.273250239693192,
+          "pts_within_4": 14.37125748502994,
+          "jaccard_4": 6.189555125725339,
+          "pts_within_8": 20.58383233532934,
+          "jaccard_8": 9.108976482278901,
+          "pts_within_16": 34.13173652694611,
+          "jaccard_16": 16.0676532769556,
+          "average_jaccard": 8.031846798657822,
+          "average_pts_within_thresh": 17.96407185628743,
+          "visible_epe_pixels": 33.24728012084961
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 68.23289070480082,
+          "pts_within_1": 6.437125748502994,
+          "jaccard_1": 2.680798004987531,
+          "pts_within_2": 11.077844311377245,
+          "jaccard_2": 4.704386522568341,
+          "pts_within_4": 13.922155688622754,
+          "jaccard_4": 5.984555984555985,
+          "pts_within_8": 19.16167664670659,
+          "jaccard_8": 8.426596445029624,
+          "pts_within_16": 37.200598802395206,
+          "jaccard_16": 17.769038255273507,
+          "average_jaccard": 7.913075042482998,
+          "average_pts_within_thresh": 17.559880239520957,
+          "visible_epe_pixels": 29.279556274414062
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 68.23289070480082,
+          "pts_within_1": 8.08383233532934,
+          "jaccard_1": 3.389830508474576,
+          "pts_within_2": 11.901197604790418,
+          "jaccard_2": 5.071770334928229,
+          "pts_within_4": 14.146706586826346,
+          "jaccard_4": 6.086956521739131,
+          "pts_within_8": 20.35928143712575,
+          "jaccard_8": 9.00066181336863,
+          "pts_within_16": 34.58083832335329,
+          "jaccard_16": 16.3135593220339,
+          "average_jaccard": 7.972555700108893,
+          "average_pts_within_thresh": 17.81437125748503,
+          "visible_epe_pixels": 29.636795043945312
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 93.51378958120532,
+          "pts_within_1": 46.40718562874252,
+          "jaccard_1": 30.410821643286575,
+          "pts_within_2": 80.91317365269461,
+          "jaccard_2": 66.85897435897435,
+          "pts_within_4": 93.11377245508982,
+          "jaccard_4": 85.92857142857143,
+          "pts_within_8": 95.73353293413174,
+          "jaccard_8": 89.03413217138707,
+          "pts_within_16": 97.30538922155688,
+          "jaccard_16": 90.6959706959707,
+          "average_jaccard": 72.58569405963802,
+          "average_pts_within_thresh": 82.69461077844312,
+          "visible_epe_pixels": 2.8736557960510254
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 23,
+        "total_frames": 84,
+        "observed_fraction": 0.27380952380952384,
+        "observed_times": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          20,
+          23,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48,
+          52,
+          56,
+          60,
+          64,
+          66,
+          68,
+          72,
+          76,
+          80
+        ],
+        "fixed_stride_frames": 21,
+        "extra_query_frames": [
+          23,
+          66
+        ],
+        "wrapper_encode_calls_shared": 23,
+        "wrapper_predict_calls": 22,
+        "predicted_frame_maps": 61,
+        "encoder_seconds_shared": 1.1687394548207521,
+        "predictor_wrapper_seconds": 1.322876961901784,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.01741218753159046,
+          "predicted_features": 0.014931002631783485,
+          "copy_last_position": 0.0038944389671087265
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 2.5496676415205,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 45,
+          "predictor_calls": 22,
+          "encoded_visible_tubelets": 273,
+          "predicted_tubelets": 61,
+          "gpu_seconds": 2.4300793167203665
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 23,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 23,
+            "predict": 22
+          },
+          "copy_last_position": {
+            "encode": 23,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 84,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.6000365316867828
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/b0a9e90d61f43a0f.npz"
+    },
+    {
+      "key": "loading",
+      "frames": 50,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 84.99142367066895,
+          "pts_within_1": 1.513622603430878,
+          "jaccard_1": 0.700280112044818,
+          "pts_within_2": 3.5317860746720484,
+          "jaccard_2": 1.649387370405278,
+          "pts_within_4": 8.072653884964682,
+          "jaccard_4": 3.8517091959557055,
+          "pts_within_8": 21.796165489404643,
+          "jaccard_8": 11.128284389489954,
+          "pts_within_16": 45.20686175580222,
+          "jaccard_16": 26.214160327677007,
+          "average_jaccard": 8.708764279114552,
+          "average_pts_within_thresh": 16.024217961654895,
+          "visible_epe_pixels": 27.956079483032227
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 84.99142367066895,
+          "pts_within_1": 0.5045408678102926,
+          "jaccard_1": 0.23234200743494424,
+          "pts_within_2": 2.119071644803229,
+          "jaccard_2": 0.9831460674157303,
+          "pts_within_4": 4.944500504540867,
+          "jaccard_4": 2.324478178368121,
+          "pts_within_8": 10.494450050454086,
+          "jaccard_8": 5.065757428153921,
+          "pts_within_16": 24.217961654894047,
+          "jaccard_16": 12.519561815336463,
+          "average_jaccard": 4.225057099341837,
+          "average_pts_within_thresh": 8.456104944500504,
+          "visible_epe_pixels": 36.59459686279297
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 84.99142367066895,
+          "pts_within_1": 1.513622603430878,
+          "jaccard_1": 0.700280112044818,
+          "pts_within_2": 3.5317860746720484,
+          "jaccard_2": 1.649387370405278,
+          "pts_within_4": 8.072653884964682,
+          "jaccard_4": 3.8517091959557055,
+          "pts_within_8": 22.09889001009082,
+          "jaccard_8": 11.30030959752322,
+          "pts_within_16": 45.91321897073663,
+          "jaccard_16": 26.73325499412456,
+          "average_jaccard": 8.846988254010716,
+          "average_pts_within_thresh": 16.22603430877901,
+          "visible_epe_pixels": 26.582012176513672
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 95.19725557461408,
+          "pts_within_1": 37.33602421796166,
+          "jaccard_1": 23.56687898089172,
+          "pts_within_2": 60.44399596367306,
+          "jaccard_2": 44.02375649591686,
+          "pts_within_4": 81.43289606458123,
+          "jaccard_4": 69.2844677137871,
+          "pts_within_8": 92.63370332996973,
+          "jaccard_8": 86.0019175455417,
+          "pts_within_16": 96.97275479313825,
+          "jaccard_16": 93.22709163346613,
+          "average_jaccard": 63.2208224739207,
+          "average_pts_within_thresh": 73.7638748738648,
+          "visible_epe_pixels": 3.5237820148468018
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 15,
+        "total_frames": 50,
+        "observed_fraction": 0.3,
+        "observed_times": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          29,
+          30,
+          32,
+          36,
+          40,
+          44,
+          48
+        ],
+        "fixed_stride_frames": 13,
+        "extra_query_frames": [
+          29,
+          30
+        ],
+        "wrapper_encode_calls_shared": 15,
+        "wrapper_predict_calls": 13,
+        "predicted_frame_maps": 35,
+        "encoder_seconds_shared": 0.7381001729518175,
+        "predictor_wrapper_seconds": 0.7629961967468262,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.01021658442914486,
+          "predicted_features": 0.008745595812797546,
+          "copy_last_position": 0.002499168738722801
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 1.5357956513762474,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 28,
+          "predictor_calls": 13,
+          "encoded_visible_tubelets": 154,
+          "predicted_tubelets": 35,
+          "gpu_seconds": 1.4655664693564177
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 15,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 15,
+            "predict": 13
+          },
+          "copy_last_position": {
+            "encode": 15,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 50,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.3714024666696787
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/b4a070a2d341940c.npz"
+    },
+    {
+      "key": "bmx-trees",
+      "frames": 80,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 62.743037309511294,
+          "pts_within_1": 0.5025125628140703,
+          "jaccard_1": 0.19411193788417988,
+          "pts_within_2": 2.4288107202680065,
+          "jaccard_2": 0.9452411994784877,
+          "pts_within_4": 9.547738693467336,
+          "jaccard_4": 3.821656050955414,
+          "pts_within_8": 30.067001675041876,
+          "jaccard_8": 13.111760409057707,
+          "pts_within_16": 69.59798994974874,
+          "jaccard_16": 36.67255075022065,
+          "average_jaccard": 10.949064069519288,
+          "average_pts_within_thresh": 22.428810720268004,
+          "visible_epe_pixels": 18.335308074951172
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 62.743037309511294,
+          "pts_within_1": 0.5025125628140703,
+          "jaccard_1": 0.19411193788417988,
+          "pts_within_2": 2.5963149078726966,
+          "jaccard_2": 1.0110893672537506,
+          "pts_within_4": 9.547738693467336,
+          "jaccard_4": 3.821656050955414,
+          "pts_within_8": 31.4070351758794,
+          "jaccard_8": 13.776634827332842,
+          "pts_within_16": 67.58793969849246,
+          "jaccard_16": 35.24017467248908,
+          "average_jaccard": 10.808733371183054,
+          "average_pts_within_thresh": 22.328308207705195,
+          "visible_epe_pixels": 16.345558166503906
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 62.743037309511294,
+          "pts_within_1": 0.5025125628140703,
+          "jaccard_1": 0.19411193788417988,
+          "pts_within_2": 2.4288107202680065,
+          "jaccard_2": 0.9452411994784877,
+          "pts_within_4": 9.547738693467336,
+          "jaccard_4": 3.821656050955414,
+          "pts_within_8": 30.067001675041876,
+          "jaccard_8": 13.111760409057707,
+          "pts_within_16": 69.5142378559464,
+          "jaccard_16": 36.61226290251434,
+          "average_jaccard": 10.937006499978024,
+          "average_pts_within_thresh": 22.412060301507537,
+          "visible_epe_pixels": 18.087125778198242
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 73.77824487651077,
+          "pts_within_1": 32.57956448911223,
+          "jaccard_1": 17.262464722483536,
+          "pts_within_2": 64.90787269681742,
+          "jaccard_2": 40.767927724449464,
+          "pts_within_4": 89.36348408710218,
+          "jaccard_4": 60.424710424710426,
+          "pts_within_8": 96.4824120603015,
+          "jaccard_8": 64.66314398943197,
+          "pts_within_16": 98.74371859296483,
+          "jaccard_16": 65.09933774834437,
+          "average_jaccard": 49.64351692188395,
+          "average_pts_within_thresh": 76.41541038525963,
+          "visible_epe_pixels": 2.7929606437683105
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 20,
+        "total_frames": 80,
+        "observed_fraction": 0.25,
+        "observed_times": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48,
+          52,
+          56,
+          60,
+          64,
+          68,
+          72,
+          76
+        ],
+        "fixed_stride_frames": 20,
+        "extra_query_frames": [],
+        "wrapper_encode_calls_shared": 20,
+        "wrapper_predict_calls": 20,
+        "predicted_frame_maps": 60,
+        "encoder_seconds_shared": 1.0104779452085495,
+        "predictor_wrapper_seconds": 1.208184227347374,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.016671275720000267,
+          "predicted_features": 0.014327894896268845,
+          "copy_last_position": 0.0034224875271320343
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 2.2725101709365845,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 40,
+          "predictor_calls": 20,
+          "encoded_visible_tubelets": 238,
+          "predicted_tubelets": 60,
+          "gpu_seconds": 2.163923442363739
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 20,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 20,
+            "predict": 20
+          },
+          "copy_last_position": {
+            "encode": 20,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 80,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.5289955977350473
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/bdb8a76118a93a46.npz"
+    },
+    {
+      "key": "bike-packing",
+      "frames": 69,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 69.2358803986711,
+          "pts_within_1": 2.495201535508637,
+          "jaccard_1": 1.0313367711225703,
+          "pts_within_2": 5.662188099808062,
+          "jaccard_2": 2.3713826366559485,
+          "pts_within_4": 12.955854126679462,
+          "jaccard_4": 5.597014925373134,
+          "pts_within_8": 25.04798464491363,
+          "jaccard_8": 11.41732283464567,
+          "pts_within_16": 53.550863723608444,
+          "jaccard_16": 28.054298642533936,
+          "average_jaccard": 9.694271162066253,
+          "average_pts_within_thresh": 19.942418426103647,
+          "visible_epe_pixels": 20.27482795715332
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 69.2358803986711,
+          "pts_within_1": 2.015355086372361,
+          "jaccard_1": 0.831353919239905,
+          "pts_within_2": 5.566218809980806,
+          "jaccard_2": 2.330253113700281,
+          "pts_within_4": 11.324376199616124,
+          "jaccard_4": 4.857966241251544,
+          "pts_within_8": 20.72936660268714,
+          "jaccard_8": 9.266409266409266,
+          "pts_within_16": 42.034548944337814,
+          "jaccard_16": 20.76813655761024,
+          "average_jaccard": 7.610823819642247,
+          "average_pts_within_thresh": 16.33397312859885,
+          "visible_epe_pixels": 24.85712432861328
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 69.2358803986711,
+          "pts_within_1": 2.495201535508637,
+          "jaccard_1": 1.0313367711225703,
+          "pts_within_2": 5.566218809980806,
+          "jaccard_2": 2.330253113700281,
+          "pts_within_4": 13.051823416506716,
+          "jaccard_4": 5.640812940688511,
+          "pts_within_8": 25.5278310940499,
+          "jaccard_8": 11.661551950898728,
+          "pts_within_16": 54.31861804222648,
+          "jaccard_16": 28.57142857142857,
+          "average_jaccard": 9.847076669567732,
+          "average_pts_within_thresh": 20.19193857965451,
+          "visible_epe_pixels": 19.04317855834961
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 91.29568106312293,
+          "pts_within_1": 36.75623800383877,
+          "jaccard_1": 21.83431952662722,
+          "pts_within_2": 58.63723608445297,
+          "jaccard_2": 38.00268096514745,
+          "pts_within_4": 85.31669865642995,
+          "jaccard_4": 66.18240516545602,
+          "pts_within_8": 97.69673704414588,
+          "jaccard_8": 84.16815742397138,
+          "pts_within_16": 99.71209213051824,
+          "jaccard_16": 87.52276867030966,
+          "average_jaccard": 59.542066350302335,
+          "average_pts_within_thresh": 75.62380038387715,
+          "visible_epe_pixels": 2.232232093811035
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 23,
+        "total_frames": 69,
+        "observed_fraction": 0.3333333333333333,
+        "observed_times": [
+          0,
+          3,
+          4,
+          8,
+          12,
+          16,
+          18,
+          19,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48,
+          52,
+          56,
+          58,
+          59,
+          60,
+          64,
+          68
+        ],
+        "fixed_stride_frames": 18,
+        "extra_query_frames": [
+          3,
+          18,
+          19,
+          58,
+          59
+        ],
+        "wrapper_encode_calls_shared": 23,
+        "wrapper_predict_calls": 17,
+        "predicted_frame_maps": 46,
+        "encoder_seconds_shared": 1.1660507544875145,
+        "predictor_wrapper_seconds": 1.0159800965338945,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.014180436730384827,
+          "predicted_features": 0.012096462771296501,
+          "copy_last_position": 0.003907019272446632
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 2.231388730928302,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 40,
+          "predictor_calls": 17,
+          "encoded_visible_tubelets": 243,
+          "predicted_tubelets": 46,
+          "gpu_seconds": 2.127835163846612
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 23,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 23,
+            "predict": 17
+          },
+          "copy_last_position": {
+            "encode": 23,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 69,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.4847336746752262
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/c0c0f1a9cd88d267.npz"
+    },
+    {
+      "key": "horsejump-high",
+      "frames": 50,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 98.39932603201348,
+          "pts_within_1": 1.0273972602739725,
+          "jaccard_1": 0.5121638924455826,
+          "pts_within_2": 2.996575342465753,
+          "jaccard_2": 1.5086206896551724,
+          "pts_within_4": 9.332191780821917,
+          "jaccard_4": 4.853072128227961,
+          "pts_within_8": 30.993150684931507,
+          "jaccard_8": 18.16357250376317,
+          "pts_within_16": 59.8458904109589,
+          "jaccard_16": 42.210144927536234,
+          "average_jaccard": 13.449514828325624,
+          "average_pts_within_thresh": 20.83904109589041,
+          "visible_epe_pixels": 23.491445541381836
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 98.39932603201348,
+          "pts_within_1": 0.4280821917808219,
+          "jaccard_1": 0.2127659574468085,
+          "pts_within_2": 0.8561643835616438,
+          "jaccard_2": 0.42643923240938164,
+          "pts_within_4": 4.023972602739726,
+          "jaccard_4": 2.0363951473136916,
+          "pts_within_8": 13.613013698630136,
+          "jaccard_8": 7.240437158469945,
+          "pts_within_16": 29.88013698630137,
+          "jaccard_16": 17.39780658025922,
+          "average_jaccard": 5.46276881517981,
+          "average_pts_within_thresh": 9.76027397260274,
+          "visible_epe_pixels": 33.571102142333984
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 98.39932603201348,
+          "pts_within_1": 1.1986301369863013,
+          "jaccard_1": 0.598035027765912,
+          "pts_within_2": 3.1678082191780823,
+          "jaccard_2": 1.5962036238136326,
+          "pts_within_4": 9.246575342465754,
+          "jaccard_4": 4.806408544726302,
+          "pts_within_8": 30.73630136986301,
+          "jaccard_8": 17.985971943887776,
+          "pts_within_16": 60.70205479452054,
+          "jaccard_16": 43.07411907654921,
+          "average_jaccard": 13.612147643348566,
+          "average_pts_within_thresh": 21.01027397260274,
+          "visible_epe_pixels": 21.348899841308594
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 95.87194608256108,
+          "pts_within_1": 42.89383561643836,
+          "jaccard_1": 27.73155851358846,
+          "pts_within_2": 76.79794520547945,
+          "jaccard_2": 63.33333333333333,
+          "pts_within_4": 91.0958904109589,
+          "jaccard_4": 84.53525641025641,
+          "pts_within_8": 93.83561643835617,
+          "jaccard_8": 89.39144736842105,
+          "pts_within_16": 97.00342465753424,
+          "jaccard_16": 93.36691855583543,
+          "average_jaccard": 71.67170283628694,
+          "average_pts_within_thresh": 80.32534246575341,
+          "visible_epe_pixels": 3.128246545791626
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 15,
+        "total_frames": 50,
+        "observed_fraction": 0.3,
+        "observed_times": [
+          0,
+          4,
+          8,
+          12,
+          13,
+          16,
+          20,
+          24,
+          25,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48
+        ],
+        "fixed_stride_frames": 13,
+        "extra_query_frames": [
+          13,
+          25
+        ],
+        "wrapper_encode_calls_shared": 15,
+        "wrapper_predict_calls": 13,
+        "predicted_frame_maps": 35,
+        "encoder_seconds_shared": 0.7380639482289553,
+        "predictor_wrapper_seconds": 0.7681026011705399,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.010363738983869553,
+          "predicted_features": 0.00886109285056591,
+          "copy_last_position": 0.0025421977043151855
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 1.5412394907325506,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 28,
+          "predictor_calls": 13,
+          "encoded_visible_tubelets": 157,
+          "predicted_tubelets": 35,
+          "gpu_seconds": 1.4700695592910051
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 15,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 15,
+            "predict": 13
+          },
+          "copy_last_position": {
+            "encode": 15,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 50,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.37173072807490826
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/c34710ae955cb7ea.npz"
+    },
+    {
+      "key": "shooting",
+      "frames": 40,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 50.169875424688556,
+          "pts_within_1": 0.6772009029345373,
+          "jaccard_1": 0.22675736961451248,
+          "pts_within_2": 2.4830699774266365,
+          "jaccard_2": 0.8365019011406843,
+          "pts_within_4": 9.480812641083523,
+          "jaccard_4": 3.2710280373831773,
+          "pts_within_8": 21.896162528216703,
+          "jaccard_8": 7.892595606183889,
+          "pts_within_16": 52.595936794582386,
+          "jaccard_16": 21.31747483989021,
+          "average_jaccard": 6.7088715508424945,
+          "average_pts_within_thresh": 17.426636568848757,
+          "visible_epe_pixels": 20.532779693603516
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 50.169875424688556,
+          "pts_within_1": 0.2257336343115124,
+          "jaccard_1": 0.07547169811320754,
+          "pts_within_2": 1.1286681715575622,
+          "jaccard_2": 0.3785011355034065,
+          "pts_within_4": 6.094808126410835,
+          "jaccard_4": 2.0785219399538106,
+          "pts_within_8": 14.221218961625281,
+          "jaccard_8": 4.98812351543943,
+          "pts_within_16": 37.69751693002257,
+          "jaccard_16": 14.408973252804142,
+          "average_jaccard": 4.3859183083627995,
+          "average_pts_within_thresh": 11.873589164785555,
+          "visible_epe_pixels": 26.243181228637695
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 50.169875424688556,
+          "pts_within_1": 0.6772009029345373,
+          "jaccard_1": 0.22675736961451248,
+          "pts_within_2": 2.4830699774266365,
+          "jaccard_2": 0.8365019011406843,
+          "pts_within_4": 9.480812641083523,
+          "jaccard_4": 3.2710280373831773,
+          "pts_within_8": 21.896162528216703,
+          "jaccard_8": 7.892595606183889,
+          "pts_within_16": 52.595936794582386,
+          "jaccard_16": 21.31747483989021,
+          "average_jaccard": 6.7088715508424945,
+          "average_pts_within_thresh": 17.426636568848757,
+          "visible_epe_pixels": 20.532779693603516
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 83.01245753114382,
+          "pts_within_1": 22.121896162528216,
+          "jaccard_1": 11.722488038277511,
+          "pts_within_2": 45.372460496613996,
+          "jaccard_2": 26.045883940620783,
+          "pts_within_4": 71.33182844243792,
+          "jaccard_4": 46.39498432601881,
+          "pts_within_8": 89.84198645598194,
+          "jaccard_8": 63.57267950963222,
+          "pts_within_16": 97.96839729119638,
+          "jaccard_16": 72.32472324723247,
+          "average_jaccard": 44.01215181235636,
+          "average_pts_within_thresh": 65.3273137697517,
+          "visible_epe_pixels": 3.4982523918151855
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 12,
+        "total_frames": 40,
+        "observed_fraction": 0.3,
+        "observed_times": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          18,
+          20,
+          22,
+          24,
+          28,
+          32,
+          36
+        ],
+        "fixed_stride_frames": 10,
+        "extra_query_frames": [
+          18,
+          22
+        ],
+        "wrapper_encode_calls_shared": 12,
+        "wrapper_predict_calls": 12,
+        "predicted_frame_maps": 28,
+        "encoder_seconds_shared": 0.5770863499492407,
+        "predictor_wrapper_seconds": 0.7011308707296848,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.00824771635234356,
+          "predicted_features": 0.007003463804721832,
+          "copy_last_position": 0.0019291043281555176
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 1.3076313883066177,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 24,
+          "predictor_calls": 12,
+          "encoded_visible_tubelets": 126,
+          "predicted_tubelets": 28,
+          "gpu_seconds": 1.2490577511489391
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 12,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 12,
+            "predict": 12
+          },
+          "copy_last_position": {
+            "encode": 12,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 40,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.25615254417061806
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/c41faeb395c1f0ce.npz"
+    },
+    {
+      "key": "cows",
+      "frames": 104,
+      "query_points": 10,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 99.02912621359224,
+          "pts_within_1": 2.3529411764705883,
+          "jaccard_1": 1.1846001974333662,
+          "pts_within_2": 7.549019607843137,
+          "jaccard_2": 3.9026862645717184,
+          "pts_within_4": 22.84313725490196,
+          "jaccard_4": 12.82333516785911,
+          "pts_within_8": 39.705882352941174,
+          "jaccard_8": 24.620060790273556,
+          "pts_within_16": 70.29411764705881,
+          "jaccard_16": 53.78844711177795,
+          "average_jaccard": 19.263825906383143,
+          "average_pts_within_thresh": 28.549019607843135,
+          "visible_epe_pixels": 14.083894729614258
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 99.02912621359224,
+          "pts_within_1": 2.3529411764705883,
+          "jaccard_1": 1.1846001974333662,
+          "pts_within_2": 8.529411764705882,
+          "jaccard_2": 4.431991849210392,
+          "pts_within_4": 25.49019607843137,
+          "jaccard_4": 14.52513966480447,
+          "pts_within_8": 47.35294117647059,
+          "jaccard_8": 30.823229100191448,
+          "pts_within_16": 82.35294117647058,
+          "jaccard_16": 69.42148760330579,
+          "average_jaccard": 24.077289682989093,
+          "average_pts_within_thresh": 33.21568627450981,
+          "visible_epe_pixels": 10.158742904663086
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 99.02912621359224,
+          "pts_within_1": 2.3529411764705883,
+          "jaccard_1": 1.1846001974333662,
+          "pts_within_2": 7.549019607843137,
+          "jaccard_2": 3.9026862645717184,
+          "pts_within_4": 23.137254901960784,
+          "jaccard_4": 13.009922822491731,
+          "pts_within_8": 40.588235294117645,
+          "jaccard_8": 25.305623471882637,
+          "pts_within_16": 71.96078431372548,
+          "jaccard_16": 55.77507598784195,
+          "average_jaccard": 19.835581748844284,
+          "average_pts_within_thresh": 29.117647058823533,
+          "visible_epe_pixels": 12.652643203735352
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 99.41747572815534,
+          "pts_within_1": 65.88235294117646,
+          "jaccard_1": 49.08558888076079,
+          "pts_within_2": 91.86274509803921,
+          "jaccard_2": 84.43438914027149,
+          "pts_within_4": 99.2156862745098,
+          "jaccard_4": 97.86407766990291,
+          "pts_within_8": 100.0,
+          "jaccard_8": 99.412915851272,
+          "pts_within_16": 100.0,
+          "jaccard_16": 99.412915851272,
+          "average_jaccard": 86.04197747869584,
+          "average_pts_within_thresh": 91.39215686274508,
+          "visible_epe_pixels": 0.8982663750648499
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 26,
+        "total_frames": 104,
+        "observed_fraction": 0.25,
+        "observed_times": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48,
+          52,
+          56,
+          60,
+          64,
+          68,
+          72,
+          76,
+          80,
+          84,
+          88,
+          92,
+          96,
+          100
+        ],
+        "fixed_stride_frames": 26,
+        "extra_query_frames": [],
+        "wrapper_encode_calls_shared": 26,
+        "wrapper_predict_calls": 26,
+        "predicted_frame_maps": 78,
+        "encoder_seconds_shared": 1.325637347996235,
+        "predictor_wrapper_seconds": 1.5705697424709797,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.021441299468278885,
+          "predicted_features": 0.018421368673443794,
+          "copy_last_position": 0.0044944435358047485
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 2.9653115272521973,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 52,
+          "predictor_calls": 26,
+          "encoded_visible_tubelets": 322,
+          "predicted_tubelets": 78,
+          "gpu_seconds": 2.8235959969460964
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 26,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 26,
+            "predict": 26
+          },
+          "copy_last_position": {
+            "encode": 26,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 104,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.6718264631927013
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/c6520d7c46b53b2f.npz"
+    },
+    {
+      "key": "motocross-jump",
+      "frames": 40,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 56.62650602409639,
+          "pts_within_1": 0.26595744680851063,
+          "jaccard_1": 0.0962463907603465,
+          "pts_within_2": 0.7978723404255319,
+          "jaccard_2": 0.28929604628736744,
+          "pts_within_4": 6.914893617021277,
+          "jaccard_4": 2.564102564102564,
+          "pts_within_8": 17.5531914893617,
+          "jaccard_8": 6.7761806981519515,
+          "pts_within_16": 43.08510638297872,
+          "jaccard_16": 18.45102505694761,
+          "average_jaccard": 5.635370151249967,
+          "average_pts_within_thresh": 13.72340425531915,
+          "visible_epe_pixels": 31.16916275024414
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 56.62650602409639,
+          "pts_within_1": 0.0,
+          "jaccard_1": 0.0,
+          "pts_within_2": 0.5319148936170213,
+          "jaccard_2": 0.1926782273603083,
+          "pts_within_4": 5.319148936170213,
+          "jaccard_4": 1.9607843137254901,
+          "pts_within_8": 13.829787234042554,
+          "jaccard_8": 5.263157894736842,
+          "pts_within_16": 34.04255319148936,
+          "jaccard_16": 14.035087719298245,
+          "average_jaccard": 4.290341631024177,
+          "average_pts_within_thresh": 10.74468085106383,
+          "visible_epe_pixels": 39.3524055480957
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 56.62650602409639,
+          "pts_within_1": 0.26595744680851063,
+          "jaccard_1": 0.0962463907603465,
+          "pts_within_2": 0.7978723404255319,
+          "jaccard_2": 0.28929604628736744,
+          "pts_within_4": 6.914893617021277,
+          "jaccard_4": 2.564102564102564,
+          "pts_within_8": 17.5531914893617,
+          "jaccard_8": 6.7761806981519515,
+          "pts_within_16": 43.08510638297872,
+          "jaccard_16": 18.45102505694761,
+          "average_jaccard": 5.635370151249967,
+          "average_pts_within_thresh": 13.72340425531915,
+          "visible_epe_pixels": 28.520200729370117
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 94.27710843373494,
+          "pts_within_1": 34.308510638297875,
+          "jaccard_1": 20.45088566827697,
+          "pts_within_2": 59.308510638297875,
+          "jaccard_2": 41.935483870967744,
+          "pts_within_4": 81.11702127659575,
+          "jaccard_4": 67.71300448430493,
+          "pts_within_8": 88.56382978723404,
+          "jaccard_8": 78.94736842105263,
+          "pts_within_16": 92.5531914893617,
+          "jaccard_16": 83.78378378378379,
+          "average_jaccard": 58.5661052456772,
+          "average_pts_within_thresh": 71.17021276595746,
+          "visible_epe_pixels": 4.113125324249268
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 16,
+        "total_frames": 40,
+        "observed_fraction": 0.4,
+        "observed_times": [
+          0,
+          1,
+          4,
+          8,
+          12,
+          16,
+          17,
+          20,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          32,
+          36
+        ],
+        "fixed_stride_frames": 10,
+        "extra_query_frames": [
+          1,
+          17,
+          23,
+          25,
+          26,
+          27
+        ],
+        "wrapper_encode_calls_shared": 16,
+        "wrapper_predict_calls": 9,
+        "predicted_frame_maps": 24,
+        "encoder_seconds_shared": 0.785941444337368,
+        "predictor_wrapper_seconds": 0.5241142567247152,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.008145902305841446,
+          "predicted_features": 0.0070101916790008545,
+          "copy_last_position": 0.0026541370898485184
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 1.341162335127592,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 25,
+          "predictor_calls": 9,
+          "encoded_visible_tubelets": 140,
+          "predicted_tubelets": 24,
+          "gpu_seconds": 1.2789754774421453
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 16,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 16,
+            "predict": 9
+          },
+          "copy_last_position": {
+            "encode": 16,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 40,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.2559231426566839
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/cbc21b0ae920ae0a.npz"
+    },
+    {
+      "key": "dog",
+      "frames": 60,
+      "query_points": 10,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 75.04621072088725,
+          "pts_within_1": 0.49261083743842365,
+          "jaccard_1": 0.21164021164021166,
+          "pts_within_2": 1.9704433497536946,
+          "jaccard_2": 0.8519701810436635,
+          "pts_within_4": 7.142857142857142,
+          "jaccard_4": 3.159041394335512,
+          "pts_within_8": 24.38423645320197,
+          "jaccard_8": 11.674528301886793,
+          "pts_within_16": 52.95566502463054,
+          "jaccard_16": 29.37158469945355,
+          "average_jaccard": 9.053752957671946,
+          "average_pts_within_thresh": 17.389162561576356,
+          "visible_epe_pixels": 20.164724349975586
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 75.04621072088725,
+          "pts_within_1": 0.24630541871921183,
+          "jaccard_1": 0.10570824524312897,
+          "pts_within_2": 0.9852216748768473,
+          "jaccard_2": 0.4241781548250266,
+          "pts_within_4": 3.4482758620689653,
+          "jaccard_4": 1.5005359056806002,
+          "pts_within_8": 14.039408866995073,
+          "jaccard_8": 6.404494382022471,
+          "pts_within_16": 42.364532019704434,
+          "jaccard_16": 22.193548387096772,
+          "average_jaccard": 6.1256930149736,
+          "average_pts_within_thresh": 12.216748768472904,
+          "visible_epe_pixels": 23.699180603027344
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 75.04621072088725,
+          "pts_within_1": 0.49261083743842365,
+          "jaccard_1": 0.21164021164021166,
+          "pts_within_2": 1.9704433497536946,
+          "jaccard_2": 0.8519701810436635,
+          "pts_within_4": 7.142857142857142,
+          "jaccard_4": 3.159041394335512,
+          "pts_within_8": 24.38423645320197,
+          "jaccard_8": 11.674528301886793,
+          "pts_within_16": 52.70935960591133,
+          "jaccard_16": 29.195088676671215,
+          "average_jaccard": 9.018453753115478,
+          "average_pts_within_thresh": 17.339901477832516,
+          "visible_epe_pixels": 20.51264190673828
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 95.37892791127541,
+          "pts_within_1": 33.99014778325123,
+          "jaccard_1": 20.689655172413794,
+          "pts_within_2": 55.66502463054187,
+          "jaccard_2": 39.03281519861831,
+          "pts_within_4": 79.55665024630541,
+          "jaccard_4": 67.01244813278008,
+          "pts_within_8": 88.91625615763546,
+          "jaccard_8": 80.08948545861297,
+          "pts_within_16": 96.05911330049261,
+          "jaccard_16": 87.64568764568764,
+          "average_jaccard": 58.89401832162255,
+          "average_pts_within_thresh": 70.83743842364531,
+          "visible_epe_pixels": 3.187232494354248
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 16,
+        "total_frames": 60,
+        "observed_fraction": 0.26666666666666666,
+        "observed_times": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48,
+          49,
+          52,
+          56
+        ],
+        "fixed_stride_frames": 15,
+        "extra_query_frames": [
+          49
+        ],
+        "wrapper_encode_calls_shared": 16,
+        "wrapper_predict_calls": 15,
+        "predicted_frame_maps": 44,
+        "encoder_seconds_shared": 0.7912638671696186,
+        "predictor_wrapper_seconds": 0.8881443422287703,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.012693013995885849,
+          "predicted_features": 0.010749764740467072,
+          "copy_last_position": 0.0027419012039899826
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 1.7206608448177576,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 31,
+          "predictor_calls": 15,
+          "encoded_visible_tubelets": 175,
+          "predicted_tubelets": 44,
+          "gpu_seconds": 1.6389184389263391
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 16,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 16,
+            "predict": 15
+          },
+          "copy_last_position": {
+            "encode": 16,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 60,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.3880092315375805
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/cd6357efdd966de8.npz"
+    },
+    {
+      "key": "paragliding-launch",
+      "frames": 80,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 94.36262061960386,
+          "pts_within_1": 0.32292787944025836,
+          "jaccard_1": 0.15702695629416383,
+          "pts_within_2": 1.6684607104413347,
+          "jaccard_2": 0.8166491043203371,
+          "pts_within_4": 6.350914962325081,
+          "jaccard_4": 3.18145052574818,
+          "pts_within_8": 26.533907427341223,
+          "jaccard_8": 14.787042591481702,
+          "pts_within_16": 58.88051668460711,
+          "jaccard_16": 40.02927186242224,
+          "average_jaccard": 11.794288208053324,
+          "average_pts_within_thresh": 18.751345532831003,
+          "visible_epe_pixels": 19.1373291015625
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 94.36262061960386,
+          "pts_within_1": 0.48439181916038754,
+          "jaccard_1": 0.23572551073860662,
+          "pts_within_2": 2.2066738428417656,
+          "jaccard_2": 1.0829371368198626,
+          "pts_within_4": 6.942949407965554,
+          "jaccard_4": 3.488372093023256,
+          "pts_within_8": 24.11194833153929,
+          "jaccard_8": 13.25836046167505,
+          "pts_within_16": 60.54897739504844,
+          "jaccard_16": 41.635825314581794,
+          "average_jaccard": 11.940244103367714,
+          "average_pts_within_thresh": 18.85898815931109,
+          "visible_epe_pixels": 18.453805923461914
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 94.36262061960386,
+          "pts_within_1": 0.2691065662002153,
+          "jaccard_1": 0.13082155939298795,
+          "pts_within_2": 1.5069967707212055,
+          "jaccard_2": 0.7370360621216109,
+          "pts_within_4": 5.3283100107642625,
+          "jaccard_4": 2.6555793991416308,
+          "pts_within_8": 24.65016146393972,
+          "jaccard_8": 13.594538438705847,
+          "pts_within_16": 56.350914962325085,
+          "jaccard_16": 37.66187050359712,
+          "average_jaccard": 10.955969192591839,
+          "average_pts_within_thresh": 17.621097954790095,
+          "visible_epe_pixels": 22.56899642944336
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 88.31894362620619,
+          "pts_within_1": 18.13778256189451,
+          "jaccard_1": 10.159782936388302,
+          "pts_within_2": 51.66846071044133,
+          "jaccard_2": 34.437086092715234,
+          "pts_within_4": 84.66092572658773,
+          "jaccard_4": 67.53782668500688,
+          "pts_within_8": 96.66307857911734,
+          "jaccard_8": 83.06613226452906,
+          "pts_within_16": 98.60064585575888,
+          "jaccard_16": 85.76512455516014,
+          "average_jaccard": 56.193190506759926,
+          "average_pts_within_thresh": 69.94617868675996,
+          "visible_epe_pixels": 3.275966167449951
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 21,
+        "total_frames": 80,
+        "observed_fraction": 0.2625,
+        "observed_times": [
+          0,
+          4,
+          6,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48,
+          52,
+          56,
+          60,
+          64,
+          68,
+          72,
+          76
+        ],
+        "fixed_stride_frames": 20,
+        "extra_query_frames": [
+          6
+        ],
+        "wrapper_encode_calls_shared": 21,
+        "wrapper_predict_calls": 21,
+        "predicted_frame_maps": 59,
+        "encoder_seconds_shared": 1.0607369113713503,
+        "predictor_wrapper_seconds": 1.2614816669374704,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.01610390655696392,
+          "predicted_features": 0.014043701812624931,
+          "copy_last_position": 0.0035538803786039352
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 2.3750997446477413,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 42,
+          "predictor_calls": 21,
+          "encoded_visible_tubelets": 252,
+          "predicted_tubelets": 59,
+          "gpu_seconds": 2.2669404540210962
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 21,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 21,
+            "predict": 21
+          },
+          "copy_last_position": {
+            "encode": 21,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 80,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.5278249252587557
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/f97a42d72f8031a3.npz"
+    },
+    {
+      "key": "india",
+      "frames": 81,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 65.8,
+          "pts_within_1": 1.8996960486322187,
+          "jaccard_1": 0.7596475235490732,
+          "pts_within_2": 6.306990881458967,
+          "jaccard_2": 2.5672749768017322,
+          "pts_within_4": 12.462006079027356,
+          "jaccard_4": 5.203045685279188,
+          "pts_within_8": 26.29179331306991,
+          "jaccard_8": 11.64983164983165,
+          "pts_within_16": 51.899696048632215,
+          "jaccard_16": 25.939992404101787,
+          "average_jaccard": 9.223958447912686,
+          "average_pts_within_thresh": 19.772036474164135,
+          "visible_epe_pixels": 28.48482894897461
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 65.8,
+          "pts_within_1": 0.6838905775075987,
+          "jaccard_1": 0.2721499848805564,
+          "pts_within_2": 3.951367781155015,
+          "jaccard_2": 1.5931372549019607,
+          "pts_within_4": 8.662613981762918,
+          "jaccard_4": 3.560274828232355,
+          "pts_within_8": 18.9209726443769,
+          "jaccard_8": 8.118682751874797,
+          "pts_within_16": 45.8966565349544,
+          "jaccard_16": 22.271386430678465,
+          "average_jaccard": 7.163126250113628,
+          "average_pts_within_thresh": 15.623100303951368,
+          "visible_epe_pixels": 23.571218490600586
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 65.8,
+          "pts_within_1": 1.8996960486322187,
+          "jaccard_1": 0.7596475235490732,
+          "pts_within_2": 6.155015197568389,
+          "jaccard_2": 2.5038639876352393,
+          "pts_within_4": 12.082066869300911,
+          "jaccard_4": 5.0364269876465,
+          "pts_within_8": 26.063829787234045,
+          "jaccard_8": 11.537167843928692,
+          "pts_within_16": 52.20364741641338,
+          "jaccard_16": 26.13160897679726,
+          "average_jaccard": 9.193743063911352,
+          "average_pts_within_thresh": 19.680851063829788,
+          "visible_epe_pixels": 27.807697296142578
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 98.4,
+          "pts_within_1": 53.72340425531915,
+          "jaccard_1": 36.76547061882475,
+          "pts_within_2": 78.57142857142857,
+          "jaccard_2": 64.16978776529338,
+          "pts_within_4": 95.59270516717325,
+          "jaccard_4": 89.89169675090253,
+          "pts_within_8": 97.79635258358662,
+          "jaccard_8": 93.38235294117648,
+          "pts_within_16": 98.17629179331307,
+          "jaccard_16": 94.0959409594096,
+          "average_jaccard": 75.66104980712134,
+          "average_pts_within_thresh": 84.77203647416414,
+          "visible_epe_pixels": 1.6899241209030151
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 21,
+        "total_frames": 81,
+        "observed_fraction": 0.25925925925925924,
+        "observed_times": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48,
+          52,
+          56,
+          60,
+          64,
+          68,
+          72,
+          76,
+          80
+        ],
+        "fixed_stride_frames": 21,
+        "extra_query_frames": [],
+        "wrapper_encode_calls_shared": 21,
+        "wrapper_predict_calls": 20,
+        "predicted_frame_maps": 60,
+        "encoder_seconds_shared": 1.0594189036637545,
+        "predictor_wrapper_seconds": 1.198950806632638,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.016459645703434944,
+          "predicted_features": 0.014314034953713417,
+          "copy_last_position": 0.0035867299884557724
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 2.3118517957627773,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 41,
+          "predictor_calls": 20,
+          "encoded_visible_tubelets": 245,
+          "predicted_tubelets": 60,
+          "gpu_seconds": 2.2040956765413284
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 21,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 21,
+            "predict": 20
+          },
+          "copy_last_position": {
+            "encode": 21,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 81,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.5984364524483681
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/fb54e9062429a937.npz"
+    },
+    {
+      "key": "mbike-trick",
+      "frames": 79,
+      "query_points": 25,
+      "metrics": {
+        "repeat_features": {
+          "occlusion_accuracy": 78.1025641025641,
+          "pts_within_1": 1.969796454366382,
+          "jaccard_1": 0.8713331397037467,
+          "pts_within_2": 4.727511490479317,
+          "jaccard_2": 2.117024404586886,
+          "pts_within_4": 13.854235062376889,
+          "jaccard_4": 6.468424279583078,
+          "pts_within_8": 33.28956007879186,
+          "jaccard_8": 17.093728927848957,
+          "pts_within_16": 68.28627708470125,
+          "jaccard_16": 42.745581586518696,
+          "average_jaccard": 13.859218467648274,
+          "average_pts_within_thresh": 24.42547603414314,
+          "visible_epe_pixels": 20.277698516845703
+        },
+        "predicted_features": {
+          "occlusion_accuracy": 78.1025641025641,
+          "pts_within_1": 1.7071569271175313,
+          "jaccard_1": 0.7542790832608065,
+          "pts_within_2": 4.005252790544977,
+          "jaccard_2": 1.7878077373974208,
+          "pts_within_4": 9.914642153644124,
+          "jaccard_4": 4.545454545454546,
+          "pts_within_8": 21.142481943532502,
+          "jaccard_8": 10.218978102189782,
+          "pts_within_16": 42.875902823374915,
+          "jaccard_16": 23.156028368794328,
+          "average_jaccard": 8.092509567419377,
+          "average_pts_within_thresh": 15.92908732764281,
+          "visible_epe_pixels": 26.660768508911133
+        },
+        "copy_last_position": {
+          "occlusion_accuracy": 78.1025641025641,
+          "pts_within_1": 1.969796454366382,
+          "jaccard_1": 0.8713331397037467,
+          "pts_within_2": 4.727511490479317,
+          "jaccard_2": 2.117024404586886,
+          "pts_within_4": 13.854235062376889,
+          "jaccard_4": 6.468424279583078,
+          "pts_within_8": 33.28956007879186,
+          "jaccard_8": 17.093728927848957,
+          "pts_within_16": 68.28627708470125,
+          "jaccard_16": 42.745581586518696,
+          "average_jaccard": 13.859218467648274,
+          "average_pts_within_thresh": 24.42547603414314,
+          "visible_epe_pixels": 19.89052391052246
+        },
+        "cotracker3_full_observations": {
+          "occlusion_accuracy": 89.7948717948718,
+          "pts_within_1": 31.057124097176626,
+          "jaccard_1": 17.577828397873958,
+          "pts_within_2": 57.97767564018385,
+          "jaccard_2": 38.07400802496656,
+          "pts_within_4": 80.56467498358502,
+          "jaccard_4": 60.883116883116884,
+          "pts_within_8": 91.72685489166119,
+          "jaccard_8": 75.07066139061617,
+          "pts_within_16": 97.63624425476034,
+          "jaccard_16": 83.90736342042754,
+          "average_jaccard": 55.102595623400234,
+          "average_pts_within_thresh": 71.7925147734734,
+          "visible_epe_pixels": 3.117093801498413
+        }
+      },
+      "sparse_budget": {
+        "observed_frames": 20,
+        "total_frames": 79,
+        "observed_fraction": 0.25316455696202533,
+        "observed_times": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48,
+          52,
+          56,
+          60,
+          64,
+          68,
+          72,
+          76
+        ],
+        "fixed_stride_frames": 20,
+        "extra_query_frames": [],
+        "wrapper_encode_calls_shared": 20,
+        "wrapper_predict_calls": 20,
+        "predicted_frame_maps": 59,
+        "encoder_seconds_shared": 1.00492755882442,
+        "predictor_wrapper_seconds": 1.1960164662450552,
+        "reader_seconds_by_arm": {
+          "repeat_features": 0.015866894274950027,
+          "predicted_features": 0.013856897130608559,
+          "copy_last_position": 0.003377983346581459
+        },
+        "context_anchor_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "causal_observation_check": true,
+        "sparse_combined_seconds": 2.252343064174056,
+        "actual_frozen_model_counter_deltas": {
+          "encoder_calls": 40,
+          "predictor_calls": 20,
+          "encoded_visible_tubelets": 238,
+          "predicted_tubelets": 59,
+          "gpu_seconds": 2.148422282189131
+        },
+        "allocated_wrapper_calls_by_arm": {
+          "repeat_features": {
+            "encode": 20,
+            "predict": 0
+          },
+          "predicted_features": {
+            "encode": 20,
+            "predict": 20
+          },
+          "copy_last_position": {
+            "encode": 20,
+            "predict": 0
+          }
+        }
+      },
+      "cotracker_budget": {
+        "observed_frames": 79,
+        "observed_fraction": 1.0,
+        "predictor_forward_calls": 1,
+        "seconds": 0.5307766254991293
+      },
+      "predictions": "/mnt/data/nhatnc129/jepa/idea_discovery_20260930/runs/tracking_56226/predictions/fd30bbfc626d4721.npz"
+    }
+  ],
+  "completed_videos": 30,
+  "mean_metrics": {
+    "repeat_features": {
+      "occlusion_accuracy": 75.13274633847104,
+      "pts_within_1": 2.207417579462115,
+      "jaccard_1": 0.9011790398107136,
+      "pts_within_2": 4.652888230106223,
+      "jaccard_2": 1.9956435864689988,
+      "pts_within_4": 11.157822423739349,
+      "jaccard_4": 5.0721449328726695,
+      "pts_within_8": 27.043453020270384,
+      "jaccard_8": 13.527699293111532,
+      "pts_within_16": 52.62217073999727,
+      "jaccard_16": 30.807933658297937,
+      "average_jaccard": 10.46092010211237,
+      "average_pts_within_thresh": 19.53675039871507,
+      "visible_epe_pixels": 28.77114067077637
+    },
+    "predicted_features": {
+      "occlusion_accuracy": 75.13274633847104,
+      "pts_within_1": 2.7751987385143946,
+      "jaccard_1": 1.1483050120546754,
+      "pts_within_2": 4.639813780593438,
+      "jaccard_2": 1.9760060679151652,
+      "pts_within_4": 9.35998212708601,
+      "jaccard_4": 4.158485696635627,
+      "pts_within_8": 21.129562966766724,
+      "jaccard_8": 10.123831057131621,
+      "pts_within_16": 43.778737149585844,
+      "jaccard_16": 24.068400226560478,
+      "average_jaccard": 8.295005612059516,
+      "average_pts_within_thresh": 16.336658952509286,
+      "visible_epe_pixels": 32.578901290893555
+    },
+    "copy_last_position": {
+      "occlusion_accuracy": 75.13274633847104,
+      "pts_within_1": 2.201351258324365,
+      "jaccard_1": 0.8988356190859685,
+      "pts_within_2": 4.607048715236818,
+      "jaccard_2": 1.9766397653547179,
+      "pts_within_4": 11.052466089924707,
+      "jaccard_4": 5.024517265987242,
+      "pts_within_8": 26.927151601645573,
+      "jaccard_8": 13.47456996066982,
+      "pts_within_16": 52.52286324784561,
+      "jaccard_16": 30.774313546888322,
+      "average_jaccard": 10.429775231597214,
+      "average_pts_within_thresh": 19.462176182595417,
+      "visible_epe_pixels": 28.596806621551515
+    },
+    "cotracker3_full_observations": {
+      "occlusion_accuracy": 91.2388218502297,
+      "pts_within_1": 42.378202408262,
+      "jaccard_1": 28.667904970443793,
+      "pts_within_2": 67.12277134190468,
+      "jaccard_2": 51.74665133155211,
+      "pts_within_4": 85.01918074605446,
+      "jaccard_4": 72.25533438425121,
+      "pts_within_8": 93.17542437016955,
+      "jaccard_8": 81.91794655845406,
+      "pts_within_16": 96.76745945066399,
+      "jaccard_16": 85.83852655500189,
+      "average_jaccard": 64.08527275994061,
+      "average_pts_within_thresh": 76.89260766341094,
+      "visible_epe_pixels": 3.3471528559923174
+    }
+  },
+  "load_seconds": {
+    "vjepa": 14.321715075522661,
+    "cotracker": 0.28175468370318413
+  },
+  "frozen_model_load_report": {
+    "encoder": "<All keys matched successfully>",
+    "target_encoder": "<All keys matched successfully>",
+    "predictor": "<All keys matched successfully>"
+  },
+  "elapsed_seconds": 100.45030934549868,
+  "frozen_model_counters": {
+    "encoder_calls": 1092,
+    "predictor_calls": 515,
+    "encoded_visible_tubelets": 6426,
+    "predicted_tubelets": 1422,
+    "gpu_seconds": 58.54227329976857
+  },
+  "actual_encoder_counts_available": true,
+  "matched_sparse_observations": true,
+  "matched_encoder_compute": "Not established by shared RGB observations; inspect actual encoder-pass counters."
+}
