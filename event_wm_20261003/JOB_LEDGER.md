@@ -1035,3 +1035,12 @@ The A skill is imprecise in general, not only when stacking.
   - The unified reader, WM, A* and move-end rule support ~50%; **the unified skill is the bottleneck.**
   - Differences: (1) checkpoint: 40/60 used the final 60k, the unified loop the best-val one at step 4k; (2) contamination filter at tol_pos (29% excluded vs 5%); (3) start-state conditioning.
 | 57411 | Closed loop v4: unified skill final checkpoint (40k steps) instead of best-val (4k) | mig, 8 CPU | SUBMITTED |
+
+## 2026-10-05 live status and quota audit (14:00 ICT)
+
+- Verified with both squeue and sacct: unified cube-triple evaluation 57411 COMPLETED, 8/30 success (task counts 6/6, 1/6, 1/6, 0/6, 0/6), final 40k skill checkpoint. This is a development result, not a general-method win.
+- Puzzle unified self-training 57419 COMPLETED; u_self.sh does not launch closed-loop evaluation. WM validation: side_effect_within_tol 0.0826, offline_plan_found 0.03185. No closed-loop result is implied.
+- Family mapping from the submission record: 57420 cube-double, 57421 puzzle-4x6, 57422 puzzle-3x3, 57423 puzzle-4x4, 57424 cube-single.
+- Monthly sreport snapshot: nhatnc129 GPU 59 h, CPU 385 h, memory 4,348,122 MB-h. Fifth-ranked users: GPU 94 h, CPU 904 h, memory 7,094,397 MB-h. The respective 90% ceilings are 84.6 h, 813.6 h, 6,384,957.3 MB-h.
+- Five 14-hour GPU jobs exceeded the planned-budget rule. On 2026-10-05, scancel 57422/57423/57424 before start; reduce TimeLimit of running 57420/57421 to 10 hours each. Both squeue and sacct confirm the cancellations and new limits. Existing run directories and checkpoints are preserved. This is a resource-budget correction, not a negative scientific result on those families.
+- 57420/57421 remain RUNNING in SAM 2 segmentation. At 13:59 ICT, train progress was 18,600/30,150 and 5,800/30,150, respectively; validation segmentation and backend training still follow. Rough first closed-loop ETA, conditional on unchanged throughput and successful stages: cube-double 18:00-20:00 ICT; puzzle-4x6 20:00-22:00 ICT on 2026-10-05. These are estimates, not guaranteed completion or paper-ready comparisons.

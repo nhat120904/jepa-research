@@ -1,18 +1,5 @@
 # AGENTS.md
 
-## Current priority: CTA for CVPR
-
-The active direction is **Conditional Trajectory Abstraction (CTA)** in
-`trajectory_innovation_20260922/`. Build and improve a working learned planner, with
-reproducible control results and a defensible quality/compute contribution for CVPR.
-
-CTA encodes a future trajectory into a compact code S conditional on observed context C.
-At deployment, a world model predicts S from C and a proposed action chunk A; a reader
-scores the prediction for a task/goal query. The reader must not bypass S by reading A,
-and deployment must not use privileged future observations. Endpoint tasks and tasks
-with important intermediate events are both valid; S should retain what decisions need.
-Do not require a temporal-task pivot before improving the end-to-end pipeline.
-
 ## Default workflow: implement, run, debug, improve
 
 - Carry authorized work through implementation, training and closed-loop evaluation;
