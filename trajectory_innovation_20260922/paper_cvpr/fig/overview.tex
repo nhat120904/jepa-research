@@ -1,11 +1,8 @@
-% Fig. 1 on a real PushT decision. Frames, proposal paths, codes and scores come from
-% scripts/cta_fig1_data.py (job 55314) via scripts/cta_fig1_tex.py -> fig/fig1_data.tex and fig/pusht/.
-\begin{figure*}[t]
-\centering
+% Real archived PushT example; source macros and PNGs preserved.
 \input{fig/fig1_data}
 \def\FigCW{0.105}\def\FigCellW{0.094}\def\FigCellH{0.112}\def\FigRH{0.152}\def\FigBW{1.1}
-\definecolor{figgreen}{RGB}{0,150,70}
-\definecolor{figorange}{RGB}{230,120,20}
+\definecolor{figgreen}{HTML}{288770}
+\definecolor{figorange}{HTML}{C56826}
 \begin{tikzpicture}[
   x=1cm, y=1cm, font=\footnotesize,
   >={Stealth[length=1.7mm]},
@@ -26,7 +23,7 @@
   chosenbar/.style={fill=figgreen}
 ]
 % ============================ deployment
-\node[anchor=west, font=\footnotesize\bfseries] at (-0.05,6.68) {Deployment: predict once, query many};
+\node[anchor=west, font=\footnotesize\bfseries] at (-0.05,6.68) {(a) Deployment: world-model forecast and goal-conditioned readout};
 % observations o_{t-1}, o_t (full frames)
 \node[img] (prev) at (0,3.62) {\includegraphics[width=2.05cm]{fig/pusht/prev.png}};
 \draw[frame] (prev.south west) rectangle (prev.north east);
@@ -52,16 +49,16 @@
 \draw[flow] (6.45,4.54) -- (wm.west);
 \draw[flow] (C.east) -- (7.75,6.0) -- (wm.north);
 \fill (7.75,6.0) circle (0.9pt);
-% expected codes, one row per proposal
+% 16-token means, one row per proposal
 \begin{scope}[shift={(9.22,5.035)}]
   \FigPredCodes
   \foreach \k in {1,...,8} {\node[font=\tiny, anchor=east, inner sep=1pt] at (-0.02,{-(\k-1)*\FigRH+0.5*\FigCellH}) {\k};}
   \draw[black, line width=0.5pt] (-0.02,{-(\FigChosen-1)*\FigRH-0.02}) rectangle ({15*\FigCW+\FigCellW+0.02},{-(\FigChosen-1)*\FigRH+\FigCellH+0.02});
 \end{scope}
 \draw[flow] (wm.east) -- (9.02,4.54);
-\node[lab] at (10.05,3.62) {expected codes $\hat S^{(k)}$};
+\node[lab] at (10.05,3.62) {16-token means $\hat S^{(k)}$};
 % reader and goal images
-\node[learned, minimum width=1.7cm] (reader) at (11.9,4.54) {reader\\$D_\psi(C,\hat S,g)$\\[-1pt]{\scriptsize never sees $\bA$}};
+\node[learned, minimum width=1.7cm] (reader) at (11.9,4.54) {reader\\$D_\psi(C,\hat S,g)$\\[-1pt]{\scriptsize inputs: $C,\hat S,g$}};
 \draw[flow] (10.93,4.54) -- (reader.west);
 \draw[flow] (7.75,6.0) -- (11.35,6.0) -- (11.35,0 |- reader.north);
 \foreach \g [count=\i from 0] in \FigGoals {
@@ -83,14 +80,14 @@
 \draw[frame] (after.south west) rectangle (after.north east);
 \draw[flow] (14.2,4.54) -- node[lab, above] {argmax} (after.west |- 0,4.54);
 \node[lab] at (16.1,3.24) {after executing $\bA^{(\FigChosen)}$};
-\draw[flow] (after.east |- 0,4.54) -- (17.32,4.54) -- (17.32,2.92) -- node[lab, fill=white, inner sep=1pt, pos=0.3] {observe and replan every $\He$ steps} (0.03,2.92) -- (0.03,3.62);
+\draw[flow] (after.east |- 0,4.54) -- (17.32,4.54) -- (17.32,2.92) -- node[lab, fill=white, inner sep=1pt, pos=0.3] {observe and replan every $L$ steps} (0.03,2.92) -- (0.03,3.62);
 
 % ============================ training
 \begin{scope}[on background layer]
   \fill[black!3, rounded corners=3pt] (-0.06,-0.4) rectangle (17.38,2.68);
   \draw[black!25, rounded corners=3pt] (-0.06,-0.4) rectangle (17.38,2.68);
 \end{scope}
-\node[anchor=north west, font=\footnotesize\bfseries] at (-0.02,2.64) {Training only};
+\node[anchor=north west, font=\footnotesize\bfseries] at (-0.02,2.64) {(b) Learning the future target (training only)};
 % actual futures of two sibling proposals, frames after steps 2, 4, 6, 8
 \foreach \s [count=\j from 0] in {2,4,6,8} {
   \node[img] (fa\j) at ({0.75+1.03*\j},1.25) {\FigImgBottom{0.98cm}{c\FigBestIdx s\s.png}};
@@ -112,7 +109,7 @@
 \begin{scope}[shift={(6.91,0.554)}]\FigSourceCodeB\end{scope}
 \draw[flow] (tenc.east |- 0,1.74) -- (6.88,1.74);
 \draw[flow] (tenc.east |- 0,0.61) -- (6.88,0.61);
-\node[lab] at (7.74,1.08) {codes $S$};
+\node[lab] at (7.74,1.08) {FSQ codes $S$};
 \draw[aux] (wm.south |- 0,1.83) -- (wm.south);
 \node[lab, anchor=west, inner sep=1pt] at (7.82,2.36) {stop-gradient target};
 % heads
@@ -120,19 +117,7 @@
 \draw[flow] (8.62,1.74) -- (heads.west |- 0,1.74);
 \draw[flow] (8.62,0.61) -- (heads.west |- 0,0.61);
 % losses
-\node[anchor=west, align=left] at (12.85,1.175) {$\mathcal{L}_{\mathrm{code}}=\mathcal{L}_{\mathrm{rank}}+\alpha\,\mathcal{L}_{\mathrm{feat}}$\\[-1pt]{\scriptsize stage 1: target encoder, reader, decoder}\\[4pt]
+\node[anchor=west, align=left] at (12.85,1.175) {$\mathcal{L}_{\mathrm{source}}$ (rank + features + saturation)\\[-1pt]{\scriptsize stage 1: target encoder, reader, decoder}\\[4pt]
 $\mathcal{L}_{\mathrm{WM}}=\mathcal{L}_{\mathrm{NLL}}+\mathcal{L}_{\mathrm{cons}}+\mathcal{L}^{\hat S}_{\mathrm{rank}}$\\[-1pt]{\scriptsize stage 2: world model}\\[4pt]
-{\scriptsize target code: 16 tokens, at most 128 bits}};
+{\scriptsize target: 16 tokens, FSQ levels $(8,8,4)$}};
 \end{tikzpicture}
-\caption{\textbf{\method on a real PushT decision.}
-\emph{Top:} the context $C$ holds frozen DINOv2 features of the last two observations.
-The frozen diffusion policy proposes $K{=}8$ action chunks (orange: the agent's target positions over 8 steps, shown in the dashed zoomed region).
-In one batched pass, the world model predicts a distribution over the 16-token code of each chunk's future segment; each row shows the expected code $\hat S^{(k)}$, one cell per token with the token's three FSQ coordinates as RGB.
-The reader scores each code against the goal images without seeing the action, and the highest-scoring chunk (green) is executed; a new goal requires only new reader evaluations.
-\emph{Bottom:} during training, every proposal is executed from a copy of the simulator state.
-The actual futures of proposals \FigBest{} and \FigWorst{} leave the block's vertices \FigErrBest{} and \FigErrWorst{} pixels from the target pose on average.
-The target encoder compresses each future into a code $S$ given $C$; the reader ranks sibling codes by progress, and the decoder reconstructs the future's frozen features from $(C,S)$.
-The world model is trained to predict the stop-gradient code, and through the frozen reader.
-Frames are native $512{\times}512$ simulator renders, from which the $96{\times}96$ observations are downsampled, cropped for visibility; codes and scores are our model's outputs for this decision.}
-\label{fig:overview}
-\end{figure*}

@@ -1,0 +1,227 @@
+{
+  "schema_version": 1,
+  "created_date": "2026-10-02",
+  "authoring_scope": "Metadata transcription of existing saved estimates; no new statistics or evaluations.",
+  "interval": {
+    "confidence": 0.95,
+    "method": "root-cluster bootstrap",
+    "unit": "rollout root",
+    "interpretation": "marginal estimate intervals; overlap is not a paired-difference test"
+  },
+  "sources": {
+    "ladder_l8": {
+      "artifact": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_ladder_55762/paired_ladder.json",
+      "json_group": "sets.P0_states/geom",
+      "upstream_run": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_v2cl_closed_55666",
+      "job": "55762"
+    },
+    "ladder_l8_matched": {
+      "artifact": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_ladder_rerun_55842/paired_ladder.json",
+      "json_group": "sets.P0_states/geom",
+      "upstream_run": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_v2cl_closed_55841",
+      "job": "55842",
+      "reference_check": "Shared CTAV2/ENDV2/DIRV2/FULLV2 scores have saved max_abs_diff=0 and same_choice=1."
+    },
+    "selection_l15": {
+      "artifact": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_replan15_train_56504/train/offline_ladder.json",
+      "json_group": "ladder.pooled",
+      "job": "56504"
+    },
+    "review": {
+      "artifact": "/home/nhatnc129/nhat.nc/jepa-research/trajectory_innovation_20260922/docs/CTA_IMPROVEMENT_REVIEW_20261002_VI.md"
+    },
+    "notes": {
+      "artifact": "/tmp/cta_paper_evidence_20261002.md"
+    }
+  },
+  "figures": {
+    "ranking": {
+      "tex_file": "ranking.tex",
+      "metric": "geometry retained gap",
+      "label": "L8 P0 development states",
+      "n_exec": 8,
+      "candidates": 8,
+      "training_seeds": 1,
+      "roots": {
+        "first": 2200,
+        "last": 2399,
+        "count": 200
+      },
+      "decisions_total": 5558,
+      "decisions_with_geometry_spread": 3433,
+      "plotted_estimates": [
+        {
+          "id": "FULLV2",
+          "label": "Full (true)",
+          "estimate": 0.7560027292378386,
+          "ci_lower": 0.7310938026780467,
+          "ci_upper": 0.7781183841298144,
+          "access": "privileged",
+          "color": "#6B7280",
+          "source": "ladder_l8",
+          "json_field": "scorers.FULLV2.retained_gap"
+        },
+        {
+          "id": "CODEV2",
+          "label": "Code (true)",
+          "estimate": 0.6281881229485022,
+          "ci_lower": 0.5963260004543158,
+          "ci_upper": 0.6569409873532771,
+          "access": "privileged",
+          "color": "#6B7280",
+          "source": "ladder_l8",
+          "json_field": "scorers.CODEV2.retained_gap"
+        },
+        {
+          "id": "CTAV2",
+          "label": "CTA",
+          "estimate": 0.6799281437163132,
+          "ci_lower": 0.6294801428767115,
+          "ci_upper": 0.7257202335575396,
+          "access": "deployable",
+          "color": "#075B9D",
+          "source": "ladder_l8",
+          "json_field": "scorers.CTAV2.retained_gap"
+        },
+        {
+          "id": "ENDV2",
+          "label": "Endpoint",
+          "estimate": 0.6353335150781598,
+          "ci_lower": 0.5875800294956399,
+          "ci_upper": 0.6778131837741823,
+          "access": "deployable",
+          "color": "#2B7658",
+          "source": "ladder_l8",
+          "json_field": "scorers.ENDV2.retained_gap"
+        },
+        {
+          "id": "DIRV2",
+          "label": "Direct",
+          "estimate": 0.48283319204612474,
+          "ci_lower": 0.4253973846240093,
+          "ci_upper": 0.535088059538106,
+          "access": "deployable",
+          "color": "#333D43",
+          "source": "ladder_l8",
+          "json_field": "scorers.DIRV2.retained_gap"
+        },
+        {
+          "id": "DIRV2L",
+          "label": "Direct-large",
+          "estimate": 0.5018821746025529,
+          "ci_lower": 0.44452152842984544,
+          "ci_upper": 0.5530122734856852,
+          "access": "deployable",
+          "color": "#355F51",
+          "source": "ladder_l8_matched",
+          "json_field": "scorers.DIRV2L.retained_gap"
+        },
+        {
+          "id": "DINOWM",
+          "label": "DINO-WM",
+          "estimate": 0.333532438880485,
+          "ci_lower": 0.2724041338530076,
+          "ci_upper": 0.3928289664318829,
+          "access": "deployable",
+          "color": "#8C9199",
+          "source": "ladder_l8",
+          "json_field": "scorers.DINOWM.retained_gap"
+        }
+      ],
+      "limits": [
+        0,
+        1
+      ],
+      "display_precision": 3,
+      "cautions": [
+        "Development evidence; historical batched proposal runner.",
+        "FULL/CODE use actual future information and are privileged diagnostic references.",
+        "Official DINO-WM uses different observation/input and training operating points.",
+        "DIRECT-large matches parameter count, not the missing factorized future-supervision control.",
+        "These estimates are not success rates and FULL/CODE are not strict upper bounds."
+      ]
+    },
+    "bottleneck": {
+      "tex_file": "bottleneck.tex",
+      "metric": "geometry retained gap",
+      "label": "L15 selection banks",
+      "n_exec": 15,
+      "candidates": 8,
+      "training_seeds": 1,
+      "roots": {
+        "first": 2000,
+        "last": 2099,
+        "count": 100
+      },
+      "selection_banks": 1476,
+      "plotted_estimates": [
+        {
+          "id": "full",
+          "label": "Full (true)",
+          "estimate": 0.7755611947706634,
+          "ci_lower": 0.7354830215719613,
+          "ci_upper": 0.8110231283935257,
+          "access": "privileged",
+          "color": "#6B7280",
+          "source": "selection_l15",
+          "json_field": "full.retained_gap"
+        },
+        {
+          "id": "code",
+          "label": "Code (true)",
+          "estimate": 0.6674573050538688,
+          "ci_lower": 0.6076701410172963,
+          "ci_upper": 0.7192830001389214,
+          "access": "privileged",
+          "color": "#6B7280",
+          "source": "selection_l15",
+          "json_field": "code.retained_gap"
+        },
+        {
+          "id": "cta",
+          "label": "CTA",
+          "estimate": 0.37387186828032676,
+          "ci_lower": 0.2652456900290661,
+          "ci_upper": 0.477557576938847,
+          "access": "deployable",
+          "color": "#075B9D",
+          "source": "selection_l15",
+          "json_field": "cta.retained_gap"
+        },
+        {
+          "id": "endpoint",
+          "label": "Endpoint",
+          "estimate": 0.43964606314726007,
+          "ci_lower": 0.3134033976169386,
+          "ci_upper": 0.5476076576811065,
+          "access": "deployable",
+          "color": "#2B7658",
+          "source": "selection_l15",
+          "json_field": "endpoint.retained_gap"
+        },
+        {
+          "id": "direct",
+          "label": "Direct",
+          "estimate": 0.2194845550135064,
+          "ci_lower": 0.07132892684531755,
+          "ci_upper": 0.34859351987524384,
+          "access": "deployable",
+          "color": "#333D43",
+          "source": "selection_l15",
+          "json_field": "direct.retained_gap"
+        }
+      ],
+      "limits": [
+        0,
+        1
+      ],
+      "display_precision": 3,
+      "cautions": [
+        "Offline selection split; these are not the 200 P0 development evaluation roots.",
+        "FULL/CODE use actual future information and are privileged diagnostic references.",
+        "No cross-length trend or paired CODE-minus-CTA interval is inferred.",
+        "L8 and L15 training datasets differ."
+      ]
+    }
+  }
+}

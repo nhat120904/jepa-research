@@ -24,8 +24,17 @@ AFTER = ("PHYS8", "GEOM8", "FULL8", "CODE8")   # scored from simulated candidate
 KEEP = (2, 4, 6)          # intermediate frames kept per segment; the end frame (step 8) is the branch's last frame
 
 
-def run_segment(branch, actions, cloner):
-    """run_prefix that also returns the frames after steps KEEP (last frame repeated if the segment ends early)."""
+def keep_steps(n_exec):
+    """Intermediate frames at the quarter points of an executed chunk of n_exec steps: (2, 4, 6) for 8, (4, 8, 11) for
+    15. The architecture keeps three intermediate frames whatever the chunk length."""
+    keep = tuple(int(n_exec * j / 4 + 0.5) for j in (1, 2, 3))
+    if len(set(keep)) != 3 or keep[0] < 1 or keep[-1] >= n_exec:
+        raise ValueError(f"chunk of {n_exec} steps is too short for three intermediate frames")
+    return keep
+
+
+def run_segment(branch, actions, cloner, keep=KEEP):
+    """run_prefix that also returns the frames after steps `keep` (last frame repeated if the segment ends early)."""
     out = Branch(cloner(branch.env), list(branch.hist), branch.t, branch.success, branch.coverage, branch.max_coverage)
     frames = {}
     for step, action in enumerate(actions, start=1):
@@ -37,10 +46,10 @@ def run_segment(branch, actions, cloner):
         out.coverage = float(info["coverage"])
         out.max_coverage = max(out.max_coverage, out.coverage)
         out.success = bool(terminated)
-        if step in KEEP:
+        if step in keep:
             frames[step] = obs["pixels"]
     last = out.hist[-1]["pixels"]
-    return out, np.stack([frames.get(s, last) for s in KEEP])
+    return out, np.stack([frames.get(s, last) for s in keep])
 
 
 class Planner:

@@ -1,0 +1,185 @@
+% Standalone supplement for the multi-file CTA research manuscript.
+\documentclass[10pt,twocolumn,letterpaper]{article}
+\usepackage[pagenumbers]{cvpr}
+\input{preamble}
+\definecolor{cvprblue}{rgb}{0.21,0.49,0.74}
+\usepackage[breaklinks,colorlinks,allcolors=cvprblue]{hyperref}
+\def\paperID{}
+\def\confName{CVPR}
+\def\confYear{2027}
+\title{Conditional Trajectory Abstraction for Visual Action Ranking\\Supplementary Material}
+\author{Anonymous research manuscript}
+\begin{document}
+\maketitle
+\section{Scope and evidence provenance}
+This supplement specifies the v2 pipeline and archived development evidence. Run identifiers distinguish evaluation, selection, and historical pilots (Table~\ref{tab:provenance}). Results use one training seed and reused development roots. The native-hit continuation is prepared but unrun.
+
+\begin{table*}[t]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{p{.19\linewidth}p{.30\linewidth}p{.40\linewidth}}
+\toprule
+Evidence & Archived source & Population and purpose \\
+\midrule
+L8 paired ranking & \texttt{cta\_ladder\_55762}; \texttt{cta\_ladder\_rerun\_55842} & P0 roots 2200--2399; 5,558 banks. Rerun adds DIR-large. \\
+L8 control & \texttt{cta\_v2cl\_aggregate\_55676} & Roots 2200--2399; old batched proposals, $K=8$. \\
+L15 control & \texttt{cta\_replan15\_aggregate\_56600} & Roots 2200--2399; old batched proposals, $K=8$. \\
+L8 selection ladder & \texttt{cta\_v2\_train\_55616} & 4,260 policy/on-policy selection banks. \\
+L15 selection ladder & \texttt{cta\_replan15\_train\_56504} & 1,476 selection banks; roots 2000--2099. \\
+Component timing & \texttt{cta\_budget\_55763} & Roots 2200--2209; H100 3g.40gb MIG. \\
+Co-design pilot & \texttt{cta\_r2\_compare\_54934} & Earlier seed-zero co-design pilot. \\
+Numerical audit & \texttt{cta\_improvement\_audit\_56686} & Repeated L15 evaluation, same roots/weights. \\
+Bounded log check & \texttt{cta\_repro\_logcontract\_56709} & P0 root 2205 alone/grouped with 2206; tolerance $10^{-12}$. \\
+\bottomrule
+\end{tabular}
+\caption{Saved evidence sources. The reproducibility manifest records full artifact paths and source/config hashes.}
+\label{tab:provenance}
+\end{table*}
+
+\section{Inputs, architecture, and supervision}
+Each observed image is encoded with frozen DINOv2 ViT-S/14 and a train-fitted 128-dimensional PCA projection. A current-image grid contains $16\times16$ tokens; the preceding grid is pooled to $8\times8$. One proprioception token embeds $[p_t,p_{t-1}]/512$. The source future contains an endpoint grid, three pooled intermediate grids, and endpoint proprioception. Endpoint and intermediate feature reconstruction omit proprioception.
+
+The source encoder uses 16 queries, width 256, eight attention heads, and three decoder layers. The reader uses four encoder layers; the feature decoder uses two decoder layers. The parallel predictor uses four encoder and four decoder layers. FSQ levels are $(8,8,4)$, producing 256 possible values per source token. A frozen deterministic encoder has
+\begin{equation}
+I(\tau;S\mid C)=H(S\mid C)\le16\log_2 256=128\text{ bits}.
+\end{equation}
+This is a finite-source-alphabet capacity bound, not an empirical conditional rate, entropy-coded size, or deployment bitrate. Training uses dropout; the determinism assumption refers to frozen evaluation mode. The predictor emits a categorical distribution per coordinate but passes its mean to the reader. The deployed mean contains 48 float32 values (192 raw bytes), excluding context, goals, activations, and model weights. The mean omits full distributional information.
+
+The dense geometry label for block pose $x$ and target pose $g$ is
+\begin{equation}
+\ell(x,g)=-\frac{1}{512\cdot8}\sum_{v=1}^{8}\|v(x)-v(g)\|_2.
+\end{equation}
+It uses privileged simulator vertices in training and diagnostic evaluation. Deployment relies only on images, agent positions, actions supplied to the predictor, and goal features. Native success follows coverage termination rather than a geometry-label threshold. The episode score uses maximum post-action coverage (excluding reset coverage), divided by .95 and clipped to one. Native success requires post-action coverage greater than .95 before the 300-step limit.
+
+Earlier cloning smoke comparisons measured live/clone coverage differences near .002 under a .01 tolerance. Full-state equivalence is unproven; state-restoration checks must accompany decision logs and native labels.
+
+\section{Training configuration and model selection}
+The two main v2 recipes train from scratch with AdamW: learning rate $3\times10^{-4}$, weight decay .05, warmup 500 updates, dropout .1, and 16 decision banks/update. Source training lasts 16,000 updates and predictor training 10,000. Evaluation occurs every 2,000 updates. Ranking margin is .001, weighted-ranking scale .01, and source feature/saturation coefficients are one. Geometry success bonuses and hindsight relabeling are zero in these configurations. Source training includes separately parameterized FULL and DIR groups but a shared optimizer/global gradient clip; equal data and schedule do not imply independent optimization.
+
+\begin{table}[t]
+\centering\small
+\begin{tabular}{lrr}
+\toprule
+Training bank source & $L=8$ & $L=15$ \\
+\midrule
+Policy-state banks (r0) & 22,680 & --- \\
+On-policy selector states & 10,708 & --- \\
+Standard r4 & 32,590 & 18,606 \\
+Perturbed r4 & 32,590 & 18,606 \\
+\midrule
+Selection banks & 4,260 & 1,476 \\
+\bottomrule
+\end{tabular}
+\caption{Bank counts in the archived training configurations. A bank contains sibling candidates; it is not an independent episode. Different source mixtures confound a cross-horizon causal comparison.}
+\end{table}
+
+The sampler favors banks with useful label spread. The saved L15 exposure audit reports 57.225\% perturbed banks and only 5.557\% mixed native-success banks. These are observed sampler exposure fractions, not the nominal source counts. Selection uses a bounded development subset during training, averages goal views $(0,5,10,15)$, and maximizes geometry retained gap. The final selection ladder and acting reader average all sixteen views. All goal views depict one target pose.
+
+\begin{table}[t]
+\centering\small
+\begin{tabular}{lrr}
+\toprule
+Selected component & $L=8$ update & $L=15$ update \\
+\midrule
+Source codec/reader & 16,000 & 8,000 \\
+FULL reader & 16,000 & 16,000 \\
+Original DIR & 14,000 & 12,000 \\
+CTA predictor & 10,000 & 8,000 \\
+END predictor & 10,000 & 8,000 \\
+\bottomrule
+\end{tabular}
+\caption{Selected updates from the actual archived v2 configurations, rather than source-code defaults.}
+\end{table}
+
+The feature loss averages normalized endpoint and intermediate MSE. The normalization uses the training error of copying the current feature grid. A zero-residual copy predictor has expected normalized error one under that distribution; a constant-code decoder can still exploit context and beat that reference. The categorical optimization loss averages three coordinate cross-entropies per token. A reported sum in nats/token is three times this coordinate mean; whole-segment NLL sums over all 16 tokens. These units must remain distinct from empirical entropy or representation capacity.
+
+\section{A reader-score stability bound}
+\begin{proposition}
+For one fixed candidate bank and query, let $u_k$ be source-reader scores and $s_k$ predicted-reader scores. Define
+\[
+\varepsilon=\max_k|(s_k-\bar s)-(u_k-\bar u)|.
+\]
+For $k_u\in\argmax_k u_k$ and $k_s\in\argmax_k s_k$, the source-score regret is bounded by $u_{k_u}-u_{k_s}\le2\varepsilon$. If the unique source winner has margin larger than $2\varepsilon$, the predicted winner equals it.
+\end{proposition}
+\noindent\textit{Proof.} Let $\tilde u=u-\bar u$ and $\tilde s=s-\bar s$. Centering leaves maximizers unchanged. Insert predicted scores:
+\begin{align*}
+u_{k_u}-u_{k_s}
+&=(\tilde u_{k_u}-\tilde s_{k_u})
+ +(\tilde s_{k_u}-\tilde s_{k_s})
+ +(\tilde s_{k_s}-\tilde u_{k_s})\\
+&\le\varepsilon+0+\varepsilon.
+\end{align*}
+A different predicted winner would violate this bound if every source margin exceeded $2\varepsilon$.\hfill$\square$
+
+This argmax perturbation bound motivates centered consistency. Physical-utility regret additionally requires score calibration, and closed-loop guarantees require control/distribution assumptions. Feature reconstruction alone provides neither.
+
+\section{Uncertainty and diagnostic tables}
+The paired L8 ranking script uses 4,000 root-cluster bootstrap resamples. Numerators and denominators of retained gap are aggregated after resampling roots; this is not an average of per-bank ratios. Scorer contrasts use identical root resamples. Decisions within a root are not treated as independent observations. Intervals are transcribed from archived summaries.
+
+\begin{table}[t]
+\centering\small
+\begin{tabular}{lrr}
+\toprule
+Exact McNemar $p$ & $L=8$ & $L=15$ \\
+\midrule
+CTA vs P0 & .044371 & .044371 \\
+CTA vs END & .907561 & .182077 \\
+CTA vs DIR & .625407 & .050452 \\
+CTA vs DINO-WM & .716301 & .385669 \\
+\bottomrule
+\end{tabular}
+\caption{Exploratory paired binary-success tests for historical control. No multiplicity correction or training-seed uncertainty is included. Bootstrap and exact-test conventions need not yield identical boundary decisions.}
+\end{table}
+
+\begin{table}[t]
+\centering\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcc}
+\toprule
+Selection RG & $L=8$ & $L=15$ \\
+\midrule
+FULL (true future) & .761 [.731,.787] & .776 [.735,.811] \\
+CODE (true future) & .626 [.588,.662] & .667 [.608,.719] \\
+CTA & .670 [.623,.715] & .374 [.265,.478] \\
+END & .642 [.592,.688] & .440 [.313,.548] \\
+DIR & .490 [.432,.544] & .219 [.071,.349] \\
+\bottomrule
+\end{tabular}
+\caption{Selection-data diagnostic estimates and saved 95\% intervals. Distinct mixtures and roots prevent interpretation as a matched horizon experiment.}
+\end{table}
+
+\begin{table}[t]
+\centering\small
+\begin{tabular}{lrr}
+\toprule
+Native-crossing capture & $L=8$ & $L=15$ \\
+\midrule
+Crossing banks / P0 decisions & 58/5,558 & 35/3,249 \\
+FULL & .9655 & .9429 \\
+CODE & .8966 & .9143 \\
+CTA & .7931 & .3714 \\
+GEOM & .9828 & 1.0000 \\
+\bottomrule
+\end{tabular}
+\caption{Fraction selecting a native-success candidate on crossing banks: candidate zero fails within the chunk but at least one sibling succeeds. Small crossing subsets do not establish episode performance.}
+\end{table}
+
+Native-hit labels directly target termination, whereas geometry is a dense endpoint proxy. The geometry oracle captures nearly all crossings. A hit also need not establish intermediate-event retention: terminated segments repeat final observations, which endpoint features may retain. Among 45 L8 roots where P0 misses at least one crossing opportunity, 33 still eventually succeed. Recovery makes a decision-level capture statistic different from episode success.
+
+\section{Timing scope and numerical qualification}
+Archived timing uses CUDA synchronization around measured components, three warmups and ten repeats at each of ten initial states for scorer/context components. Policy sampling instead uses one warmup and three repeats per state. Reported medians are empirical component summaries. Our scoring paths use planner mixed precision; equivalent precision with the external DINO-WM path has not been established. Frozen DINOv2 contains 22,056,576 parameters and the shared proposal policy 262,709,044, both excluded from the learned-scorer counts in the main paper. The DINO-WM predictor/action/proprioception components total 20,122,760 parameters. No peak-memory or total deployment-latency result is saved.
+
+The original $L=15$ numerical audit compares runs 56374 and 56597. P0 success changes from 100 to 103, with 43/200 binary flips and 76 step-count mismatches; GEOM changes from 152 to 149, with 29 flips and 93 step-count mismatches. Source files compared in that audit are byte-identical, but grouping and scorer setup differ. Batch shape is one demonstrated cause, not complete causal accounting. On root 2205, changing proposal batch grouping from one to four, 25, or 100 changes initial actions by up to .056335, .037109, or .035614 world units.
+
+Canonical policy sampling fixes denoising shapes and candidate prefixes; learned-scorer qualification remains pending. The bounded contract check verifies exact roots, decision indices, times, choices, geometry fields, and $K=1,8,16$ action prefixes. Four of 128 coverage entries differ by at most $3.33\times10^{-16}$, passing absolute tolerance $10^{-12}$ with zero relative tolerance. An earlier job failed a strict bitwise coverage assertion; the later tolerance-based log check does not relabel that failed job. This checks P0 root 2205 alone versus grouped with root 2206, not all-arm, all-root, full-state, or cross-hardware certification. The canonical initial bank differs from the old one by up to .017334 world units, so old success counts cannot stand in for new canonical results.
+
+\section{Prepared validation and remaining experiments}
+The native-hit continuation is source-prepared and unrun. It freezes source encoders/readers and compares CTA, END, and DIR predictors/scorers with separate continuation controls, independent optimizers/clipping, matched update budgets, and all-sixteen-view selection. For native termination flags $h_{bk}$, mixed banks satisfy $0<\sum_kh_{bk}<K$. The added objective is
+\begin{equation}
+\mathcal L_{\rm hit}=\E_{b\in\mathcal B_{\rm mix}}\left[
+\log\sum_k e^{s_{bk}/T}-\log\sum_{k:h_{bk}=1}e^{s_{bk}/T}\right].
+\end{equation}
+Here $T$ is the frozen train-only reader-score scale for each arm. Empty mixed-bank sets contribute zero. Replay sampling also changes, so the current intervention estimates combined sampler/objective effects, not an isolated hit-loss effect. 
+
+The next necessary evidence is (i) broader canonical qualification with learned scorers and preserved cloning/leakage checks; (ii) bounded matched continuation followed by closed-loop control on independent roots and training seeds; (iii) full-planner timing with matched observation, precision, candidates, and horizon; and (iv) targeted attribution controls for factorized direct scoring, conditional encoding, intermediate samples, and compact per-frame prediction. Unseen semantic goals and intermediate-event tasks would address additional transfer/retention claims. These would test claims beyond the present development results.
+\end{document}

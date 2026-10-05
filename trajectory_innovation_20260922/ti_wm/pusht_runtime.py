@@ -144,8 +144,19 @@ def physical_state(env):
 
 # ----------------------------------------------------------------------------- policy
 
+def executed_slice(start, end, horizon, n_exec=None):
+    """Native action slice, or [start, start + n_exec) when replanning less often (docs/CTA_REPLAN_INTERVAL_PROTOCOL.md).
+    The policy predicts `horizon` actions from index 0 (the step of the oldest observation), so at most horizon - start
+    of them lie in the future."""
+    if n_exec is None:
+        return start, end
+    if not 1 <= n_exec <= horizon - start:
+        raise ValueError(f"n_exec {n_exec} outside 1..{horizon - start}")
+    return start, start + n_exec
+
+
 class PolicyRunner:
-    def __init__(self, checkpoint_dir, device="cuda"):
+    def __init__(self, checkpoint_dir, device="cuda", n_exec=None):
         import draccus
         import safetensors.torch
         from lerobot.common.policies.diffusion.configuration_diffusion import DiffusionConfig
@@ -166,7 +177,7 @@ class PolicyRunner:
         self.device = torch.device(device)
         self.policy = policy.eval().to(self.device)
         self.config = config
-        self.start, self.end = native_action_slice(raw)
+        self.start, self.end = executed_slice(*native_action_slice(raw), raw["horizon"], n_exec)
         self.parameters = sum(p.numel() for p in policy.parameters())
 
     def batch(self, hists):

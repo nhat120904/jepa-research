@@ -137,13 +137,15 @@ def schedule(opt, steps, warmup):
 def build_stage1(cfg, device):
     m, p = cfg["m"], cfg["dropout"]
     mods = {"enc": SourceEncoder(m, dropout=p), "reader": Scorer("code", m=m, dropout=p), "dec": FutureDecoder(m, dropout=p),
-            "full": Scorer("future", dropout=p), "direct": Scorer("action", layers=cfg["direct_layers"], dropout=p)}
+            "full": Scorer("future", dropout=p),
+            "direct": Scorer("action", layers=cfg["direct_layers"], dropout=p, chunk=cfg.get("chunk", 8))}
     return {k: v.to(device) for k, v in mods.items()}
 
 
 def build_wms(cfg, device):
-    return {"cta": ParallelFSQWM(m=cfg["m"], dropout=cfg["dropout"]).to(device),
-            "endpoint": EndpointWM(dropout=cfg["dropout"]).to(device)}
+    chunk = cfg.get("chunk", 8)
+    return {"cta": ParallelFSQWM(m=cfg["m"], dropout=cfg["dropout"], chunk=chunk).to(device),
+            "endpoint": EndpointWM(dropout=cfg["dropout"], chunk=chunk).to(device)}
 
 
 GROUPS = {"codec": ("enc", "reader", "dec"), "full": ("full",), "direct": ("direct",)}
@@ -314,7 +316,9 @@ def main(a):
     amp = lambda: torch.autocast("cuda", dtype=torch.bfloat16)
     torch.manual_seed(a.seed)
     rng = np.random.default_rng(a.seed)
-    sources = dict(SOURCES)
+    # --only-r4: train on the banks of one collection only (replan-interval study: every bank must have the same
+    # executed chunk length, so the 8-step Round-0 / on-policy caches cannot be mixed in).
+    sources = {} if a.only_r4 else dict(SOURCES)
     sources["r4std"] = a.r4 / "r4std"
     if a.with_perturbed:
         sources["r4pert"] = a.r4 / "r4pert"
@@ -335,7 +339,13 @@ def main(a):
             b.n = min(b.n, a.limit)
             b.spread = b.spread[b.spread < b.n]
     pool = Pool(banks)
-    sel = [Bank(p, n, aux(n)) for n, p in SELECTION.items()]
+    selection = {"r4dev": a.select_r4 / "r4std"} if a.select_r4 else SELECTION
+    sel = [Bank(p, n, aux(n)) for n, p in selection.items()]
+    lengths = {b.name: int(b.chunk.shape[2]) for b in banks + sel}
+    if len(set(lengths.values())) != 1:
+        raise ValueError(f"banks with different chunk lengths: {lengths}")
+    cfg["chunk"] = lengths[banks[0].name]
+    cfg["selection"] = {k: str(v) for k, v in selection.items()}
     goals = torch.from_numpy(np.load(GOALS)).to(device)
     norms = copy_norms(pool, rng)
     norms["prop"] = float(np.mean([((b.end_prop[: b.n] - proprio(b.ctx_pos[: b.n, 0], b.ctx_pos[: b.n, 1])[:, None]) ** 2).mean()
@@ -403,4 +413,7 @@ if __name__ == "__main__":
     p.add_argument("--final-limit", type=int, default=0)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--limit", type=int, default=0, help="smoke only: banks per source")
+    p.add_argument("--only-r4", action="store_true", help="train only on the --r4 banks (no Round-0 / on-policy caches)")
+    p.add_argument("--select-r4", type=Path, default=None,
+                   help="select on this cta_encode_r4_full.py output (its r4std split) instead of the 8-step dev caches")
     main(p.parse_args())

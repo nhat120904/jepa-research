@@ -1,0 +1,90 @@
+{
+  "revision_date": "2026-10-03",
+  "scope": "Archived small JSON summaries/configs; no recomputed statistics or new cluster jobs",
+  "artifacts": [
+    {
+      "artifact": "cta_ladder_55762/paired_ladder.json",
+      "remote_path": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_ladder_55762/paired_ladder.json",
+      "bytes": 19534,
+      "sha256": "1d89263e1cd5798342a088f064f74ac287da524596ab37f5565de15da7311486"
+    },
+    {
+      "artifact": "cta_ladder_rerun_55842/paired_ladder.json",
+      "remote_path": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_ladder_rerun_55842/paired_ladder.json",
+      "bytes": 7180,
+      "sha256": "33135d70031613260f16e67df8fd77eb28f4736df011703565b057bfeb60872a"
+    },
+    {
+      "artifact": "cta_v2cl_aggregate_55676/summary.json",
+      "remote_path": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_v2cl_aggregate_55676/summary.json",
+      "bytes": 63867,
+      "sha256": "2e9f9375ebe555a90b5b16427d5f4578ceeb6e39045a25a4c37a6719a42f9e9c"
+    },
+    {
+      "artifact": "cta_replan15_aggregate_56600/aggregate/summary.json",
+      "remote_path": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_replan15_aggregate_56600/aggregate/summary.json",
+      "bytes": 48428,
+      "sha256": "534968ca263aa4ee420b2162ae9ab981fe946da5d95041d6a051c24b6a4c77f5"
+    },
+    {
+      "artifact": "cta_replan15_aggregate_56600/replan/replan_summary.json",
+      "remote_path": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_replan15_aggregate_56600/replan/replan_summary.json",
+      "bytes": 7474,
+      "sha256": "c8cb890723d3596871d65358407f2b2849d39b91362b0c3f03308e81a287a718"
+    },
+    {
+      "artifact": "cta_v2_train_55616/train_s0/offline_ladder.json",
+      "remote_path": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_v2_train_55616/train_s0/offline_ladder.json",
+      "bytes": 9967,
+      "sha256": "42bd0bbab70206881413578897ff472e69162c8ddc9f015331a20eac18fef203"
+    },
+    {
+      "artifact": "cta_v2_train_55616/train_s0/config.json",
+      "remote_path": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_v2_train_55616/train_s0/config.json",
+      "bytes": 2196,
+      "sha256": "022badeb49469f96d572a93a761313669673252632e40b23f87b0b107c88c537"
+    },
+    {
+      "artifact": "cta_replan15_train_56504/train/offline_ladder.json",
+      "remote_path": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_replan15_train_56504/train/offline_ladder.json",
+      "bytes": 7076,
+      "sha256": "8d47181a90243174150e235a6a3005bc3f95b79bd39b1d0ff8abf4ae6e5e0bd5"
+    },
+    {
+      "artifact": "cta_replan15_train_56504/train/config.json",
+      "remote_path": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_replan15_train_56504/train/config.json",
+      "bytes": 1767,
+      "sha256": "ddd47f902dddb73fe91212ed47ff83088f76989b6b0fe8b78c9cd61b1ae3bc87"
+    },
+    {
+      "artifact": "cta_budget_55763/budget.json",
+      "remote_path": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_budget_55763/budget.json",
+      "bytes": 5077,
+      "sha256": "13bfa3ad7efbe04e48d6fe180ec926037f5df44e9dab2a0934fd07db09f85eeb"
+    },
+    {
+      "artifact": "cta_r2_compare_54934/comparison.json",
+      "remote_path": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_r2_compare_54934/comparison.json",
+      "bytes": 8699,
+      "sha256": "0e9ce835c52c19f59301d20da0bb7716662941ec3fd0c737dd8efe21d1143206"
+    },
+    {
+      "artifact": "cta_improvement_audit_56686/audit.json",
+      "remote_path": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_improvement_audit_56686/audit.json",
+      "bytes": 6089,
+      "sha256": "111376e98feaab120b1a042365b0832239ae019d2dbcaddec4bda1708bc92c2c"
+    },
+    {
+      "artifact": "cta_repro_logcontract_56709/logcheck.json",
+      "remote_path": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_repro_logcontract_56709/logcheck.json",
+      "bytes": 7694,
+      "sha256": "0abaffeb50b0ec94f404dbb8827efee0399e44e233348b31e45c012e7df52bfa"
+    },
+    {
+      "artifact": "cta_v2cl_kscale_55897/kscale.json",
+      "remote_path": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_v2cl_kscale_55897/kscale.json",
+      "bytes": 30949,
+      "sha256": "16ee45e04ff8045bf3ca346272ae4c4333f027930d3f44d20031e34f1f9d9971"
+    }
+  ]
+}

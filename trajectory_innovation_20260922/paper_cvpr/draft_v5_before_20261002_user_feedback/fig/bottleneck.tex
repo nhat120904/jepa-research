@@ -1,0 +1,78 @@
+% Transcribed saved root-bootstrap estimates; provenance in evidence_data.json.
+\begin{tikzpicture}
+\definecolor{ctaplotblue}{HTML}{075B9D}
+\definecolor{ctaplotgreen}{HTML}{2B7658}
+\definecolor{ctaplotdeepgreen}{HTML}{355F51}
+\definecolor{ctaplotdark}{HTML}{333D43}
+\definecolor{ctaplotpriv}{HTML}{6B7280}
+\definecolor{ctaplotdino}{HTML}{8C9199}
+\begin{axis}[
+  width=0.87\linewidth,
+  height=1.85in,
+  xmin=0, xmax=1,
+  ymin=0.45, ymax=5.55,
+  xtick={0,0.25,0.5,0.75,1},
+  xticklabels={0,.25,.50,.75,1},
+  ytick={5,4,3,2,1},
+  yticklabels={Full (true),Code (true),\textbf{CTA},Endpoint,Direct},
+  font=\fontsize{8}{9}\selectfont,
+  tick label style={font=\fontsize{8}{9}\selectfont},
+  yticklabel style={text width=0.78in,align=right},
+  xlabel={Geometry retained gap (95\% CI)},
+  xlabel style={font=\fontsize{8}{9}\selectfont,yshift=1pt},
+  axis x line*=bottom,
+  axis y line*=left,
+  y axis line style={draw=none},
+  axis line style={black!45,line width=0.4pt},
+  tick align=outside,
+  tick style={black!45,line width=0.4pt},
+  ytick style={draw=none},
+  xmajorgrids=true,
+  grid style={black!12,line width=0.3pt},
+  clip=false,
+  enlarge y limits=false,
+]
+\node[anchor=south west,font=\fontsize{8}{9}\selectfont]
+  at (rel axis cs:0,1.03) {$L=15$: selection banks};
+\addplot[
+  only marks,mark=o,mark options={fill=white,line width=0.8pt},mark size=2.2pt,color=ctaplotpriv,line width=1.0pt,
+  error bars/.cd,x dir=both,x explicit,
+  error bar style={line width=1.0pt},
+  error mark options={rotate=90,mark size=2.5pt,line width=0.8pt}
+] coordinates {(0.775561,5) +=(0.035462,0) -=(0.040078,0)};
+\node[anchor=east,text=ctaplotpriv,font=\fontsize{8}{9}\selectfont]
+  at (axis cs:0.975,5) {0.776};
+\addplot[
+  only marks,mark=o,mark options={fill=white,line width=0.8pt},mark size=2.2pt,color=ctaplotpriv,line width=1.0pt,
+  error bars/.cd,x dir=both,x explicit,
+  error bar style={line width=1.0pt},
+  error mark options={rotate=90,mark size=2.5pt,line width=0.8pt}
+] coordinates {(0.667457,4) +=(0.051826,0) -=(0.059787,0)};
+\node[anchor=east,text=ctaplotpriv,font=\fontsize{8}{9}\selectfont]
+  at (axis cs:0.975,4) {0.667};
+\addplot[
+  only marks,mark=*,mark size=2.2pt,color=ctaplotblue,line width=1.0pt,
+  error bars/.cd,x dir=both,x explicit,
+  error bar style={line width=1.0pt},
+  error mark options={rotate=90,mark size=2.5pt,line width=0.8pt}
+] coordinates {(0.373872,3) +=(0.103686,0) -=(0.108626,0)};
+\node[anchor=east,text=ctaplotblue,font=\fontsize{8}{9}\selectfont]
+  at (axis cs:0.975,3) {0.374};
+\addplot[
+  only marks,mark=*,mark size=2.2pt,color=ctaplotgreen,line width=1.0pt,
+  error bars/.cd,x dir=both,x explicit,
+  error bar style={line width=1.0pt},
+  error mark options={rotate=90,mark size=2.5pt,line width=0.8pt}
+] coordinates {(0.439646,2) +=(0.107962,0) -=(0.126243,0)};
+\node[anchor=east,text=ctaplotgreen,font=\fontsize{8}{9}\selectfont]
+  at (axis cs:0.975,2) {0.440};
+\addplot[
+  only marks,mark=*,mark size=2.2pt,color=ctaplotdark,line width=1.0pt,
+  error bars/.cd,x dir=both,x explicit,
+  error bar style={line width=1.0pt},
+  error mark options={rotate=90,mark size=2.5pt,line width=0.8pt}
+] coordinates {(0.219485,1) +=(0.129109,0) -=(0.148156,0)};
+\node[anchor=east,text=ctaplotdark,font=\fontsize{8}{9}\selectfont]
+  at (axis cs:0.975,1) {0.219};
+\end{axis}
+\end{tikzpicture}

@@ -1,13 +1,12 @@
-\section{Conclusion and Limitations}
-\label{sec:conclusion}
+\section{Discussion and Conclusion}
+\label{sec:discussion}
+CTA makes the future representation itself a learnable component of a visual world model. A context-conditioned encoder maps sampled action consequences to a finite segment code; the world model predicts that code, and a separate goal-conditioned reader evaluates the prediction. This provides a compact interface between action-conditioned dynamics and decisions while retaining visual future supervision during target learning.
 
-We proposed to make the prediction target of a world model a learned, history-conditioned code of an action's entire future segment, rather than one latent state per time step.
-\method learns this code with a decision reader and a feature decoder, predicts it in one pass, and lets one prediction per candidate be read for any goal.
-\result{[What the experiments show, and what they do not.]}
+The present evidence supports two findings. The learned target improves geometry ranking on fixed development proposals, including over a parameter-matched direct scorer. Its parallel forecast and reusable readout also have a favorable component-cost profile in the measured repeated-query workload. Closed-loop development results show improvement over the proposal policy, while comparisons against learned alternatives remain uncertain. These findings motivate the representation without establishing a general planning or state-of-the-art advantage.
 
-\paragraph{Limitations.}
-\method is not label-free: task-progress labels from the simulator train the reader and the decision terms of the world-model loss, although nothing uses labels at test time.
-Training data require branching the simulator at every decision.
-The proposal policy is pretrained on expert demonstrations, and a selector cannot do better than the best proposal, so gains are bounded by the policy's proposals.
-The rate bound applies to the target code; at deployment the reader receives the predictive mean of the code.
-Finally, PushT has a single goal, so it tests neither the reuse of predictions across goals nor the value of the intermediate part of the segment; \cref{sec:path} addresses the latter.
+\paragraph{Limitations and open questions.}
+The experiments cover one task, reused development roots, and one training seed. Historical proposal sampling is numerically sensitive to batch grouping; stronger control evidence requires independent roots and seeds under the corrected protocol. A large frozen encoder and pretrained proposal policy contribute substantially to deployment cost, and CTA cannot choose actions outside the proposal bank. The code is learned with privileged training labels, and the relationship between those labels and native task success is imperfect.
+
+The current comparisons do not separately attribute the gain to conditioning, intermediate observations, quantization, or future supervision. A factorized direct comparator and a compact per-frame world model are especially relevant controls. The decoder encourages future information but does not by itself guarantee that the code retains all decision-relevant events. Forecast distributions are reduced to coordinate means, without a calibrated uncertainty treatment. Finally, multiple views of one target do not test new semantic goals. Such goals and tasks with consequential intermediate events would help characterize what the segment representation preserves.
+
+CTA consequently offers a concrete direction for world-model design: forecast a learned description of an action segment in the context where it will be used. Establishing its broader impact requires the representation-quality and component-compute findings to carry through to reproducible closed-loop control across tasks and workloads.

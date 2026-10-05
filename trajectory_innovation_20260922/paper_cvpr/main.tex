@@ -1,8 +1,8 @@
-% CVPR 2027 submission draft. Template: CVPR 2026 author kit (https://github.com/cvpr-org/author-kit).
+% CVPR review manuscript; uses the existing official CVPR 2026 author kit.
 \documentclass[10pt,twocolumn,letterpaper]{article}
 
 % \usepackage{cvpr}              % camera-ready
-\usepackage[review]{cvpr}      % review version
+\usepackage[review]{cvpr}      % official anonymous review layout
 % \usepackage[pagenumbers]{cvpr} % arXiv version
 
 \input{preamble}
@@ -10,7 +10,7 @@
 \definecolor{cvprblue}{rgb}{0.21,0.49,0.74}
 \usepackage[pagebackref,breaklinks,colorlinks,allcolors=cvprblue]{hyperref}
 
-\def\paperID{*****}
+\def\paperID{*****} % replace only after receiving the submission ID
 \def\confName{CVPR}
 \def\confYear{2027}
 
@@ -29,6 +29,7 @@
 \input{sec/5_experiments}
 \input{sec/6_conclusion}
 
+\FloatBarrier
 {
     \small
     \bibliographystyle{ieeenat_fullname}

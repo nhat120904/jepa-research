@@ -1,0 +1,997 @@
+{
+  "schema_version": 1,
+  "created_date": "2026-10-02",
+  "authoring_scope": "Metadata transcription of existing saved estimates; no new statistics or evaluations.",
+  "interval": {
+    "confidence": 0.95,
+    "method": "root-cluster bootstrap",
+    "unit": "rollout root",
+    "interpretation": "marginal estimate intervals; overlap is not a paired-difference test"
+  },
+  "sources": {
+    "ladder_l8": {
+      "artifact": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_ladder_55762/paired_ladder.json",
+      "json_group": "sets.P0_states/geom",
+      "upstream_run": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_v2cl_closed_55666",
+      "job": "55762"
+    },
+    "ladder_l8_matched": {
+      "artifact": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_ladder_rerun_55842/paired_ladder.json",
+      "json_group": "sets.P0_states/geom",
+      "upstream_run": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_v2cl_closed_55841",
+      "job": "55842",
+      "reference_check": "Shared CTAV2/ENDV2/DIRV2/FULLV2 scores have saved max_abs_diff=0 and same_choice=1."
+    },
+    "selection_l15": {
+      "artifact": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_replan15_train_56504/train/offline_ladder.json",
+      "json_group": "ladder.pooled",
+      "job": "56504"
+    },
+    "review": {
+      "artifact": "/home/nhatnc129/nhat.nc/jepa-research/trajectory_innovation_20260922/docs/CTA_IMPROVEMENT_REVIEW_20261002_VI.md"
+    },
+    "notes": {
+      "artifact": "/tmp/cta_paper_evidence_20261002.md"
+    },
+    "component_timing": {
+      "artifact": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_budget_55763/budget.json",
+      "protocol": "10 states, 3 warmups and 10 repeats; CUDA synchronization; H100 3g.40gb MIG"
+    },
+    "candidate_quality": {
+      "artifact": "/mnt/data/nhatnc129/jepa/trajectory_innovation/cta_v2cl_kscale_55897/kscale.json",
+      "population": "100 reused development roots; 2810 P0 decisions; L8; separate K64 logging run"
+    }
+  },
+  "figures": {
+    "ranking": {
+      "tex_file": "ranking.tex",
+      "metric": "geometry retained gap",
+      "label": "L8 P0 development states",
+      "n_exec": 8,
+      "candidates": 8,
+      "training_seeds": 1,
+      "roots": {
+        "first": 2200,
+        "last": 2399,
+        "count": 200
+      },
+      "decisions_total": 5558,
+      "decisions_with_geometry_spread": 3433,
+      "plotted_estimates": [
+        {
+          "id": "CTAV2",
+          "label": "CTA",
+          "estimate": 0.6799281437163132,
+          "ci_lower": 0.6294801428767115,
+          "ci_upper": 0.7257202335575396,
+          "access": "deployable",
+          "color": "#075B9D",
+          "source": "ladder_l8",
+          "json_field": "scorers.CTAV2.retained_gap"
+        },
+        {
+          "id": "ENDV2",
+          "label": "Endpoint",
+          "estimate": 0.6353335150781598,
+          "ci_lower": 0.5875800294956399,
+          "ci_upper": 0.6778131837741823,
+          "access": "deployable",
+          "color": "#2B7658",
+          "source": "ladder_l8",
+          "json_field": "scorers.ENDV2.retained_gap"
+        },
+        {
+          "id": "DIRV2",
+          "label": "Direct",
+          "estimate": 0.48283319204612474,
+          "ci_lower": 0.4253973846240093,
+          "ci_upper": 0.535088059538106,
+          "access": "deployable",
+          "color": "#333D43",
+          "source": "ladder_l8",
+          "json_field": "scorers.DIRV2.retained_gap"
+        },
+        {
+          "id": "DIRV2L",
+          "label": "Direct-large",
+          "estimate": 0.5018821746025529,
+          "ci_lower": 0.44452152842984544,
+          "ci_upper": 0.5530122734856852,
+          "access": "deployable",
+          "color": "#355F51",
+          "source": "ladder_l8_matched",
+          "json_field": "scorers.DIRV2L.retained_gap"
+        },
+        {
+          "id": "DINOWM",
+          "label": "DINO-WM",
+          "estimate": 0.333532438880485,
+          "ci_lower": 0.2724041338530076,
+          "ci_upper": 0.3928289664318829,
+          "access": "deployable",
+          "color": "#8C9199",
+          "source": "ladder_l8",
+          "json_field": "scorers.DINOWM.retained_gap"
+        }
+      ],
+      "limits": [
+        0,
+        1
+      ],
+      "display_precision": 3,
+      "cautions": [
+        "Development evidence; historical batched proposal runner.",
+        "Official DINO-WM uses different observation/input and training operating points.",
+        "DIRECT-large matches parameter count, not the missing factorized future-supervision control.",
+        "These estimates are not success rates and FULL/CODE are not strict upper bounds."
+      ],
+      "parameter_counts": {
+        "CTAV2": 10950933,
+        "ENDV2": 11136901,
+        "DIRV2": 6571777,
+        "DIRV2L": 11310000,
+        "DINOWM": 20122760
+      },
+      "parameter_count_note": "DIR-large is rounded to 11.31M; all counts exclude frozen image encoder and proposal policy.",
+      "diagnostics_location": "Actual-future FULL/CODE references are reported only in supplementary tables."
+    },
+    "bottleneck": {
+      "tex_file": "bottleneck.tex",
+      "metric": "geometry retained gap",
+      "label": "L15 selection banks",
+      "n_exec": 15,
+      "candidates": 8,
+      "training_seeds": 1,
+      "roots": {
+        "first": 2000,
+        "last": 2099,
+        "count": 100
+      },
+      "selection_banks": 1476,
+      "plotted_estimates": [
+        {
+          "id": "full",
+          "label": "Full (true)",
+          "estimate": 0.7755611947706634,
+          "ci_lower": 0.7354830215719613,
+          "ci_upper": 0.8110231283935257,
+          "access": "privileged",
+          "color": "#6B7280",
+          "source": "selection_l15",
+          "json_field": "full.retained_gap"
+        },
+        {
+          "id": "code",
+          "label": "Code (true)",
+          "estimate": 0.6674573050538688,
+          "ci_lower": 0.6076701410172963,
+          "ci_upper": 0.7192830001389214,
+          "access": "privileged",
+          "color": "#6B7280",
+          "source": "selection_l15",
+          "json_field": "code.retained_gap"
+        },
+        {
+          "id": "cta",
+          "label": "CTA",
+          "estimate": 0.37387186828032676,
+          "ci_lower": 0.2652456900290661,
+          "ci_upper": 0.477557576938847,
+          "access": "deployable",
+          "color": "#075B9D",
+          "source": "selection_l15",
+          "json_field": "cta.retained_gap"
+        },
+        {
+          "id": "endpoint",
+          "label": "Endpoint",
+          "estimate": 0.43964606314726007,
+          "ci_lower": 0.3134033976169386,
+          "ci_upper": 0.5476076576811065,
+          "access": "deployable",
+          "color": "#2B7658",
+          "source": "selection_l15",
+          "json_field": "endpoint.retained_gap"
+        },
+        {
+          "id": "direct",
+          "label": "Direct",
+          "estimate": 0.2194845550135064,
+          "ci_lower": 0.07132892684531755,
+          "ci_upper": 0.34859351987524384,
+          "access": "deployable",
+          "color": "#333D43",
+          "source": "selection_l15",
+          "json_field": "direct.retained_gap"
+        }
+      ],
+      "limits": [
+        0,
+        1
+      ],
+      "display_precision": 3,
+      "cautions": [
+        "Offline selection split; these are not the 200 P0 development evaluation roots.",
+        "FULL/CODE use actual future information and are privileged diagnostic references.",
+        "No cross-length trend or paired CODE-minus-CTA interval is inferred.",
+        "L8 and L15 training datasets differ."
+      ]
+    },
+    "scaling": {
+      "tex_file": "scaling.tex",
+      "source": "component_timing",
+      "metric": "component ms_median",
+      "scope": "Our scorer only: exclude shared DINOv2/PCA context, policy sampling and simulator execution. Forecast reused across reader queries. G16 denotes 16 views of one target pose.",
+      "results": {
+        "K8": {
+          "policy_ms": 765.3325730934739,
+          "G1": {
+            "context": {
+              "ms_median": 6.4864931628108025,
+              "ms_p90": 6.520555727183819,
+              "flops": 24544579584
+            },
+            "CTAV2": {
+              "ms_median": 4.109553061425686,
+              "ms_p90": 4.302162304520608,
+              "flops": 65916375040
+            },
+            "ENDV2": {
+              "ms_median": 4.516922868788242,
+              "ms_p90": 4.642133414745331,
+              "flops": 108503830528
+            },
+            "DIRV2": {
+              "ms_median": 2.5357920676469803,
+              "ms_p90": 2.5551004335284233,
+              "flops": 81795633152
+            },
+            "CTA4": {
+              "ms_median": 4.128777422010899,
+              "ms_p90": 4.281638003885746,
+              "flops": 65916375040
+            },
+            "DINOWM": {
+              "ms_median": 28.956986032426357,
+              "ms_p90": 29.154063016176224,
+              "flops": 297942175488
+            }
+          },
+          "G16": {
+            "context": {
+              "ms_median": 6.480759009718895,
+              "ms_p90": 6.51674922555685,
+              "flops": 24544579584
+            },
+            "CTAV2": {
+              "ms_median": 16.868106089532375,
+              "ms_p90": 17.134361527860165,
+              "flops": 692330414080
+            },
+            "ENDV2": {
+              "ms_median": 23.40484783053398,
+              "ms_p90": 23.519345186650753,
+              "flops": 1088151420928
+            },
+            "DIRV2": {
+              "ms_median": 26.813067495822906,
+              "ms_p90": 26.827028021216393,
+              "flops": 1308730130432
+            },
+            "CTA4": {
+              "ms_median": 16.78930688649416,
+              "ms_p90": 17.016378231346607,
+              "flops": 692330414080
+            },
+            "DINOWM": {
+              "ms_median": 29.072373174130917,
+              "ms_p90": 29.23457734286785,
+              "flops": 297942175488
+            }
+          }
+        },
+        "K16": {
+          "policy_ms": 777.2786347195506,
+          "G1": {
+            "context": {
+              "ms_median": 6.50374311953783,
+              "ms_p90": 6.560453027486801,
+              "flops": 24544579584
+            },
+            "CTAV2": {
+              "ms_median": 4.885428585112095,
+              "ms_p90": 5.152937583625317,
+              "flops": 131832750080
+            },
+            "ENDV2": {
+              "ms_median": 6.073446944355965,
+              "ms_p90": 6.099908612668514,
+              "flops": 217007661056
+            },
+            "DIRV2": {
+              "ms_median": 3.9377855136990547,
+              "ms_p90": 3.9528459310531616,
+              "flops": 163591266304
+            },
+            "CTA4": {
+              "ms_median": 4.870597273111343,
+              "ms_p90": 5.140924267470837,
+              "flops": 131832750080
+            },
+            "DINOWM": {
+              "ms_median": 52.27305367588997,
+              "ms_p90": 52.65564974397421,
+              "flops": 595884350976
+            }
+          },
+          "G16": {
+            "context": {
+              "ms_median": 6.49422500282526,
+              "ms_p90": 6.569870375096798,
+              "flops": 24544579584
+            },
+            "CTAV2": {
+              "ms_median": 30.515634454786777,
+              "ms_p90": 30.76572585850954,
+              "flops": 1384660828160
+            },
+            "ENDV2": {
+              "ms_median": 44.15899142622948,
+              "ms_p90": 44.282786175608635,
+              "flops": 2176302841856
+            },
+            "DIRV2": {
+              "ms_median": 52.51812469214201,
+              "ms_p90": 52.593736723065376,
+              "flops": 2617460260864
+            },
+            "CTA4": {
+              "ms_median": 30.417555943131447,
+              "ms_p90": 30.625710263848305,
+              "flops": 1384660828160
+            },
+            "DINOWM": {
+              "ms_median": 52.83608101308346,
+              "ms_p90": 53.122275695204735,
+              "flops": 595884350976
+            }
+          }
+        },
+        "K64": {
+          "policy_ms": 923.0145299807191,
+          "G1": {
+            "context": {
+              "ms_median": 6.513233296573162,
+              "ms_p90": 6.543346866965294,
+              "flops": 24544579584
+            },
+            "CTAV2": {
+              "ms_median": 12.961256317794323,
+              "ms_p90": 13.004159927368164,
+              "flops": 527331000320
+            },
+            "ENDV2": {
+              "ms_median": 20.091711543500423,
+              "ms_p90": 20.12682855129242,
+              "flops": 868030644224
+            },
+            "DIRV2": {
+              "ms_median": 13.93943466246128,
+              "ms_p90": 13.971177116036415,
+              "flops": 654365065216
+            },
+            "CTA4": {
+              "ms_median": 12.869378551840782,
+              "ms_p90": 12.885041907429695,
+              "flops": 527331000320
+            },
+            "DINOWM": {
+              "ms_median": 188.99499718099833,
+              "ms_p90": 189.98847790062428,
+              "flops": 2383537403904
+            }
+          },
+          "G16": {
+            "context": {
+              "ms_median": 6.503922864794731,
+              "ms_p90": 6.531220488250256,
+              "flops": 24544579584
+            },
+            "CTAV2": {
+              "ms_median": 114.421590231359,
+              "ms_p90": 114.70019966363907,
+              "flops": 5538643312640
+            },
+            "ENDV2": {
+              "ms_median": 171.04194965213537,
+              "ms_p90": 171.6503458097577,
+              "flops": 8705211367424
+            },
+            "DIRV2": {
+              "ms_median": 206.6681506112218,
+              "ms_p90": 206.71703182160854,
+              "flops": 10469841043456
+            },
+            "CTA4": {
+              "ms_median": 114.40788023173809,
+              "ms_p90": 114.4891181960702,
+              "flops": 5538643312640
+            },
+            "DINOWM": {
+              "ms_median": 189.9973377585411,
+              "ms_p90": 190.52247032523155,
+              "flops": 2383537403904
+            }
+          }
+        }
+      },
+      "quality": {
+        "source": "candidate_quality",
+        "metric": "gain_per_decision * 1000",
+        "sets.P0_states": {
+          "decisions": 2810,
+          "roots": 100,
+          "by_k": {
+            "8": {
+              "oracle_gain_per_decision": 0.0009673897724262215,
+              "crossings": 32,
+              "scorers": {
+                "CTA4": {
+                  "gain_per_decision": 0.0005781561812181454,
+                  "retained": 0.5976455382282211,
+                  "capture": 0.84375,
+                  "worse_than_p0": 0.0056939501779359435
+                },
+                "CTAV2": {
+                  "gain_per_decision": 0.000608009053725181,
+                  "retained": 0.6285047362039907,
+                  "capture": 0.8125,
+                  "worse_than_p0": 0.003202846975088968
+                },
+                "CTAV2S": {
+                  "gain_per_decision": 0.0004417159868624361,
+                  "retained": 0.45660601285313235,
+                  "capture": 0.78125,
+                  "worse_than_p0": 0.002491103202846975
+                },
+                "ENDV2": {
+                  "gain_per_decision": 0.0005223336367273676,
+                  "retained": 0.5399412435562044,
+                  "capture": 0.84375,
+                  "worse_than_p0": 0.006405693950177936
+                },
+                "DIRV2": {
+                  "gain_per_decision": 0.00042442046743770275,
+                  "retained": 0.43872747007987556,
+                  "capture": 0.5625,
+                  "worse_than_p0": 0.006761565836298933
+                },
+                "DIRV2L": {
+                  "gain_per_decision": 0.00043686355314094663,
+                  "retained": 0.4515900060068748,
+                  "capture": 0.59375,
+                  "worse_than_p0": 0.006049822064056939
+                },
+                "DINOWM": {
+                  "gain_per_decision": 0.00025881905242614164,
+                  "retained": 0.26754371381973713,
+                  "capture": 0.5625,
+                  "worse_than_p0": 0.012099644128113879
+                },
+                "FULLV2": {
+                  "gain_per_decision": 0.000707490805232161,
+                  "retained": 0.7313399680231973,
+                  "capture": 0.84375,
+                  "worse_than_p0": 0.0
+                },
+                "CODEV2": {
+                  "gain_per_decision": 0.0005647703301753093,
+                  "retained": 0.5838084568114263,
+                  "capture": 0.8125,
+                  "worse_than_p0": 0.0014234875444839859
+                },
+                "CTAV2S-0.5sd": {
+                  "gain_per_decision": 0.00039301472053340916,
+                  "retained": 0.40626305108407856,
+                  "capture": 0.71875,
+                  "worse_than_p0": 0.004270462633451958
+                },
+                "CTAV2S-1.0sd": {
+                  "gain_per_decision": 0.0003740742473439165,
+                  "retained": 0.3866841039736602,
+                  "capture": 0.6875,
+                  "worse_than_p0": 0.004270462633451958
+                },
+                "CTAV2S-2.0sd": {
+                  "gain_per_decision": 0.0003161555840536183,
+                  "retained": 0.3268130313810301,
+                  "capture": 0.625,
+                  "worse_than_p0": 0.003914590747330961
+                }
+              }
+            },
+            "16": {
+              "oracle_gain_per_decision": 0.0011966105264064654,
+              "crossings": 42,
+              "scorers": {
+                "CTA4": {
+                  "gain_per_decision": 0.0007046046163210166,
+                  "retained": 0.5888337105281958,
+                  "capture": 0.7619047619047619,
+                  "worse_than_p0": 0.0056939501779359435
+                },
+                "CTAV2": {
+                  "gain_per_decision": 0.0007497570055317992,
+                  "retained": 0.6265672823248434,
+                  "capture": 0.7857142857142857,
+                  "worse_than_p0": 0.003914590747330961
+                },
+                "CTAV2S": {
+                  "gain_per_decision": 0.0005064292461172646,
+                  "retained": 0.4232197819938284,
+                  "capture": 0.6666666666666666,
+                  "worse_than_p0": 0.00498220640569395
+                },
+                "ENDV2": {
+                  "gain_per_decision": 0.0006444773331541185,
+                  "retained": 0.538585712670893,
+                  "capture": 0.7142857142857143,
+                  "worse_than_p0": 0.006405693950177936
+                },
+                "DIRV2": {
+                  "gain_per_decision": 0.0005534326255295965,
+                  "retained": 0.46250021482896947,
+                  "capture": 0.5238095238095238,
+                  "worse_than_p0": 0.006761565836298933
+                },
+                "DIRV2L": {
+                  "gain_per_decision": 0.0005329664108174449,
+                  "retained": 0.44539672604919617,
+                  "capture": 0.4523809523809524,
+                  "worse_than_p0": 0.006761565836298933
+                },
+                "DINOWM": {
+                  "gain_per_decision": 0.00038022763949338654,
+                  "retained": 0.3177538815701765,
+                  "capture": 0.5238095238095238,
+                  "worse_than_p0": 0.011743772241992882
+                },
+                "FULLV2": {
+                  "gain_per_decision": 0.0008725814888130556,
+                  "retained": 0.7292109417033964,
+                  "capture": 0.8809523809523809,
+                  "worse_than_p0": 0.0
+                },
+                "CODEV2": {
+                  "gain_per_decision": 0.0006962473353858486,
+                  "retained": 0.5818495826513789,
+                  "capture": 0.8333333333333334,
+                  "worse_than_p0": 0.0014234875444839859
+                },
+                "CTAV2S-0.5sd": {
+                  "gain_per_decision": 0.0005082034787843998,
+                  "retained": 0.4247024972365761,
+                  "capture": 0.5714285714285714,
+                  "worse_than_p0": 0.0035587188612099642
+                },
+                "CTAV2S-1.0sd": {
+                  "gain_per_decision": 0.0004336296157823545,
+                  "retained": 0.3623815821548764,
+                  "capture": 0.5238095238095238,
+                  "worse_than_p0": 0.005338078291814947
+                },
+                "CTAV2S-2.0sd": {
+                  "gain_per_decision": 0.0003511436939603586,
+                  "retained": 0.293448608558439,
+                  "capture": 0.5238095238095238,
+                  "worse_than_p0": 0.006405693950177936
+                }
+              }
+            },
+            "32": {
+              "oracle_gain_per_decision": 0.0014398046997320805,
+              "crossings": 55,
+              "scorers": {
+                "CTA4": {
+                  "gain_per_decision": 0.0008600004717645711,
+                  "retained": 0.5973035592428614,
+                  "capture": 0.7454545454545455,
+                  "worse_than_p0": 0.006405693950177936
+                },
+                "CTAV2": {
+                  "gain_per_decision": 0.0008766578644241076,
+                  "retained": 0.6088727621094975,
+                  "capture": 0.6727272727272727,
+                  "worse_than_p0": 0.005338078291814947
+                },
+                "CTAV2S": {
+                  "gain_per_decision": 0.0006103897302931346,
+                  "retained": 0.42393925398820836,
+                  "capture": 0.5636363636363636,
+                  "worse_than_p0": 0.0035587188612099642
+                },
+                "ENDV2": {
+                  "gain_per_decision": 0.0007722855252816853,
+                  "retained": 0.5363821394841901,
+                  "capture": 0.6363636363636364,
+                  "worse_than_p0": 0.007829181494661922
+                },
+                "DIRV2": {
+                  "gain_per_decision": 0.0006717184601081682,
+                  "retained": 0.46653442667131306,
+                  "capture": 0.5454545454545454,
+                  "worse_than_p0": 0.007473309608540925
+                },
+                "DIRV2L": {
+                  "gain_per_decision": 0.0006436208094114624,
+                  "retained": 0.4470195225305401,
+                  "capture": 0.43636363636363634,
+                  "worse_than_p0": 0.008896797153024912
+                },
+                "DINOWM": {
+                  "gain_per_decision": 0.0004544561715191088,
+                  "retained": 0.31563737193223096,
+                  "capture": 0.509090909090909,
+                  "worse_than_p0": 0.013167259786476869
+                },
+                "FULLV2": {
+                  "gain_per_decision": 0.0010769735248346505,
+                  "retained": 0.7479997287375532,
+                  "capture": 0.8545454545454545,
+                  "worse_than_p0": 0.0
+                },
+                "CODEV2": {
+                  "gain_per_decision": 0.0008899556762820465,
+                  "retained": 0.6181086062905962,
+                  "capture": 0.7818181818181819,
+                  "worse_than_p0": 0.00035587188612099647
+                },
+                "CTAV2S-0.5sd": {
+                  "gain_per_decision": 0.0005975645689921685,
+                  "retained": 0.4150316838827957,
+                  "capture": 0.509090909090909,
+                  "worse_than_p0": 0.0035587188612099642
+                },
+                "CTAV2S-1.0sd": {
+                  "gain_per_decision": 0.0005480252630831531,
+                  "retained": 0.3806247216619934,
+                  "capture": 0.4727272727272727,
+                  "worse_than_p0": 0.004626334519572953
+                },
+                "CTAV2S-2.0sd": {
+                  "gain_per_decision": 0.0004765250808550144,
+                  "retained": 0.3309650822390609,
+                  "capture": 0.4909090909090909,
+                  "worse_than_p0": 0.006405693950177936
+                }
+              }
+            },
+            "64": {
+              "oracle_gain_per_decision": 0.0016075907116700648,
+              "crossings": 64,
+              "scorers": {
+                "CTA4": {
+                  "gain_per_decision": 0.0009783271298611925,
+                  "retained": 0.6085672943736068,
+                  "capture": 0.6875,
+                  "worse_than_p0": 0.006761565836298933
+                },
+                "CTAV2": {
+                  "gain_per_decision": 0.0009987866249095232,
+                  "retained": 0.6212941003322431,
+                  "capture": 0.6875,
+                  "worse_than_p0": 0.006405693950177936
+                },
+                "CTAV2S": {
+                  "gain_per_decision": 0.0006923215583164347,
+                  "retained": 0.4306578492215896,
+                  "capture": 0.515625,
+                  "worse_than_p0": 0.004626334519572953
+                },
+                "ENDV2": {
+                  "gain_per_decision": 0.0008892622631183837,
+                  "retained": 0.5531645938626772,
+                  "capture": 0.65625,
+                  "worse_than_p0": 0.0071174377224199285
+                },
+                "DIRV2": {
+                  "gain_per_decision": 0.0007445390940968791,
+                  "retained": 0.46313970881519073,
+                  "capture": 0.53125,
+                  "worse_than_p0": 0.008540925266903915
+                },
+                "DIRV2L": {
+                  "gain_per_decision": 0.0007385062797971642,
+                  "retained": 0.4593870034431575,
+                  "capture": 0.484375,
+                  "worse_than_p0": 0.008540925266903915
+                },
+                "DINOWM": {
+                  "gain_per_decision": 0.0004999779649883259,
+                  "retained": 0.3110107326191987,
+                  "capture": 0.40625,
+                  "worse_than_p0": 0.014590747330960854
+                },
+                "FULLV2": {
+                  "gain_per_decision": 0.0011840189185683143,
+                  "retained": 0.7365176409474785,
+                  "capture": 0.859375,
+                  "worse_than_p0": 0.00035587188612099647
+                },
+                "CODEV2": {
+                  "gain_per_decision": 0.0009826466114503543,
+                  "retained": 0.6112542230537772,
+                  "capture": 0.734375,
+                  "worse_than_p0": 0.0007117437722419929
+                },
+                "CTAV2S-0.5sd": {
+                  "gain_per_decision": 0.0006723843777951435,
+                  "retained": 0.41825594842895614,
+                  "capture": 0.53125,
+                  "worse_than_p0": 0.00498220640569395
+                },
+                "CTAV2S-1.0sd": {
+                  "gain_per_decision": 0.0006312943975889573,
+                  "retained": 0.39269597230574294,
+                  "capture": 0.5,
+                  "worse_than_p0": 0.00498220640569395
+                },
+                "CTAV2S-2.0sd": {
+                  "gain_per_decision": 0.0005616461168570873,
+                  "retained": 0.34937133735589615,
+                  "capture": 0.4375,
+                  "worse_than_p0": 0.006405693950177936
+                }
+              }
+            }
+          },
+          "k64_minus_k8": {
+            "CTA4": [
+              0.00040017094864304686,
+              0.000333735791112274,
+              0.0004703842246662632
+            ],
+            "CTAV2": [
+              0.0003907775711843425,
+              0.0003280028409457119,
+              0.0004577068648500827
+            ],
+            "CTAV2S": [
+              0.0002506055714539987,
+              0.00015711879637911173,
+              0.0003399037866860847
+            ],
+            "ENDV2": [
+              0.0003669286263910161,
+              0.00028968377244411214,
+              0.00045273493848243314
+            ],
+            "DIRV2": [
+              0.00032011862665917647,
+              0.00023720913750163939,
+              0.0004070633594143999
+            ],
+            "DIRV2L": [
+              0.0003016427266562175,
+              0.00022401583186954372,
+              0.0003827143580088912
+            ],
+            "DINOWM": [
+              0.0002411589125621843,
+              0.00016432638087261707,
+              0.0003275504590125698
+            ],
+            "FULLV2": [
+              0.000476528113336153,
+              0.0004065903211564741,
+              0.0005512973911996304
+            ],
+            "CODEV2": [
+              0.0004178762812750447,
+              0.00035439851543787426,
+              0.00048490769422357795
+            ],
+            "CTAV2S-0.5sd": [
+              0.0002793696572617343,
+              0.00020135874003150678,
+              0.00035716659792536006
+            ],
+            "CTAV2S-1.0sd": [
+              0.0002572201502450408,
+              0.00017688790370903686,
+              0.00033967614833544746
+            ],
+            "CTAV2S-2.0sd": [
+              0.000245490532803469,
+              0.00017089271100414409,
+              0.0003252111989100824
+            ],
+            "oracle": [
+              0.0006402009392438437,
+              0.0005717896486450529,
+              0.0007113420130356732
+            ]
+          },
+          "pairs": {
+            "CTAV2-DIRV2L": {
+              "8": [
+                0.00017114550058423418,
+                0.00011149463258937383,
+                0.00022665948163467934
+              ],
+              "16": [
+                0.0002167905947143542,
+                0.00013326617815727395,
+                0.0002903629374259007
+              ],
+              "32": [
+                0.00023303705501264484,
+                0.00014829737027801393,
+                0.0003175648654337129
+              ],
+              "64": [
+                0.00026028034511235915,
+                0.0001723464210703467,
+                0.00034702898173916635
+              ]
+            },
+            "CTAV2-DIRV2": {
+              "8": [
+                0.0001835885862874781,
+                0.0001127882258663298,
+                0.0002577844081698257
+              ],
+              "16": [
+                0.00019632438000220253,
+                0.00011902356892246668,
+                0.0002721486644433272
+              ],
+              "32": [
+                0.00020493940431593895,
+                0.0001354499028525472,
+                0.0002734315277394579
+              ],
+              "64": [
+                0.00025424753081264414,
+                0.00019086961620475506,
+                0.00032743600734676785
+              ]
+            },
+            "CTAV2-ENDV2": {
+              "8": [
+                8.56754169978133e-05,
+                2.1619407226729213e-05,
+                0.0001431030624820643
+              ],
+              "16": [
+                0.00010527967237768053,
+                2.6794810422420833e-05,
+                0.0001735581246700197
+              ],
+              "32": [
+                0.000104372339142422,
+                6.085077477310855e-05,
+                0.00014984407042468618
+              ],
+              "64": [
+                0.00010952436179113968,
+                6.436535228288496e-05,
+                0.00015495108557405225
+              ]
+            },
+            "CTAV2-DINOWM": {
+              "8": [
+                0.00034919000129903925,
+                0.00027116900634226214,
+                0.0004382765061026336
+              ],
+              "16": [
+                0.0003695293660384126,
+                0.00028745959013830275,
+                0.0004524395326868165
+              ],
+              "32": [
+                0.0004222016929049985,
+                0.0003304039041630042,
+                0.0005163158050973987
+              ],
+              "64": [
+                0.0004988086599211975,
+                0.0004057072109195447,
+                0.0005958955770992101
+              ]
+            },
+            "CTAV2S-CTAV2": {
+              "8": [
+                -0.00016629306686274483,
+                -0.00022681346722483046,
+                -9.124143398304209e-05
+              ],
+              "16": [
+                -0.00024332775941453454,
+                -0.0003177936875509881,
+                -0.00015287049414067683
+              ],
+              "32": [
+                -0.00026626813413097267,
+                -0.0003128809943710749,
+                -0.0002227379605469061
+              ],
+              "64": [
+                -0.00030646506659308864,
+                -0.00035457478969301033,
+                -0.0002585034735630665
+              ]
+            },
+            "CTAV2S-DIRV2L": {
+              "8": [
+                4.852433721489299e-06,
+                -6.300481058525547e-05,
+                8.382907596576714e-05
+              ],
+              "16": [
+                -2.653716470018028e-05,
+                -8.237668407593298e-05,
+                3.2350103080339756e-05
+              ],
+              "32": [
+                -3.323107911832775e-05,
+                -0.00010781357816415432,
+                4.088939592486949e-05
+              ],
+              "64": [
+                -4.6184721480729486e-05,
+                -0.00013706981362559254,
+                4.0490513704505204e-05
+              ]
+            },
+            "CTAV2-CTA4": {
+              "8": [
+                2.985287250703539e-05,
+                -7.69957567843047e-06,
+                6.979336523242476e-05
+              ],
+              "16": [
+                4.5152389210782416e-05,
+                4.152596502762266e-06,
+                8.996430389423898e-05
+              ],
+              "32": [
+                1.6657392659536142e-05,
+                -3.241306593026114e-05,
+                6.474518245987241e-05
+              ],
+              "64": [
+                2.0459495048331072e-05,
+                -3.360011877952937e-05,
+                6.99502337141769e-05
+              ]
+            },
+            "FULLV2-CTAV2": {
+              "8": [
+                9.948175150698005e-05,
+                1.865187282721784e-05,
+                0.00019702061094433362
+              ],
+              "16": [
+                0.00012282448328125632,
+                2.805393996392275e-05,
+                0.0002366583580452559
+              ],
+              "32": [
+                0.00020031566041054316,
+                9.760892397236073e-05,
+                0.00032047927278467097
+              ],
+              "64": [
+                0.00018523229365879058,
+                8.440825788681459e-05,
+                0.0002999578947984359
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

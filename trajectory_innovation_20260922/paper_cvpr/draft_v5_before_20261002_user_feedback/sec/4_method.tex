@@ -1,0 +1,72 @@
+\section{Conditional Trajectory Abstraction}
+\label{sec:method}
+\subsection{Inputs and learned source target}
+\label{sec:source}
+We use frozen DINOv2 ViT-S/14 features~\cite{oquab2024dinov2}, projected to 128 dimensions using PCA fitted on training images. Native $96\times96$ observations are resized to $224\times224$. Context contains 256 current-image tokens, 64 pooled previous-image tokens, and one token embedding the current and previous agent positions divided by 512. An action $a_h$ is embedded using its absolute and relative position, $[a_h/512-1/2,\,(a_h-p_t)/64]$.
+
+The source future contains 256 endpoint-image tokens, $3\times64$ pooled intermediate-image tokens, and endpoint proprioception. Intermediate indices are $(2,4,6)$ for $L=8$ and $(4,8,11)$ for $L=15$. Segments stop at native termination or the episode limit; missing samples repeat the last observation. Thus $\tau$ summarizes selected observations, not every frame. Sixteen learned queries cross-attend to context and future tokens. FSQ maps their three-dimensional outputs to the grid $\mathcal Q_8\times\mathcal Q_8\times\mathcal Q_4$, where $\mathcal Q_l=\{(r-\lfloor l/2\rfloor)/\lfloor l/2\rfloor\}_{r=0}^{l-1}$.
+
+\subsection{Source reader and reconstruction}
+\label{sec:reader}
+A Transformer reader $D_\psi(C,S,g)$ produces a scalar from context, code, and goal-image tokens. Training banks contain sibling futures from the same simulator state. With eligible ordered pairs $\mathcal P=\{(b,i,j):\ell_{bi}-\ell_{bj}>\epsilon\}$, the ranking loss is
+\begin{equation}
+\mathcal L_{\rm rank}(s,\ell)=\frac{1}{|\mathcal P|}
+\sum_{(b,i,j)\in\mathcal P}\operatorname{softplus}[-(s_{bi}-s_{bj})].
+\label{eq:rank}
+\end{equation}
+An empty pair set contributes zero. Ranking is within a bank; scores need not be comparable across contexts.
+
+A feature decoder reconstructs endpoint and intermediate \emph{image} features as residuals from the current full or pooled feature grid. It does not reconstruct proprioception. Endpoint and intermediate MSEs are each divided by a train-set copy-current error estimate and averaged to form $\mathcal L_{\rm feat}$. This auxiliary loss encourages future information; a context-dependent decoder can predict changes even with a constant code, so reconstruction is not a collapse-prevention guarantee. The source objective is
+\begin{equation}
+\mathcal L_{\rm source}=\mathcal L_{\rm rank}
++\alpha\mathcal L_{\rm feat}+\lambda_{\rm sat}\E[(|z_{\rm pre}|-1.5)_+^2],
+\label{eq:source}
+\end{equation}
+with straight-through quantization gradients. The last term discourages saturation of pre-quantized coordinates.
+
+\subsection{Parallel forecast and reader consistency}
+\label{sec:wm}
+A Transformer encodes context and action tokens; $M$ queries decode the segment target in parallel. Its output distribution factorizes over token coordinates:
+\begin{align}
+p_\theta(S\mid C,\bA)&=\prod_{m=1}^{M}\prod_{j=1}^{3}p_{\theta,mj}(S_{mj}\mid C,\bA),\\
+\hat S_{mj}&=\sum_{r=0}^{l_j-1}p_{\theta,mj}(r\mid C,\bA)\mathcal Q_{l_j}[r].
+\label{eq:mean}
+\end{align}
+Shared hidden computation does not remove the factorization of output probabilities. The categorical loss is the mean cross-entropy over $3M$ coordinates, $\mathcal L_{\rm NLL}$. After source training, we freeze the encoder and reader and train only the predictor with
+\begin{equation}
+\mathcal L_{\rm pred}=\mathcal L_{\rm NLL}
++\mathcal L_{\rm cons}+\mathcal L_{\rm rank}^{w}.
+\label{eq:pred}
+\end{equation}
+For a bank, predicted-reader scores $s$ and source-reader scores $u$ are centered by their own candidate means. We use
+\begin{equation}
+\mathcal L_{\rm cons}=\operatorname{SmoothL1}\left(
+\frac{s-\bar s}{T},\frac{\sg(u)-\bar u}{T}\right),
+\label{eq:cons}
+\end{equation}
+where $T$ is a train-only RMS teacher-score scale, floored at $10^{-3}$. Weighted ranking multiplies each eligible pair's term in \cref{eq:rank} by $w_{ij}=\min(1,(\ell_i-\ell_j)/\sigma)$; its denominator remains the number of eligible pairs. Gradients through the frozen reader guide the forecast. Labels therefore supervise the predictor's losses even though they are not its inputs.
+
+Centered consistency has a limited but useful interpretation. On a fixed bank, let $\varepsilon=\max_k|(s_k-\bar s)-(u_k-\bar u)|$. If $k_u$ and $k_s$ maximize source and predicted scores, respectively, then $u_{k_u}-u_{k_s}\le2\varepsilon$. A unique source-score margin exceeding $2\varepsilon$ preserves its winner. The proof is in the supplement. This bounds reader-score regret, not native task regret: ranking scores are not calibrated physical utilities.
+
+\subsection{Training and deployment}
+\label{sec:training}
+Training executes proposals and perturbed proposals from cloned simulator states to collect sibling observations and privileged geometry labels. All branches from an episode remain in one split. The dense label, measured at the executed chunk endpoint, is the negative mean distance between eight corresponding block vertices and goal vertices, divided by 512. This registration objective differs from PushT's native coverage-based success criterion. The protocol also collects states visited by an oracle-assisted selector to broaden training support.
+
+The v2 recipe uses AdamW, learning rate $3\times10^{-4}$, weight decay .05, dropout .1, 16 decisions per update, 16,000 source-stage updates, and 10,000 prediction-stage updates. We use $\alpha=\lambda_{\rm sat}=1$, $\epsilon=.001$, and $\sigma=.01$. Model selection maximizes development retained geometry gap, averaging four fixed goal views; final scoring averages all sixteen views. These views depict one semantic target. The CTA codec/reader/decoder, FULL reader, and DIR scorer are separately parameterized but share a source-stage optimizer and global gradient clipping, coupling their optimization. The parameter-matched direct control is trained separately. Full configurations and selected checkpoints are provided in the supplement.
+
+All modules have width 256 and eight attention heads. The source encoder has three decoder layers, the reader four encoder layers, the reconstruction decoder two decoder layers, and the predictor four encoder plus four decoder layers. No explicit conditional-entropy objective or context-only prior is trained in v2.
+
+\begin{algorithm}[t]
+\caption{CTA deployment at one decision}
+\label{alg:cta}
+\small
+\begin{algorithmic}[1]
+\Require context $C$, cached goal features $\cG$, policy $\pi$
+\State $\{\bA^{(k)}\}_{k=1}^K\gets\pi(C)$ under the sampling protocol
+\State $\hat S^{(k)}\gets h_\theta(C,\bA^{(k)})$ for all candidates
+\State $s_k\gets |\cG|^{-1}\sum_{g\in\cG}D_\psi(C,\hat S^{(k)},g)$
+\State $k^\star\gets$ smallest index maximizing $s_k$
+\State execute up to $L$ actions of $\bA^{(k^\star)}$; observe and replan
+\end{algorithmic}
+\end{algorithm}
+Context features and predicted codes can be cached across queries. A new raw goal image also requires feature extraction. A factorized direct scorer could likewise cache a goal-independent intermediate representation; that missing comparator limits attribution of query reuse to future supervision.

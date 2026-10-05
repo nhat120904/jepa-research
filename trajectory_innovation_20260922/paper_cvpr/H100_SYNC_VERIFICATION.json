@@ -1,0 +1,25 @@
+{
+  "release": "/mnt/data/nhatnc129/jepa/trajectory_innovation/releases/cta_paper_20261003_world_model_repair_01a0fcfe",
+  "revision": "cta_paper_20261003_world_model_repair_01a0fcfe",
+  "active_paper_files_verified": 40,
+  "report_files_verified": 1,
+  "release_payload_files_verified": 41,
+  "backup": "/home/nhatnc129/nhat.nc/jepa-research/trajectory_innovation_20260922/paper_cvpr/draft_v5_before_20261002_user_feedback",
+  "backup_files": 38,
+  "jobs_submitted": 0,
+  "pdf_sha256": {
+    "main.pdf": "de340eeb9d88f54a2c27ad68fc72eeadb05110e49166fb76785430ad3b73cb61",
+    "supplement.pdf": "bb4e85dd4990514ae38ced405c25ede3a43c488290c1946cb93932142f8f173a"
+  },
+  "scheduler_check": {
+    "checked_date": "2026-10-03",
+    "squeue": {
+      "timeout_seconds": 12
+    },
+    "sacct": {
+      "exit_code": 1,
+      "error": "Address family0 unsupported; could not connect to fpt-hpc-accounting-svc:6819"
+    },
+    "candidate_source_sha256": "16ee45e04ff8045bf3ca346272ae4c4333f027930d3f44d20031e34f1f9d9971"
+  }
+}

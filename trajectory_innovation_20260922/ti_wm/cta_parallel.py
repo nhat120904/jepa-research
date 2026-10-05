@@ -8,10 +8,10 @@ from ti_wm.sibling import PCA_DIM, TOKENS
 
 
 class ParallelBackbone(nn.Module):
-    def __init__(self, queries, width=256, layers=4, heads=8, dim=PCA_DIM, dropout=0.0):
+    def __init__(self, queries, width=256, layers=4, heads=8, dim=PCA_DIM, dropout=0.0, chunk=CHUNK):
         super().__init__()
         self.ctx = ContextTokens(width, dim)
-        self.act, self.act_pos = nn.Linear(4, width), _param(CHUNK, width)
+        self.act, self.act_pos = nn.Linear(4, width), _param(chunk, width)
         self.memory = _encoder(width, layers, heads, dropout)
         self.queries = _param(queries, width)
         self.decoder = _decoder(width, layers, heads, dropout)

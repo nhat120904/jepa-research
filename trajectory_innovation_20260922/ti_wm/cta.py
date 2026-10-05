@@ -176,14 +176,15 @@ class Scorer(nn.Module):
              "action": the direct scorer D_direct(C, A, q), the required strong baseline (RESEARCH_DESIGN §4).
     """
 
-    def __init__(self, evidence, width=256, layers=4, heads=8, m=16, levels=LEVELS, dim=PCA_DIM, dropout=0.0):
+    def __init__(self, evidence, width=256, layers=4, heads=8, m=16, levels=LEVELS, dim=PCA_DIM, dropout=0.0,
+                 chunk=CHUNK):
         super().__init__()
         self.evidence = evidence
         self.ctx = ContextTokens(width, dim)
         if evidence == "code":
             self.ev, self.ev_pos = nn.Linear(len(levels), width), _param(m, width)
         elif evidence == "action":
-            self.ev, self.ev_pos = nn.Linear(4, width), _param(CHUNK, width)
+            self.ev, self.ev_pos = nn.Linear(4, width), _param(chunk, width)
         elif evidence == "future":
             self.ev = FutureTokens(width, path=False, dim=dim)
         else:

@@ -1,139 +1,98 @@
 \section{Experiments}
 \label{sec:experiments}
+We study three questions: how the learned world-model target affects ranking on identical proposals, whether repeated selection improves closed-loop control, and how prediction/readout computation scales with candidates and queries. All main comparisons use deployable learned methods.
 
-We use \method to select among the proposals of a frozen diffusion policy and ask three questions.
-Does \method improve the policy, and how does it compare in success and planning time with latent world models and a direct scorer that rank the same proposals (\cref{sec:main})?
-Where between the true future and the predicted code is ranking quality lost (\cref{sec:ladder})?
-Which design choices matter (\cref{sec:ablations})?
-\Cref{sec:path} turns to a task whose success depends on what happens within a segment.
-
-\subsection{Setup}
-\label{sec:setup}
-
-\paragraph{Task and policy.}
-On PushT~\cite{florence2021ibc}, an episode succeeds when the block covers more than 95\% of the target region within 300 steps.
-We use the released LeRobot Diffusion Policy~\cite{chi2023diffusion}, which conditions on two observations, denoises 16 actions, and executes 8 of them.
-Unmodified, it succeeds in 65 of 100 of our qualification episodes, against 65.4\% reported on 500 episodes.
-At each decision, it proposes $K{=}8$ chunks from independent, pre-generated denoising noise, and the policy-only baseline executes $\bA^{(1)}$ at every decision.
-\TODO{Lock the deployment bank: the $K{=}8$ proposals only, or also their perturbed copies.}
-
-\paragraph{Data.}
-Training uses 2{,}000 branched rollouts (\cref{sec:codesign}) with 55{,}270 decisions.
-In 1{,}200 of these rollouts each decision is also branched with perturbed copies of the proposals, and half of them execute the best-labeled proposal at a random half of their decisions; this gives 87{,}860 banks of eight sibling segments.
-A further 100 rollouts are used for offline model selection and the attribution ladder, 200 episodes for closed-loop development, and a sealed set of 400 episodes, evaluated once, for the results we report, with three training seeds.
-PushT has a single target pose, so the 16 goal images, the final frames of successful episodes outside all splits, differ only in the position of the agent and small deviations of the block.
-PushT therefore does not test the reuse of predictions across different goals.
+\subsection{Evaluation protocol}
+\label{sec:protocol}
+\paragraph{Task and planner.}
+PushT requires moving a planar T-shaped block into an image-specified pose. A frozen Diffusion Policy~\cite{chi2023diffusion} supplies $K=8$ action proposals per decision. We evaluate execution horizons $L=8$ and $L=15$, with a 300-step episode limit. Native success requires post-action coverage greater than .95 before the limit. For ranking, each method scores the same complete candidate banks. For control, each method replans after executing its chosen chunk; visited states then depend on earlier selections.
 
 \paragraph{Baselines.}
-All learned scorers use the same frozen DINOv2 features, context, proposals, training data, labels, ranking loss, and checkpoint selection.
-The \emph{direct scorer} $D(C,\bA,g)$ is a Transformer over the context, action, and goal tokens, with eight layers so that its capacity is comparable to that of the world model and reader combined.
-The \emph{factorized direct scorer} maps $(C,\bA)$ to a vector of the same size as $\hat S$ and reads it with the reader architecture; it is trained with the ranking loss only, and isolates the effect of supervising this bottleneck with the future.
-The \emph{endpoint latent world model} predicts the features of the final image and the final proprioception in one pass and is read by a reader trained on true futures.
-The \emph{per-step latent world model} predicts the features of every frame autoregressively, in the manner of DINO-WM~\cite{zhou2025dinowm}, and is read in the same way.
-\TODO{Implement the factorized direct scorer and the per-step latent world model.}
-We also report three privileged references that simulate every candidate and are therefore not deployable: the \emph{oracle}, which picks the candidate with the best label; the \emph{reader on the true future}, which reads the true final image and proprioception; and \emph{feature distance on the true future}, which is DINO-WM's planning cost under perfect prediction.
+P0 executes the first policy proposal. END is an endpoint world model: it predicts endpoint image features and proprioception, then uses a learned reader; its objective combines normalized feature MSE, score consistency, and weighted ranking. DIR directly scores $(C,\bA,g)$ using the same dense labels. DIR-large is a 14-layer, 11.31M-parameter direct scorer, compared with CTA's 10.95M, END's 11.14M, and DIR's 6.57M. These counts exclude the shared frozen image encoder and policy. The original CTA/DIR source groups have distinct weights but share an optimizer and global gradient clipping; DIR-large is trained independently. Full optimization and selection details are in the supplement.
 
-\paragraph{Metrics.}
-We report closed-loop success and the mean episode score, defined as the maximum coverage reached in an episode divided by the 95\% success threshold and clipped at one.
-Intervals are paired bootstrap intervals over episodes, and success differences are also tested with exact McNemar tests.
-\TODO{Fix the primary metric before the sealed evaluation (the development protocol uses the score).}
-For planning time we report the scoring time, meaning the world model and reader for all $K$ candidates, and the total time per decision including image encoding and proposal sampling, on the same GPU.
-Offline, the \emph{retained gap} of a scorer is the fraction of the oracle's gain over the default that its choices recover,
+The official DINO-WM checkpoint~\cite{zhou2025dinowm} provides a spatial-feature world-model reference on the same proposals. It retains its own image encoding, velocity inputs, training, and latent-distance cost; our arms use PCA features and agent-position history. This external comparison therefore matches candidate banks and horizons, while the CTA/END/DIR comparisons more closely match observation and training interfaces. DIR-large is evaluated on fixed banks; a completed closed-loop run is not available for this arm.
+
+\paragraph{Evaluation population and uncertainty.}
+The principal ranking population comprises 5,558 logged P0 decisions from 200 development initializations (roots 2200--2399), of which 3,433 have nonconstant geometry labels. Training and checkpoint-selection banks are separate, but these evaluation roots have been reused during development. Each main model has one training seed. We report 95\% root-cluster bootstrap intervals and paired contrasts, rather than treating decisions as independent samples. Historical control uses the old batched proposal sampler, whose batch-group sensitivity is documented in the supplement. Independent multi-seed control under the corrected sampling protocol remains necessary for a submission-strength benchmark.
+
+\paragraph{Ranking metric.}
+For bank $b$, utility $y_{bk}$, and selected candidate $\hat k_b$, geometry retained gap is
 \begin{equation}
-  \mathrm{RG}=\frac{\sum_d\big(\ell_d(\hat k_d)-\ell_d(1)\big)}{\sum_d\big(\max_k\ell_d(k)-\ell_d(1)\big)},
+\operatorname{RG}=\frac{\sum_b(y_{b\hat k_b}-y_{b0})}
+{\sum_b(\max_k y_{bk}-y_{b0})}.
+\label{eq:rg}
 \end{equation}
-where $d$ ranges over decisions, $\hat k_d$ is the scorer's choice, and $\ell_d(1)$ is the label of $\bA^{(1)}$.
+It measures aggregate improvement over candidate zero relative to the available bank improvement. It is not success probability or retained information; it can be negative and is undefined at zero denominator. Ties use the smallest candidate index. Bootstrap estimates aggregate numerator and denominator after resampling roots and use identical resamples for paired comparisons.
 
-\subsection{Main results}
-\label{sec:main}
+\subsection{World-model targets on fixed proposals}
+\label{sec:ranking}
+\Cref{fig:ranking} compares deployable methods on identical $L=8$ banks. CTA reaches RG .680, versus .635 for endpoint prediction and .483 for direct scoring. The paired CTA--END difference is +.045 [.011,.079], and CTA--DIR is +.197 [.153,.241] (\cref{tab:pairedrank}). Thus the conditional segment target improves this development ranking measure relative to the tested endpoint and direct alternatives.
 
+\begin{figure}[t]
+\centering\input{fig/ranking}
+\caption{\textbf{Learned methods on identical proposals.} $L=8$, $K=8$, 5,558 decisions from 200 development roots. Points and horizontal bars show geometry retained gap and 95\% root-cluster bootstrap intervals; parameter counts exclude the frozen encoder and policy. DINO-WM uses the external checkpoint and input interface described in \cref{sec:protocol}. All plotted methods score candidates without observing their future.}
+\label{fig:ranking}
+\end{figure}
 \begin{table}[t]
-\centering
-\small
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}lcccc@{}}
+\centering\small
+\begin{tabular}{lrr}
 \toprule
- & & & \multicolumn{2}{c}{ms / decision} \\
-\cmidrule(l){4-5}
- & Success (\%) & Score & Scoring & Total \\
+Paired RG difference & Estimate & 95\% CI \\
 \midrule
-Policy only & \result{--} & \result{--} & -- & \result{--} \\
-Direct scorer & \result{--} & \result{--} & \result{--} & \result{--} \\
-Factorized direct scorer & \result{--} & \result{--} & \result{--} & \result{--} \\
-Endpoint latent WM & \result{--} & \result{--} & \result{--} & \result{--} \\
-Per-step latent WM & \result{--} & \result{--} & \result{--} & \result{--} \\
-\method (ours) & \result{--} & \result{--} & \result{--} & \result{--} \\
-\midrule
-\multicolumn{5}{@{}l}{\emph{Privileged: simulates every candidate}} \\
-Feature distance, true future & \result{--} & \result{--} & -- & -- \\
-Reader, true future & \result{--} & \result{--} & -- & -- \\
-Oracle & \result{--} & \result{--} & -- & -- \\
+CTA $-$ END & +.045 & [.011,.079] \\
+CTA $-$ DIR & +.197 & [.153,.241] \\
+CTA $-$ DIR-large & +.178 & [.138,.220] \\
+CTA $-$ DINO-WM & +.346 & [.294,.398] \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{Closed-loop results on PushT} (sealed set of 400 episodes, mean over three training seeds). All methods select among the same $K{=}8$ proposals. \emph{Scoring} is the time of the world model and reader for all candidates; \emph{Total} adds image encoding and proposal sampling.}
-\label{tab:main}
+\caption{Paired comparisons using the same root resamples. The external DINO-WM comparison retains the input/training differences in \cref{sec:protocol}.}
+\label{tab:pairedrank}
 \end{table}
 
-\result{[Main result, in this order: \method vs.\ policy only; vs.\ the direct and factorized direct scorers; vs.\ the endpoint and per-step latent world models at their measured cost; fraction of the oracle's and the true-future reader's gain recovered.]}
+\paragraph{Capacity control.}
+Increasing the direct scorer to 11.31M parameters yields RG .502 [.445,.553], still below CTA by +.178 [.138,.220]. The direct model's own improvement is +.019 [$-.021,.058$]. The observed CTA advantage is therefore not explained by this parameter increase. The control does not isolate conditional encoding, future supervision, temporal sampling, or factorization individually; those require separate matched ablations. In particular, a goal-independent direct feature extractor followed by a reader would test how much of the gain comes from the prediction target rather than the two-stage interface.
 
-\subsection{Where is ranking quality lost?}
-\label{sec:ladder}
+\begin{figure*}[t]
+\centering\input{fig/scaling}
+\caption{\textbf{Quality and component cost under larger candidate banks.} (a) Mean geometry improvement over candidate zero on 2,810 logged P0 decisions from 100 development roots, $L=8$; paired uncertainty is reported in the text. (b,c) Median synchronized prediction/readout latency on ten initial states, H100 3g.40gb MIG. All points are archived measurements; lines connect measured candidate counts. Timing excludes shared encoding, policy sampling, and simulation. CTA/END reuse predictions across the sixteen image-view queries of one target. The quality and timing cohorts differ; these panels do not constitute a whole-planner Pareto benchmark.}
+\label{fig:scaling}
+\end{figure*}
 
-\begin{table}[t]
-\centering
-\small
-\begin{tabular}{@{}lc@{}}
-\toprule
-Reader input & Retained gap \\
-\midrule
-True future (final image and proprioception) & \result{--} \\
-Code of the true future, $S$ & \result{--} \\
-Predicted code, $\hat S$ (\method) & \result{--} \\
-Predicted code, NLL-only world model & \result{--} \\
-Predicted final-image features (endpoint WM) & \result{--} \\
-Actions only (direct scorer) & \result{--} \\
-\bottomrule
-\end{tabular}
-\caption{\textbf{Attribution ladder} on the development decisions, with 95\% intervals clustered by episode. The drop from the second to the third row is lost to prediction. The first row reads a different view of the true future than the code does, so it is a reference rather than an upper bound.}
-\label{tab:ladder}
-\end{table}
-
-\Cref{tab:ladder} scores the same decisions while the reader's input moves from the true future to its code and then to the code predicted from the action.
-\result{[Interpretation, with code diagnostics: perplexity, distinct codes per decision, distinct token values per code, $I(S;\bA\mid C)$ in bits, feature $R^2$.]}
-
-\subsection{Ablations}
-\label{sec:ablations}
+\subsection{Closed-loop development control}
+\label{sec:closed}
+\Cref{tab:closed} reports success and normalized maximum coverage for 200 common initial roots. CTA achieves 70.0\% success at $L=8$ and 60.5\% at $L=15$, improving over the proposal policy by nine percentage points at both horizons. Paired 95\% intervals for CTA--P0 are [1,17.5] and [1,17] points, respectively. These results show that the learned forecast can guide repeated action selection in this development setting.
 
 \begin{table}[t]
-\centering
-\small
+\centering\small
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}lcc@{}}
+\begin{tabular}{lrrrr}
 \toprule
- & RG & Success (\%) \\
+& \multicolumn{2}{c}{$L=8$} & \multicolumn{2}{c}{$L=15$} \\
+Method & Success (\%) & Score & Success (\%) & Score \\
 \midrule
-\method & \result{--} & \result{--} \\
-\midrule
-Target encoder without history & \result{--} & \result{--} \\
-Target from the final frame only & \result{--} & \result{--} \\
-Per-step code, same total bits & \result{--} & \result{--} \\
-No feature decoder ($\alpha{=}0$) & \result{--} & \result{--} \\
-World model with $\mathcal{L}_{\mathrm{NLL}}$ only & \result{--} & \result{--} \\
-Most likely code instead of $\hat S$ & \result{--} & \result{--} \\
-Co-design, $\lambda{>}0$ & \result{--} & \result{--} \\
-$M{=}8$ / $M{=}32$ & \result{--} & \result{--} \\
+P0 policy & 61.0 & .961 & 51.5 & .911 \\
+DIR & 67.5 & .973 & 51.5 & .920 \\
+END WM & 69.0 & .956 & 54.0 & .936 \\
+DINO-WM & 68.0 & .974 & 56.0 & .932 \\
+CTA WM & 70.0 & .960 & 60.5 & .930 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{Ablations.} Each row changes one choice and keeps the data and training budget fixed. RG: offline retained gap on development decisions; success on the closed-loop development episodes.}
-\label{tab:ablations}
+\caption{\textbf{Historical closed-loop development results.} Each column uses 200 roots, one training seed, and the old batched proposal protocol. Score is maximum post-action coverage divided by .95 and clipped to one. Horizon-specific models use different training mixtures. Paired uncertainty is reported in the text and supplement; this table is not a sealed or canonical evaluation.}
+\label{tab:closed}
 \end{table}
 
-Each ablation in \cref{tab:ablations} changes one choice.
-Removing the history from the target encoder tests conditional coding.
-Restricting the target to the final frame, or replacing the segment code with one code per frame at the same total number of bits, tests the segment design; if either matched \method, the segment design would not be supported.
-The remaining rows test the feature decoder, the decision terms of the world-model loss, deployment with the expected code, co-design for predictability, and the code length.
-\result{[Findings.]}
+The differences between learned methods are less conclusive. At $L=8$, CTA--END is +1 point [$-7.5,9.5$], CTA--DIR +2.5 [$-5.5,10.5$], and CTA--DINO-WM +2 [$-6,10$]. At $L=15$, these differences are +6.5 [$-2.5,15.5$], +9 [.5,17.5], and +4.5 [$-4.5,13.5$]. The exact McNemar test for CTA--DIR at $L=15$ gives $p=.05045$, so that comparison should not be described as an established significance result. No correction for multiple exploratory comparisons is applied. Mean-score contrast intervals cross zero. Ranking gains on fixed banks therefore do not establish a general closed-loop advantage over learned world-model alternatives.
 
-\subsection{When progress depends on the path}
-\label{sec:path}
-\TODO{Second task whose success depends on what happens within a segment. Key contrasts: \method vs.\ the final-frame code at equal bits, and vs.\ the per-step latent world model at equal quality.}
+\subsection{Candidate and query scaling}
+\label{sec:compute}
+\paragraph{Ranking with more candidates.}
+A separate logged-bank experiment uses 2,810 P0 decisions from 100 development roots and scores banks with $K\in\{8,16,32,64\}$. These are newly logged banks rather than exact prefixes of the earlier $K=8$ run. Define mean geometry gain as $\Delta_K=|\mathcal B|^{-1}\sum_b(y_{b\hat k_b}-y_{b0})$. CTA's gain rises from $.608\times10^{-3}$ at $K=8$ to $.999\times10^{-3}$ at $K=64$ (\cref{fig:scaling}a); the saved paired increase is $.391\times10^{-3}$, with 95\% root-bootstrap interval $[.328,.458]\times10^{-3}$. Retained gap remains approximately .62. At $K=64$, CTA--END gain is $.110\times10^{-3}$ $[.064,.155]\times10^{-3}$ and CTA--DIR-large is $.260\times10^{-3}$ $[.172,.347]\times10^{-3}$. This checks the ranking advantage under an expanded proposal workload, without treating it as a closed-loop or independent-test result.
+
+\paragraph{Prediction and readout cost.}
+\Cref{fig:scaling}b,c measure the predictor/readout components for $K\in\{8,16,64\}$ and $G\in\{1,16\}$. Measurements use synchronized CUDA execution on an H100 3g.40gb MIG instance, ten initial states, three warmups, and ten repeats per state. All three curves exclude the same shared context encoding, proposal sampling, and simulator execution. Repeated queries reuse the CTA and END predictions; DIR evaluates its joint scorer again. The sixteen queries are image views of one PushT target pose, rather than sixteen distinct semantic goals.
+
+At $K=8$, CTA takes 4.11ms for one query and 16.87ms for sixteen, compared with END's 4.52/23.40ms and DIR's 2.54/26.81ms. Direct scoring is cheaper for one query at this candidate count. With sixteen queries, CTA reduces scorer time by 27.9\% relative to END and 37.1\% relative to DIR. At $K=64$, CTA takes 12.96/114.42ms, versus END's 20.09/171.04ms and DIR's 13.94/206.67ms. The benefit depends on both the candidate batch and the repeated-readout workload.
+
+
+
+The shared context path takes approximately 6.5ms, while the common diffusion proposal sampler takes 765ms at $K=8$ and 923ms at $K=64$. Proposal generation dominates this implementation, so component savings do not imply a comparable reduction in total control latency. DINO-WM's separately measured encoding/rollout/cost path uses a different timing scope and precision; it is reported in the supplement rather than mixed into the matched component curves. End-to-end latency and peak memory remain to be benchmarked under a common precision and input protocol.

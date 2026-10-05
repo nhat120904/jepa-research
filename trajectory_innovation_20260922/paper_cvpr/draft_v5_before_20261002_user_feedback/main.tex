@@ -1,0 +1,38 @@
+% Development manuscript; recheck target-year rules before submission.
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+% \usepackage{cvpr}              % camera-ready
+\usepackage[pagenumbers]{cvpr}      % review version
+% \usepackage[pagenumbers]{cvpr} % arXiv version
+
+\input{preamble}
+
+\definecolor{cvprblue}{rgb}{0.21,0.49,0.74}
+\usepackage[pagebackref,breaklinks,colorlinks,allcolors=cvprblue]{hyperref}
+
+\def\paperID{}
+\def\confName{CVPR}
+\def\confYear{2027}
+
+\title{Conditional Trajectory Abstraction\\for Visual Action Ranking}
+
+\author{Anonymous research manuscript}
+
+\begin{document}
+\maketitle
+
+\input{sec/0_abstract}
+\input{sec/1_intro}
+\input{sec/2_related}
+\input{sec/3_problem}
+\input{sec/4_method}
+\input{sec/5_experiments}
+\input{sec/6_conclusion}
+
+{
+    \small
+    \bibliographystyle{ieeenat_fullname}
+    \bibliography{main}
+}
+
+\end{document}

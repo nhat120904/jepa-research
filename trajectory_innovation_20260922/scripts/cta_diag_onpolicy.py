@@ -6,7 +6,9 @@ aggregate: success / normalized score with paired CIs, and the on-policy ranking
            on the states each arm actually visits, for both labels.
 """
 import argparse
+import functools
 import json
+import math
 import os
 import sys
 import time
@@ -25,9 +27,10 @@ from ti_wm.cta import Scorer  # noqa: E402
 from ti_wm.cta_batch import K, ORACLES, BatchScorer, base_name, chosen_retention, headroom, mixed_bank, run_arm  # noqa: E402
 from ti_wm.cta_eval import ranking_metrics  # noqa: E402
 from ti_wm.cta_parallel import EndpointWM, ParallelFSQWM  # noqa: E402
-from ti_wm.cta_runtime import Planner, run_segment  # noqa: E402
+from ti_wm.cta_runtime import Planner, keep_steps, run_segment  # noqa: E402
 from ti_wm.gates import mcnemar_exact, paired_diff  # noqa: E402
 from ti_wm.pusht_runtime import CLONERS, PolicyRunner, VisualScorer, done, reset_branch  # noqa: E402
+from ti_wm.pusht_canonical import CanonicalPolicyRunner  # noqa: E402
 
 R3_NETS = {"nll": ("NLL8", "parallel"), "task": ("CTA3", "parallel"), "frame": ("FRAME8", "frame"),
            "direct": ("DIRECT3", "direct")}
@@ -56,11 +59,12 @@ def load_v2(path, device):
     from ti_wm.cta import FutureDecoder, SourceEncoder  # noqa: F401
     blob = torch.load(path, map_location="cpu")
     cfg = blob["config"]
+    chunk = cfg.get("chunk", 8)                     # executed actions per candidate the checkpoint was trained on
     mods = {"enc": SourceEncoder(cfg["m"]), "reader": Scorer("code", m=cfg["m"]), "full": Scorer("future"),
-            "direct": Scorer("action", layers=cfg["direct_layers"])}
+            "direct": Scorer("action", layers=cfg["direct_layers"], chunk=chunk)}
     for k, net in mods.items():
         net.load_state_dict(blob["stage1"][k], strict=True)
-    wm, endpoint = ParallelFSQWM(m=cfg["m"]), EndpointWM()
+    wm, endpoint = ParallelFSQWM(m=cfg["m"], chunk=chunk), EndpointWM(chunk=chunk)
     wm.load_state_dict(blob["wms"]["cta"], strict=True)
     endpoint.load_state_dict(blob["wms"]["endpoint"], strict=True)
     for net in list(mods.values()) + [wm, endpoint]:
@@ -129,7 +133,17 @@ def run_closed(a):
     if smoke["status"] != "SMOKE_PASS":
         raise ValueError("Invalid clone contract")
     cloner = CLONERS[smoke["clone_method"]]
-    runner = PolicyRunner(a.prep / "checkpoint", "cuda")
+    runner_type = CanonicalPolicyRunner if getattr(a, "proposal_mode", "batched") == "canonical" else PolicyRunner
+    runner = runner_type(a.prep / "checkpoint", "cuda", n_exec=a.n_exec)
+    n_exec = runner.end - runner.start
+    keep = keep_steps(n_exec)
+    segment = functools.partial(run_segment, keep=keep)
+    if n_exec != 8:
+        # docs/CTA_REPLAN_INTERVAL_PROTOCOL.md: every learned scorer must be trained on chunks of the executed length.
+        if a.r3 or a.r4 or a.r6 or a.onpolicy8 or a.extra_direct:
+            raise ValueError("8-step networks (r3/r4/r6/onpolicy8/extra-direct) cannot score longer chunks")
+        if set(a.log_scorers.split(",")) & set(BatchScorer.PARENT):
+            raise ValueError("parent 8-step scorers cannot score longer chunks")
     goal_frames = np.load(a.smoke / "goal_frames.npz")["frames"]
     visual = VisualScorer("cuda")
     planner = Planner(a.parent / "cta.pt", visual, goal_frames)
@@ -151,6 +165,9 @@ def run_closed(a):
         extra.update(more)
         hashes["onpolicy8"] = closed.sha256(a.onpolicy8 / "onpolicy8.pt")
     if a.v2:
+        v2_chunk = torch.load(a.v2 / "cta_v2.pt", map_location="cpu")["config"].get("chunk", 8)
+        if v2_chunk != n_exec:
+            raise ValueError(f"v2 checkpoint trained on {v2_chunk}-step chunks, closed loop executes {n_exec}")
         extra.update(load_v2(a.v2 / "cta_v2.pt", device))
         hashes["v2"] = closed.sha256(a.v2 / "cta_v2.pt")
     for spec in a.extra_direct or []:
@@ -163,18 +180,21 @@ def run_closed(a):
     if a.dinowm:
         from ti_wm.dinowm_scorer import DinoWMScorer
         render = reset_branch(a.first)
-        extra["DINOWM"] = ("dinowm", DinoWMScorer(a.dino_root, a.dinowm, device, goal_frames, render.env))
+        extra["DINOWM"] = ("dinowm", DinoWMScorer(a.dino_root, a.dinowm, device, goal_frames, render.env,
+                                                  macro=math.ceil(n_exec / 5)))
         render.env.close()
         hashes["dinowm"] = closed.sha256(a.dinowm / "checkpoints" / "model_latest.pth")
     scorer = BatchScorer(planner, extra)
-    arms, names = a.arms.split(","), a.log_scorers.split(",")
+    arms, names = a.arms.split(","), [n for n in a.log_scorers.split(",") if n]   # "" = no learned scorer
     for arm in arms:
         if arm not in ("P0",) + ORACLES and base_name(arm) not in names:
             raise ValueError(f"acting arm {arm} is not logged")
     bank = {"policy": None, "mixed": mixed_bank}[a.bank]
     report = {"status": "RUNNING", "job": os.environ.get("SLURM_JOB_ID"), "roots": [a.first, a.first + a.count - 1],
               "arms": arms, "log_scorers": names, "hashes": hashes, "max_decisions": a.max_decisions,
-              "bank": a.bank, "draw": a.draw}
+              "bank": a.bank, "draw": a.draw, "n_exec": n_exec, "keep_steps": list(keep),
+              "proposal_mode": getattr(a, "proposal_mode", "batched"),
+              "proposal_microbatch": getattr(runner, "proposal_microbatch", None)}
     write_json(a.run / "closed_report.json", report)
     if r3_modules is not None:
         r3_planner = r3.R3Planner(a.parent, visual, goal_frames, r3_modules)
@@ -188,7 +208,7 @@ def run_closed(a):
         for arm in arms:
             t0 = time.perf_counter()
             episodes, log, timing = run_arm(arm, roots, runner, cloner, scorer, names, reset_branch, done,
-                                            run_segment, a.max_decisions, bank=bank, draw=a.draw)
+                                            segment, a.max_decisions, bank=bank, draw=a.draw)
             np.savez(a.run / f"log_{arm}.npz", **log)
             for e in episodes:
                 stream.write(json.dumps({"arm": arm, **e}) + "\n")
@@ -331,6 +351,10 @@ if __name__ == "__main__":
     p.add_argument("--max-decisions", type=int, default=None, help="smoke only")
     p.add_argument("--draw", type=int, default=K, help="policy samples per decision (K-scaling: 64 keeps the K-bank "
                                                        "as candidates 0-7)")
+    p.add_argument("--n-exec", type=int, default=None,
+                   help="executed actions per decision (default: native 8); docs/CTA_REPLAN_INTERVAL_PROTOCOL.md")
+    p.add_argument("--proposal-mode", choices=("batched", "canonical"), default="batched",
+                   help="canonical: fixed proposal shapes independent of active roots and candidate count")
     p.add_argument("--bank", choices=("policy", "mixed"), default="policy",
                    help="mixed: Round-5 deployment bank = 8 policy samples + their 8 perturbed copies")
     args = p.parse_args()

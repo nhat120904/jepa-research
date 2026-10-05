@@ -1,0 +1,13 @@
+\section{Conclusion and Limitations}
+\label{sec:conclusion}
+
+We proposed to make the prediction target of a world model a learned, history-conditioned code of an action's entire future segment, rather than one latent state per time step.
+\method learns this code with a decision reader and a feature decoder, predicts it in one pass, and lets one prediction per candidate be read for any goal.
+\result{[What the experiments show, and what they do not.]}
+
+\paragraph{Limitations.}
+\method is not label-free: task-progress labels from the simulator train the reader and the decision terms of the world-model loss, although nothing uses labels at test time.
+Training data require branching the simulator at every decision.
+The proposal policy is pretrained on expert demonstrations, and a selector cannot do better than the best proposal, so gains are bounded by the policy's proposals.
+The rate bound applies to the target code; at deployment the reader receives the predictive mean of the code.
+Finally, PushT has a single goal, so it tests neither the reuse of predictions across goals nor the value of the intermediate part of the segment; \cref{sec:path} addresses the latter.

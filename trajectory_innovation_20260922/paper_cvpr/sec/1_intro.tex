@@ -1,46 +1,27 @@
 \section{Introduction}
 \label{sec:intro}
+Visual world models learn how an environment changes under an agent's actions, enabling a planner to evaluate predicted outcomes before execution~\cite{hafner2019planet,zhou2025dinowm,assran2025vjepa2}. A central design choice is the \emph{prediction target}. Pixel reconstruction, spatial visual features, compact tokens, and reward-oriented latent states preserve different information and impose different computational demands. Understanding this choice matters both for learning dynamics and for using those dynamics in decisions.
 
-A world model predicts how the environment evolves in response to an agent's actions~\cite{hafner2019planet,hafner2023dreamerv3}.
-Prediction alone does not choose an action: a planner evaluates the predicted outcomes of candidate actions against a goal, for example with a cost or a learned reward.
-In visual control, a prominent line of work learns the world model in the feature space of a frozen pretrained encoder.
-DINO-WM~\cite{zhou2025dinowm} and V-JEPA~2-AC~\cite{assran2025vjepa2} predict the patch features of every future frame, and plan by minimizing the distance between the features of the last predicted frame and those of a goal image.
-Predicting features avoids generating pixels, and because the goal enters only through the cost, one world model serves any goal image.
+Recent visual world models build on strong pretrained encoders. DINO-WM forecasts DINOv2 patch features~\cite{zhou2025dinowm,oquab2024dinov2}, and V-JEPA~2-AC forecasts features of a pretrained video encoder~\cite{assran2025vjepa2}. Such representations provide broad visual supervision and support image-goal planning. CompACT reduces the spatial representation to a small set of discrete observation tokens~\cite{kim2026compact}. These advances leave another design dimension open: the temporal unit and supervision of the prediction target. Instead of forecasting a sequence of independently represented observations, can a world model forecast one learned description of an action segment, conditioned on the context already available to its readout?
 
-When a robot must choose among candidate action chunks, however, a per-step latent target spends computation where the decision does not need it and leaves open what the decision does need.
-Each candidate requires predicting a full grid of feature tokens for every future step, 2{,}048 tokens for an 8-step chunk in our PushT setup, even though the scene layout, the appearance of objects, and everything the action does not touch are already visible in the history.
-The predicted frames must then be turned into a decision, and a generic feature distance to a goal image is a weak measure of task progress.
-% Current numbers are development results from different episode sets (feature distance +3 / oracle +15 on 100
-% episodes; learned reader +8.5 / oracle +14 on 400 episodes). Replace with the sealed-test rows of Tab. 2.
-On PushT, ranking the proposals of a diffusion policy by the DINOv2 distance between their \emph{true} future frames and goal images raises success by only \result{3} points, whereas a reader trained to rank true futures by task progress raises it by \result{8.5} points (\cref{tab:main}).
-A per-step world model that plans with feature distance inherits the first ceiling even if its predictions are perfect.
+\begin{figure*}[t]
+\centering
+\input{fig/overview}
+\caption{\textbf{A world model with a learned conditional prediction target.} (a) Frozen visual features and proprioception form $C$; a diffusion policy supplies eight action chunks. The world model forecasts one 16-token segment representation per candidate. Each row of colored cells shows a forecast mean, with three coordinates encoded as RGB. The reader evaluates $(C,\hat S,g)$; bars show relative scores normalized within this example. Green marks the selected proposal, which is executed before replanning. The goal-independent forecasts can be cached across reader queries. (b) During target learning, sibling proposals are executed from cloned states. Sampled actual futures enter $q_\phi(C,\tau)$, supervised by ranking and future-feature reconstruction. Frames, paths, codes, and scores come from one archived PushT checkpoint/decision and illustrate the interface; they are not aggregate performance evidence. Images are cropped simulator renders.}
+\label{fig:overview}
+\end{figure*}
 
-The opposite extreme predicts nothing.
-A direct scorer maps the history, a candidate action, and the goal to a score~\cite{nakamoto2024vgps,kwok2025robomonkey}.
-It is cheap and trained for the decision, but its internal representation is shaped only by the training labels.
-Nothing asks it to model what the action does to the scene, so whatever it learns about dynamics is entangled with the goals and labels it was trained on.
+We investigate this question through \emph{Conditional Trajectory Abstraction} (CTA). During training, a target encoder observes context $C$ and the actual future segment $\tau$ of an action chunk, then produces a compact code $S$. A goal-conditioned reader learns to evaluate $(C,S,g)$, while a feature decoder reconstructs sampled future features from $(C,S)$. The world model $p_\theta(S\mid C,\bA)$ forecasts this target from context and proposed actions. Thus the predictive object is learned from action consequences rather than fixed to the visual encoder's output. The reader never receives $\bA$: candidate-specific information enters through the world model's forecast. Actual future observations are used only in training.
 
-We argue that a world model for decision making should predict something in between: a compact description of what the action will do that contains only what the decision needs and only what the history does not already reveal.
-The second requirement is the principle of conditional video coding~\cite{li2021dcvc}: when the encoder and the decoder share the past frames, bits need to be spent only on what the past frames do not predict.
-We apply this principle to the future of an action that has not yet been executed, and we learn the first requirement from task-progress labels instead of fixing it in advance.
+Conditioning the source and readout on the same observed context follows the idea of contextual coding~\cite{li2021dcvc,micheli2024deltairis}. Representing a multi-step segment also connects to compact trajectory models~\cite{jiang2023tap}. CTA brings these ideas to action-conditioned visual prediction, with a target shaped by both future-feature supervision and a learned decision readout. This differs from searching for actions in a trajectory-code space, and from compressing each observation before an autoregressive rollout. It also differs from direct value guidance~\cite{nakamoto2024vgps}: direct scoring is a valid alternative that need not predict an explicit future target. Whether future supervision helps is a comparison to measure, rather than an assumption of the method.
 
-We call the resulting model \emph{Conditional Trajectory Abstraction} (\method, \cref{fig:overview}).
-During training, a target encoder compresses the actual future of an action chunk, including its intermediate frames, into $M{=}16$ discrete tokens, conditioned on the history.
-Two heads read this code together with the history but never see the action.
-A reader ranks sibling candidates by progress toward a goal image, and a feature decoder reconstructs the future's frozen image features.
-Because neither head sees the action, everything the action changes must pass through the code, and the decoder prevents the code from degenerating into a score for the training goals.
-The world model is the predictor of a joint-embedding predictive architecture~\cite{lecun2022path,assran2023ijepa}: it predicts the stop-gradient code from the history and a candidate chunk in one forward pass and never generates an image.
-At deployment, a frozen policy proposes candidate chunks, the world model predicts one code per candidate in a single batched pass, and the reader ranks the candidates.
-Since the code does not depend on the goal, a new goal costs only reader evaluations: \emph{predict once, query many}.
+CTA predicts all segment-code coordinates in parallel. The code encoder and world model receive no goal input, so predicted codes can be cached while a reader evaluates different goal queries: \emph{predict once, query many}. This input separation is shared with other outcome-based planning systems~\cite{qi2025gpc,cui2026dreamsteer}; our focus is the learned conditional segment target within that separation. The present PushT experiments use multiple image views of one target pose and do not evaluate transfer to unseen semantic goals.
 
-Each ingredient of \method has precedents in world models, video compression, and policy steering, so we state our claims as controlled comparisons.
-All scorers rank the same proposals, see the same history, and are trained on the same data and labels; they differ in what they predict about the future: every frame, the final frame, nothing, or the conditional code.
+We evaluate world-model targets through a common proposal-based planner. A frozen diffusion policy proposes candidate chunks, and each learned method selects among them. Offline comparisons hold states and complete action banks fixed; closed-loop comparisons measure the consequences of repeated selection. On eight-candidate development banks, CTA improves geometry ranking over endpoint prediction and both ordinary and parameter-matched direct scorers. In closed-loop development it improves success over the proposal policy, while learned alternatives remain close and their differences uncertain. Timing measurements expose how predictor/readout cost scales with candidate count and repeated queries.
+
 Our contributions are:
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-\item a formulation of a world model's prediction target as a rate-limited code of an action's future segment, conditioned on the history, which contains the per-step latent world model and the direct scorer as its two limiting cases;
-\item \method, a joint-embedding world model whose target is learned with a goal-conditioned ranking reader and a conditional feature decoder, and which predicts the code of every candidate in one pass;
-\item an attribution ladder that scores the same decisions from the true future, from its code, and from the predicted code, separating the ranking quality lost to compression from that lost to prediction;
-\item experiments on PushT with a released diffusion policy, in which \method{} \result{[result vs.\ policy only, direct scorer, endpoint and per-step latent world models, with planning time]}. \TODO{Second task whose success depends on the path.}
+\item A conditional segment representation for visual world modeling, learned from observed futures and shared context rather than prescribed as a sequence of frame features.
+\item A world-model training architecture combining a quantized future target, a goal-conditioned reader, auxiliary feature reconstruction, and forecast-to-reader consistency. Its deployment readout has no access to proposed actions or observed futures.
+\item A comparison of learned prediction targets under shared proposal banks, including a capacity-matched direct control, closed-loop development results, and candidate/query scaling measurements.
 \end{itemize}
-
-\input{fig/overview}

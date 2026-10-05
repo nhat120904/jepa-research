@@ -1,0 +1,33 @@
+\section{Related Work and Positioning}
+\label{sec:related}
+\paragraph{Visual prediction and compact representations.}
+DINO-WM predicts frozen DINOv2 spatial features for image-goal planning~\cite{zhou2025dinowm,oquab2024dinov2}; V-JEPA~2-AC predicts features of its own frozen video encoder~\cite{assran2025vjepa2}. Keeping a spatial target offers broad visual supervision, but the target need not be minimal for a particular decision. CompACT learns compact discrete \emph{observation} tokens and demonstrates a planning/compute tradeoff~\cite{kim2026compact}. CTA instead learns one context-conditioned code for sampled observations spanning an action segment. Our endpoint control tests one nearby alternative, but a matched compact per-frame predictor is still missing; token counts alone cannot establish superiority over CompACT.
+
+\paragraph{Steering policy proposals.}
+Generative Predictive Control forecasts action consequences and uses rewards to rank or refine policy proposals~\cite{qi2025gpc}. FOREWARN aligns latent prediction with visual-language reasoning~\cite{wu2025forewarn}; DreamSteer evaluates predicted visual progress with a language-conditioned critic~\cite{cui2026dreamsteer}. Robot Critics trains fine-grained comparisons on paired actual success/failure rollouts and applies its critic to generated consequences~\cite{sudhakar2026critics}. V-GPS provides direct offline-RL value guidance~\cite{nakamoto2024vgps}. Thus, proposal-based planning, goal-independent dynamics, and scoring predicted outcomes without reading actions all have precedents. CTA changes the \emph{learned prediction target} in that pipeline. Our direct baseline is a controlled geometry-ranking model, not a reproduction of V-GPS, and the endpoint baseline is not a reproduction of GPC.
+
+\paragraph{Conditional temporal codes.}
+TAP already learns state-conditioned discrete trajectory codes and plans in their latent action space~\cite{jiang2023tap}. CTA predicts a code from an externally proposed action chunk rather than searching for actions through a trajectory decoder. Delta-IRIS uses context-aware temporal tokenization for efficient world modeling~\cite{micheli2024deltairis}; CTA uses a multi-step target and a learned reader. Finite scalar quantization (FSQ) supplies the quantizer~\cite{mentzer2024fsq}. These precedents narrow the novelty claim to the segment-target training and deployment interface, with its measured decision consequences.
+
+\paragraph{Decision-aware model learning.}
+Value equivalence formalizes preservation of relevant value computations~\cite{grimm2020value}, and value-equivalent sampling studies lossy environment modeling under a value-based criterion~\cite{arumugam2022deciding}. TD-MPC2 also trains a control-oriented latent model~\cite{hansen2024tdmpc2}. These methods establish decision-aware modeling as a broader principle. CTA instantiates it with supervised candidate ranking and visual reconstruction of a finite segment target, evaluated empirically rather than through a value-equivalence or rate--distortion guarantee.
+
+\begin{table}[t]
+\centering\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{.20\linewidth}p{.33\linewidth}p{.38\linewidth}}
+\toprule
+Approach & Predicted/searched object & Relationship to CTA \\
+\midrule
+DINO-WM & Spatial visual features & Larger visual target \\
+CompACT & Compact frame tokens & Compactness precedent \\
+GPC / DreamSteer & Visual consequences & Outcome-scoring precedent \\
+TAP & Conditional trajectory codes & Code-search rather than supplied-action forecast \\
+Delta-IRIS & Context-aware step tokens & Conditional coding precedent \\
+V-GPS & Action-conditioned value & Direct guidance alternative \\
+CTA & Conditional segment code & Future-supervised target, forecast and reader \\
+\bottomrule
+\end{tabular}
+\caption{Architectural positioning. CTA combines segment-level source learning with forecasting from supplied action proposals; performance is evaluated separately.}
+\label{tab:position}
+\end{table}

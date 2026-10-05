@@ -58,7 +58,7 @@ Do not require a temporal-task pivot before improving the end-to-end pipeline.
   top 5 users of the cluster in the current calendar month for GPU, CPU or memory hours.
   Before every GPU submission and every CPU array, check the month-to-date ranking:
   `sreport -t hours -T gres/gpu,cpu,mem cluster UserUtilizationByAccount start=$(date +%Y-%m-01) end=now -P -n`
-  (column 6 = hours). Stay at or below **50% of the 5th-ranked user's hours**, *counting
+  (column 6 = hours). Stay at or below **90% of the 5th-ranked user's hours**, *counting
   the planned job at its time limit*. If a submission would cross that, make it smaller
   (fewer episodes/seeds, shorter limit) or wait, and tell the user. The CVPR deadline
   does not relax this rule; spend the budget on the runs the paper needs, not on sweeps.

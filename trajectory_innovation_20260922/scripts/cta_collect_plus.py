@@ -19,14 +19,14 @@ import torch
 from ti_wm.contract import candidate_seed, require_compute, select_candidate
 from ti_wm.cta_batch import SIGMAS, block_pose, oracle_step, perturb
 from ti_wm.cta_geometry import registration_score, world_vertices
-from ti_wm.cta_runtime import KEEP
+from ti_wm.cta_runtime import KEEP, keep_steps
 from ti_wm.pusht_runtime import CLONERS, MAX_STEPS, Branch, PolicyRunner, done, physical_state, reset_branch
 
 K, BANKS = 8, 2
 PX = 512. / 96.
 
 
-def run_segment_states(branch, actions, cloner):
+def run_segment_states(branch, actions, cloner, keep=KEEP):
     """ti_wm.cta_runtime.run_segment, plus the physical state and contact count after every executed step
     (padded with the last state / zero contacts when the segment stops early). For path-dependent queries later."""
     out = Branch(cloner(branch.env), list(branch.hist), branch.t, branch.success, branch.coverage, branch.max_coverage)
@@ -42,14 +42,14 @@ def run_segment_states(branch, actions, cloner):
         out.success = bool(terminated)
         states.append(physical_state(out.env))
         contacts.append(int(out.env.n_contact_points))
-        if step in KEEP:
+        if step in keep:
             frames[step] = obs["pixels"]
     last = out.hist[-1]["pixels"]
     executed = len(states)
     fill = states[-1] if states else physical_state(out.env)
     states += [fill] * (len(actions) - executed)
     contacts += [0] * (len(actions) - executed)
-    return out, np.stack([frames.get(s, last) for s in KEEP]), np.stack(states), np.asarray(contacts), executed
+    return out, np.stack([frames.get(s, last) for s in keep]), np.stack(states), np.asarray(contacts), executed
 
 
 def spread_stats(pose, end_pos):
@@ -60,7 +60,7 @@ def spread_stats(pose, end_pos):
     return float(block), float(agent)
 
 
-def collect(runner, roots, cloner, max_decisions=None):
+def collect(runner, roots, cloner, max_decisions=None, keep=KEEP):
     states = [reset_branch(r) for r in roots]
     dec = {k: [] for k in ("root", "decision", "t", "ctx", "ctx_prev", "ctx_pos", "executed", "oracle_step")}
     bank = {k: [] for k in ("chunk", "seg", "end", "end_pos", "end_prev_pos", "cov8", "done8", "phys8",
@@ -75,7 +75,7 @@ def collect(runner, roots, cloner, max_decisions=None):
                                       [candidate_seed(roots[i], d, k) for i in active for k in range(K)]))
         chunks = flat.reshape(len(active), K, *flat.shape[1:]).astype(np.float32)
         both = np.stack([chunks, np.stack([perturb(chunks[j], roots[i], d) for j, i in enumerate(active)])], 1)
-        sims = [run_segment_states(states[i], both[j, b, k], cloner)
+        sims = [run_segment_states(states[i], both[j, b, k], cloner, keep)
                 for j, i in enumerate(active) for b in range(BANKS) for k in range(K)]
         for j, i in enumerate(active):
             s, group = states[i], sims[j * BANKS * K:(j + 1) * BANKS * K]
@@ -125,19 +125,26 @@ def main(a):
     torch.backends.cudnn.benchmark = False
     smoke = json.loads((a.smoke / "smoke.json").read_text())
     assert smoke["status"] == "SMOKE_PASS"
-    runner = PolicyRunner(a.prep / "checkpoint", "cuda")
+    if getattr(a, "proposal_mode", "batched") == "canonical":
+        from ti_wm.pusht_canonical import CanonicalPolicyRunner
+        runner = CanonicalPolicyRunner(a.prep / "checkpoint", "cuda", n_exec=a.n_exec)
+    else:
+        runner = PolicyRunner(a.prep / "checkpoint", "cuda", n_exec=a.n_exec)
+    n_exec = runner.end - runner.start
+    keep = keep_steps(n_exec)
     t0 = time.perf_counter()
     data, outcomes, summary = collect(runner, list(range(a.first, a.first + a.count)), CLONERS[smoke["clone_method"]],
-                                      a.max_decisions)
+                                      a.max_decisions, keep)
     name = f"shard_{a.first}_{a.first + a.count - 1}"
     np.savez_compressed(a.out / f"{name}.npz", **data)
     report = {"roots": [a.first, a.first + a.count - 1], "decisions": int(len(data["root"])),
               "executed_success": sum(o["success"] for o in outcomes if not o["mixed"]),
               "executed_success_mixed": sum(o["success"] for o in outcomes if o["mixed"]),
               "oracle_step_share": float(np.mean(data["oracle_step"])) if len(data["root"]) else None,
-              "spread": summary, "sigmas": list(SIGMAS), "keep_steps": list(KEEP),
+              "spread": summary, "sigmas": list(SIGMAS), "keep_steps": list(keep), "n_exec": n_exec,
               "seconds": time.perf_counter() - t0, "outcomes": outcomes, "clone_method": smoke["clone_method"],
-              "max_decisions": a.max_decisions}
+              "max_decisions": a.max_decisions, "proposal_mode": getattr(a, "proposal_mode", "batched"),
+              "proposal_microbatch": getattr(runner, "proposal_microbatch", None)}
     (a.out / f"{name}.json").write_text(json.dumps(report, indent=2))
     print(json.dumps({k: v for k, v in report.items() if k != "outcomes"}), flush=True)
 
@@ -149,4 +156,8 @@ if __name__ == "__main__":
     p.add_argument("--first", type=int, required=True)
     p.add_argument("--count", type=int, required=True)
     p.add_argument("--max-decisions", type=int, default=None, help="smoke only")
+    p.add_argument("--n-exec", type=int, default=None,
+                   help="executed actions per decision (default: the policy's native 8); docs/CTA_REPLAN_INTERVAL_PROTOCOL.md")
+    p.add_argument("--proposal-mode", choices=("batched", "canonical"), default="batched",
+                   help="canonical: fixed proposal shapes independent of active roots and candidate count")
     main(p.parse_args())

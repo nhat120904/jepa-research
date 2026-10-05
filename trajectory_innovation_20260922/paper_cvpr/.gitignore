@@ -1,0 +1,11 @@
+/build/
+/main.synctex.gz
+/supplement.aux
+/supplement.fdb_latexmk
+/supplement.fls
+/supplement.log
+/supplement.out
+/supplement.synctex.gz
+/supplement_build.log
+build_feedback/
+build_supp_feedback/

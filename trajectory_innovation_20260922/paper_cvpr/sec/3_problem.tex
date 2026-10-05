@@ -1,65 +1,33 @@
-\section{Problem Formulation}
+\section{World-Model Prediction Targets}
 \label{sec:problem}
+Let $C_t$ contain recent visual observations and proprioception. A candidate action chunk $\bA_t=(a_t,\ldots,a_{t+L-1})$ induces a future segment $\tau_t$, comprising sampled future image features and endpoint proprioception. The world model forecasts a representation of $\tau_t$ before any of those observations is available. A goal query $g$ specifies how the prediction is evaluated.
 
-\paragraph{Setting.}
-At decision time $t$, a frozen image encoder $f$ maps the robot's camera images to patch features.
-The context $C$ collects the features of the current and the previous image together with recent proprioception; it is computed once per decision.
-A candidate action chunk $\bA=(a_t,\dots,a_{t+\He-1})$, if executed, would produce a \emph{future segment} $\tau$: the features of the images it generates, subsampled in time, together with the final proprioception.
-The world model's prediction about $\tau$ must suffice to rank the candidates before any of them is executed.
-
-\paragraph{Selecting among policy proposals.}
-At each decision, a frozen pretrained policy $\pi$ proposes $K$ chunks, where $\bA^{(1)}$ is the chunk the policy would execute on its own.
-A scorer ranks the proposals, the highest-ranked chunk is executed, with ties resolved in favor of $\bA^{(1)}$, and the policy replans after $\He$ steps~\cite{qi2025gpc,cui2026dreamsteer}.
-Optimizing actions against a learned model tends to exploit its errors~\cite{gao2023overoptimization}; selecting among the proposals of a competent policy instead keeps the candidates close to the data on which the model was trained~\cite{janner2019mbpo}.
-All scorers in this paper rank the same proposals.
-
-\paragraph{Goals and labels.}
-Goals are specified by images $g\in\cG$.
-For training, the simulator labels each candidate with the task progress $\ell$ reached at the end of its segment; on PushT, $\ell$ is the negative mean distance between the block's vertices and their target positions, which orders candidates in the same way as the vertex-registration reward of GPC~\cite{qi2025gpc}.
-Candidates of one decision share their starting state, so only their order matters.
-No label is used at test time.
-
-\paragraph{Conditional trajectory code.}
-A target encoder $q_\phi$, used only during training, maps the context and the actual future to $M$ discrete tokens, $S=q_\phi(C,\tau)\in\{1,\dots,V\}^M$.
-Two heads read the code together with the context, but never the action: a reader $D_\psi(C,S,g)$ that scores progress toward $g$, and a feature decoder $G_\xi(C,S)$ that reconstructs $\tau$.
-Given $K$ sibling futures $\tau_1,\dots,\tau_K$ of one decision with labels $\ell_1,\dots,\ell_K$ and codes $S_k=q_\phi(C,\tau_k)$, the code solves the conditional compression problem
+CTA learns the target jointly from context and future:
 \begin{equation}
-\begin{aligned}
-  \min_{\phi,\psi,\xi}\ &\E\Big[\mathcal{L}_{\mathrm{rank}}\big(\{D_\psi(C,S_k,g)\}_k,\{\ell_k\}_k\big)\\
-  &\qquad+\frac{\alpha}{K}\sum\nolimits_{k} d_{\mathrm{feat}}\big(G_\xi(C,S_k),\tau_k\big)\Big]\\
-  \text{s.t.}\ &I(\tau;S\mid C)\le R,
-\end{aligned}
-\label{eq:crd}
+S=q_\phi(C,\tau),\qquad
+p_\theta(S\mid C,\bA),\qquad
+s=D_\psi(C,\hat S,g),
+\label{eq:contract}
 \end{equation}
-where the expectation is over decisions and goals, $\mathcal{L}_{\mathrm{rank}}$ is a ranking loss over the siblings (\cref{sec:reader}), and $d_{\mathrm{feat}}$ is a reconstruction error.
-Both the encoder and the heads see the context, so the code need not repeat what $C$ already contains.
-Since $S$ is a deterministic function of $(C,\tau)$, $I(\tau;S\mid C)=H(S\mid C)\le M\log_2 V$; we set the rate through the code length, and $M{=}16$ tokens with $V{=}256$ values bound it at 128 bits per segment.
+where $\hat S=\E_{p_\theta}[S]$ in the implemented planner. The source encoder $q_\phi$ operates only during training. At deployment, the reader receives context, forecast, and goal, with no candidate actions. Therefore the world model is the only candidate-specific input path to the reader.
 
-A world model $p_\theta(S\mid C,\bA)$ must forecast the code before execution.
-Given the context, the action can reduce the uncertainty about the code by at most $I(S;\bA\mid C)$; the remainder, $H(S\mid C,\bA)$, reflects dynamics that the context and the action do not determine and cannot be forecast.
-We estimate $I(S;\bA\mid C)$ in \cref{sec:wm}.
-
-\paragraph{Two limiting cases.}
-The family in \eqref{eq:crd} contains two familiar designs as extremes (\cref{tab:designs}).
-A \emph{per-step latent world model} such as DINO-WM sets $S=\tau$: it predicts every token of every future frame, including everything the history already determines, and ranks with a fixed feature distance or a learned readout.
-A \emph{direct scorer} $D(C,\bA,g)$ sets $S=\bA$: nothing about the future is predicted, and the reader must learn the dynamics together with the evaluation.
-\method places $S$ between these extremes, as a learned description of the future at a bounded rate that the reader can evaluate for any goal.
+The target consists of $M=16$ finite-scalar-quantization tokens with levels $(8,8,4)$~\cite{mentzer2024fsq}. Each token has 256 grid values. The source alphabet bounds target capacity, while conditioning allows the encoder and readout to share context. Our training objective shapes what the code retains through ranking and feature reconstruction; it does not explicitly minimize conditional entropy. Deployment uses a continuous $16\times3$ coordinate mean. Source token capacity and deployed numerical precision are distinct quantities.
 
 \begin{table}[t]
-\centering
-\small
-\setlength{\tabcolsep}{2pt}
-\begin{tabular}{@{}llcc@{}}
+\centering\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{.25\linewidth}p{.36\linewidth}p{.29\linewidth}}
 \toprule
- & Predicted & Sequential & Supervised \\
- & per candidate & passes & by future \\
+Architecture & Forecast object & Evaluation \\
 \midrule
-Per-step latent WM & $\He P$ feature tokens & $\He$ & \checkmark \\
-Endpoint latent WM & $P$ feature tokens & 1 & \checkmark \\
-Direct scorer & nothing ($S=\bA$) & 1 & -- \\
-\method (ours) & $M$ code tokens & 1 & \checkmark \\
+Spatial latent WM & Sequence of spatial feature grids & Feature cost / reader \\
+Endpoint WM & Endpoint features + proprioception & Learned future reader \\
+Direct scorer & No explicit future target & $D(C,\bA,g)$ \\
+CTA WM & One conditional segment code & $D(C,\hat S,g)$ \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{What each design predicts} for one candidate chunk, with $P{=}256$ patch tokens per image, $M{=}16$ code tokens, and $\He{=}8$ on PushT. Except for the direct scorer, the prediction does not depend on the goal and is reused for every goal; only the readout is repeated.}
-\label{tab:designs}
+\caption{Prediction targets compared in this study. Direct scoring is a separate alternative, rather than a special case of the finite future-code encoder.}
+\label{tab:targets}
 \end{table}
+
+For control, a frozen policy supplies $K$ proposals. The reader scores each predicted segment, and the planner executes the highest-scoring chunk, using the smallest index to break ties, before replanning. A label $\ell(C,\tau,g)$ supplies supervision on training branches; it is not a deployment input. Offline evaluation uses identical banks, whereas closed-loop states and subsequent banks depend on earlier choices.

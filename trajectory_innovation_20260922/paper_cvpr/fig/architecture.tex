@@ -1,0 +1,58 @@
+% Dimensions and paths reflect the implemented v2 architecture.
+\begin{tikzpicture}[
+ x=1cm,y=1cm,font=\fontsize{9}{10}\selectfont,
+ >={Stealth[length=1.7mm]},
+ box/.style={draw=black!45,rounded corners=2pt,align=center,inner sep=4pt,minimum height=.66cm},
+ train/.style={box,fill=cvprblue!10,draw=cvprblue!75!black},
+ wm/.style={box,fill=cvprblue!22,draw=cvprblue!85!black,line width=1pt},
+ frozen/.style={box,fill=black!6},
+ input/.style={box,fill=white},
+ loss/.style={box,fill=orange!8,draw=orange!65!black},
+ flow/.style={->,line width=.7pt},
+ signal/.style={->,dashed,line width=.7pt,black!65},
+ label/.style={font=\fontsize{8}{9}\selectfont,fill=white,inner sep=1.5pt,align=center}
+]
+\path[use as bounding box] (0,0) rectangle (17.3,6.0);
+\fill[black!2,rounded corners=3pt] (0,.15) rectangle (8.35,6.0);
+\fill[black!2,rounded corners=3pt] (8.7,.15) rectangle (17.3,6.0);
+\node[anchor=west,font=\small\bfseries] at (.22,5.68) {(a) Learn the conditional future target};
+\node[anchor=west,font=\small\bfseries] at (8.92,5.68) {(b) Train the action-conditioned world model};
+% Stage 1: actual future and observed context jointly specify the code.
+\node[input,text width=3.25cm] (sc) at (2.1,4.85) {Observed context $C$\\$256+64+1$ tokens};
+\node[input,text width=3.25cm] (sf) at (6.25,4.85) {Observed future $\tau$\\$256+3\!\times\!64+1$ tokens};
+\node[train,text width=3.5cm] (q) at (4.175,3.69) {Target encoder $q_\phi(C,\tau)$\\16 queries; 3 decoder layers};
+\draw[flow] (sc.south) -- (sc.south |- 0,4.24) -| (q.north west);
+\draw[flow] (sf.south) -- (sf.south |- 0,4.24) -| (q.north east);
+\node[wm,text width=3.5cm] (fsq) at (4.175,2.57) {FSQ $(8,8,4)$ $\longrightarrow$ code $S$\\16 tokens $\times$ 3 coordinates};
+\draw[flow] (q) -- (fsq);
+\node[train,text width=3.15cm,minimum height=1.25cm] (rd) at (2.05,1.36) {Reader $D_\psi(C,S,g)$\\4 encoder layers};
+\node[train,text width=3.15cm,minimum height=1.25cm] (fd) at (6.3,1.36) {Decoder $G_\xi(C,S)$\\2 layers; future image features};
+\draw[flow] (fsq.south) -- (4.175,1.99) -| (rd.north);
+\draw[flow] (4.175,1.99) -| (fd.north);
+\fill (4.175,1.99) circle (.8pt);
+\node[label] at (2.05,.49) {$\mathcal L_{\rm rank}$: sibling utility labels};
+\node[label] at (6.3,.49) {$\mathcal L_{\rm feat}$: future image features};
+\draw[signal] (rd.south) -- (2.05,.66);
+\draw[signal] (fd.south) -- (6.3,.66);
+% Stage 2: the only action path is through the forecast.
+\node[input,text width=2.8cm] (pc) at (10.65,4.85) {Observed context $C$\\321 tokens};
+\node[input,text width=2.8cm] (pa) at (13.9,4.85) {Proposed actions $\bA$\\$L$ action tokens};
+\node[wm,text width=3.95cm] (pred) at (12.28,3.69) {World model $p_\theta(S\mid C,\bA)$\\4 encoder + 4 decoder layers; 16 queries};
+\draw[flow] (pc.south) -- (pc.south |- 0,4.24) -| (pred.north west);
+\draw[flow] (pa.south) -- (pa.south |- 0,4.24) -| (pred.north east);
+\node[frozen,text width=1.55cm,font=\fontsize{8}{9}\selectfont] (target) at (16.05,4.14) {Frozen targets\\$S$, teacher $u_k$};
+\node[wm,text width=3.95cm] (dist) at (12.28,2.57) {Categorical forecast\\$16\times(8+8+4)$ logits};
+\draw[flow] (pred) -- (dist);
+\node[loss,text width=1.2cm] (ce) at (16.05,2.57) {$\mathcal L_{\rm NLL}$};
+\draw[flow] (dist.east) -- (ce.west);
+\draw[signal] (target.south) -- node[label,left] {stop grad.} (ce.north);
+\node[frozen,text width=3.95cm] (pr) at (12.28,1.24) {Frozen reader $D_\psi(C,\hat S,g)$\\inputs: context, forecast, query};
+\draw[flow] (dist.south) -- node[label,right] {$\hat S:16\times3$} (pr.north);
+\node[loss,text width=1.2cm] (rl) at (16.05,1.24) {$\mathcal L_{\rm cons}$\\$+\mathcal L_{\rm rank}^{w}$};
+\draw[flow] (pr.east) -- node[label,above] {$s_k$} (rl.west);
+\draw[signal] (target.east) -- (17.05,4.14) -- (17.05,1.24) -- (rl.east);
+\node[label,rotate=90] at (17.05,3.42) {teacher scores $u_k$};
+\draw[signal] (rl.south) -- (16.05,.47) -- (13.4,.47) -- (pr.south east);
+\draw[signal] (pr.north west) -- (10.55,1.97) -- (dist.south west);
+\node[label] at (11.16,.49) {gradients through frozen reader};
+\end{tikzpicture}

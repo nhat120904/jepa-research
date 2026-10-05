@@ -9,6 +9,7 @@ The official PushT checkpoint and planning objective, unchanged; only the interf
   (k_p 100, k_v 20, ten 0.01 s substeps per action), so its positions under a candidate's absolute targets follow
   exactly from its current position and velocity; contacts cannot alter them. No simulated future is read.
 - Horizon. The 8 executed actions = one macro step + 3 actions; the second macro step holds the last target twice.
+  With longer executed chunks (docs/CTA_REPLAN_INTERVAL_PROTOCOL.md) macro = ceil(T / 5): 15 actions = 3 macro steps.
 - Cost. DINO-WM's "last" objective: MSE between the final predicted visual latent and the goal's, plus alpha times the
   MSE of proprio embeddings. Score = minus the cost averaged over the goal states (the CTA readers average goal images).
 Goal states: the goal pose of the block with the agent where it is in each of the planner's goal frames.
@@ -44,14 +45,14 @@ def pd_positions(pos, vel, targets):
     return out
 
 
-def macro_actions(pos, vel, chunks):
-    """(N, 2), (N, 2), (N, 8, 2) absolute targets -> (N, MACRO, 10) normalized DINO-WM macro actions."""
+def macro_actions(pos, vel, chunks, macro=MACRO):
+    """(N, 2), (N, 2), (N, T, 2) absolute targets -> (N, macro, 10) normalized DINO-WM macro actions."""
     chunks = np.asarray(chunks, np.float64)
-    need = MACRO * FRAMESKIP - chunks.shape[1]
-    targets = np.concatenate([chunks, np.repeat(chunks[:, -1:], need, 1)], 1) if need > 0 else chunks[:, :MACRO * FRAMESKIP]
+    need = macro * FRAMESKIP - chunks.shape[1]
+    targets = np.concatenate([chunks, np.repeat(chunks[:, -1:], need, 1)], 1) if need > 0 else chunks[:, :macro * FRAMESKIP]
     rel = targets - pd_positions(pos, vel, targets)
     a = (torch.as_tensor(rel, dtype=torch.float32) / ACTION_SCALE - ACTION_MEAN) / ACTION_STD
-    return a.reshape(len(a), MACRO, FRAMESKIP * 2)
+    return a.reshape(len(a), macro, FRAMESKIP * 2)
 
 
 def agent_from_frame(frame):
@@ -67,7 +68,7 @@ def agent_from_frame(frame):
 
 class DinoWMScorer:
     def __init__(self, dino_root, ckpt_dir, device, goal_frames, render_env, alpha=1.0,
-                 extra_site="/mnt/data/nhatnc129/jepa/trajectory_innovation/dinowm_extra_site"):
+                 extra_site="/mnt/data/nhatnc129/jepa/trajectory_innovation/dinowm_extra_site", macro=MACRO):
         root = str(Path(dino_root).resolve())
         if root not in sys.path:
             sys.path.append(root)          # appended: DINO-WM's generic top-level names must not shadow installed ones
@@ -91,7 +92,7 @@ class DinoWMScorer:
                                  action_dim=10, concat_dim=1, num_action_repeat=1, num_proprio_repeat=1,
                                  train_encoder=False, train_predictor=True, train_decoder=True).to(device)
         self.model.eval()                      # VWorldModel.eval() sets its parts to eval but returns None
-        self.device, self.alpha = device, alpha
+        self.device, self.alpha, self.macro = device, alpha, macro
         from torchvision import transforms
         self.transform = transforms.Compose([transforms.Resize(224), transforms.CenterCrop(224),
                                              transforms.Normalize([0.5] * 3, [0.5] * 3)])
@@ -131,7 +132,7 @@ class DinoWMScorer:
         obs0 = self.obs(frames, np.concatenate([pos, vel], 1))
         obs0 = {k: v.repeat_interleave(b, 0) for k, v in obs0.items()}
         act = macro_actions(np.repeat(pos, b, 0), np.repeat(vel, b, 0),
-                            np.asarray(chunks).reshape(a * b, *np.asarray(chunks).shape[2:])).to(self.device)
+                            np.asarray(chunks).reshape(a * b, *np.asarray(chunks).shape[2:]), self.macro).to(self.device)
         z_obs, _ = self.model.rollout(obs_0=obs0, act=act)
         g = self.z_goal["visual"].shape[0]
         vis = z_obs["visual"][:, -1]                                                         # (A*B, P, D)

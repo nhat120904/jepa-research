@@ -1,0 +1,16 @@
+\section{Problem and Representation Contract}
+\label{sec:problem}
+At decision time $t$, the observed context is $C_t$. A frozen policy proposes $K$ action chunks $\{\bA_t^{(k)}\}_{k=1}^K$, each executed for at most $L$ steps. Let $\tau_t^{(k)}$ denote the corresponding observed future segment available during training, and $\ell_t^{(k)}(g)$ a training utility label for goal $g$. The selector chooses an index and replans after execution. Offline ranking holds the context and all candidate chunks fixed; closed-loop selectors subsequently visit different states and therefore need not see identical future banks.
+
+CTA imposes the following information flow:
+\begin{equation}
+S=q_\phi(C,\tau),\qquad
+\hat S=h_\theta(C,\bA),\qquad
+s=D_\psi(C,\hat S,g).
+\label{eq:contract}
+\end{equation}
+The source encoder is a training-only module. The predictor receives neither a goal nor an actual future. The reader receives neither actions nor actual futures. Labels influence training losses but are not deployment inputs. Since context and goal are common across a bank, any candidate distinction must reach the reader through $\hat S$.
+
+The deterministic, frozen source encoder produces $M=16$ FSQ tokens with levels $(8,8,4)$, so the source alphabet has at most $256^{16}$ elements. This finite alphabet constrains source capacity; it does not measure the conditional entropy achieved by the encoder. Deployment uses the predictor's coordinate means, $\hat S\in\R^{16\times3}$. These are \emph{48 continuous scalars}, not a transmitted 128-bit code. The mean is a differentiable interface, not an identifiable uncertainty representation, and a nonlinear reader generally satisfies $D(C,\E[S],g)\ne\E[D(C,S,g)]$.
+
+The design objective is to preserve candidate distinctions useful to the reader while reducing the target predicted by the dynamics model. Context conditioning allows information sharing but does not force residual-only coding. Intermediate future samples provide temporal supervision but do not prove intermediate-event retention. Similarly, withholding goals from the predictor permits reuse of its output, while transfer to new goal distributions remains an empirical question. Direct scoring and endpoint prediction are architectural comparators, rather than literal limiting cases of the finite source-code family.

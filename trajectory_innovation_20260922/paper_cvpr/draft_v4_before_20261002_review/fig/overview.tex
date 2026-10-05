@@ -1,0 +1,138 @@
+% Fig. 1 on a real PushT decision. Frames, proposal paths, codes and scores come from
+% scripts/cta_fig1_data.py (job 55314) via scripts/cta_fig1_tex.py -> fig/fig1_data.tex and fig/pusht/.
+\begin{figure*}[t]
+\centering
+\input{fig/fig1_data}
+\def\FigCW{0.105}\def\FigCellW{0.094}\def\FigCellH{0.112}\def\FigRH{0.152}\def\FigBW{1.1}
+\definecolor{figgreen}{RGB}{0,150,70}
+\definecolor{figorange}{RGB}{230,120,20}
+\begin{tikzpicture}[
+  x=1cm, y=1cm, font=\footnotesize,
+  >={Stealth[length=1.7mm]},
+  mod/.style={draw, rounded corners=2pt, thick, align=center, inner sep=2.5pt, minimum height=8mm},
+  frozen/.style={mod, fill=gray!12},
+  learned/.style={mod, fill=cvprblue!12, draw=cvprblue!80!black},
+  ours/.style={mod, fill=cvprblue!28, draw=cvprblue!80!black, line width=1.1pt},
+  img/.style={anchor=south west, inner sep=0pt},
+  lab/.style={font=\scriptsize, align=center, text=black!80},
+  flow/.style={->, thick},
+  aux/.style={->, thick, dashed, black!60},
+  zoombox/.style={densely dashed, black!70, line width=0.5pt},
+  frame/.style={draw=black!35, line width=0.3pt},
+  proposal/.style={figorange, line width=0.55pt, line join=round, line cap=round, opacity=0.9},
+  chosenhalo/.style={white, line width=2.2pt, line join=round, line cap=round},
+  chosen/.style={figgreen, line width=1.1pt, line join=round, line cap=round, -{Stealth[length=1.2mm]}},
+  bar/.style={fill=black!35},
+  chosenbar/.style={fill=figgreen}
+]
+% ============================ deployment
+\node[anchor=west, font=\footnotesize\bfseries] at (-0.05,6.68) {Deployment: predict once, query many};
+% observations o_{t-1}, o_t (full frames)
+\node[img] (prev) at (0,3.62) {\includegraphics[width=2.05cm]{fig/pusht/prev.png}};
+\draw[frame] (prev.south west) rectangle (prev.north east);
+\node[img] (cur) at (0.18,3.44) {\includegraphics[width=2.05cm]{fig/pusht/cur.png}};
+\draw[frame] (cur.south west) rectangle (cur.north east);
+\begin{scope}[shift={(0.18,3.44)}, x=2.05cm, y=2.05cm]\draw[zoombox] \FigZoomProp;\end{scope}
+\node[lab] at (1.25,3.24) {observations $o_{t-1}, o_t$};
+% frozen encoder and policy
+\node[frozen] (enc) at (3.3,6.0) {DINOv2 $f$\\[-1pt]{\scriptsize frozen}};
+\node[frozen] (pi) at (3.3,4.5) {policy $\pi$\\[-1pt]{\scriptsize frozen}};
+\draw[flow] (1.05,5.67) |- (enc.west);
+\draw[flow] (2.23,4.5) -- (pi.west);
+\node (C) at (4.6,6.0) {$C$};
+\draw[flow] (enc) -- (C);
+% proposals (zoomed crop)
+\node[img] (props) at (4.25,3.44) {\FigImgProp{2.2cm}{cur.png}};
+\begin{scope}[shift={(4.25,3.44)}, x=2.2cm, y=2.2cm]\FigPathsProp\end{scope}
+\draw[zoombox] (props.south west) rectangle (props.north east);
+\node[lab] at (5.35,3.24) {$K{=}8$ proposals $\bA^{(k)}$};
+\draw[flow] (pi.east) -- (props.west |- pi.east);
+% world model
+\node[ours, minimum width=2.05cm] (wm) at (7.75,4.54) {world model\\$p_\theta(S\mid C,\bA)$\\[-1pt]{\scriptsize one batched pass}};
+\draw[flow] (6.45,4.54) -- (wm.west);
+\draw[flow] (C.east) -- (7.75,6.0) -- (wm.north);
+\fill (7.75,6.0) circle (0.9pt);
+% expected codes, one row per proposal
+\begin{scope}[shift={(9.22,5.035)}]
+  \FigPredCodes
+  \foreach \k in {1,...,8} {\node[font=\tiny, anchor=east, inner sep=1pt] at (-0.02,{-(\k-1)*\FigRH+0.5*\FigCellH}) {\k};}
+  \draw[black, line width=0.5pt] (-0.02,{-(\FigChosen-1)*\FigRH-0.02}) rectangle ({15*\FigCW+\FigCellW+0.02},{-(\FigChosen-1)*\FigRH+\FigCellH+0.02});
+\end{scope}
+\draw[flow] (wm.east) -- (9.02,4.54);
+\node[lab] at (10.05,3.62) {expected codes $\hat S^{(k)}$};
+% reader and goal images
+\node[learned, minimum width=1.7cm] (reader) at (11.9,4.54) {reader\\$D_\psi(C,\hat S,g)$\\[-1pt]{\scriptsize never sees $\bA$}};
+\draw[flow] (10.93,4.54) -- (reader.west);
+\draw[flow] (7.75,6.0) -- (11.35,6.0) -- (11.35,0 |- reader.north);
+\foreach \g [count=\i from 0] in \FigGoals {
+  \node[img] (goal\i) at ({12.3+0.1*\i},{5.45-0.1*\i}) {\includegraphics[width=0.78cm]{fig/pusht/goal\g.png}};
+  \draw[frame] (goal\i.south west) rectangle (goal\i.north east);
+}
+\node[lab, anchor=west] at (13.45,5.85) {goal images\\$g\in\cG$};
+\draw[flow] (12.62,5.25) -- (12.62,0 |- reader.north);
+% scores
+\begin{scope}[shift={(12.98,5.035)}]
+  \FigBars
+  \draw[black, line width=0.5pt] (-0.02,{-(\FigChosen-1)*\FigRH-0.02}) rectangle ({\FigBW+0.02},{-(\FigChosen-1)*\FigRH+\FigCellH+0.02});
+\end{scope}
+\draw[flow] (reader.east) -- (12.94,4.54);
+\node[lab] at (13.55,3.62) {scores $s_k$};
+% execute
+\node[img] (after) at (15.05,3.44) {\FigImgTop{2.1cm}{c\FigChosenIdx s8.png}};
+\begin{scope}[shift={(15.05,3.44)}, x=2.1cm, y=2.1cm]\FigChosenTop\end{scope}
+\draw[frame] (after.south west) rectangle (after.north east);
+\draw[flow] (14.2,4.54) -- node[lab, above] {argmax} (after.west |- 0,4.54);
+\node[lab] at (16.1,3.24) {after executing $\bA^{(\FigChosen)}$};
+\draw[flow] (after.east |- 0,4.54) -- (17.32,4.54) -- (17.32,2.92) -- node[lab, fill=white, inner sep=1pt, pos=0.3] {observe and replan every $\He$ steps} (0.03,2.92) -- (0.03,3.62);
+
+% ============================ training
+\begin{scope}[on background layer]
+  \fill[black!3, rounded corners=3pt] (-0.06,-0.4) rectangle (17.38,2.68);
+  \draw[black!25, rounded corners=3pt] (-0.06,-0.4) rectangle (17.38,2.68);
+\end{scope}
+\node[anchor=north west, font=\footnotesize\bfseries] at (-0.02,2.64) {Training only};
+% actual futures of two sibling proposals, frames after steps 2, 4, 6, 8
+\foreach \s [count=\j from 0] in {2,4,6,8} {
+  \node[img] (fa\j) at ({0.75+1.03*\j},1.25) {\FigImgBottom{0.98cm}{c\FigBestIdx s\s.png}};
+  \draw[frame] (fa\j.south west) rectangle (fa\j.north east);
+  \node[img] (fb\j) at ({0.75+1.03*\j},0.12) {\FigImgBottom{0.98cm}{c\FigWorstIdx s\s.png}};
+  \draw[frame] (fb\j.south west) rectangle (fb\j.north east);
+}
+\node[align=center, inner sep=0pt] at (0.36,1.74) {$\tau^{(\FigBest)}$\\[1pt]{\tiny\FigErrBest\,px}};
+\node[align=center, inner sep=0pt] at (0.36,0.61) {$\tau^{(\FigWorst)}$\\[1pt]{\tiny\FigErrWorst\,px}};
+\node[lab] at (2.8,-0.17) {frames after steps 2, 4, 6, 8};
+% target encoder
+\node[learned, minimum width=1.6cm, minimum height=1.9cm] (tenc) at (5.85,1.175) {target\\encoder\\$q_\phi(C,\tau)$};
+\draw[flow] (4.83,1.74) -- (tenc.west |- 0,1.74);
+\draw[flow] (4.83,0.61) -- (tenc.west |- 0,0.61);
+\draw[flow] (5.85,2.6) -- (tenc.north);
+\node[font=\scriptsize, anchor=west, inner sep=1pt] at (5.9,2.47) {$C$};
+% codes of the actual futures, aligned with the world model above
+\begin{scope}[shift={(6.91,1.684)}]\FigSourceCodeA\end{scope}
+\begin{scope}[shift={(6.91,0.554)}]\FigSourceCodeB\end{scope}
+\draw[flow] (tenc.east |- 0,1.74) -- (6.88,1.74);
+\draw[flow] (tenc.east |- 0,0.61) -- (6.88,0.61);
+\node[lab] at (7.74,1.08) {codes $S$};
+\draw[aux] (wm.south |- 0,1.83) -- (wm.south);
+\node[lab, anchor=west, inner sep=1pt] at (7.82,2.36) {stop-gradient target};
+% heads
+\node[learned, align=left, minimum height=1.9cm, text width=3.55cm] (heads) at (10.74,1.175) {reader $D_\psi$\\[-1pt]{\scriptsize ranks siblings by progress $\ell$}\\[4pt]feature decoder $G_\xi$\\[-1pt]{\scriptsize reconstructs $f(\tau)$ from $(C,S)$}};
+\draw[flow] (8.62,1.74) -- (heads.west |- 0,1.74);
+\draw[flow] (8.62,0.61) -- (heads.west |- 0,0.61);
+% losses
+\node[anchor=west, align=left] at (12.85,1.175) {$\mathcal{L}_{\mathrm{code}}=\mathcal{L}_{\mathrm{rank}}+\alpha\,\mathcal{L}_{\mathrm{feat}}$\\[-1pt]{\scriptsize stage 1: target encoder, reader, decoder}\\[4pt]
+$\mathcal{L}_{\mathrm{WM}}=\mathcal{L}_{\mathrm{NLL}}+\mathcal{L}_{\mathrm{cons}}+\mathcal{L}^{\hat S}_{\mathrm{rank}}$\\[-1pt]{\scriptsize stage 2: world model}\\[4pt]
+{\scriptsize target code: 16 tokens, at most 128 bits}};
+\end{tikzpicture}
+\caption{\textbf{\method on a real PushT decision.}
+\emph{Top:} the context $C$ holds frozen DINOv2 features of the last two observations.
+The frozen diffusion policy proposes $K{=}8$ action chunks (orange: the agent's target positions over 8 steps, shown in the dashed zoomed region).
+In one batched pass, the world model predicts a distribution over the 16-token code of each chunk's future segment; each row shows the expected code $\hat S^{(k)}$, one cell per token with the token's three FSQ coordinates as RGB.
+The reader scores each code against the goal images without seeing the action, and the highest-scoring chunk (green) is executed; a new goal requires only new reader evaluations.
+\emph{Bottom:} during training, every proposal is executed from a copy of the simulator state.
+The actual futures of proposals \FigBest{} and \FigWorst{} leave the block's vertices \FigErrBest{} and \FigErrWorst{} pixels from the target pose on average.
+The target encoder compresses each future into a code $S$ given $C$; the reader ranks sibling codes by progress, and the decoder reconstructs the future's frozen features from $(C,S)$.
+The world model is trained to predict the stop-gradient code, and through the frozen reader.
+Frames are native $512{\times}512$ simulator renders, from which the $96{\times}96$ observations are downsampled, cropped for visibility; codes and scores are our model's outputs for this decision.}
+\label{fig:overview}
+\end{figure*}

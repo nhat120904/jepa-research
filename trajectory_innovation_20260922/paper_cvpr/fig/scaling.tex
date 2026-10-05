@@ -1,0 +1,45 @@
+% Archived quality and component cost have separate cohorts; no invented datapoints.
+\begin{tikzpicture}
+\definecolor{ctablue}{HTML}{1761A0}
+\definecolor{ctagreen}{HTML}{288770}
+\definecolor{ctaorange}{HTML}{C56826}
+\node[font=\small,text=ctablue,anchor=west] at (3.8,4.6) {$\bullet$ CTA WM};
+\node[font=\small,text=ctagreen,anchor=west] at (7.05,4.6) {$\blacksquare$ END WM};
+\node[font=\small,text=ctaorange,anchor=west] at (10.35,4.6) {$\blacktriangle$ DIR};
+\begin{axis}[
+at={(0.0cm,0cm)},anchor=south west,width=5.5cm,height=4.2cm,
+xmode=log,log basis x=2,xmin=7,xmax=70,minor x tick num=0,
+ymin=0,ymax=1.15,ytick={0,.25,.5,.75,1},xtick={8,16,32,64},xticklabels={8,16,32,64},
+xlabel={Candidate chunks $K$},ylabel={Mean gain ($\times10^{-3}$)},
+font=\fontsize{9}{10}\selectfont,title={(a) Geometry ranking},
+axis line style={black!45},tick align=outside,ymajorgrids=true,grid style={black!12},
+]
+\addplot[line width=1pt,mark size=2.4pt,color=ctablue,mark=*,solid] coordinates {(8,0.608009054) (16,0.749757006) (32,0.876657864) (64,0.998786625)};
+\addplot[line width=1pt,mark size=2.4pt,color=ctagreen,mark=square*,dashed] coordinates {(8,0.522333637) (16,0.644477333) (32,0.772285525) (64,0.889262263)};
+\addplot[line width=1pt,mark size=2.4pt,color=ctaorange,mark=triangle*,densely dotted] coordinates {(8,0.424420467) (16,0.553432626) (32,0.671718460) (64,0.744539094)};
+\end{axis}
+\begin{axis}[
+at={(5.9cm,0cm)},anchor=south west,width=5.5cm,height=4.2cm,
+xmode=log,log basis x=2,xmin=7,xmax=70,minor x tick num=0,
+ymin=0,ymax=22,ytick={0,5,10,15,20},xtick={8,16,64},xticklabels={8,16,64},
+xlabel={Candidate chunks $K$},ylabel={Scorer latency (ms)},
+font=\fontsize{9}{10}\selectfont,title={(b) One query ($G=1$)},
+axis line style={black!45},tick align=outside,ymajorgrids=true,grid style={black!12},
+]
+\addplot[line width=1pt,mark size=2.4pt,color=ctablue,mark=*,solid] coordinates {(8,4.109553061) (16,4.885428585) (64,12.961256318)};
+\addplot[line width=1pt,mark size=2.4pt,color=ctagreen,mark=square*,dashed] coordinates {(8,4.516922869) (16,6.073446944) (64,20.091711544)};
+\addplot[line width=1pt,mark size=2.4pt,color=ctaorange,mark=triangle*,densely dotted] coordinates {(8,2.535792068) (16,3.937785514) (64,13.939434662)};
+\end{axis}
+\begin{axis}[
+at={(11.8cm,0cm)},anchor=south west,width=5.5cm,height=4.2cm,
+xmode=log,log basis x=2,xmin=7,xmax=70,minor x tick num=0,
+ymin=0,ymax=225,ytick={0,50,100,150,200},xtick={8,16,64},xticklabels={8,16,64},
+xlabel={Candidate chunks $K$},ylabel={Scorer latency (ms)},
+font=\fontsize{9}{10}\selectfont,title={(c) Repeated queries ($G=16$)},
+axis line style={black!45},tick align=outside,ymajorgrids=true,grid style={black!12},
+]
+\addplot[line width=1pt,mark size=2.4pt,color=ctablue,mark=*,solid] coordinates {(8,16.868106090) (16,30.515634455) (64,114.421590231)};
+\addplot[line width=1pt,mark size=2.4pt,color=ctagreen,mark=square*,dashed] coordinates {(8,23.404847831) (16,44.158991426) (64,171.041949652)};
+\addplot[line width=1pt,mark size=2.4pt,color=ctaorange,mark=triangle*,densely dotted] coordinates {(8,26.813067496) (16,52.518124692) (64,206.668150611)};
+\end{axis}
+\end{tikzpicture}
