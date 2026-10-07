@@ -1,0 +1,67 @@
+{
+  "evaluation": "support_57808, environment seed4, one training seed",
+  "success": 87,
+  "n": 100,
+  "wilson95_episode_interval": [
+    79.0,
+    92.2
+  ],
+  "first_plan_median_sec_cpu": 0.615,
+  "task_results": [
+    {
+      "task": 1,
+      "success": 20,
+      "n": 20,
+      "first_plan_depth_counts": {
+        "2": 20
+      },
+      "executed_events_success_median": 1.0,
+      "steps_success_median": 63.0,
+      "replans_failed_median": null
+    },
+    {
+      "task": 2,
+      "success": 20,
+      "n": 20,
+      "first_plan_depth_counts": {
+        "6": 20
+      },
+      "executed_events_success_median": 5.0,
+      "steps_success_median": 197.5,
+      "replans_failed_median": null
+    },
+    {
+      "task": 3,
+      "success": 20,
+      "n": 20,
+      "first_plan_depth_counts": {
+        "4": 20
+      },
+      "executed_events_success_median": 3.0,
+      "steps_success_median": 222.5,
+      "replans_failed_median": null
+    },
+    {
+      "task": 4,
+      "success": 18,
+      "n": 20,
+      "first_plan_depth_counts": {
+        "5": 20
+      },
+      "executed_events_success_median": 6.0,
+      "steps_success_median": 373.0,
+      "replans_failed_median": 7.5
+    },
+    {
+      "task": 5,
+      "success": 9,
+      "n": 20,
+      "first_plan_depth_counts": {
+        "8": 20
+      },
+      "executed_events_success_median": 10,
+      "steps_success_median": 475,
+      "replans_failed_median": 14
+    }
+  ]
+}

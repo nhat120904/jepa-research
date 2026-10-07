@@ -1,0 +1,12 @@
+{
+ "train_events": 17858,
+ "train_multi_object_events": 948,
+ "val_events": 1851,
+ "val_multi_object_events": 120,
+ "train_frame_event_pairs": 1135223,
+ "val_frame_event_pairs": 114186,
+ "include_side_effects": true,
+ "parent_model": "/mnt/data/nhatnc129/jepa/event_wm/scene_state_20261006/job_57772/skill/u_skill.pt",
+ "steps": 10000,
+ "lr": 3e-05
+}

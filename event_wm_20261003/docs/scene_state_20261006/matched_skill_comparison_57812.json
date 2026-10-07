@@ -1,0 +1,90 @@
+{
+  "n": 100,
+  "seed": 5,
+  "parent_success": 87,
+  "new_success": 92,
+  "by_task": {
+    "1": 1.0,
+    "2": 1.0,
+    "3": 1.0,
+    "4": 0.9,
+    "5": 0.7
+  },
+  "both_success": 83,
+  "fixed": 9,
+  "regressed": 4,
+  "both_failed": 4,
+  "max_logged_start_diff": 0.0,
+  "max_logged_goal_diff": 0.0009999275207519531,
+  "plan_median_sec_gpu": 0.14500000000000002,
+  "remaining_failed_cases": [
+    {
+      "task": 4,
+      "episode": 4,
+      "steps": 750,
+      "replans": 7,
+      "timeouts": 0
+    },
+    {
+      "task": 4,
+      "episode": 17,
+      "steps": 750,
+      "replans": 9,
+      "timeouts": 1
+    },
+    {
+      "task": 5,
+      "episode": 4,
+      "steps": 750,
+      "replans": 13,
+      "timeouts": 0
+    },
+    {
+      "task": 5,
+      "episode": 9,
+      "steps": 750,
+      "replans": 12,
+      "timeouts": 0
+    },
+    {
+      "task": 5,
+      "episode": 10,
+      "steps": 750,
+      "replans": 10,
+      "timeouts": 0
+    },
+    {
+      "task": 5,
+      "episode": 13,
+      "steps": 750,
+      "replans": 11,
+      "timeouts": 0
+    },
+    {
+      "task": 5,
+      "episode": 15,
+      "steps": 750,
+      "replans": 8,
+      "timeouts": 1
+    },
+    {
+      "task": 5,
+      "episode": 16,
+      "steps": 750,
+      "replans": 13,
+      "timeouts": 0
+    }
+  ],
+  "extra_training": "10000updates at3e-5, genuine multi-object TRAIN events added, same raw data",
+  "files": {
+    "loop_old_skill_seed5_57812.json": "3caf3ce7e29fc1e4e469009ea210b1dc7fd651c388d1a4409e7527b7b1738c3a",
+    "loop_new_skill_seed5_57812.json": "6b7415c3536a9407348f1e0a96de9fc79e60f9b2c21bc98fa7d47a89a386e7b1",
+    "loop_new_skill_dev_seed4_57812.json": "ef157f8ed681c545b7bbfb317be7ea91d73281e3ba8921a6c89a5490667b4f87",
+    "skill_data_57812.json": "30c4187b94a44df5a744289bf776e2488e382c318878fce496a3f724c77c050e"
+  },
+  "wilson95_episode_interval_percent": [
+    85.0,
+    95.9
+  ],
+  "paired_skill_gain_exact_two_sided_p": 0.266845703125
+}

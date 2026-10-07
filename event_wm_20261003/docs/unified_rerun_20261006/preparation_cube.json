@@ -1,0 +1,99 @@
+{
+  "train": {
+    "frames": 1001000,
+    "episodes": 1000,
+    "obs_dim": 46,
+    "events": 10792,
+    "multi_object_events": 320,
+    "acted_counts": [
+      3719,
+      3636,
+      3437
+    ],
+    "release_segments_clipped_at_reset": 0
+  },
+  "val": {
+    "frames": 100100,
+    "episodes": 100,
+    "obs_dim": 46,
+    "events": 1080,
+    "multi_object_events": 25,
+    "acted_counts": [
+      345,
+      369,
+      366
+    ],
+    "release_segments_clipped_at_reset": 0
+  },
+  "K": 3,
+  "model_interfaces": "passed",
+  "public_state_proprio_independence": "passed",
+  "native_horizon": 1000,
+  "task_checks": [
+    {
+      "task": 1,
+      "state_shape": [
+        1,
+        3,
+        6
+      ],
+      "goal_shape": [
+        1,
+        3,
+        6
+      ]
+    },
+    {
+      "task": 2,
+      "state_shape": [
+        1,
+        3,
+        6
+      ],
+      "goal_shape": [
+        1,
+        3,
+        6
+      ]
+    },
+    {
+      "task": 3,
+      "state_shape": [
+        1,
+        3,
+        6
+      ],
+      "goal_shape": [
+        1,
+        3,
+        6
+      ]
+    },
+    {
+      "task": 4,
+      "state_shape": [
+        1,
+        3,
+        6
+      ],
+      "goal_shape": [
+        1,
+        3,
+        6
+      ]
+    },
+    {
+      "task": 5,
+      "state_shape": [
+        1,
+        3,
+        6
+      ],
+      "goal_shape": [
+        1,
+        3,
+        6
+      ]
+    }
+  ]
+}

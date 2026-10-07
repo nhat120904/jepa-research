@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="vi">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Demo unified Event WM · 05/10/2026</title>
+<style>
+body{margin:0;background:#141821;color:#e9edf5;font:16px/1.6 system-ui,sans-serif}
+main{max-width:960px;margin:auto;padding:32px 22px}h1{font-size:28px;line-height:1.25}h2{font-size:20px}
+section{margin:26px 0;padding:20px;background:#202735;border-radius:12px}video{display:block;width:100%;max-width:704px;border-radius:6px;background:#000}
+a{color:#91c7ff}.note{color:#b7c4d8}.badge{color:#8ee2ba}li{margin:8px 0}
+</style>
+<main>
+<h1>Demo method unified hiện tại</h1>
+<p>Cube-triple: ảnh robot ở trái, ảnh mục tiêu ở phải. Video dùng đúng ảnh đầu vào 64×64 được phóng lớn; thanh dưới ghi bước mô phỏng và số lần gọi planner.</p>
+<p class="note">Job 57497 · 05/10/2026 · replay trên CPU với reader, world model và skill của lần đánh giá 57411. Đây là ba trạng thái khởi đầu trong tập development, không phải benchmark mới. Không thay skill chuyên biệt. Trạng thái thật của simulator chỉ được lưu để chẩn đoán, không đưa vào policy.</p>
+<section><h2>Task 1 · episode 0</h2>
+<video controls preload="metadata" poster="job57497/task1_ep0_initial.png" src="job57497/task1_ep0.mp4"></video>
+<p class="badge">Thành công sau 66 bước; một lần lập kế hoạch.</p>
+<p>Lần đánh giá GPU gốc cũng thành công, sau 69 bước. <a href="job57497/task1_ep0.json">Dấu vết episode</a></p></section>
+<section><h2>Task 2 · episode 0</h2>
+<video controls preload="metadata" poster="job57497/task2_ep0_initial.png" src="job57497/task2_ep0.mp4"></video>
+<p class="badge">Replay CPU thành công sau 472 bước; bốn lần lập lại kế hoạch.</p>
+<p>Lần đánh giá GPU gốc thất bại ở cùng seed. Replay CPU có thể khác do tính toán số học; chưa kiểm chứng riêng nguyên nhân khác biệt. Không dùng clip này để sửa tỷ lệ benchmark. <a href="job57497/task2_ep0.json">Dấu vết episode</a></p></section>
+<section><h2>Task 5 · episode 0</h2>
+<video controls preload="metadata" poster="job57497/task5_ep0_initial.png" src="job57497/task5_ep0.mp4"></video>
+<p id="task5-result">Thất bại sau 1.000 bước; cả sáu lần gọi planner đều không tìm được kế hoạch hoàn chỉnh trong khoảng 20.000 expansions/lần. Robot thực hiện các kế hoạch một phần, với năm lần lập lại kế hoạch và một timeout.</p>
+<p><a href="job57497/task5_ep0.json">Dấu vết episode</a></p></section>
+<section><h2>Điểm yếu đã có bằng chứng</h2>
+<ul>
+<li><strong>Điều khiển chưa ổn:</strong> đánh giá unified GPU hiện tại đạt 8/30 (26,7%). Task 1–5 lần lượt đạt 6/6, 1/6, 1/6, 0/6, 0/6.</li>
+<li><strong>Skill thực hiện là một nút thắt:</strong> trong thử nghiệm quy nguyên nhân trước đó, giữ reader/WM/planner và thay skill unified bằng skill chuyên biệt nâng từ 4/30 lên 16/30. Checkpoint unified cuối 40k bước đã nâng kết quả lên 8/30; nút thắt chưa được giải quyết.</li>
+<li><strong>Tìm kế hoạch không đồng nghĩa thực hiện đúng:</strong> khoảng 90% episode có kế hoạch đầu tiên trong đánh giá gốc, nhưng chỉ 26,7% đạt mục tiêu. Reader, kết thúc event và WM vẫn có thể góp phần gây lỗi; chưa tách hết ở checkpoint hiện tại.</li>
+<li><strong>Đặt vật và theo dõi event còn thiếu chính xác:</strong> trong 57 event được log ở lần đánh giá GPU gốc, sai lệch vị trí reader so với đích có trung vị 3,5 pixel; chỉ 29,8% nằm trong 2 pixel. Một số event dừng vì vật khác bị dịch chuyển. Đây là sai lệch theo reader 2D, chưa phải đo vị trí thật trong simulator.</li>
+<li><strong>Puzzle unified còn yếu ở dự đoán:</strong> kiểm tra offline cho side-effect trong tolerance 8,26% và tìm kế hoạch 3,18%. Chưa có closed-loop của checkpoint đó để kết luận tỷ lệ thành công.</li>
+</ul>
+<p>Chưa đủ bằng chứng method tốt hơn một cách tổng quát. Chưa có so sánh held-out nhiều seed, dữ liệu và compute được ghép công bằng với baseline.</p>
+<p><a href="job57497/manifest.json">Checkpoint hashes và kết quả demo</a> · <a href="job57497/reference_inspection.txt">Chẩn đoán lần đánh giá GPU gốc</a></p>
+</section>
+</main>
+</html>

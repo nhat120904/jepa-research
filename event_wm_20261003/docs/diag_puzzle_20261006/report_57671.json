@@ -1,0 +1,89 @@
+{
+  "job_id": "57671",
+  "controls": [
+    {
+      "mode": "raw_WM_oracle_h",
+      "task": 3,
+      "found": true,
+      "length": 14,
+      "reference_goal": true,
+      "expanded": 789,
+      "seconds": 0.7835960388183594,
+      "best_h": null
+    },
+    {
+      "mode": "raw_WM_oracle_h",
+      "task": 4,
+      "found": true,
+      "length": 16,
+      "reference_goal": true,
+      "expanded": 917,
+      "seconds": 0.6278185844421387,
+      "best_h": null
+    },
+    {
+      "mode": "raw_WM_oracle_h",
+      "task": 5,
+      "found": true,
+      "length": 20,
+      "reference_goal": true,
+      "expanded": 1173,
+      "seconds": 0.867913007736206,
+      "best_h": null
+    },
+    {
+      "mode": "oracle_WM_learned_h",
+      "task": 3,
+      "found": false,
+      "length": null,
+      "reference_goal": null,
+      "expanded": 20053,
+      "seconds": 13.140733003616333,
+      "best_h": 0.6396896839141846
+    },
+    {
+      "mode": "oracle_WM_learned_h",
+      "task": 4,
+      "found": false,
+      "length": null,
+      "reference_goal": null,
+      "expanded": 20053,
+      "seconds": 13.051570653915405,
+      "best_h": 0.1871454119682312
+    },
+    {
+      "mode": "oracle_WM_learned_h",
+      "task": 5,
+      "found": false,
+      "length": null,
+      "reference_goal": null,
+      "expanded": 20053,
+      "seconds": 13.175840616226196,
+      "best_h": 0.18997572362422943
+    },
+    {
+      "mode": "raw_key",
+      "task": 2,
+      "found": false,
+      "length": null,
+      "expanded": 20053,
+      "seconds": 16.83384394645691,
+      "unique_raw_keys": 229186,
+      "unique_logical_boards": 3513,
+      "max_raw_keys_per_logical_board": 3735,
+      "logical_boards_with_multiple_keys": 2649
+    },
+    {
+      "mode": "prototype_key_only",
+      "task": 2,
+      "found": true,
+      "length": 10,
+      "expanded": 1941,
+      "seconds": 11.615080833435059,
+      "unique_raw_keys": 27925,
+      "unique_logical_boards": 15109,
+      "max_raw_keys_per_logical_board": 20,
+      "logical_boards_with_multiple_keys": 6162
+    }
+  ]
+}

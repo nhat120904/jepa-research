@@ -1,0 +1,14 @@
+{
+  "scene_dir": "/mnt/data/nhatnc129/jepa/event_wm/scene_state_20261006",
+  "source": "source_skill_v4",
+  "model": "support_57808/u_model.pt",
+  "skill": "skill_side_effects_57812/skill/u_skill.pt",
+  "state_layout": "prep_57771/front/layout.json",
+  "evaluation": "skill_side_effects_57812/new_skill_seed5/u_closed_loop.json",
+  "success": 92,
+  "episodes": 100,
+  "seed": 5,
+  "training_seed_scope": "one scene training seed",
+  "status": "all jobs completed; remaining cube/drawer failures",
+  "published_baseline_comparison": "not yet established"
+}

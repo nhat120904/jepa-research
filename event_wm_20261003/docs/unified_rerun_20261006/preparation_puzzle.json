@@ -1,0 +1,133 @@
+{
+  "train": {
+    "frames": 1001000,
+    "episodes": 1000,
+    "obs_dim": 99,
+    "events": 29474,
+    "multi_object_events": 0,
+    "acted_counts": [
+      1417,
+      1473,
+      1441,
+      1527,
+      1360,
+      1475,
+      1627,
+      1504,
+      1548,
+      1391,
+      1404,
+      1570,
+      1456,
+      1488,
+      1468,
+      1426,
+      1460,
+      1494,
+      1472,
+      1473
+    ],
+    "release_segments_clipped_at_reset": 200
+  },
+  "val": {
+    "frames": 100100,
+    "episodes": 100,
+    "obs_dim": 99,
+    "events": 2950,
+    "multi_object_events": 0,
+    "acted_counts": [
+      131,
+      134,
+      159,
+      149,
+      143,
+      139,
+      135,
+      148,
+      176,
+      149,
+      169,
+      147,
+      177,
+      134,
+      152,
+      169,
+      124,
+      130,
+      146,
+      139
+    ],
+    "release_segments_clipped_at_reset": 21
+  },
+  "K": 20,
+  "model_interfaces": "passed",
+  "public_state_proprio_independence": "passed",
+  "native_horizon": 1000,
+  "task_checks": [
+    {
+      "task": 1,
+      "state_shape": [
+        1,
+        20,
+        6
+      ],
+      "goal_shape": [
+        1,
+        20,
+        6
+      ]
+    },
+    {
+      "task": 2,
+      "state_shape": [
+        1,
+        20,
+        6
+      ],
+      "goal_shape": [
+        1,
+        20,
+        6
+      ]
+    },
+    {
+      "task": 3,
+      "state_shape": [
+        1,
+        20,
+        6
+      ],
+      "goal_shape": [
+        1,
+        20,
+        6
+      ]
+    },
+    {
+      "task": 4,
+      "state_shape": [
+        1,
+        20,
+        6
+      ],
+      "goal_shape": [
+        1,
+        20,
+        6
+      ]
+    },
+    {
+      "task": 5,
+      "state_shape": [
+        1,
+        20,
+        6
+      ],
+      "goal_shape": [
+        1,
+        20,
+        6
+      ]
+    }
+  ]
+}

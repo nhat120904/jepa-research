@@ -1,0 +1,74 @@
+{
+ "kind": "scene",
+ "block": 0,
+ "K": 5,
+ "entity_names": [
+  "cube",
+  "button_0",
+  "button_1",
+  "drawer",
+  "window"
+ ],
+ "observation_source": "public 40-dimensional SceneEnv.compute_observation",
+ "loc_uv": [
+  [
+   44.44525146484375,
+   27.98477554321289
+  ],
+  [
+   44.50692367553711,
+   35.96952438354492
+  ]
+ ],
+ "handle_affine": [
+  [
+   [
+    0.006006610744331643,
+    24.581871112566397
+   ],
+   [
+    -4.396523895675291,
+    11.48782589030823
+   ]
+  ],
+  [
+   [
+    5.28030505903933,
+    20.92715397522247
+   ],
+   [
+    -0.05624918733205931,
+    50.01856394815728
+   ]
+  ]
+ ],
+ "geometry_fit_train": [
+  {
+   "joint_observation_column": 36,
+   "samples": 10976,
+   "public_contact_frames": 10976,
+   "residual_canvas_units_p50_p90": [
+    0.2702045233150354,
+    0.9189417832880444
+   ]
+  },
+  {
+   "joint_observation_column": 38,
+   "samples": 7269,
+   "public_contact_frames": 7269,
+   "residual_canvas_units_p50_p90": [
+    0.17641094851955857,
+    0.5171900235187146
+   ]
+  }
+ ],
+ "w_obs": 0.399214506149292,
+ "thr_pos": 3.193716049194336,
+ "tol_pos": 1.596858024597168,
+ "r_pos": 0.00459724096164389,
+ "r_app": 0.00015980683976556673,
+ "thr_app": 0.0499018132686615,
+ "scale": 8.0,
+ "offset": 32.0,
+ "za": 0.25
+}

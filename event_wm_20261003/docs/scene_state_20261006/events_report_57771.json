@@ -1,0 +1,73 @@
+{
+ "thr_pos": 3.193716049194336,
+ "r_pos": 0.00459724096164389,
+ "r_pos_D": null,
+ "tol_pos": 1.596858024597168,
+ "r_app": 0.00015980683976556673,
+ "r_app_D": null,
+ "m": 5,
+ "thresholds_from": "/mnt/data/nhatnc129/jepa/event_wm/scene_state_20261006/prep_57771/thr",
+ "thr_app": 0.0499018132686615,
+ "train": {
+  "events": 17858,
+  "per_episode": 17.858,
+  "episodes": 1000,
+  "changed_entities_pct": [
+   1.0,
+   1.0,
+   2.0
+  ],
+  "acted_entity_counts": [
+   4632,
+   3486,
+   3357,
+   2996,
+   3387
+  ],
+  "label_valid_frac_processed": 0.8854647352647352,
+  "covered_frac": 0.0,
+  "privileged_recall": 0.9548389348410289,
+  "privileged_precision": 1.0,
+  "privileged_ref_events": 28653,
+  "privileged_one_to_one": {
+   "refs_per_episode": 28.65,
+   "events_with_0_1_2plus_refs": [
+    0,
+    8791,
+    9067
+   ],
+   "refs_in_clean_one_to_one": 0.307
+  }
+ },
+ "val": {
+  "events": 1851,
+  "per_episode": 18.51,
+  "episodes": 100,
+  "changed_entities_pct": [
+   1.0,
+   1.0,
+   2.0
+  ],
+  "acted_entity_counts": [
+   447,
+   366,
+   357,
+   323,
+   358
+  ],
+  "label_valid_frac_processed": 0.8843576423576424,
+  "covered_frac": 0.0,
+  "privileged_recall": 0.9546675621222297,
+  "privileged_precision": 1.0,
+  "privileged_ref_events": 2978,
+  "privileged_one_to_one": {
+   "refs_per_episode": 29.78,
+   "events_with_0_1_2plus_refs": [
+    0,
+    899,
+    952
+   ],
+   "refs_in_clean_one_to_one": 0.302
+  }
+ }
+}

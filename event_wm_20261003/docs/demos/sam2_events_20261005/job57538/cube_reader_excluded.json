@@ -1,0 +1,77 @@
+{
+  "name": "cube_reader_excluded",
+  "env": "visual-cube-triple-play-v0",
+  "split": "val",
+  "source_front": "/mnt/data/nhatnc129/jepa/event_wm/uident_57366_cf/visual-cube-triple-play-v0/self1000/front",
+  "source_events": "/mnt/data/nhatnc129/jepa/event_wm/uident_57366_cf/visual-cube-triple-play-v0/self1000/events_ref",
+  "source_sam2": "/mnt/data/nhatnc129/jepa/event_wm/segfull_cube/segments_val.npz",
+  "event_index": 0,
+  "episode": 0,
+  "acted_entity": 0,
+  "event_start": 101,
+  "refined_end": 244,
+  "coarse_end": 264,
+  "frame_range": [
+    70,
+    295
+  ],
+  "changed_entities": [
+    0
+  ],
+  "excluded_from_skill": true,
+  "contaminated": true,
+  "before": [
+    [
+      11.162224769592285,
+      37.846744537353516,
+      0.32260939478874207,
+      0.48717963695526123,
+      0.6535871028900146,
+      0.0
+    ],
+    [
+      22.765296936035156,
+      42.781585693359375,
+      0.5733875036239624,
+      0.4796919524669647,
+      0.20878800749778748,
+      0.0
+    ],
+    [
+      52.73468780517578,
+      42.898658752441406,
+      0.547548770904541,
+      0.20177045464515686,
+      0.2743470072746277,
+      0.0
+    ]
+  ],
+  "after": [
+    [
+      41.703819274902344,
+      34.105247497558594,
+      0.31902554631233215,
+      0.4846242368221283,
+      0.6599107384681702,
+      0.0
+    ],
+    [
+      22.765296936035156,
+      42.781585693359375,
+      0.5733875036239624,
+      0.4796919524669647,
+      0.20878800749778748,
+      0.0
+    ],
+    [
+      52.73468780517578,
+      42.898658752441406,
+      0.547548770904541,
+      0.20177045464515686,
+      0.2743470072746277,
+      0.0
+    ]
+  ],
+  "selection": "First validation event satisfying the displayed category and duration bounds",
+  "note": "Recorded offline play, not a policy rollout. Mask colours identify proposals within a frame, not persistent objects. Entity colours identify inferred IDs. Playback half speed; event endpoints are saved labels, not ground truth."
+}

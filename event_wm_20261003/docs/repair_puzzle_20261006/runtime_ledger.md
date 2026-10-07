@@ -1,0 +1,4 @@
+
+- 57680 CANCELLED at6m24s (both scheduler views checked) during imagined-goal preparation, before h training/checkpoint/eval. Candidate count20 and cache32768states completed; Python per-state candidate calls were the preparation bottleneck. No method result from this job.
+- 57684 replaces it, same1GPU/6CPU/16GB,30min limit; train_repair_v2.py + repair_v2.sbatch. Same repair/training budget and candidate operator, vectorized train-prototype sampling with explicit functional equivalence checks before rollout. Source_V2_SHA256SUMS preserves v1 manifest. Outputs job_57684.
+- Before GPU submission squeue/sacct verified57680 cancellation and no peer/duplicate run; sreport still88GPUh/680CPUh/6195495MBh. Counting cancelled job's full prior limit plus new planned0.5GPUh,3CPUh,8192MBh remains below108GPUh/1094.4CPUh/7969481.1MBh ceilings. No repeated scientific configuration or extra training seed was submitted.

@@ -16,6 +16,20 @@ x. One architecture and rule set for every task family:
   search       batched weighted A* (f = lam g + h), goal test: every identity within tol_pos / thr_app,
                covered bits equal.
 Run as a script: train the world model + cost-to-go on u_events.py output, report offline checks.
+--event-pos-only: the agent decides where a moved entity goes; what it then looks like is the world model's to predict.
+For an event that moves the acted entity (target position farther than tol_pos), the appearance part of the target
+x is replaced by the entity's current appearance before it enters the model. Without this, the hindsight target
+(x = the achieved after-state) carries the landing height in the state track, the model learns after = x, and an
+unsupported top-of-tower placement looks feasible (57613, cube-triple task 5: 0/20). Off by default; meant for the
+state track. On pixel tables place identities never move, and for colour identities it only replaces the read
+appearance (nominally constant, reader noise) by the current one.
+--h-goals walk: half of each cost-to-go batch pairs a dataset state S with a goal reached from it by k ~ U{0..walk_max}
+imagined random events (DeepCubeA-style), so every distance up to the cap is trained. With dataset pairs only, goals
+on a 20-button board are ~10 presses away, near-goal states are almost never sampled, and h sits at the cap far from
+the goal (57614 puzzle-4x5 state: best h 29.96 after 20k expansions, tasks 2-5 0/6).
+--h-absdiff: the cost-to-go also gets |s - g| (which entities differ, whatever the direction; for binary states this is
+s XOR g, the input the puzzle-specific planner needed). With walk goals, 60k steps and width 2048 but without it, h was
+right to ~5 presses and flat (~5) beyond (57630, local check against GF(2) distances).
 """
 
 from __future__ import annotations
@@ -64,10 +78,25 @@ def make_wm(K, d=128, layers=3):
     return EntityWM()
 
 
-def make_h(K, width=1024):
+def event_input(S, e, x, tol_pos):
+    """Target x (n, D) of the acted entity e (n,) in states S (n, K, D) as the model sees it under --event-pos-only:
+    appearance replaced by the current one when the event moves the entity."""
+    x = np.array(x, np.float32, copy=True)
+    cur = np.asarray(S)[np.arange(len(x)), np.asarray(e)]
+    moved = np.linalg.norm(x[:, :2] - cur[:, :2], axis=-1) > tol_pos
+    x[moved, 2:5] = cur[moved, 2:5]
+    return x
+
+
+def h_input(t, s, g, absdiff):
+    """Cost-to-go input from flattened normalised states s, g: [s, g, s - g] (+ |s - g|)."""
+    return t.cat([s, g, s - g] + ([(s - g).abs()] if absdiff else []), -1)
+
+
+def make_h(K, width=1024, absdiff=False):
     import torch.nn as nn
 
-    return nn.Sequential(nn.Linear(3 * K * D, width), nn.GELU(), nn.Linear(width, width), nn.GELU(),
+    return nn.Sequential(nn.Linear((4 if absdiff else 3) * K * D, width), nn.GELU(), nn.Linear(width, width), nn.GELU(),
                          nn.Linear(width, width), nn.GELU(), nn.Linear(width, 1), nn.Softplus())
 
 
@@ -100,9 +129,11 @@ class Model:
         self.K, self.dev = ck["K"], device
         self.sc = Scale(ck["thr_pos"], ck["thr_app"], ck.get("tol_pos"))
         self.wm = make_wm(self.K).to(device).eval(); self.wm.load_state_dict(ck["wm"])
-        self.h = make_h(self.K).to(device).eval(); self.h.load_state_dict(ck["h"])
+        self.absdiff = bool(ck.get("h_absdiff", False))
+        self.h = make_h(self.K, ck.get("h_width", 1024), self.absdiff).to(device).eval(); self.h.load_state_dict(ck["h"])
         self.proto = ck["proto"]                                   # list per identity: (P_k, D) rest-state prototypes
         self.occ_min = ck["occ_min"]; self.cover_rule = ck["cover_rule"]
+        self.pos_only = bool(ck.get("event_pos_only", False))
         tol = np.asarray(ck.get("thr_app_id", np.full(self.K, ck["thr_app"])), np.float64)
         self.app_tol = np.where(np.isfinite(tol), tol, 1e9)                          # per identity
         self.torch = torch
@@ -143,8 +174,12 @@ class Model:
         t = self.torch
         with t.no_grad():
             s = t.as_tensor(self.sc.norm(np.asarray(Ss, np.float32)), device=self.dev).float()
-            e = t.as_tensor([ev[0] for ev in events], device=self.dev)
-            x = t.as_tensor(self.sc.norm(np.stack([ev[1] for ev in events])), device=self.dev).float()
+            ee = np.array([ev[0] for ev in events])
+            xx = np.stack([ev[1] for ev in events])
+            if self.pos_only:
+                xx = event_input(Ss, ee, xx, self.sc.tol_pos)
+            e = t.as_tensor(ee, device=self.dev)
+            x = t.as_tensor(self.sc.norm(xx), device=self.dev).float()
             nxt = self.sc.denorm(self.wm(s, e, x).cpu().numpy())
         nxt[..., 5] = nxt[..., 5] > 0.5
         return nxt
@@ -154,7 +189,7 @@ class Model:
         with t.no_grad():
             s = t.as_tensor(self.sc.norm(S), device=self.dev).float().reshape(len(S), -1)
             g = t.as_tensor(self.sc.norm(np.repeat(G[None], len(S), 0)), device=self.dev).float().reshape(len(S), -1)
-            return self.h(t.cat([s, g, s - g], -1)).squeeze(-1).cpu().numpy()
+            return self.h(h_input(t, s, g, self.absdiff)).squeeze(-1).cpu().numpy()
 
     def key(self, S):
         q = np.concatenate([np.round(S[:, :2] / (self.sc.tol_pos / 2)), np.round(S[:, 2:5] / (np.minimum(self.app_tol, 1.0)[:, None] / 4)), S[:, 5:]], -1)
@@ -205,7 +240,13 @@ def main():
     ap.add_argument("--events", type=Path, required=True, help="u_events.py output")
     ap.add_argument("--wm-steps", type=int, default=30000)
     ap.add_argument("--h-steps", type=int, default=60000)
+    ap.add_argument("--h-width", type=int, default=1024)
+    ap.add_argument("--h-goals", choices=("data", "walk"), default="data", help="cost-to-go goals: dataset pairs, or half from imagined walks")
+    ap.add_argument("--h-walk-max", type=int, default=30, help="longest imagined walk (the cost cap)")
+    ap.add_argument("--h-walk-pool", type=int, default=100000)
+    ap.add_argument("--h-absdiff", action="store_true", help="cost-to-go input also gets |s - g|")
     ap.add_argument("--protos", type=int, default=8)
+    ap.add_argument("--event-pos-only", action="store_true", help="moved entity: the model gets its target position only (see doc)")
     ap.add_argument("--device", default="cuda", help="cpu for smoke tests")
     ap.add_argument("--out", type=Path, required=True)
     a = ap.parse_args()
@@ -251,14 +292,19 @@ def main():
         proto.append(np.array(keep, np.float32))
     # ---------------- world model ----------------
     wm = make_wm(K).to(dev)
-    T = {k: torch.as_tensor(tr[k], device=dev).float() for k in ("before", "after", "target")}
+    if a.event_pos_only:
+        tr["target_in"] = event_input(tr["before"], tr["e"], tr["target"], tol_pos)
+        va["target_in"] = event_input(va["before"], va["e"], va["target"], tol_pos)
+    else:
+        tr["target_in"], va["target_in"] = tr["target"], va["target"]
+    T = {k: torch.as_tensor(tr[k], device=dev).float() for k in ("before", "after", "target_in")}
     E = torch.as_tensor(tr["e"], device=dev).long()
     unit = torch.tensor([tol_pos / 32.0] * 2 + [2 * app_unit] * 3, device=dev)        # change thresholds in normalised units
     opt = torch.optim.AdamW(wm.parameters(), lr=3e-4, weight_decay=1e-4)
     sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: min(1, (s + 1) / 1000) * 0.5 * (1 + math.cos(math.pi * min(1.0, s / a.wm_steps))))
     for step in range(a.wm_steps):
         i = torch.randint(0, len(E), (512,), device=dev)
-        s, x, y = sc.norm(T["before"][i]), sc.norm(T["target"][i]), sc.norm(T["after"][i])
+        s, x, y = sc.norm(T["before"][i]), sc.norm(T["target_in"][i]), sc.norm(T["after"][i])
         cont, logit = wm(s, E[i], x, logits=True)
         loss = (((cont - y[..., :5]) / unit) ** 2).mean() + F.binary_cross_entropy_with_logits(logit, y[..., 5])
         opt.zero_grad(set_to_none=True); loss.backward(); torch.nn.utils.clip_grad_norm_(wm.parameters(), 1.0); opt.step(); sched.step()
@@ -266,8 +312,8 @@ def main():
             print({"wm_step": step, "loss": round(loss.item(), 4), "min": round((time.time() - t0) / 60, 1)}, flush=True)
     wm.eval()
     with torch.no_grad():
-        V = {k: torch.as_tensor(va[k], device=dev).float() for k in ("before", "after", "target")}
-        pred = sc.denorm(wm(sc.norm(V["before"]), torch.as_tensor(va["e"], device=dev).long(), sc.norm(V["target"])).cpu().numpy())
+        V = {k: torch.as_tensor(va[k], device=dev).float() for k in ("before", "after", "target_in")}
+        pred = sc.denorm(wm(sc.norm(V["before"]), torch.as_tensor(va["e"], device=dev).long(), sc.norm(V["target_in"])).cpu().numpy())
     after = va["after"]; e_ = va["e"]; iv = np.arange(len(e_))
     err_pos = np.linalg.norm(pred[..., :2] - after[..., :2], axis=-1); err_app = np.abs(pred[..., 2:5] - after[..., 2:5]).max(-1)
     changed = (np.linalg.norm(after[..., :2] - va["before"][..., :2], axis=-1) > tol_pos) | (np.abs(after[..., 2:5] - va["before"][..., 2:5]).max(-1) > app_unit)
@@ -283,18 +329,35 @@ def main():
     # ---------------- cost-to-go by value iteration in the world model ----------------
     thr_app_id = np.asarray(tr["thr_app_id"], np.float64) if "thr_app_id" in tr else np.full(K, thr_app)
     model_ck = {"K": K, "thr_pos": thr_pos, "tol_pos": tol_pos, "thr_app": thr_app, "thr_app_id": thr_app_id, "wm": wm.state_dict(), "proto": proto, "occ_min": occ_min,
+                "event_pos_only": bool(a.event_pos_only), "h_width": a.h_width, "h_goals": a.h_goals, "h_absdiff": bool(a.h_absdiff),
                 "cover_rule": cover_rule}
-    h = make_h(K).to(dev); h_tgt = make_h(K).to(dev); h_tgt.load_state_dict(h.state_dict())
+    h = make_h(K, a.h_width, a.h_absdiff).to(dev); h_tgt = make_h(K, a.h_width, a.h_absdiff).to(dev); h_tgt.load_state_dict(h.state_dict())
     model_ck["h"] = h.state_dict()
     M = Model(model_ck, dev); M.wm = wm; M.h = h_tgt
     states = np.concatenate([tr["before"], tr["after"]]).astype(np.float32)
     ep_states = np.concatenate([tr["episode"], tr["episode"]])
+    if a.h_goals == "walk":
+        # goals by imagined random walks from dataset states: k ~ U{0..walk_max} prototype events in the world model
+        pS = states[rng.integers(0, len(states), a.h_walk_pool)].copy(); pS[:, :, 5] = pS[:, :, 5] > 0.5
+        pG = pS.copy(); kk = rng.integers(0, a.h_walk_max + 1, len(pS))
+        for w in range(a.h_walk_max):
+            rows, evs = [], []
+            for b in np.nonzero(kk > w)[0]:
+                c = M.candidates(pG[b], pG[b])
+                if c:
+                    rows.append(b); evs.append(c[rng.integers(len(c))])
+            for c0 in range(0, len(rows), 8192):
+                pG[rows[c0:c0 + 8192]] = M.step_batch(pG[rows[c0:c0 + 8192]], evs[c0:c0 + 8192])
+        print({"h_walk_pool": len(pS), "walk_mean": float(kk.mean()), "min": round((time.time() - t0) / 60, 1)}, flush=True)
     ho = torch.optim.AdamW(h.parameters(), lr=1e-4, weight_decay=1e-5)
     hl = []
     for step in range(a.h_steps):
         i = rng.integers(0, len(states), 128)
         j = rng.integers(0, len(states), 128)
         S, G = states[i], states[j]
+        if a.h_goals == "walk":
+            w = rng.integers(0, len(pS), 64)
+            S = np.concatenate([S[:64], pS[w]]); G = np.concatenate([G[:64], pG[w]])
         evs_all, owner = [], []
         for b in range(len(S)):
             evs = M.candidates(S[b], G[b])
@@ -307,14 +370,14 @@ def main():
             with torch.no_grad():
                 s_n = torch.as_tensor(sc.norm(succ), device=dev).float().reshape(len(succ), -1)
                 g_n = torch.as_tensor(sc.norm(G[owner]), device=dev).float().reshape(len(succ), -1)
-                hv = h_tgt(torch.cat([s_n, g_n, s_n - g_n], -1)).squeeze(-1).cpu().numpy()
+                hv = h_tgt(h_input(torch, s_n, g_n, a.h_absdiff)).squeeze(-1).cpu().numpy()
             cost = 1 + np.where(done, 0.0, hv)
             y = np.full(len(S), 30.0, np.float32)
             np.minimum.at(y, owner, cost)
         y[M.at_goal(S, G)] = 0.0
         s_n = torch.as_tensor(sc.norm(S), device=dev).float().reshape(len(S), -1)
         g_n = torch.as_tensor(sc.norm(G), device=dev).float().reshape(len(S), -1)
-        loss = ((h(torch.cat([s_n, g_n, s_n - g_n], -1)).squeeze(-1) - torch.as_tensor(y, device=dev)) ** 2).mean()
+        loss = ((h(h_input(torch, s_n, g_n, a.h_absdiff)).squeeze(-1) - torch.as_tensor(y, device=dev)) ** 2).mean()
         ho.zero_grad(set_to_none=True); loss.backward(); ho.step()
         if step % 1000 == 999:
             h_tgt.load_state_dict(h.state_dict())

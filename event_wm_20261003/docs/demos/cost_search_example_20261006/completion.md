@@ -1,0 +1,2 @@
+
+- 57640 final verification: absent from squeue; sacct COMPLETED, 00:00:03, exit 0:0. Saved result_57640.json. Recomputed task-2 h along the saved 3-event plan: 30.00185, 29.93694, 29.92266, 29.90763; the final state passes at_goal despite h remaining near 30. This is a diagnostic of the old demo checkpoint, not of newer per-frame/state-track checkpoints. Original search returned a 3-event plan after 91 expansions; no search rerun.

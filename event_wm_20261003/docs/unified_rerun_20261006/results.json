@@ -1,0 +1,297 @@
+{
+  "protocol": {
+    "version": "unified-state-v1-20261006",
+    "data_root": "/mnt/data/nhatnc129/jepa/ogbench/data",
+    "families": {
+      "cube": {
+        "dataset": "cube-triple-play-v0",
+        "env": "cube-triple-v0",
+        "horizon": 1000
+      },
+      "puzzle": {
+        "dataset": "puzzle-4x5-play-v0",
+        "env": "puzzle-4x5-v0",
+        "horizon": 1000
+      },
+      "scene": {
+        "dataset": "scene-play-v0",
+        "env": "scene-v0",
+        "horizon": 750
+      }
+    },
+    "data": {
+      "train_episodes": 1000,
+      "val_episodes": 100
+    },
+    "wm": {
+      "wm_steps": 30000,
+      "h_steps": 150000,
+      "h_width": 2048,
+      "h_goals": "walk",
+      "h_walk_pool": 300000,
+      "h_walk_max": 30,
+      "protos": 8,
+      "h_absdiff": true,
+      "event_pos_only": true,
+      "rest_support": true
+    },
+    "skill": {
+      "steps": 40000,
+      "lr": 0.0003,
+      "hist_gap": 2,
+      "chunk": 8,
+      "release": 10,
+      "cond": "full"
+    },
+    "skill_continue": {
+      "steps": 10000,
+      "lr": 3e-05,
+      "include_side_effects": true
+    },
+    "support": {
+      "steps": 6000,
+      "width": 256,
+      "lr": 0.0003,
+      "quantile": 0.02,
+      "seed": 61006
+    },
+    "training_seed": 0,
+    "evaluation": {
+      "seeds": [
+        6,
+        7
+      ],
+      "episodes": 20,
+      "tasks": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "workers": 10,
+      "max_expansions": 20000,
+      "m": 5,
+      "timeout": 250,
+      "exec_steps": 4,
+      "recover_steps": 8
+    }
+  },
+  "families": {
+    "cube": {
+      "by_seed": {
+        "6": {
+          "complete": true,
+          "successes": 81,
+          "episodes": 100,
+          "by_task": {
+            "1": 1.0,
+            "2": 0.9,
+            "3": 0.65,
+            "4": 0.9,
+            "5": 0.6
+          },
+          "sha256": "189d304cda7ff4932daccd161b3d4340e9a1e6edf6dc550fe8329acf26b26336",
+          "job_id": "57819"
+        },
+        "7": {
+          "complete": true,
+          "successes": 82,
+          "episodes": 100,
+          "by_task": {
+            "1": 1.0,
+            "2": 0.95,
+            "3": 0.85,
+            "4": 0.85,
+            "5": 0.45
+          },
+          "sha256": "436783b13d6db379346aa999a9009f1857302010dd0a3da63acdb063d12c1f07",
+          "job_id": "57820"
+        }
+      },
+      "complete": true,
+      "successes": 163,
+      "episodes": 200,
+      "success_rate": 0.815,
+      "episode_wilson95_percent": [
+        75.54293723884824,
+        86.26980719938395
+      ],
+      "by_task": {
+        "1": {
+          "successes": 40,
+          "episodes": 40
+        },
+        "2": {
+          "successes": 37,
+          "episodes": 40
+        },
+        "3": {
+          "successes": 30,
+          "episodes": 40
+        },
+        "4": {
+          "successes": 35,
+          "episodes": 40
+        },
+        "5": {
+          "successes": 21,
+          "episodes": 40
+        }
+      }
+    },
+    "puzzle": {
+      "by_seed": {
+        "6": {
+          "complete": true,
+          "successes": 40,
+          "episodes": 100,
+          "by_task": {
+            "1": 1.0,
+            "2": 1.0,
+            "3": 0.0,
+            "4": 0.0,
+            "5": 0.0
+          },
+          "sha256": "2b87b1747a8f0afbbebe83cb111627cb6c8999eb15308bae2092c58f638aac01",
+          "job_id": "57859"
+        },
+        "7": {
+          "complete": true,
+          "successes": 40,
+          "episodes": 100,
+          "by_task": {
+            "1": 1.0,
+            "2": 1.0,
+            "3": 0.0,
+            "4": 0.0,
+            "5": 0.0
+          },
+          "sha256": "4fc1da168316777b8bbe65ed561cc0861bf024cf03b0c6d93c46b15f93d28725",
+          "job_id": "57860"
+        }
+      },
+      "complete": true,
+      "successes": 80,
+      "episodes": 200,
+      "success_rate": 0.4,
+      "episode_wilson95_percent": [
+        33.460578566807335,
+        46.916327960737995
+      ],
+      "by_task": {
+        "1": {
+          "successes": 40,
+          "episodes": 40
+        },
+        "2": {
+          "successes": 40,
+          "episodes": 40
+        },
+        "3": {
+          "successes": 0,
+          "episodes": 40
+        },
+        "4": {
+          "successes": 0,
+          "episodes": 40
+        },
+        "5": {
+          "successes": 0,
+          "episodes": 40
+        }
+      }
+    },
+    "scene": {
+      "by_seed": {
+        "6": {
+          "complete": true,
+          "successes": 90,
+          "episodes": 100,
+          "by_task": {
+            "1": 1.0,
+            "2": 1.0,
+            "3": 1.0,
+            "4": 1.0,
+            "5": 0.5
+          },
+          "sha256": "fb8b5d58726643895fc5a69284f7e2de5e0cfa2af882889b46dbaad70b59b875",
+          "job_id": "57823"
+        },
+        "7": {
+          "complete": true,
+          "successes": 90,
+          "episodes": 100,
+          "by_task": {
+            "1": 1.0,
+            "2": 1.0,
+            "3": 1.0,
+            "4": 1.0,
+            "5": 0.5
+          },
+          "sha256": "f7e96d31043d53aa4e983313cbb8127fd7ae484f36b3a12f4f2aa9a4da1ba288",
+          "job_id": "57824"
+        }
+      },
+      "complete": true,
+      "successes": 180,
+      "episodes": 200,
+      "success_rate": 0.9,
+      "episode_wilson95_percent": [
+        85.05941875672825,
+        93.43295513309042
+      ],
+      "by_task": {
+        "1": {
+          "successes": 40,
+          "episodes": 40
+        },
+        "2": {
+          "successes": 40,
+          "episodes": 40
+        },
+        "3": {
+          "successes": 40,
+          "episodes": 40
+        },
+        "4": {
+          "successes": 40,
+          "episodes": 40
+        },
+        "5": {
+          "successes": 20,
+          "episodes": 40
+        }
+      }
+    }
+  },
+  "complete": true,
+  "limits": "One training seed. State adapters and per-family checkpoint dimensions differ. Native benchmark horizons retained; no published-baseline or zero-shot claim. Puzzle h training resumed after scheduler timeout. Adam/RNG reset and imagined pool regenerated because original checkpoints lack optimizer/RNG state. Same WM/BC weights and 150k effective h steps; additional recovery compute and lost trailing updates disclosed. This is not a bitwise-uninterrupted matched training run.",
+  "recovery": {
+    "family": "puzzle",
+    "parent_training_job": "57817",
+    "reason": "4h scheduler timeout; time extension denied by cluster",
+    "training_job": "57858",
+    "cancelled_evaluation_jobs": [
+      "57821",
+      "57822"
+    ],
+    "cancelled_aggregation_job": "57825",
+    "evaluation_jobs": {
+      "6": "57859",
+      "7": "57860"
+    },
+    "aggregation_job": "57861",
+    "resources": {
+      "gpu": 1,
+      "cpus": 6,
+      "memory_gb": 24,
+      "time_limit_hours": 2.5
+    },
+    "limitations": "Resume from latest h partial checkpoint; optimizer and RNG reset, imagined pool regenerated. Same WM/BC weights and 150k effective h steps, with extra recovery compute and lost trailing updates. Not bitwise-uninterrupted training.",
+    "source_sha256": {
+      "scripts/resume_unified_h.py": "0c19347385e466f764fe5e7403ecee38be521962e969ac2fb09cf31e2c57743e",
+      "slurm/resume_unified_h.sh": "442defbe226bf3a7547e641634e0e963d2b1fa48e3cf1878d65be5ed62055c18"
+    }
+  }
+}

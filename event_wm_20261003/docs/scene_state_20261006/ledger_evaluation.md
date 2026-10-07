@@ -1,0 +1,4 @@
+
+- 57774 ew_sceval submitted afterok:57772:1GPU/6CPU/16GB/1h; same saved scene model/skill,20episodes/task,seed3,5workers. Output eval_57774/loop_seed3. No retraining or speculative duplicate; released automatically when its evaluation ends.
+- Dual scheduler verification:57772 PENDING(Priority),57774 PENDING(Dependency); fetch/prep COMPLETED. No scene success score exists yet. Last fresh month ranking before57774 retainedGPU89+bothplanned5<=116.1h,CPU682+30<=1167.3h,mem6200677+114688<=9482886.9MBh.
+- Partial h checkpoints every20k and per-episode JSON preserve completed work. State semantic tests/syntax checks passed locally and in compute-node preparation. Source/config/status documented in docs/scene_state_20261006/{PLAN,STATUS}. Queued external compute remains pending; do not claim training or closed-loop completion.

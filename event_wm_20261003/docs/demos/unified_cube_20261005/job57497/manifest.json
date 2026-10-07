@@ -1,0 +1,43 @@
+{
+  "reference": "/mnt/data/nhatnc129/jepa/event_wm/uident_57366_cf/visual-cube-triple-play-v0/self1000/loop_v4final/u_closed_loop.json",
+  "device": "cpu",
+  "job_id": "57497",
+  "checkpoint_sha256": {
+    "model": "7eb88a9dd077195f809c98afaefa505d90364faf584d26a03f9e707df3f4bcd8",
+    "reader": "2302c26eef62c0fb7303466c1781a7064549fac28cfadb77fcf48aa9d592dcdc",
+    "skill": "4a745fae72b91b9060a5e4bbcbf4e5c740835607a86ced7063c222a415a7ed3a"
+  },
+  "episodes": [
+    {
+      "task": 1,
+      "episode": 0,
+      "reference_success": true,
+      "cpu_demo_success": true,
+      "steps": 66,
+      "timeouts": 0,
+      "replans": 0,
+      "video": "task1_ep0.mp4"
+    },
+    {
+      "task": 2,
+      "episode": 0,
+      "reference_success": false,
+      "cpu_demo_success": true,
+      "steps": 472,
+      "timeouts": 0,
+      "replans": 4,
+      "video": "task2_ep0.mp4"
+    },
+    {
+      "task": 5,
+      "episode": 0,
+      "reference_success": false,
+      "cpu_demo_success": false,
+      "steps": 1000,
+      "timeouts": 1,
+      "replans": 5,
+      "video": "task5_ep0.mp4"
+    }
+  ],
+  "note": "Selected development roots; CPU replay, not a benchmark. Privileged states are recorded only after env.step for diagnosis, never supplied to the policy."
+}

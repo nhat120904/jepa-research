@@ -1,0 +1,55 @@
+{
+ "thr_pos": 6.570498004245694,
+ "r_pos": 0.870741534902115,
+ "r_pos_D": null,
+ "tol_pos": 1.74148306980423,
+ "r_app": Infinity,
+ "r_app_D": null,
+ "m": 5,
+ "thresholds_from": "/mnt/data/nhatnc129/jepa/event_wm/uident_57366_cf/visual-cube-triple-play-v0/events",
+ "thr_app": Infinity,
+ "train": {
+  "events": 5865,
+  "per_episode": 5.865,
+  "episodes": 1000,
+  "changed_entities_pct": [
+   1.0,
+   2.0,
+   4.0
+  ],
+  "acted_entity_counts": [
+   1358,
+   2211,
+   2296
+  ],
+  "label_valid_frac_processed": 0.7248092868988392,
+  "covered_frac": 0.014300526932824645,
+  "privileged_recall": 0.8054164347987386,
+  "privileged_precision": 1.0,
+  "privileged_ref_events": 16173,
+  "privileged_recall_moves_2cm": 0.8103902953586498,
+  "privileged_ref_moves_2cm": 11376
+ },
+ "val": {
+  "events": 580,
+  "per_episode": 5.8,
+  "episodes": 100,
+  "changed_entities_pct": [
+   1.0,
+   2.0,
+   4.0
+  ],
+  "acted_entity_counts": [
+   156,
+   207,
+   217
+  ],
+  "label_valid_frac_processed": 0.728441127694859,
+  "covered_frac": 0.01781486400646763,
+  "privileged_recall": 0.8068880688806888,
+  "privileged_precision": 1.0,
+  "privileged_ref_events": 1626,
+  "privileged_recall_moves_2cm": 0.819371727748691,
+  "privileged_ref_moves_2cm": 1146
+ }
+}

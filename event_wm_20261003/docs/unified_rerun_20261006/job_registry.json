@@ -1,0 +1,308 @@
+{
+  "training": {
+    "cube": "57816",
+    "puzzle": "57858",
+    "scene": "57818"
+  },
+  "evaluations": {
+    "cube": {
+      "6": "57819",
+      "7": "57820"
+    },
+    "puzzle": {
+      "6": "57859",
+      "7": "57860"
+    },
+    "scene": {
+      "6": "57823",
+      "7": "57824"
+    }
+  },
+  "quota_audits": [
+    {
+      "stage": "prepare",
+      "utc": "2026-10-06T14:42:19.928132+00:00",
+      "resources": {
+        "gres/gpu": {
+          "used": 91.0,
+          "planned_full_protocol": 24.0,
+          "ceiling": 120.60000000000001
+        },
+        "cpu": {
+          "used": 697.0,
+          "planned_full_protocol": 217.83333333333334,
+          "ceiling": 1170.9
+        },
+        "mem": {
+          "used": 6264884.0,
+          "planned_full_protocol": 600405.3333333334,
+          "ceiling": 9780289.200000001
+        }
+      },
+      "squeue": ""
+    },
+    {
+      "stage": "train_cube",
+      "utc": "2026-10-06T14:42:20.212005+00:00",
+      "resources": {
+        "gres/gpu": {
+          "used": 91.0,
+          "planned_full_protocol": 24.0,
+          "ceiling": 120.60000000000001
+        },
+        "cpu": {
+          "used": 697.0,
+          "planned_full_protocol": 217.83333333333334,
+          "ceiling": 1170.9
+        },
+        "mem": {
+          "used": 6264884.0,
+          "planned_full_protocol": 600405.3333333334,
+          "ceiling": 9780289.200000001
+        }
+      },
+      "squeue": "57815|ew_unprep|PENDING"
+    },
+    {
+      "stage": "train_puzzle",
+      "utc": "2026-10-06T14:42:20.438757+00:00",
+      "resources": {
+        "gres/gpu": {
+          "used": 91.0,
+          "planned_full_protocol": 24.0,
+          "ceiling": 120.60000000000001
+        },
+        "cpu": {
+          "used": 697.0,
+          "planned_full_protocol": 217.83333333333334,
+          "ceiling": 1170.9
+        },
+        "mem": {
+          "used": 6264884.0,
+          "planned_full_protocol": 600405.3333333334,
+          "ceiling": 9780289.200000001
+        }
+      },
+      "squeue": "57815|ew_unprep|PENDING\n57816|ew_un_cube|PENDING"
+    },
+    {
+      "stage": "train_scene",
+      "utc": "2026-10-06T14:42:20.664193+00:00",
+      "resources": {
+        "gres/gpu": {
+          "used": 91.0,
+          "planned_full_protocol": 24.0,
+          "ceiling": 120.60000000000001
+        },
+        "cpu": {
+          "used": 697.0,
+          "planned_full_protocol": 217.83333333333334,
+          "ceiling": 1170.9
+        },
+        "mem": {
+          "used": 6264884.0,
+          "planned_full_protocol": 600405.3333333334,
+          "ceiling": 9780289.200000001
+        }
+      },
+      "squeue": "57815|ew_unprep|PENDING\n57817|ew_un_puzzle|PENDING\n57816|ew_un_cube|PENDING"
+    },
+    {
+      "stage": "eval_cube_6",
+      "utc": "2026-10-06T14:42:20.891700+00:00",
+      "resources": {
+        "gres/gpu": {
+          "used": 91.0,
+          "planned_full_protocol": 24.0,
+          "ceiling": 120.60000000000001
+        },
+        "cpu": {
+          "used": 697.0,
+          "planned_full_protocol": 217.83333333333334,
+          "ceiling": 1170.9
+        },
+        "mem": {
+          "used": 6264884.0,
+          "planned_full_protocol": 600405.3333333334,
+          "ceiling": 9780289.200000001
+        }
+      },
+      "squeue": "57815|ew_unprep|PENDING\n57818|ew_un_scene|PENDING\n57817|ew_un_puzzle|PENDING\n57816|ew_un_cube|PENDING"
+    },
+    {
+      "stage": "eval_cube_7",
+      "utc": "2026-10-06T14:42:21.118539+00:00",
+      "resources": {
+        "gres/gpu": {
+          "used": 91.0,
+          "planned_full_protocol": 24.0,
+          "ceiling": 120.60000000000001
+        },
+        "cpu": {
+          "used": 697.0,
+          "planned_full_protocol": 217.83333333333334,
+          "ceiling": 1170.9
+        },
+        "mem": {
+          "used": 6264884.0,
+          "planned_full_protocol": 600405.3333333334,
+          "ceiling": 9780289.200000001
+        }
+      },
+      "squeue": "57815|ew_unprep|PENDING\n57819|ew_ue_cube_6|PENDING\n57818|ew_un_scene|PENDING\n57817|ew_un_puzzle|PENDING\n57816|ew_un_cube|PENDING"
+    },
+    {
+      "stage": "eval_puzzle_6",
+      "utc": "2026-10-06T14:42:21.344492+00:00",
+      "resources": {
+        "gres/gpu": {
+          "used": 91.0,
+          "planned_full_protocol": 24.0,
+          "ceiling": 120.60000000000001
+        },
+        "cpu": {
+          "used": 697.0,
+          "planned_full_protocol": 217.83333333333334,
+          "ceiling": 1170.9
+        },
+        "mem": {
+          "used": 6264884.0,
+          "planned_full_protocol": 600405.3333333334,
+          "ceiling": 9780289.200000001
+        }
+      },
+      "squeue": "57815|ew_unprep|RUNNING\n57820|ew_ue_cube_7|PENDING\n57819|ew_ue_cube_6|PENDING\n57818|ew_un_scene|PENDING\n57817|ew_un_puzzle|PENDING\n57816|ew_un_cube|PENDING"
+    },
+    {
+      "stage": "eval_puzzle_7",
+      "utc": "2026-10-06T14:42:21.567367+00:00",
+      "resources": {
+        "gres/gpu": {
+          "used": 91.0,
+          "planned_full_protocol": 24.0,
+          "ceiling": 120.60000000000001
+        },
+        "cpu": {
+          "used": 697.0,
+          "planned_full_protocol": 217.83333333333334,
+          "ceiling": 1170.9
+        },
+        "mem": {
+          "used": 6264884.0,
+          "planned_full_protocol": 600405.3333333334,
+          "ceiling": 9780289.200000001
+        }
+      },
+      "squeue": "57815|ew_unprep|RUNNING\n57821|ew_ue_puzzle_6|PENDING\n57820|ew_ue_cube_7|PENDING\n57819|ew_ue_cube_6|PENDING\n57818|ew_un_scene|PENDING\n57817|ew_un_puzzle|PENDING\n57816|ew_un_cube|PENDING"
+    },
+    {
+      "stage": "eval_scene_6",
+      "utc": "2026-10-06T14:42:21.788174+00:00",
+      "resources": {
+        "gres/gpu": {
+          "used": 91.0,
+          "planned_full_protocol": 24.0,
+          "ceiling": 120.60000000000001
+        },
+        "cpu": {
+          "used": 697.0,
+          "planned_full_protocol": 217.83333333333334,
+          "ceiling": 1170.9
+        },
+        "mem": {
+          "used": 6264884.0,
+          "planned_full_protocol": 600405.3333333334,
+          "ceiling": 9780289.200000001
+        }
+      },
+      "squeue": "57815|ew_unprep|RUNNING\n57822|ew_ue_puzzle_7|PENDING\n57821|ew_ue_puzzle_6|PENDING\n57820|ew_ue_cube_7|PENDING\n57819|ew_ue_cube_6|PENDING\n57818|ew_un_scene|PENDING\n57817|ew_un_puzzle|PENDING\n57816|ew_un_cube|PENDING"
+    },
+    {
+      "stage": "eval_scene_7",
+      "utc": "2026-10-06T14:42:22.088227+00:00",
+      "resources": {
+        "gres/gpu": {
+          "used": 91.0,
+          "planned_full_protocol": 24.0,
+          "ceiling": 120.60000000000001
+        },
+        "cpu": {
+          "used": 697.0,
+          "planned_full_protocol": 217.83333333333334,
+          "ceiling": 1170.9
+        },
+        "mem": {
+          "used": 6264884.0,
+          "planned_full_protocol": 600405.3333333334,
+          "ceiling": 9780289.200000001
+        }
+      },
+      "squeue": "57815|ew_unprep|RUNNING\n57823|ew_ue_scene_6|PENDING\n57822|ew_ue_puzzle_7|PENDING\n57821|ew_ue_puzzle_6|PENDING\n57820|ew_ue_cube_7|PENDING\n57819|ew_ue_cube_6|PENDING\n57818|ew_un_scene|PENDING\n57817|ew_un_puzzle|PENDING\n57816|ew_un_cube|PENDING"
+    },
+    {
+      "stage": "puzzle_h_timeout_recovery_and_replacement_evaluations",
+      "utc": "2026-10-06T18:50:53.007836+00:00",
+      "checks": "Fresh sreport before each GPU submission (57858,57859,57860); duplicate scheduler queries checked. Original dependent puzzle evaluations cancelled. Full remaining time limits conservatively counted.",
+      "resources": {
+        "gres/gpu": {
+          "used": 98,
+          "planned_full_remaining": 22.5,
+          "ceiling": 124.2
+        },
+        "cpu": {
+          "used": 737,
+          "planned_full_remaining": 207.1666666667,
+          "ceiling": 1199.7
+        },
+        "mem": {
+          "used": 6427003,
+          "planned_full_remaining": 553301.3333333,
+          "ceiling": 10016218.8
+        }
+      }
+    }
+  ],
+  "preparation": "57815",
+  "aggregation": "57861",
+  "recovery": {
+    "family": "puzzle",
+    "parent_training_job": "57817",
+    "reason": "4h scheduler timeout; time extension denied by cluster",
+    "training_job": "57858",
+    "cancelled_evaluation_jobs": [
+      "57821",
+      "57822"
+    ],
+    "cancelled_aggregation_job": "57825",
+    "evaluation_jobs": {
+      "6": "57859",
+      "7": "57860"
+    },
+    "aggregation_job": "57861",
+    "resources": {
+      "gpu": 1,
+      "cpus": 6,
+      "memory_gb": 24,
+      "time_limit_hours": 2.5
+    },
+    "limitations": "Resume from latest h partial checkpoint; optimizer and RNG reset, imagined pool regenerated. Same WM/BC weights and 150k effective h steps, with extra recovery compute and lost trailing updates. Not bitwise-uninterrupted training.",
+    "source_sha256": {
+      "scripts/resume_unified_h.py": "0c19347385e466f764fe5e7403ecee38be521962e969ac2fb09cf31e2c57743e",
+      "slurm/resume_unified_h.sh": "442defbe226bf3a7547e641634e0e963d2b1fa48e3cf1878d65be5ed62055c18"
+    }
+  },
+  "diagnostics": {
+    "closedloop_saved_trajectories": {
+      "job_id": "57875",
+      "cpus": 2,
+      "mem_gb": 4,
+      "time_minutes": 5,
+      "source": "/mnt/data/nhatnc129/jepa/event_wm/unified_rerun_20261006/diagnostic_saved_trajectories_20261007.py",
+      "output": "diagnostics/closedloop_57875/diagnostic.json",
+      "previous_failed_job": "57874",
+      "previous_failure": "source was placed in login-node /tmp, unavailable on compute node; corrected to shared run path",
+      "state": "COMPLETED",
+      "exit_code": "0:0"
+    }
+  }
+}

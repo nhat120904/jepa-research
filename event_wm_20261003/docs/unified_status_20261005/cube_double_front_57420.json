@@ -1,0 +1,338 @@
+{
+ "objects": 4,
+ "source": "sam2_frames",
+ "stride": 5,
+ "groups": [
+  [
+   0
+  ],
+  [
+   1
+  ],
+  [
+   2
+  ],
+  [
+   3
+  ]
+ ],
+ "table": [
+  {
+   "cluster": 0,
+   "spread_median": 2.8295472622613596
+  },
+  {
+   "cluster": 1,
+   "spread_median": 2.8295472622613596
+  },
+  {
+   "cluster": 2,
+   "spread_median": 2.8295472622613596
+  },
+  {
+   "cluster": 3,
+   "spread_median": 2.8295472622613596
+  }
+ ],
+ "types": [
+  {
+   "type": 0,
+   "clusters": [
+    0,
+    1
+   ],
+   "present": 0.4842454394693201,
+   "count": 1,
+   "moving_frac": 0.0017178105723432498,
+   "big_move": 0.0022643866635433745,
+   "anchor": "colour",
+   "places": 0,
+   "frac_at_places": 0.0,
+   "agent": false
+  },
+  {
+   "type": 2,
+   "clusters": [
+    2,
+    5,
+    7
+   ],
+   "present": 0.9791376451077943,
+   "count": 1,
+   "moving_frac": 0.0782312925170068,
+   "big_move": 0.07819693533979248,
+   "anchor": "colour",
+   "places": 0,
+   "frac_at_places": 0.0,
+   "agent": false
+  },
+  {
+   "type": 4,
+   "clusters": [
+    4
+   ],
+   "present": 0.9885572139303482,
+   "count": 1,
+   "moving_frac": 0.02639196322152222,
+   "big_move": 0.0926953856632045,
+   "anchor": "location",
+   "places": 1,
+   "frac_at_places": 0.533,
+   "agent": false
+  },
+  {
+   "type": 6,
+   "clusters": [
+    6
+   ],
+   "present": 0.9998673300165838,
+   "count": 4,
+   "moving_frac": 0.062183248866364366,
+   "big_move": 0.6940184049079755,
+   "anchor": "colour",
+   "places": 3,
+   "frac_at_places": 0.401,
+   "agent": true
+  },
+  {
+   "type": 8,
+   "clusters": [
+    8
+   ],
+   "present": 1.0,
+   "count": 4,
+   "moving_frac": 0.2315,
+   "big_move": 0.6126666666666667,
+   "anchor": "colour",
+   "places": 3,
+   "frac_at_places": 0.396,
+   "agent": true
+  },
+  {
+   "type": 9,
+   "clusters": [
+    9
+   ],
+   "present": 0.4109121061359867,
+   "count": 1,
+   "moving_frac": 0.3204815357084757,
+   "big_move": 0.35594598991377907,
+   "anchor": "colour",
+   "places": 0,
+   "frac_at_places": 0.0,
+   "agent": false
+  }
+ ],
+ "raw_clusters": [
+  {
+   "cluster": 0,
+   "rgb": [
+    108,
+    165,
+    210
+   ],
+   "present": 0.087,
+   "merged_into": 0,
+   "fixed": false,
+   "single": true
+  },
+  {
+   "cluster": 1,
+   "rgb": [
+    76,
+    116,
+    158
+   ],
+   "present": 0.436,
+   "merged_into": 0,
+   "fixed": false,
+   "single": true
+  },
+  {
+   "cluster": 2,
+   "rgb": [
+    187,
+    77,
+    97
+   ],
+   "present": 0.081,
+   "merged_into": 2,
+   "fixed": false,
+   "single": true
+  },
+  {
+   "cluster": 4,
+   "rgb": [
+    88,
+    97,
+    115
+   ],
+   "present": 0.989,
+   "merged_into": 4,
+   "fixed": true,
+   "single": true
+  },
+  {
+   "cluster": 5,
+   "rgb": [
+    153,
+    59,
+    76
+   ],
+   "present": 0.438,
+   "merged_into": 2,
+   "fixed": false,
+   "single": true
+  },
+  {
+   "cluster": 6,
+   "rgb": [
+    63,
+    67,
+    95
+   ],
+   "present": 1.0,
+   "merged_into": 6,
+   "fixed": false,
+   "single": false
+  },
+  {
+   "cluster": 7,
+   "rgb": [
+    121,
+    41,
+    61
+   ],
+   "present": 0.507,
+   "merged_into": 2,
+   "fixed": false,
+   "single": true
+  },
+  {
+   "cluster": 8,
+   "rgb": [
+    28,
+    34,
+    46
+   ],
+   "present": 1.0,
+   "merged_into": 8,
+   "fixed": false,
+   "single": false
+  },
+  {
+   "cluster": 9,
+   "rgb": [
+    61,
+    34,
+    47
+   ],
+   "present": 0.411,
+   "merged_into": 9,
+   "fixed": false,
+   "single": true
+  }
+ ],
+ "flip_links": [
+  {
+   "A": 0,
+   "B": 1,
+   "link": 0.724
+  },
+  {
+   "A": 2,
+   "B": 5,
+   "link": 0.781
+  },
+  {
+   "A": 2,
+   "B": 7,
+   "link": 0.224
+  },
+  {
+   "A": 5,
+   "B": 7,
+   "link": 0.756
+  },
+  {
+   "A": 7,
+   "B": 9,
+   "link": 0.05
+  }
+ ],
+ "flip_merge": {
+  "thr": 0.391763299115019,
+  "D": 15.810376607910122
+ },
+ "identities": [
+  {
+   "anchor": "colour",
+   "types": [
+    0
+   ],
+   "centre": null,
+   "radius": null
+  },
+  {
+   "anchor": "colour",
+   "types": [
+    2
+   ],
+   "centre": null,
+   "radius": null
+  },
+  {
+   "anchor": "colour",
+   "types": [
+    9
+   ],
+   "centre": null,
+   "radius": null
+  },
+  {
+   "anchor": "location",
+   "types": [
+    4
+   ],
+   "centre": [
+    32.400001525878906,
+    49.34000015258789
+   ],
+   "radius": 11.15
+  }
+ ],
+ "colour_merge": 0.17263133078813553,
+ "colour_merge_D": null,
+ "thr_pos": 6.930946995629423,
+ "segments": {
+  "train": 377515,
+  "val": 75074
+ },
+ "privileged_diagnostic": [
+  {
+   "object": 0,
+   "cube": 1,
+   "median_err_cm": 1.04,
+   "visible_frac": 0.468
+  },
+  {
+   "object": 1,
+   "cube": 0,
+   "median_err_cm": 1.6,
+   "visible_frac": 0.969
+  },
+  {
+   "object": 2,
+   "cube": 1,
+   "median_err_cm": 14.41,
+   "visible_frac": 0.395
+  },
+  {
+   "object": 3,
+   "cube": 1,
+   "median_err_cm": 14.4,
+   "visible_frac": 1.0
+  }
+ ],
+ "minutes": 291.7
+}

@@ -1,0 +1,65 @@
+{
+  "job_id": "57538",
+  "cases": [
+    {
+      "name": "cube_sam2_teacher",
+      "env": "visual-cube-triple-play-v0",
+      "event_index": 0,
+      "episode": 0,
+      "acted_entity": 0,
+      "event_start": 101,
+      "refined_end": 264,
+      "coarse_end": 264,
+      "changed_entities": [
+        0
+      ],
+      "excluded_from_skill": false
+    },
+    {
+      "name": "cube_reader_clean",
+      "env": "visual-cube-triple-play-v0",
+      "event_index": 1,
+      "episode": 0,
+      "acted_entity": 2,
+      "event_start": 296,
+      "refined_end": 333,
+      "coarse_end": 349,
+      "changed_entities": [
+        2
+      ],
+      "excluded_from_skill": false
+    },
+    {
+      "name": "cube_reader_excluded",
+      "env": "visual-cube-triple-play-v0",
+      "event_index": 0,
+      "episode": 0,
+      "acted_entity": 0,
+      "event_start": 101,
+      "refined_end": 244,
+      "coarse_end": 264,
+      "changed_entities": [
+        0
+      ],
+      "excluded_from_skill": true
+    },
+    {
+      "name": "puzzle_reader_clean",
+      "env": "visual-puzzle-4x5-play-v0",
+      "event_index": 65,
+      "episode": 9,
+      "acted_entity": 5,
+      "event_start": 9850,
+      "refined_end": 9938,
+      "coarse_end": 9938,
+      "changed_entities": [
+        3,
+        5,
+        7,
+        12
+      ],
+      "excluded_from_skill": false
+    }
+  ],
+  "purpose": "Explain frozen SAM2 proposals, rule-derived identities, learned reader states, and actual event labels; no new benchmark or training."
+}

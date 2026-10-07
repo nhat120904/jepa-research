@@ -1,0 +1,3 @@
+
+- 57670 verified COMPLETED1m59s,exit0:0. Correcting only h inputs to nearest prototypes does not solve any task2-5 root. Projecting WM outputs solves task2 but still fails tasks3-5, so heuristic sensitivity to small numerical errors is not a sufficient explanation. The failing task2 board remains h0.867 even after projection although reference distance is9.
+- 57671: same resources/5min. Concrete follow-up: raw WM+reference distances vs reference dynamics+learned h on task3-5 roots; task2 search-key-only control and alias counts. Quota rechecked, account scheduler empty before submission; all planned usage below90% caps. No training or core-source change.

@@ -1,0 +1,80 @@
+{
+  "version": "generic-state-v1-20261007",
+  "data_root": "/mnt/data/nhatnc129/jepa/ogbench/data",
+  "families": {
+    "cube": {
+      "dataset": "cube-triple-play-v0",
+      "env": "cube-triple-v0",
+      "horizon": 1000
+    },
+    "puzzle": {
+      "dataset": "puzzle-4x5-play-v0",
+      "env": "puzzle-4x5-v0",
+      "horizon": 1000
+    },
+    "scene": {
+      "dataset": "scene-play-v0",
+      "env": "scene-v0",
+      "horizon": 750
+    }
+  },
+  "data": {
+    "train_episodes": 1000,
+    "val_episodes": 100
+  },
+  "wm": {
+    "wm_steps": 30000,
+    "h_steps": 150000,
+    "h_width": 2048,
+    "h_goals": "walk",
+    "h_walk_pool": 300000,
+    "h_walk_max": 30,
+    "protos": 8,
+    "h_absdiff": true,
+    "event_pos_only": true,
+    "rest_support": true
+  },
+  "skill": {
+    "steps": 40000,
+    "lr": 0.0003,
+    "hist_gap": 2,
+    "chunk": 8,
+    "release": 10,
+    "cond": "full"
+  },
+  "skill_continue": {
+    "steps": 10000,
+    "lr": 3e-05,
+    "include_side_effects": true
+  },
+  "support": {
+    "steps": 6000,
+    "width": 256,
+    "lr": 0.0003,
+    "quantile": 0.02,
+    "seed": 61006
+  },
+  "training_seed": 0,
+  "evaluation": {
+    "seeds": [
+      6,
+      7
+    ],
+    "episodes": 20,
+    "tasks": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "workers": 10,
+    "max_expansions": 20000,
+    "m": 5,
+    "timeout": 250,
+    "exec_steps": 4,
+    "recover_steps": 8
+  },
+  "frontend": "g_entities.py: learned dimension grouping + contact model, no observation-layout knowledge",
+  "adapter_prep": "/mnt/data/nhatnc129/jepa/event_wm/unified_rerun_20261006/prep"
+}

@@ -1,0 +1,31 @@
+{
+  "environment_seed": 4,
+  "base_success": 32,
+  "support_success": 87,
+  "n": 100,
+  "both_success": 32,
+  "fixed": 55,
+  "regressed": 0,
+  "both_fail": 13,
+  "max_logged_start_difference": 0.0,
+  "max_logged_goal_difference": 0.0009999275207519531,
+  "goal_difference_scale": "three-decimal logged state; within0.0011 vs tolerance1.597",
+  "matched_fields": [
+    "environment_seed",
+    "public_start_state",
+    "skill",
+    "candidate_generator",
+    "horizon750",
+    "timeout250",
+    "max_expansions20000",
+    "cpu4workers",
+    "execution4actions",
+    "rest5frames"
+  ],
+  "additional_repair_training": "6000updates,17,858TRAIN events, support head only",
+  "files": {
+    "loop_support_seed3_57810.json": "259629c56b2f604f59c81bf742e98c45c4dea8fdcc5cd635eb10b7b644659ba3",
+    "loop_base_seed4_57810.json": "2f683a6c7e96c162091d07150063598c833b496c09777495c57cc0db81ef55b5",
+    "loop_seed4_57808.json": "e8a21d8fb73736f574331f47cce80ffb3014d7970d0d46c04d5379059a3dcab3"
+  }
+}

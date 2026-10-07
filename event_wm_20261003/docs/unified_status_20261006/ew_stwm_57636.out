@@ -1,0 +1,295 @@
+HOST=worker-mig-3g40gb-0 JOB=57636 TASK=NA 2026-10-05T18:49:58Z
+=== WM --event-pos-only --h-goals walk --h-width 2048 --h-absdiff --h-steps 150000 --h-walk-pool 300000 18:49:58
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+{'wm_step': 0, 'loss': 19.6222, 'min': 0.4}
+{'wm_step': 5000, 'loss': 0.0128, 'min': 0.9}
+{'wm_step': 10000, 'loss': 0.0231, 'min': 1.5}
+{'wm_step': 15000, 'loss': 0.0184, 'min': 2.1}
+{'wm_step': 20000, 'loss': 0.0134, 'min': 2.6}
+{'wm_step': 25000, 'loss': 0.0096, 'min': 3.2}
+{"K": 20, "thr_pos": 7.958499928744248, "tol_pos": 3.979249964372124, "thr_app": 0.5, "cover_rule": true, "occ_min": 0.0, "prototypes_per_identity": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], "val_events": 2950, "acted_pos_err_median": 0.005646537058055401, "acted_within_tol": 1.0, "side_effect_entities": 9062, "side_effect_within_tol": 0.9801368351357316, "unchanged_within_tol": 0.9935515450753384, "covered_acc": 1.0}
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+{'h_walk_pool': 300000, 'walk_mean': 15.009333333333334, 'min': 24.0}
+{'h_step': 0, 'loss': 0.9573, 'min': 24.0}
+{'h_step': 5000, 'loss': 0.17, 'min': 29.5}
+{'h_step': 10000, 'loss': 0.1326, 'min': 35.1}
+{'h_step': 15000, 'loss': 0.0768, 'min': 40.7}
+{'h_step': 20000, 'loss': 0.079, 'min': 46.2}
+{'h_step': 25000, 'loss': 0.0751, 'min': 51.7}
+{'h_step': 30000, 'loss': 0.164, 'min': 57.2}
+{'h_step': 35000, 'loss': 0.0572, 'min': 62.7}
+{'h_step': 40000, 'loss': 0.0644, 'min': 68.1}
+{'h_step': 45000, 'loss': 0.0505, 'min': 73.5}
+{'h_step': 50000, 'loss': 0.0508, 'min': 78.9}
+{'h_step': 55000, 'loss': 0.0843, 'min': 84.3}
+{'h_step': 60000, 'loss': 0.0697, 'min': 89.8}
+{'h_step': 65000, 'loss': 0.0784, 'min': 95.3}
+{'h_step': 70000, 'loss': 0.0826, 'min': 100.7}
+{'h_step': 75000, 'loss': 0.0648, 'min': 106.3}
+{'h_step': 80000, 'loss': 0.0799, 'min': 111.7}
+{'h_step': 85000, 'loss': 0.038, 'min': 117.2}
+{'h_step': 90000, 'loss': 0.0375, 'min': 122.7}
+{'h_step': 95000, 'loss': 0.0553, 'min': 128.1}
+{'h_step': 100000, 'loss': 0.0559, 'min': 133.7}
+{'h_step': 105000, 'loss': 0.0529, 'min': 139.2}
+{'h_step': 110000, 'loss': 0.05, 'min': 144.8}
+{'h_step': 115000, 'loss': 0.049, 'min': 150.3}
+{'h_step': 120000, 'loss': 0.0627, 'min': 155.8}
+{'h_step': 125000, 'loss': 0.0491, 'min': 161.2}
+{'h_step': 130000, 'loss': 0.0435, 'min': 166.8}
+{'h_step': 135000, 'loss': 0.0369, 'min': 172.2}
+{'h_step': 140000, 'loss': 0.028, 'min': 177.7}
+{'h_step': 145000, 'loss': 0.038, 'min': 183.2}
+{"K": 20, "thr_pos": 7.958499928744248, "tol_pos": 3.979249964372124, "thr_app": 0.5, "cover_rule": true, "occ_min": 0.0, "prototypes_per_identity": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], "val_events": 2950, "acted_pos_err_median": 0.005646537058055401, "acted_within_tol": 1.0, "side_effect_entities": 9062, "side_effect_within_tol": 0.9801368351357316, "unchanged_within_tol": 0.9935515450753384, "covered_acc": 1.0, "offline_plan_found": 0.9715909090909091, "offline_plan_len_over_data_len_median": 1.0, "minutes": 189.0}
+=== closed loop seed 0, 6 episodes per task 21:58:59
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+{"task": 1, "episode": 0, "first_plan": 4, "success": true, "steps": 112, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 1, "first_plan": 4, "success": true, "steps": 119, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 2, "first_plan": 4, "success": true, "steps": 116, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 4, "first_plan": 4, "success": true, "steps": 118, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 3, "first_plan": 4, "success": true, "steps": 118, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 5, "first_plan": 4, "success": true, "steps": 120, "replans": 3, "timeouts": 0}
+{"task": 2, "episode": 0, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 4, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 1, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 0, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 2, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 3, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 1, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 5, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 3, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 2, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 2, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 4, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 1, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 4, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 5, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 5, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 3, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 0, "first_plan": null, "success": false, "steps": 1000, "replans": 32, "timeouts": 0}
+{"task": 5, "episode": 0, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 5, "episode": 1, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 5, "episode": 5, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 5, "episode": 2, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 5, "episode": 3, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 5, "episode": 4, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"arm": "UNIFIED, STATE TRACK: object-factored state observation -> entity event WM + A* + event skill on state vectors", "env": "puzzle-4x5-v0", "success": 0.2, "by_task": {"1": 1.0, "2": 0.0, "3": 0.0, "4": 0.0, "5": 0.0}, "first_plan_found": 0.2, "minutes": 28.7, "args": {"env": "puzzle-4x5-v0", "model": "/mnt/data/nhatnc129/jepa/event_wm/state_puzzle-4x5-play-v0_57614/wm_57636/u_model.pt", "reader": "None", "state_layout": "/mnt/data/nhatnc129/jepa/event_wm/state_puzzle-4x5-play-v0_57614/front/layout.json", "skill": "/mnt/data/nhatnc129/jepa/event_wm/state_puzzle-4x5-play-v0_57614/skill/u_skill.pt", "events": "/mnt/data/nhatnc129/jepa/event_wm/state_puzzle-4x5-play-v0_57614/events", "cache": "/mnt/data/nhatnc129/jepa/event_wm/state_puzzle-4x5-play-v0_57614/cache/puzzle-4x5-play-v0", "episodes": "6", "episode_start": "0", "tasks": "[1, 2, 3, 4, 5]", "m": "5", "timeout": "250", "exec_steps": "4", "recover_steps": "8", "max_expansions": "20000", "seed": "0", "workers": "10", "cube_skill": "None", "cube_discover": "None", "device": "cuda", "out": "/mnt/data/nhatnc129/jepa/event_wm/state_puzzle-4x5-play-v0_57614/wm_57636/loop_seed0"}}
+=== closed loop seed 1, 20 episodes per task 22:27:39
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:231: UserWarning: [33mWARN: Box low's precision lowered by casting to float32, current low.dtype=float64[0m
+  gym.logger.warn(
+/mnt/data/nhatnc129/jepa/lewm_stage0/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:297: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+{"task": 1, "episode": 7, "first_plan": 4, "success": true, "steps": 111, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 9, "first_plan": 4, "success": true, "steps": 117, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 17, "first_plan": 4, "success": true, "steps": 114, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 19, "first_plan": 4, "success": true, "steps": 118, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 1, "first_plan": 4, "success": true, "steps": 112, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 2, "first_plan": 4, "success": true, "steps": 112, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 6, "first_plan": 4, "success": true, "steps": 117, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 4, "first_plan": 4, "success": true, "steps": 121, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 0, "first_plan": 4, "success": true, "steps": 115, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 3, "first_plan": 4, "success": true, "steps": 118, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 8, "first_plan": 4, "success": true, "steps": 115, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 5, "first_plan": 4, "success": true, "steps": 116, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 11, "first_plan": 4, "success": true, "steps": 121, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 12, "first_plan": 4, "success": true, "steps": 114, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 16, "first_plan": 4, "success": true, "steps": 119, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 14, "first_plan": 4, "success": true, "steps": 113, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 10, "first_plan": 4, "success": true, "steps": 110, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 13, "first_plan": 4, "success": true, "steps": 117, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 18, "first_plan": 4, "success": true, "steps": 114, "replans": 3, "timeouts": 0}
+{"task": 1, "episode": 15, "first_plan": 4, "success": true, "steps": 118, "replans": 3, "timeouts": 0}
+{"task": 2, "episode": 1, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 3, "first_plan": null, "success": false, "steps": 1000, "replans": 32, "timeouts": 0}
+{"task": 2, "episode": 9, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 7, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 4, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 6, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 8, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 5, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 2, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 0, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 11, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 13, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 19, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 1, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 14, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 3, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 16, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 17, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 18, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 15, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 10, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 2, "episode": 12, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 11, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 13, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 9, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 1, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 6, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 4, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 7, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 8, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 0, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 2, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 5, "first_plan": null, "success": false, "steps": 1000, "replans": 32, "timeouts": 0}
+{"task": 4, "episode": 3, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 11, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 13, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 19, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 16, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 14, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 17, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 18, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 10, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 12, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 3, "episode": 15, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 5, "episode": 1, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 5, "episode": 3, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 9, "first_plan": null, "success": false, "steps": 1000, "replans": 32, "timeouts": 0}
+{"task": 4, "episode": 6, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 4, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 7, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 8, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 0, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 5, "episode": 11, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 2, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 5, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 5, "episode": 13, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 19, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 15, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 12, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 17, "first_plan": null, "success": false, "steps": 1000, "replans": 32, "timeouts": 0}
+{"task": 4, "episode": 14, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 18, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 10, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 4, "episode": 16, "first_plan": null, "success": false, "steps": 1000, "replans": 32, "timeouts": 0}
+{"task": 5, "episode": 9, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 5, "episode": 5, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 5, "episode": 2, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 5, "episode": 7, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 5, "episode": 19, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 5, "episode": 4, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 5, "episode": 6, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 5, "episode": 15, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 5, "episode": 8, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 5, "episode": 0, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 5, "episode": 12, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+{"task": 5, "episode": 17, "first_plan": null, "success": false, "steps": 1000, "replans": 31, "timeouts": 0}
+slurmstepd: error: *** JOB 57636 ON worker-mig-3g40gb-0 CANCELLED AT 2026-10-05T23:49:58 DUE TO TIME LIMIT ***

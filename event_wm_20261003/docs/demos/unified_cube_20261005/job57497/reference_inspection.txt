@@ -1,0 +1,88 @@
+task 1 ep 0 success True steps 69 replans 0 timeouts 0 first_plan 1
+task 1 ep 1 success True steps 223 replans 0 timeouts 0 first_plan 1
+task 1 ep 2 success True steps 63 replans 0 timeouts 0 first_plan 1
+task 1 ep 3 success True steps 338 replans 1 timeouts 1 first_plan 1
+task 1 ep 4 success True steps 464 replans 1 timeouts 1 first_plan 1
+task 1 ep 5 success True steps 253 replans 1 timeouts 1 first_plan 1
+task 2 ep 0 success False steps 1000 replans 6 timeouts 2 first_plan 3
+    e 0 target [13.6 44. ] final [21.4 45. ] err 7.9 px  steps 90  others 0
+    e 2 target [32.8 44.3] final [27.6 45.1] err 5.3 px  steps 68  others 0
+    e 1 target [51.8 43.9] final [52.6 44. ] err 0.7 px  steps 96  others 0
+    e 2 target [32.8 44.3] final [32.8 43.3] err 1.0 px  steps 141  others 0
+task 2 ep 1 success False steps 1000 replans 6 timeouts 2 first_plan 3
+    e 0 target [51.9 43.8] final [51.2 38.3] err 5.6 px  steps 82  others 0
+    e 2 target [32.9 44.2] final [34.9 41.4] err 3.5 px  steps 71  others 0
+    e 1 target [13.9 44. ] final [13.5 45.3] err 1.3 px  steps 91  others 0
+    e 0 target [51.9 43.8] final [51.2 45.5] err 1.8 px  steps 138  others 0
+task 2 ep 2 success False steps 1000 replans 4 timeouts 3 first_plan 3
+    e 2 target [32.8 44.3] final [37.5 41.5] err 5.5 px  steps 76  others 0
+task 2 ep 3 success True steps 843 replans 4 timeouts 2 first_plan 3
+    e 1 target [51.9 44. ] final [51.8 43.4] err 0.6 px  steps 170  others 0
+    e 0 target [13.6 44. ] final [15.2 43. ] err 1.9 px  steps 108  others 0
+task 2 ep 4 success False steps 1000 replans 5 timeouts 3 first_plan 3
+    e 0 target [51.9 43.8] final [32.1 33.9] err 22.2 px  steps 8  others 1
+    e 2 target [13.8 44.3] final [16.4 45.7] err 2.9 px  steps 62  others 0
+task 2 ep 5 success False steps 1000 replans 4 timeouts 3 first_plan 3
+    e 2 target [32.8 44.4] final [35.5 42.9] err 3.1 px  steps 166  others 0
+task 3 ep 0 success False steps 1000 replans 7 timeouts 2 first_plan 3
+    e 0 target [13.6 43.9] final [57.3 42.2] err 43.7 px  steps 78  others 0
+    e 0 target [13.6 43.9] final [58. 43.] err 44.3 px  steps 56  others 1
+    e 0 target [13.6 43.9] final [57.5 35.5] err 44.7 px  steps 40  others 1
+    e 0 target [13.6 43.9] final [16.3 45.3] err 3.0 px  steps 58  others 0
+    e 2 target [23.9 35.7] final [30.9 37.9] err 7.3 px  steps 132  others 0
+task 3 ep 1 success False steps 1000 replans 4 timeouts 2 first_plan 3
+    e 2 target [24.2 34.8] final [51. 39.] err 27.2 px  steps 56  others 1
+    e 1 target [33.  44.3] final [37.  43.1] err 4.1 px  steps 213  others 0
+task 3 ep 2 success True steps 347 replans 3 timeouts 0 first_plan 3
+    e 0 target [33.1 43.7] final [32.2 43. ] err 1.2 px  steps 93  others 0
+    e 1 target [13.9 44.2] final [12.6 44. ] err 1.3 px  steps 85  others 0
+    e 2 target [24.3 34.9] final [41.1 39.7] err 17.4 px  steps 64  others 0
+task 3 ep 3 success False steps 1000 replans 7 timeouts 2 first_plan 3
+    e 1 target [13.9 44.2] final [50.4 37.3] err 37.2 px  steps 35  others 1
+    e 1 target [13.9 44.2] final [53.2 27.1] err 42.9 px  steps 53  others 1
+    e 0 target [32.7 43.9] final [54.  40.7] err 21.5 px  steps 44  others 2
+    e 1 target [13.9 44.2] final [16.8 45.3] err 3.1 px  steps 89  others 0
+    e 0 target [32.7 43.9] final [32.9 46.2] err 2.4 px  steps 83  others 0
+task 3 ep 4 success False steps 1000 replans 3 timeouts 3 first_plan 4
+task 3 ep 5 success False steps 1000 replans 7 timeouts 2 first_plan 3
+    e 0 target [13.6 43.9] final [50.  35.2] err 37.4 px  steps 126  others 1
+    e 0 target [13.6 43.9] final [49.8 35.2] err 37.2 px  steps 5  others 1
+    e 0 target [13.6 43.9] final [44.1 41.2] err 30.6 px  steps 87  others 0
+    e 1 target [24.3 34.9] final [50.2 38.4] err 26.2 px  steps 22  others 1
+    e 1 target [24.3 34.9] final [25.1 36.3] err 1.6 px  steps 75  others 0
+task 4 ep 0 success False steps 1000 replans 5 timeouts 3 first_plan 3
+    e 2 target [10.7 43.9] final [39.  36.1] err 29.4 px  steps 76  others 0
+    e 2 target [10.7 43.9] final [11.1 45. ] err 1.2 px  steps 79  others 0
+task 4 ep 1 success False steps 1000 replans 4 timeouts 2 first_plan 3
+    e 1 target [32.4 35. ] final [29.1 36. ] err 3.5 px  steps 146  others 0
+    e 2 target [42.5 44.4] final [41.8 42.7] err 1.9 px  steps 190  others 0
+task 4 ep 2 success False steps 1000 replans 4 timeouts 3 first_plan 3
+    e 2 target [32.2 34.9] final [35.3 35.6] err 3.2 px  steps 142  others 0
+task 4 ep 3 success False steps 1000 replans 4 timeouts 3 first_plan 4
+    e 2 target [55.5 41.4] final [55.2 42.5] err 1.1 px  steps 113  others 0
+task 4 ep 4 success False steps 1000 replans 4 timeouts 3 first_plan 4
+    e 2 target [32.4 34.8] final [32.  37.2] err 2.4 px  steps 186  others 0
+task 4 ep 5 success False steps 1000 replans 4 timeouts 1 first_plan 4
+    e 1 target [44.4 35. ] final [44.9 35.3] err 0.6 px  steps 173  others 0
+    e 0 target [23.4 43.8] final [24.6 43.5] err 1.3 px  steps 211  others 0
+    e 2 target [32.1 35. ] final [31.7 38.6] err 3.6 px  steps 143  others 0
+task 5 ep 0 success False steps 1000 replans 4 timeouts 3 first_plan None
+    e 2 target [13.3 35.8] final [15.5 33.4] err 3.3 px  steps 171  others 0
+    e 0 target [52.5 34.9] final [24.5 34.9] err 28.1 px  steps 76  others 1
+task 5 ep 1 success False steps 1000 replans 5 timeouts 3 first_plan 3
+    e 2 target [50.9 37.4] final [46.6 37.4] err 4.3 px  steps 82  others 0
+    e 0 target [51.8 33.3] final [51.7 35. ] err 1.8 px  steps 93  others 0
+task 5 ep 2 success False steps 1000 replans 4 timeouts 3 first_plan None
+    e 0 target [53.8 43.1] final [48.8 42.4] err 5.1 px  steps 130  others 0
+task 5 ep 3 success False steps 1000 replans 5 timeouts 1 first_plan 3
+    e 2 target [50.9 37.7] final [48.  36.6] err 3.1 px  steps 168  others 0
+    e 0 target [51.7 33.4] final [52.5 35.7] err 2.5 px  steps 102  others 0
+    e 0 target [51.7 33.4] final [51.3 35. ] err 1.7 px  steps 70  others 0
+    e 1 target [50.3 39.9] final [46.2 36. ] err 5.7 px  steps 199  others 0
+task 5 ep 4 success False steps 1000 replans 3 timeouts 3 first_plan None
+task 5 ep 5 success False steps 1000 replans 6 timeouts 2 first_plan 3
+    e 0 target [51.9 33.3] final [26.8 38.4] err 25.7 px  steps 87  others 0
+    e 2 target [50.5 39. ] final [48.7 38.3] err 2.0 px  steps 85  others 0
+    e 1 target [10.  40.7] final [48.5 37.7] err 38.6 px  steps 172  others 0
+    e 0 target [52.5 34.9] final [48.  34.4] err 4.6 px  steps 85  others 0
+{'events': 57, 'err_px_p25_50_75': [1.9, 3.5, 22.2], 'frac_err_le_2px': 0.298, 'frac_err_le_4px': 0.526, 'steps_p50': 87.0}

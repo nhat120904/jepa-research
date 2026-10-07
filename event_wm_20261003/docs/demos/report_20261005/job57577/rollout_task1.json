@@ -1,0 +1,36 @@
+{
+  "task": 1,
+  "episode": 0,
+  "success": true,
+  "steps": 66,
+  "replans": 0,
+  "timeouts": 0,
+  "reference_success": true,
+  "reference_steps": 69,
+  "plans": [
+    {
+      "step": 0,
+      "found": true,
+      "expanded": 1,
+      "events": [
+        {
+          "e": 2,
+          "target": [
+            42.46022033691406,
+            44.233585357666016,
+            0.5475810170173645,
+            0.20857787132263184,
+            0.2726092040538788,
+            0.0
+          ]
+        }
+      ]
+    }
+  ],
+  "event_end_diagnostics": [],
+  "video": "rollout_task1.mp4",
+  "poster": "rollout_task1_poster.png",
+  "frames": 18,
+  "fps": 5,
+  "note": "Recorded CPU replay; privileged trace is excluded from the report payload. Event end is not necessarily target arrival."
+}

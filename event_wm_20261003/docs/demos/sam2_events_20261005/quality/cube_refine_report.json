@@ -1,0 +1,24 @@
+{
+ "r_pos": 0.870741534902115,
+ "r_app": Infinity,
+ "train": {
+  "events": 5865,
+  "end_shift_pct": [
+   -34.0,
+   -9.0,
+   -1.0
+  ],
+  "contaminated_frac": 0.28576300085251494,
+  "excluded_frac": 0.3321398124467178
+ },
+ "val": {
+  "events": 580,
+  "end_shift_pct": [
+   -40.29999999999998,
+   -11.0,
+   -1.0
+  ],
+  "contaminated_frac": 0.2982758620689655,
+  "excluded_frac": 0.35
+ }
+}

@@ -1,0 +1,24 @@
+{
+ "r_pos": 1.0,
+ "r_app": 0.023176399501371635,
+ "train": {
+  "events": 6053,
+  "end_shift_pct": [
+   -33.0,
+   -3.0,
+   0.0
+  ],
+  "contaminated_frac": 0.960350239550636,
+  "excluded_frac": 0.960350239550636
+ },
+ "val": {
+  "events": 620,
+  "end_shift_pct": [
+   -37.0,
+   -3.5,
+   0.0
+  ],
+  "contaminated_frac": 0.967741935483871,
+  "excluded_frac": 0.967741935483871
+ }
+}

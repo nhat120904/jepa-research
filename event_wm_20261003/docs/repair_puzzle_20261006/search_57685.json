@@ -1,0 +1,57 @@
+[
+  {
+    "task": 1,
+    "found": true,
+    "length": 4,
+    "h0": 3.9223175048828125,
+    "seconds": 0.3954789638519287,
+    "info": {
+      "expanded": 149,
+      "depth": 4
+    }
+  },
+  {
+    "task": 2,
+    "found": true,
+    "length": 10,
+    "h0": 6.452841281890869,
+    "seconds": 1.7746949195861816,
+    "info": {
+      "expanded": 1749,
+      "depth": 10
+    }
+  },
+  {
+    "task": 3,
+    "found": false,
+    "length": null,
+    "h0": 8.084829330444336,
+    "seconds": 21.159851551055908,
+    "info": {
+      "expanded": 20053,
+      "best_h": 1.204303503036499
+    }
+  },
+  {
+    "task": 4,
+    "found": false,
+    "length": null,
+    "h0": 8.310409545898438,
+    "seconds": 21.03977346420288,
+    "info": {
+      "expanded": 20053,
+      "best_h": 1.1557127237319946
+    }
+  },
+  {
+    "task": 5,
+    "found": false,
+    "length": null,
+    "h0": 8.688467025756836,
+    "seconds": 20.996145248413086,
+    "info": {
+      "expanded": 20053,
+      "best_h": 1.1922041177749634
+    }
+  }
+]

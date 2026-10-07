@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="vi">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SAM2 → reader → event · 05/10/2026</title>
+<style>body{margin:0;background:#141821;color:#edf2fa;font:16px/1.65 system-ui,sans-serif}main{max-width:1060px;margin:auto;padding:28px 20px}h1{font-size:28px;line-height:1.3}h2{font-size:20px}section{background:#202735;border-radius:12px;padding:20px;margin:22px 0}video{width:100%;display:block;background:#000;border-radius:6px}a{color:#91c7ff}.note{color:#b8c6db}li{margin:8px 0}.flow{font-weight:600;color:#8ee2ba}</style>
+<main>
+<h1>SAM2 tạo nhãn thế nào, event được tách ra sao?</h1>
+<p class="flow">Dữ liệu ảnh → SAM2 frozen → mask + quy tắc ghép entity → train reader → reader gán nhãn dữ liệu lớn → event → train WM và skill.</p>
+<p><strong>SAM2 là công cụ tạo mask trong bước chuẩn bị dữ liệu.</strong> Reader là mạng nhỏ riêng được train từ pseudo-label để đọc vị trí, màu/trạng thái, che khuất và cờ at-rest của entity. Reader được dùng khi robot điều khiển. SAM2 không trực tiếp trả về ID entity, event hay hành động.</p>
+<p class="note">Job CPU 57539; dữ liệu validation cube-triple và puzzle-4×5 đã xử lý xong. Không chạy lại SAM2, không train model, không đọc trạng thái simulator. Các clip là dữ liệu play offline đã được tách event, không phải rollout do policy hiện tại tạo ra. Video phát 2 frame được lấy mẫu mỗi giây; dữ liệu được lấy mẫu mỗi 5 bước. Không quy đổi thành thời gian mô phỏng trong demo.</p>
+<section><h2>Cách đọc video</h2><ul>
+<li><strong>Trái:</strong> ảnh gốc 64×64, phóng lớn.</li>
+<li><strong>Giữa:</strong> các mask SAM2 đã lưu, sau bước lọc proposal. Màu mask chỉ giúp nhìn các vùng trong một frame; màu đó không phải ID vật xuyên thời gian.</li>
+<li><strong>Phải:</strong> entity state do SAM2 + quy tắc suy ra, hoặc do reader đã học dự đoán. Vòng tròn lớn đánh dấu entity được gán là acted; các entity không có observation hợp lệ không được vẽ.</li>
+<li><strong>Dưới:</strong> khoảng event đã gán nhãn; ID thay đổi và bảng before → after. “Refined end” là mốc reader chỉnh lại; “coarse end” là mốc ban đầu. Các mốc và ID này là nhãn suy ra, chưa phải ground truth.</li>
+</ul></section>
+<section><h2>1. Cube: event từ nhãn SAM2 ban đầu</h2>
+<video controls preload="metadata" poster="job57539/cube_sam2_teacher_after.png" src="job57539/cube_sam2_teacher.mp4"></video>
+<p>SAM2 đề xuất các vùng ảnh; quy tắc màu/vị trí ghép chúng thành entity. Khi trạng thái entity đổi giữa hai khoảng nghỉ, pipeline tạo một event.</p>
+<p><a href="job57539/cube_sam2_teacher_storyboard.png">Các frame trước–trong–sau</a> · <a href="job57539/cube_sam2_teacher.json">Nhãn và nguồn dữ liệu</a></p></section>
+<section><h2>2. Cube: event sau reader tự gán nhãn</h2>
+<video controls preload="metadata" poster="job57539/cube_reader_clean_after.png" src="job57539/cube_reader_clean.mp4"></video>
+<p>Panel phải lấy từ output reader đã lưu; panel giữa vẫn là mask SAM2 của cùng ảnh, dùng để đối chiếu. Reader không gọi SAM2 để tạo các dự đoán này. Mốc kết thúc đã được refine bằng reader; đây là loại segment dùng để train skill.</p>
+<p><a href="job57539/cube_reader_clean_storyboard.png">Các frame trước–trong–sau</a> · <a href="job57539/cube_reader_clean.json">Nhãn và nguồn dữ liệu</a></p></section>
+<section><h2>3. Cube: event bị loại khỏi tập train skill</h2>
+<video controls preload="metadata" poster="job57539/cube_reader_excluded_after.png" src="job57539/cube_reader_excluded.mp4"></video>
+<p>Cờ knock/contaminated đánh dấu segment có thay đổi vật khác hoặc thay đổi bị bỏ sót. Code hiện tại bỏ các segment có cờ này khi train skill. Bảng dữ liệu đính kèm ghi rõ các cờ; cờ lọc không tự chứng minh hành động vật lý bị sai.</p>
+<p><a href="job57539/cube_reader_excluded_storyboard.png">Các frame trước–trong–sau</a> · <a href="job57539/cube_reader_excluded.json">Nhãn và cờ lọc</a></p></section>
+<section><h2>4. Puzzle: nhiều entity đổi trạng thái trong một event</h2>
+<video controls preload="metadata" poster="job57539/puzzle_reader_clean_after.png" src="job57539/puzzle_reader_clean.mp4"></video>
+<p>Với entity neo theo vị trí, vị trí có thể giữ nguyên trong khi RGB đổi. Một event có entity được gán là acted và các entity khác thay đổi như effects. WM được train để dự đoán cả các thay đổi này. Danh sách changed IDs là kết quả từ nhãn, không phải nhãn nút do người cung cấp.</p>
+<p><a href="job57539/puzzle_reader_clean_storyboard.png">Các frame trước–trong–sau</a> · <a href="job57539/puzzle_reader_clean.json">Nhãn và nguồn dữ liệu</a></p></section>
+<p class="note">Ví dụ được chọn theo quy tắc xác định: event validation đầu tiên thuộc từng loại và đủ dài để quan sát. Đây là minh họa cơ chế; không dùng bốn clip để ước lượng chất lượng segmentation/event detection.</p>
+<p><a href="job57539/manifest.json">Manifest của demo</a></p>
+</main></html>
