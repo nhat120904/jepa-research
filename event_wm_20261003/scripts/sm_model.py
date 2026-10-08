@@ -85,8 +85,17 @@ class Up(nn.Module):
 
 
 class SceneMemory(nn.Module):
-    def __init__(self, width=128, act_dim=5, gate_noise=0.1):
+    def __init__(self, width=128, act_dim=5, gate_noise=0.1, gate_st=False, gate_l0="sigmoid"):
         super().__init__()
+        # gate_st: backward of the gate value goes through tanh(s) also where relu clips it to 0, so a closed gate still
+        # receives the reconstruction gradient (forward unchanged: a closed gate copies the code exactly). Without it a
+        # gate that closes gets no gradient from reconstruction and can never reopen (v1 scene run: open rate 0 from step 500).
+        self.gate_st = gate_st
+        # gate_l0: surrogate whose derivative is the backward of the L0 count. 'sigmoid' (v1): d sigmoid(4 s), which vanishes
+        # for a gate far open, so the gate cost cannot close it (gate-st + w_mem run: 84% of gates open every frame).
+        # 'softplus': softplus(4 s) / 4, derivative sigmoid(4 s): constant push on open gates, none on closed ones.
+        assert gate_l0 in ("sigmoid", "softplus")
+        self.gate_l0 = gate_l0
         self.fsq = FSQ()
         d = self.fsq.dim
         self.enc = nn.Sequential(conv_block(3, width // 2), conv_block(width // 2, width, 2), Res(width),
@@ -115,16 +124,19 @@ class SceneMemory(nn.Module):
 
     def step(self, q_prev, f, train=False):
         """One memory update. Returns q (B, d, 16, 16), gate g (B, 1, 16, 16), open (B, 1, 16, 16) with
-        straight-through gradient (forward = 1[s > 0], backward = d sigmoid(4 s))."""
+        straight-through gradient (forward = 1[s > 0], backward = d sigmoid(4 s), or sigmoid(4 s) with gate_l0 'softplus')."""
         h = torch.cat([f, self.mem_in(q_prev), self.mem_nb(q_prev)], 1)
         o = self.cell(h).float()
         u, s = self.fsq.bound(o[:, :-1]), o[:, -1:]
         q_prev = q_prev.float()
         if train and self.gate_noise > 0:
             s = s + self.gate_noise * torch.randn_like(s)
-        g = torch.relu(torch.tanh(s))
+        t = torch.tanh(s)
+        g = torch.relu(t)
+        if self.gate_st:
+            g = t + (g - t).detach()
         hard = (s > 0).float()
-        soft = torch.sigmoid(4 * s)
+        soft = torch.sigmoid(4 * s) if self.gate_l0 == "sigmoid" else F.softplus(4 * s) / 4
         opened = soft + (hard - soft).detach()
         q = self.fsq.quantize(q_prev + g * (u - q_prev))
         return q, g, opened

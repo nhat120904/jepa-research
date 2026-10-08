@@ -63,6 +63,42 @@ def test_closed_gate_copies_code_exactly():
     assert torch.equal(m.fsq.index(q0.permute(0, 2, 3, 1)), m.fsq.index(q1.permute(0, 2, 3, 1)))
 
 
+def test_gate_st_same_forward_and_gradient_through_closed_gate():
+    torch.manual_seed(0)
+    m0, m1 = SceneMemory(width=32), SceneMemory(width=32, gate_st=True)
+    m1.load_state_dict(m0.state_dict())
+    with torch.no_grad():
+        for m in (m0, m1):
+            m.cell[-1].weight[-1] = 0.0; m.cell[-1].bias[-1] = -1.0         # s = -1 everywhere: closed, inside tanh's live range
+    f = torch.randn(2, 32, 16, 16)
+    q_prev = m0.initial(f).detach()
+    f1 = torch.randn(2, 32, 16, 16)
+    grads = []
+    for m in (m0, m1):
+        m.zero_grad()
+        q, g, op = m.step(q_prev, f1)
+        assert float(g.max()) == 0.0
+        assert torch.equal(q, q_prev)                                       # forward identical: closed gate copies exactly
+        (q - torch.ones_like(q)).pow(2).sum().backward()                    # target differs from the memory
+        grads.append(m.cell[-1].bias.grad[-1].abs().item())
+    assert grads[0] == 0.0 and grads[1] > 0.0                               # only gate_st lets reconstruction reach a closed gate
+
+
+def test_gate_l0_softplus_pushes_far_open_gates():
+    torch.manual_seed(0)
+    grads = {}
+    for kind in ("sigmoid", "softplus"):
+        m = SceneMemory(width=32, gate_l0=kind)
+        with torch.no_grad():
+            m.cell[-1].weight[-1] = 0.0; m.cell[-1].bias[-1] = 4.0          # s = 4 everywhere: far open
+        f = torch.randn(2, 32, 16, 16)
+        q, g, op = m.step(m.initial(f).detach(), torch.randn(2, 32, 16, 16))
+        assert float(op.min()) == 1.0                                       # forward is the hard count for both
+        op.mean().backward()
+        grads[kind] = m.cell[-1].bias.grad[-1].item()
+    assert 0 < grads["sigmoid"] < 1e-5 and grads["softplus"] > 0.99      # only softplus can still close a far-open gate
+
+
 def test_run_episode_shapes():
     m = SceneMemory(width=32).eval()
     obs = np.random.randint(0, 255, (20, 64, 64, 3), np.uint8)

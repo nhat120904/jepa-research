@@ -211,7 +211,10 @@ def occlusion_test(model, obs, act, per, dev, n_tests=200, L=40, seed=0):
         oc[i, 10:20, r:r + 12, c:c + 12] = rng.integers(0, 256, size=3)
         m = np.zeros((64, 64)); m[r:r + 12, c:c + 12] = 1
         masks[i] = m.reshape(16, 4, 16, 4).mean((1, 3)) >= 0.5
-    clean = run_batch(model, o, a, dev); occ = run_batch(model, oc, a, dev)
+    def chunked(o_, a_, eb=50):   # same episodes-per-pass as export(); 200 x 64 frames at once needs > 12 GB
+        parts = [run_batch(model, o_[i:i + eb], a_[i:i + eb], dev) for i in range(0, len(o_), eb)]
+        return {k: np.concatenate([p[k] for p in parts]) for k in parts[0]}
+    clean = chunked(o, a); occ = chunked(oc, a)
     same_after = (clean["codes"][:, -1] == occ["codes"][:, -1]).mean()
     hidden_after = np.mean([(clean["codes"][i, -1][masks[i].ravel()] == occ["codes"][i, -1][masks[i].ravel()]).mean() for i in range(len(pick))])
     vis_in = np.mean([occ["vis"][i, 12:18][:, masks[i].ravel()].mean() for i in range(len(pick))])
