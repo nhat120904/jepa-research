@@ -101,6 +101,32 @@ def test_dilate_tokens():
     assert dilate_tokens(c, 1).sum() == 4                                 # corner: no wrap-around
 
 
+def test_pattern_modes_absorbs_one_bit_variants():
+    from sm2_reader import pattern_modes
+    keys = ["1,2,3"] * 50 + ["1,2"] * 6 + ["1,2,3,9"] * 4 + ["7,8"] * 40 + ["7"] * 3 + ["20,21,22,23"] + ["30"] + ["31"] + [""] * 5
+    keep, type_of, info = pattern_modes(keys)
+    assert keep[:2] == ["1,2,3", "7,8"]
+    assert type_of("1,2") == type_of("1,2,3,9") == type_of("1,2,3") == 0     # one-bit variants join the mode
+    assert type_of("7") == 1 and type_of("7,8,40") == 1                       # unseen pattern climbs with TRAIN counts
+    assert type_of("") == -1 and type_of("20,21,22,23") == -1 and type_of("55,56") == -1
+    assert info["modes"] == 5 and info["distinct_patterns"] == 8
+
+
+def test_smooth_labels_frame_and_bit_masks():
+    from sm2_reader import smooth_labels, vs_pseudo
+    b = np.zeros((40, 2), np.uint8)
+    b[20:, 0] = 1                                                          # bit 0 steps at frame 20, bit 1 constant
+    b[5, 1] = 1                                                            # an isolated misread of bit 1
+    lab, ok = smooth_labels(b, [0], [39], 3, 0.8)
+    assert ok.shape == (40,) and lab[5, 1] == 0 and not ok[19] and ok[10] and ok[30]
+    lab_b, ok_b = smooth_labels(b, [0], [39], 3, 0.8, per_bit=True)
+    assert ok_b.shape == (40, 2) and ok_b[19, 1] and not ok_b[19, 0]     # bit 1 stays labelled where bit 0 is ambiguous
+    assert (lab_b == lab).all()
+    pred = lab.copy(); pred[10, 0] = 1
+    vf, vb = vs_pseudo(pred, lab, ok), vs_pseudo(pred, lab_b, ok_b)
+    assert vf["frame_exact"] < 1 and vb["bit"] < 1 and vb["frame_exact"] == 1 - 1 / ok_b.any(1).sum()
+
+
 def synthetic_cache(path: Path, episodes=3, T=60, seed=0):
     rng = np.random.default_rng(seed)
     N = episodes * T

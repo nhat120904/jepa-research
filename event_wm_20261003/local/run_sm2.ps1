@@ -58,5 +58,5 @@ foreach ($s in $stages) {
 "=== diag $(Get-Date -Format s)"
 & "$PSScriptRoot\run_stage.ps1" -Root $root -Script "$Repo\scripts\sm2_diag.py" -Name "sm2_${Family}_diag" `
     -ScriptArgs @('--run', "$Out\train", '--cache', $cache, '--family', $Family, '--out', "$Out\$DiagName")
-if ($LASTEXITCODE -ne 0) { throw "sm2_diag failed (exit $LASTEXITCODE)" }
+if ($LASTEXITCODE -ne 0) { "sm2_diag failed (exit $LASTEXITCODE): PRIVILEGED scoring only, the front end is complete" }
 "SM2_DONE $Out"

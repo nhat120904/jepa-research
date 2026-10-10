@@ -12,7 +12,11 @@ interactions from sm2_model.assemble_events with the gap fitted label-free on --
 Scored against the criteria pre-registered on 2026-10-04 for the unified state component (JOB_LEDGER.md), with the
 same reference definitions as slowmap.py / slowmap_probe.py:
   c1 discrete state   linear probe per button / light >= .98
-  c2 completeness     keypoint-probe median error per cube <= 1.2 x the same probe on raw pixels
+  c2 completeness     median xy error per cube of a probe on the memory <= 1.2 x the same probe on raw pixels.
+                      Pre-registered probe: keypoint (spatial softmax). DEVIATION (2026-10-08): the keypoint probe is
+                      unreliable on raw pixels (cube-triple VAL, same data: 3.5-15 cm over seeds / lengths), so c2 is
+                      judged with an MLP (2 x 512) on 8 x 8-pooled features (raw pixels 4.4-5.6 cm, stable over seeds);
+                      the keypoint numbers are still reported.
   c3 agent-free       arm-joint MLP R^2 <= .2
   c4 events           recall >= .9 and precision >= .8, window 15 frames; reference = any object joint (qpos[14:])
                       moving > 2e-3 per frame or a button toggling (scene, cube), light toggles (puzzle); reference
@@ -117,7 +121,7 @@ def event_lag(ev_start, segs, w, horizon=200):
             "lag_after_end_p10_p50_p90": np.percentile(lag, [10, 50, 90]).round(1).tolist() if len(lag) else None}
 
 
-def probe_suite(V, st, pix_kp, dev, steps=3000, sub=None):
+def probe_suite(V, st, pix_kp, dev, steps=3000, sub=None, pix_mlp=None):
     """PRIVILEGED probes on features V (n, C, 16, 16) (torch, on dev). First half of the frames fits, second half scores.
     sub (n,) bool: also score the button and joint probes on this subset of the second half."""
     torch.manual_seed(0)
@@ -152,12 +156,17 @@ def probe_suite(V, st, pix_kp, dev, steps=3000, sub=None):
             sm = torch.as_tensor(sub[half:], device=dev)
             res["buttons_acc_settled"] = hit[sm].mean(0).cpu().numpy().round(4).tolist()
             res["settled_frac"] = float(sm.float().mean())
+    pooled = nn.functional.adaptive_avg_pool2d(V, 8).flatten(1)
     if st["pos"] is not None:
         res["memory_keypoint"] = keypoint(lambda i: V[i], V.shape[1], st, n, half, dev, steps)
         res["pixels_keypoint"] = pix_kp
         res["keypoint_ratio_memory_over_pixels"] = (np.array(res["memory_keypoint"]["median_err_cm"]) /
                                                     np.maximum(pix_kp["median_err_cm"], 1e-3)).round(2).tolist()
-    pooled = nn.functional.adaptive_avg_pool2d(V, 8).flatten(1)
+        if pix_mlp is not None:
+            res["memory_mlp_pos"] = mlp_pos(pooled, st, n, half, dev, steps)
+            res["pixels_mlp_pos"] = pix_mlp
+            res["mlp_pos_ratio_memory_over_pixels"] = (np.array(res["memory_mlp_pos"]["median_err_cm"]) /
+                                                       np.maximum(pix_mlp["median_err_cm"], 1e-3)).round(2).tolist()
     if st["arm"] is not None:
         res["arm_mlp_r2"] = r2(fit(pooled, torch.as_tensor(st["arm"], device=dev), "mlp"), torch.as_tensor(st["arm"][half:], device=dev))
     if st["joint"] is not None:
@@ -168,6 +177,26 @@ def probe_suite(V, st, pix_kp, dev, steps=3000, sub=None):
             sm = torch.as_tensor(sub[half:], device=dev)
             res["joint_mlp_r2_settled"] = r2(pj[sm], yj[sm])
     return res
+
+
+def mlp_pos(Fx, st, n, half, dev, steps):
+    """c2 probe (see the c2 note): MLP (2 x 512) on 8 x 8-pooled features Fx (n, D) -> object xy, fitted on the first
+    half, median error per object (cm) on the second half."""
+    torch.manual_seed(0)
+    K = st["pos"].shape[1]
+    tgt = torch.as_tensor(st["pos"][..., :2].reshape(n, -1), device=dev).float()
+    m_, s_ = Fx[:half].mean(0), Fx[:half].std(0) + 1e-3
+    net = nn.Sequential(nn.Linear(Fx.shape[1], 512), nn.GELU(), nn.Linear(512, 512), nn.GELU(), nn.Linear(512, 2 * K)).to(dev)
+    opt = torch.optim.Adam(net.parameters(), lr=1e-3, weight_decay=1e-4)
+    ym, ys = tgt[:half].mean(0), tgt[:half].std(0) + 1e-6
+    for _ in range(steps):
+        i = torch.randint(0, half, (512,), device=dev)
+        loss = ((net((Fx[i] - m_) / s_) - (tgt[i] - ym) / ys) ** 2).mean(); opt.zero_grad(); loss.backward(); opt.step()
+    with torch.no_grad():
+        p = torch.cat([net((Fx[s:s + 8192] - m_) / s_) for s in range(half, n, 8192)]) * ys + ym
+    err = (p - tgt[half:]).view(-1, K, 2).norm(dim=-1)
+    return {"median_err_cm": (err.median(0).values * 100).cpu().numpy().round(2).tolist(),
+            "within_2cm": (err < 0.02).float().mean(0).cpu().numpy().round(3).tolist()}
 
 
 def keypoint(feat, C, st, n, half, dev, steps):
@@ -223,8 +252,10 @@ def criteria(pr, ev):
     c = {}
     if "buttons_min" in pr:
         c["c1_discrete_ge_.98"] = bool(pr["buttons_min"] >= 0.98)
-    if "keypoint_ratio_memory_over_pixels" in pr:
-        c["c2_complete_ratio_le_1.2"] = bool(max(pr["keypoint_ratio_memory_over_pixels"]) <= 1.2)
+    if "mlp_pos_ratio_memory_over_pixels" in pr:                               # MLP probe (deviation, see c2 note)
+        c["c2_complete_ratio_le_1.2"] = bool(max(pr["mlp_pos_ratio_memory_over_pixels"]) <= 1.2)
+    elif "keypoint_ratio_memory_over_pixels" in pr:
+        c["c2_complete_ratio_le_1.2_keypoint"] = bool(max(pr["keypoint_ratio_memory_over_pixels"]) <= 1.2)
     if "arm_mlp_r2" in pr:
         c["c3_agent_free_r2_le_.2"] = bool(max(pr["arm_mlp_r2"]) <= 0.2)
     c["c4_events_rec_ge_.9_prec_ge_.8"] = bool((ev["recall"] or 0) >= 0.9 and (ev["precision"] or 0) >= 0.8)
@@ -329,9 +360,13 @@ def main():
             last[t] = lc
     settled = rest & (np.arange(n) - last >= 30)
     ofs = torch.as_tensor(obs, device=dev)                                      # uint8 on the GPU (1.2 GB for 100 episodes)
-    pix_kp = None
+    pix_kp = pix_mlp = None
     if st["pos"] is not None:
         pix_kp = keypoint(lambda i: ofs[i].permute(0, 3, 1, 2).float().div(127.5).sub(1), 3, st, n, n // 2, dev, a.probe_steps)
+        px8 = torch.cat([ofs[s:s + 4096].permute(0, 3, 1, 2).float().reshape(-1, 3, 8, 8, 8, 8).mean((3, 5)).flatten(1) / 255
+                         for s in range(0, n, 4096)])                           # 8 x 8-pooled RGB, chunked
+        pix_mlp = mlp_pos(px8, st, n, n // 2, dev, a.probe_steps)
+        del px8
     # ceiling of the same probes on the CURRENT frame's raw-pixel tokens (mean RGB per 4 x 4 patch; contains the arm)
     cur = np.zeros((n, 3, 16, 16), np.float32)
     for s in range(0, n, 5000):
@@ -419,7 +454,7 @@ def main():
                            "lag": event_lag(asm[:, 0], segs, a.window)}}
         V = torch.cat([feats[space](mem[s:s + 8192]) for s in range(0, n, 8192)])
         V = V * torch.as_tensor(mem >= 0, device=dev).view(n, 1, 16, 16).float()
-        r["probes"] = probe_suite(V.float(), st, pix_kp, dev, a.probe_steps, sub=settled)
+        r["probes"] = probe_suite(V.float(), st, pix_kp, dev, a.probe_steps, sub=settled, pix_mlp=pix_mlp)
         r["criteria"] = criteria(r["probes"], r["events_w15"])
         r["criteria_assembled_events"] = criteria(r["probes"], r["assembled"]["w15"])
         res[name] = r

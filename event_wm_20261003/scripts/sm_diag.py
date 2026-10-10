@@ -81,7 +81,7 @@ def privileged_state(cache: Path, family: str, n: int):
     if family in ("cube", "scene"):
         q = np.asarray(np.load(cache / "val_qpos.npy", mmap_mode="r")[:n], np.float32)
         s["arm"] = q[:, :6]
-        sl = CUBE_SLICES if family == "cube" else (14,)
+        sl = tuple(c for c in (14, 21, 28, 35) if c + 3 <= q.shape[1]) if family == "cube" else (14,)   # 1-4 cubes
         s["pos"] = np.stack([q[:, i:i + 3] for i in sl], 1)
         if family == "scene":
             s["joint"] = q[:, 23:25]

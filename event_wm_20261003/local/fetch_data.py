@@ -27,7 +27,20 @@ GROUPS = {
     # Pixel track of the puzzle (encoder / SFA code / reader / skill v3).
     "visual_puzzle": ["visual-puzzle-3x3-play-v0", "visual-puzzle-4x4-play-v0",
                       "visual-puzzle-4x5-play-v0", "visual-puzzle-4x6-play-v0"],
+    # Held-out cube environment of the object method (never used in development).
+    "visual_cube_single": ["visual-cube-single-play-v0"],
+    # The full OGBench pixel cube suite (play) for held-out evaluation (user approval 2026-10-09).
+    "visual_cube_all": ["visual-cube-single-play-v0", "visual-cube-double-play-v0",
+                        "visual-cube-triple-play-v0", "visual-cube-quadruple-play-v0"],
+    # State-based cube and puzzle datasets, play and noisy (small; reference / privileged analysis).
+    "state_cube_puzzle_all": [f"{e}-{d}-v0" for e in ("cube-single", "cube-double", "cube-triple", "cube-quadruple",
+                                                     "puzzle-3x3", "puzzle-4x4", "puzzle-4x5", "puzzle-4x6")
+                              for d in ("play", "noisy")],
+    # Pixel noisy datasets (~43 GB); not fetched by default (disk), the method trains on play data.
+    "visual_noisy_cube_puzzle": [f"visual-{e}-noisy-v0" for e in ("cube-single", "cube-double", "cube-triple", "cube-quadruple",
+                                                                 "puzzle-3x3", "puzzle-4x4", "puzzle-4x5", "puzzle-4x6")],
 }
+DEFAULT_GROUPS = [g for g in GROUPS if g != "visual_noisy_cube_puzzle"]
 
 
 def data_dir() -> Path:
@@ -36,13 +49,13 @@ def data_dir() -> Path:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--groups", nargs="+", default=list(GROUPS), choices=list(GROUPS))
+    ap.add_argument("--groups", nargs="+", default=DEFAULT_GROUPS, choices=list(GROUPS))
     ap.add_argument("--list", action="store_true", help="only list files and sizes")
     a = ap.parse_args()
     os.environ.setdefault("HF_HOME", r"E:\jepa-data\hf_cache")   # keep the small C: drive clear
     from huggingface_hub import HfApi, hf_hub_download
 
-    names = [f"{env}{suffix}.npz" for g in a.groups for env in GROUPS[g] for suffix in ("", "-val")]
+    names = list(dict.fromkeys(f"{env}{suffix}.npz" for g in a.groups for env in GROUPS[g] for suffix in ("", "-val")))
     sizes = {f.path: f.size for f in HfApi().list_repo_tree(REPO, repo_type="dataset") if getattr(f, "size", None)}
     missing = [n for n in names if n not in sizes]
     if missing:
