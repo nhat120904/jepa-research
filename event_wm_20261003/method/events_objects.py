@@ -135,11 +135,16 @@ def stab_groups(changes, gap=0):
     return groups
 
 
-def transition(pos, app, r0, r1, r_pos, r_app):
+def transition(pos, app, r0, r1, r_pos, r_app, obs=None):
     """Per-frame timing of the change between consecutive rest runs r0, r1 of one identity (rest_runs records):
     arrival = first frame from which the reading stays within the noise radii of r1's state up to r1's start;
-    departure = last frame before the arrival still within them of r0's state. -> (departure + 1, arrival)."""
+    departure = last frame before the arrival still within them of r0's state. -> (departure + 1, arrival).
+    obs (n,) bool: only these frames are readings (--effector-lag: a reading in the effector's shadow is the old state
+    read late; timing the change from it put the pressed light's change where its reading caught up, after the press, as
+    a separate one-frame event: puzzle-4x5 VAL, 99.6% of the events with no simulator flip in their core)."""
     s = np.arange(r0[1], r1[0] + 1)
+    if obs is not None:
+        s = s[obs[s] | (s == r0[1]) | (s == r1[0])]
 
     def at(r):
         return (np.linalg.norm(pos[s] - r[2] / r[4], axis=-1) <= r_pos) & (np.abs(app[s] - r[3] / r[4]).max(-1) <= r_app)
@@ -180,6 +185,26 @@ def main():
                     help="with --effector: an entity the effector came within one object width of stays UNOBSERVED for this many "
                          "frames (the reading under the arm lags: a pressed light read its old state for 7-11 frames, p90 19-27); "
                          "the 90th percentile of within-event arrival spreads (t - t_core1) of a first pass without it")
+    ap.add_argument("--effector-offset", type=float, nargs=2, default=(0.0, 0.0), metavar=("DU", "DV"),
+                    help="with --effector: added to the effector point (effector_calib.py offset: the contact point is not where the "
+                         "commanded translation is most visible; scene +4 to +7 px, cube +16 to +20 px below it)")
+    ap.add_argument("--shadow-places-only", action="store_true",
+                    help="with --effector-lag: only places (read through the arm) are shadowed; movers keep the agent-clear test")
+    ap.add_argument("--mover-rest", choices=("effector", "agent"), default="effector",
+                    help="--per-frame with --effector: a MOVER reading is a rest observation when the effector contact point is farther "
+                         "than one object width (effector, 2026-10-11) or when no agent pixel is within half an object width (agent, "
+                         "before). The agent mask is coarse (scene: ~38%% of the image with the arm's shadow) and the play arm hovers "
+                         "near the cube between manipulations: scene VAL true cube rest intervals with a rest run .19 (agent) vs .76 "
+                         "(effector), cube-triple .62-.76 vs .92-.97, runs that are mostly carried frames 0 vs <= .010 (PRIVILEGED check, "
+                         "scratchpad/rest_criteria.py); scene cube moves found by an event were .33")
+    ap.add_argument("--no-continuity", dest="continuity", action="store_false",
+                    help="ablation: no state continuity between consecutive events (before 2026-10-11)")
+    ap.add_argument("--acted-among", choices=("all", "not-staying"), default="all",
+                    help="with --effector: acted = the entity nearest the effector among all entities, or among those not known to stay")
+    ap.add_argument("--contact", choices=("departure", "closest"), default="departure",
+                    help="--group stab with an effector: the contact moment of an event = the latest departure of its changes "
+                         "(departure) or the effector's closest approach to the changed entities between the latest departure "
+                         "and the first arrival (closest)")
     ap.add_argument("--out", type=Path, required=True)
     a = ap.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
@@ -250,6 +275,7 @@ def main():
         if a.effector is not None:                                           # effector3.py track_* (effector.py eff_*)
             ef_ = a.effector / f"track_{split}.npy"
             eff = np.asarray(np.load(ef_ if ef_.exists() else a.effector / f"eff_{split}.npy", mmap_mode="r")[:n, :2], np.float64)
+            eff = eff + np.asarray(a.effector_offset, np.float64)                   # contact-point calibration (effector_calib.py)
             term_ = np.load(a.cache / f"{split}_terminals.npy")[:n]; ep_ = np.concatenate([[0], np.cumsum(term_[:-1])])
             last_ = np.maximum.accumulate(np.where(vis, np.arange(n)[:, None], -1), axis=0)   # last frame each entity was seen
             posf = np.where((last_ >= 0)[..., None], pos[np.maximum(last_, 0), np.arange(K)[None]], pos)
@@ -257,6 +283,12 @@ def main():
             eff_shadow = near.copy()
             for d_ in range(1, a.effector_lag + 1):                           # ... and the lag of its reading afterwards
                 eff_shadow[d_:] |= near[:-d_] & (ep_[d_:] == ep_[:-d_])[:, None]
+            if a.shadow_places_only:
+                # the shadow is a reading lag of PLACES (read through the arm, SeeThrough); a mover is a rest observation only
+                # with the agent clear of it anyway, and shadowing it merged cube-triple interactions (3.9 events / ep for 6.3)
+                ids_ = disc.get("identities", [])
+                plc_ = np.array([k < len(ids_) and ids_[k].get("anchor") == "location" for k in range(K)])
+                eff_shadow[:, ~plc_] = False
         term = np.load(a.cache / f"{split}_terminals.npy")[:n]
         ep_of = np.concatenate([[0], np.cumsum(term[:-1])]).astype(np.int64)
         starts = np.r_[0, np.nonzero(term)[0] + 1]; ends = np.r_[np.nonzero(term)[0] + 1, n]
@@ -283,11 +315,15 @@ def main():
                 vis_rest &= ~eff_shadow
             elif eff is not None:
                 vis_rest &= np.linalg.norm(pos - eff[:, None], axis=-1) > thr_pos / 2
+            eff_movers = a.mover_rest == "effector" and eff is not None
+            if eff_movers:                                                       # movers: the contact point one object width away
+                far = np.linalg.norm(pos - eff[:, None], axis=-1) > thr_pos
+                vis_rest &= far | is_place[None]
             for t in np.nonzero(frame_ok)[0] if agent is not None else []:
                 am = np.unpackbits(agent[t], axis=-1)[:, :64].astype(bool)
                 if am.any():
                     d = np.hypot(ug[am][:, None] - pos[t, :, 0][None], vg[am][:, None] - pos[t, :, 1][None]).min(0)
-                    vis_rest[t] &= (d > thr_pos / 2) | is_place                  # object tables: a place reading is agent-free
+                    vis_rest[t] &= (d > thr_pos / 2) | is_place | eff_movers      # object tables: a place reading is agent-free
                     for k, D_ in place.items():
                         if am[D_].mean() >= 0.5 and not is_place[k]:
                             vis_rest[t, k] = False
@@ -328,7 +364,8 @@ def main():
                 labp[r_[0]:r_[1] + 1, k] = r_[2] / r_[4]; laba[r_[0]:r_[1] + 1, k] = r_[3] / r_[4]; valid[r_[0]:r_[1] + 1, k] = True
                 if i:
                     if a.per_frame:
-                        t0, t1 = transition(pos[:, k], app[:, k], merged[i - 1], r_, r_pos, r_app_id[k])
+                        t0, t1 = transition(pos[:, k], app[:, k], merged[i - 1], r_, r_pos, r_app_id[k],
+                                            None if eff_shadow is None else ~eff_shadow[:, k])
                     else:
                         t0, t1 = merged[i - 1][1] + 1, r_[0] - 1
                     changes.append((t0, t1, k, e, merged[i - 1][1]))
@@ -370,6 +407,18 @@ def main():
             b0, b1 = max(c0 - 1, starts[ep_]), min(c1 + 1, ends[ep_] - 1)
             ks_ = sorted({g[2] for g in grp})
             p_pre = {k: labp[min(g[4] for g in grp if g[2] == k), k] for k in ks_}
+            ct = ca                                                              # moment the acted entity is read at
+            if a.contact == "closest" and eff is not None and a.group == "stab":
+                # CONTACT = the effector's closest approach to the changed entities within the span all windows share
+                # [latest departure, first arrival]: the latest departure is the last sight of the old states, which comes
+                # long before the contact when the arm covers the changing entities (small boards: the arm body over a
+                # corner, puzzle-4x4 corner presses labelled .60 / .43). Only the acted label uses it; the event core
+                # stays [latest departure, first arrival] (moving it shrank the cores: VAL presses in one core 4x4 .85 -> .80)
+                span = np.arange(ca, max(min(g[1] for g in grp), ca) + 1)
+                span = span[np.isfinite(eff[span]).all(1)]
+                if len(span):
+                    cpt = np.mean([p_pre[k] for k in ks_], axis=0)
+                    ct = int(span[np.argmin(np.linalg.norm(eff[span] - cpt, axis=-1))])
             if a.per_frame:
                 raw_changed = (np.linalg.norm(pos[b1] - pos[b0], axis=-1) > tol_pos) | (np.abs(app[b1] - app[b0]).max(-1) > thr_app_id)
                 readable = vis[b0] & vis[b1] & frame_ok[b0] & frame_ok[b1]
@@ -393,7 +442,7 @@ def main():
                 acted = min(ks_, key=lambda k: (distance[k], cen[k], -duration[k]))
             events.append((c0, t1, acted, len(grp), [(g[2], new_val[tuple(g[:4])], g[1], g[0]) for g in grp],
                            [k for k in ks_ if k not in {g[2] for g in grp} and a.per_frame and readable[k]], b1,
-                           ca, min(g[1] for g in grp)))
+                           ca, min(g[1] for g in grp), ct))
 
         def state_at(t, side=0):
             """Rest state of every identity at frame t: the nearest rest label, or with side -1 / +1 the last one at or
@@ -444,6 +493,7 @@ def main():
                 seen &= np.linalg.norm(pos - eff[:, None], axis=-1) > thr_pos / 2
             obs_t = [np.flatnonzero(seen[:, k]) for k in range(K)]
             core0 = np.array([x[7] for x in events]); core1 = np.array([x[8] for x in events])
+            contact = np.array([x[9] for x in events])                         # = core0 unless --contact closest
             for i, (t, e_, ev) in enumerate(zip(ts, ep, events)):
                 prv = i - 1 if i > 0 and ep[i - 1] == e_ else None
                 nxt = i + 1 if i + 1 < len(ts) and ep[i + 1] == e_ else None
@@ -485,7 +535,14 @@ def main():
                 if not len(Pk):
                     Pk = np.array(sorted(grp_new))
                 if a.effector is not None:                                       # EFFECTOR contact: the entity at the effector
-                    ee[i] = int(np.argmin(np.linalg.norm(before[i, :, :2] - eff[core0[i]], axis=-1)))
+                    dist_ = np.linalg.norm(before[i, :, :2] - eff[contact[i]], axis=-1)
+                    if a.acted_among == "not-staying":
+                        # among the entities not known to stay as they were (changed, or unread on one side): a slid window
+                        # handle is far from the window centre and nearer a button that did not change (scene window .07)
+                        stay = before_known[i] & after_known[i] & ~chg
+                        if (~stay).any():
+                            dist_ = np.where(stay, np.inf, dist_)
+                    ee[i] = int(np.argmin(dist_))
                     continue
                 cpt = before[i, Pk, :2].mean(0)
                 cands = Pk
@@ -502,12 +559,26 @@ def main():
         same = np.r_[False, ep[1:] == ep[:-1]]
         seg[same] = te[:-1][same[1:]] + 1
         seg = np.minimum(seg, ts)
+        if a.continuity and len(ee):
+            # CONTINUITY (2026-10-11): nothing changes between consecutive events of an episode (an event holds every change),
+            # so an entity unknown after event i takes its state before event i+1 when that is known, and one unknown before
+            # event i+1 its state after event i (puzzle-3x3: the pressed centre light was unknown after 70% of its TRAIN events,
+            # under the resting arm, the top-middle 40%; the WM learned wrong crosses, event exact .51)
+            nfill = [0, 0]
+            for i in np.flatnonzero(np.r_[ep[1:] == ep[:-1], False]):
+                fa = ~after_known[i] & before_known[i + 1]
+                after[i, fa, :5] = before[i + 1, fa, :5]; after_known[i, fa] = True; nfill[0] += int(fa.sum())
+                fb = ~before_known[i + 1] & after_known[i]
+                before[i + 1, fb, :5] = after[i, fb, :5]; before_known[i + 1, fb] = True; nfill[1] += int(fb.sum())
+            print({"split": split, "continuity_filled_after_before": nfill}, flush=True)
         moved = (np.linalg.norm(after[..., :2] - before[..., :2], axis=-1) > tol_pos).sum(1)
         target_known = before_known[np.arange(len(ee)), ee] & after_known[np.arange(len(ee)), ee] if len(ee) else np.zeros(0, bool)
         np.savez_compressed(a.out / f"events_{split}.npz", t_start=ts, t=te, e=ee, before=before, after=after, target_known=target_known,
                             target=after[np.arange(len(ee)), ee], seg_start=seg, knock=moved > 1, episode=ep,
                             n_changed=np.array([x[3] for x in events]), thr_pos=thr_pos, tol_pos=tol_pos, thr_app=thr_app,
                             t_core=np.array([[x[7], x[8]] for x in events], np.int64).reshape(-1, 2),   # [latest departure, first arrival]
+                            t_contact=np.array([x[9] for x in events], np.int64),   # moment the acted entity is read at
+                            effector_offset=np.asarray(a.effector_offset, np.float64), effector_lag=a.effector_lag,
                             before_known=before_known, after_known=after_known, thr_app_id=thr_app_id, app_unit_id=app_unit_id)
         np.savez_compressed(a.out / f"labels_{split}.npz", pos=labp, app=laba, valid=valid, cov=cov, cov_valid=cov_valid)
         r = {"events": int(len(ee)), "per_episode": float(len(ee) / max(1, len(eps))), "episodes": len(eps),

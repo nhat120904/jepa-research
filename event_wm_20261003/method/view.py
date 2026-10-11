@@ -170,6 +170,8 @@ def main():
     ap.add_argument("--val-episodes", type=int, default=100)
     ap.add_argument("--stride", type=int, default=5)
     ap.add_argument("--dilate", type=int, default=1)
+    ap.add_argument("--min-purity", type=float, default=0.5,
+                    help="an exemplar is used only when it is MORE THAN this share of its key's agent-free patches (exact recurrence holds); other keys are not in the table, so their tokens stay hidden (0 keeps every key)")
     ap.add_argument("--out", type=Path, required=True)
     a = ap.parse_args()
     if "SLURM_JOB_ID" not in os.environ:
@@ -182,10 +184,16 @@ def main():
     seg = np.load(a.run / "seg_train.npy", mmap_mode="r")
     C = np.load(a.see / "see_codes_train.npy", mmap_mode="r")
     keys, pts, cnt, pur = build_table(obs, C, seg, frames, a.dilate)
+    # EXACT RECURRENCE GATE: a key whose exemplar is not the majority of its agent-free patches does not show one state
+    # (a sliding window / drawer: scene exemplar purity .845 weighted, 13.5% of the key mass below 1/2, vs puzzles and cube
+    # .974-.978); its exemplar mixed states and split scene objects into 10 identities (5 exist)
+    keep = pur > a.min_purity                                                   # more than half, as the other rules
+    dropped = {"keys": int((~keep).sum()), "key_mass": float(cnt[~keep].sum() / max(cnt.sum(), 1))}
+    keys, pts, cnt, pur = keys[keep], pts[keep], cnt[keep], pur[keep]
     np.savez(a.out / "view_table.npz", keys=keys, patches=pts, counts=cnt, purity=pur)
     rep = {"run": str(a.run), "cache": str(a.cache), "see": str(a.see), "train_frames": int(len(frames)), "keys": int(len(keys)),
            "tokens_with_keys": int(len(np.unique(keys // NCODE))), "keys_per_token_median": float(np.median(np.bincount(keys // NCODE))),
-           "purity_weighted": float((pur * cnt).sum() / cnt.sum()), "purity_p10_p50": np.percentile(pur, [10, 50]).round(4).tolist(),
+           "min_purity": a.min_purity, "dropped": dropped, "purity_weighted": float((pur * cnt).sum() / cnt.sum()), "purity_p10_p50": np.percentile(pur, [10, 50]).round(4).tolist(),
            "minutes_table": round((time.time() - t0) / 60, 1)}
     print(json.dumps(rep), flush=True)
     vst, ven = episode_bounds(a.cache, "val", a.val_episodes)

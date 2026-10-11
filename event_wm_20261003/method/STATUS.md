@@ -1,7 +1,40 @@
-# Event WM, object track: status and direction (2026-10-09)
+# Event WM, object track: status and direction (2026-10-09, re-scoped 2026-10-10)
 
 Single place for where the method stands and what comes next. Details and every number's provenance: `JOB_LEDGER.md`
-(2026-10-09 bullets). Method components: `method/README.md`.
+(2026-10-09 and 2026-10-10 bullets). Method components: `method/README.md`; the v2 plan: `method/V2_PLAN.md`.
+
+## 0. Scope and decisions (user, 2026-10-10)
+
+**Claim (GENERAL, unchanged; the user rejected narrowing it).** One method from offline robot play pixels that is good on puzzle, cube AND scene:
+- a learned event abstraction whose effects generalize to unseen state combinations;
+- searched by A*;
+- executed by a learned image-goal policy.
+
+No foundation models, no labels, no proprio. Privileged state only for scoring.
+
+**Open problem this creates.** A same-day generality check on cube-triple / scene showed the v2 perception (views, effector lag) relies on puzzle assumptions: exact recurrence and static places. Cube and scene must reach at least v1 parity, with puzzles keeping the v2 gains. Literature 2025-26:
+- No pixel method reports good results on visual-puzzle-4x5 / 4x6 (OGBench best 17 / 15).
+- Even state-based SHARSA reaches only 14% on puzzle-4x6.
+- The niche (robot play pixels -> compositional event model -> search -> learned executor) is open. Closest work: Vis2Plan, STRIPS-WM, LatPlan.
+
+**Components adopted 2026-10-10:**
+- Events: `events_objects.transition(obs=)` times changes from observed frames only (eff3: 4x5 events = presses, acted .99).
+- Effector: `effector_calib.py` offset and reading-lag calibration.
+- Views: `view.py --min-purity .5`.
+- World model: `world_model.py --wm-arch rel`, a STRUCTURED world model. Effects depend only on the entity's own state, the acted entity's state, the target and their relative offset.
+  - 4x5 probe, predicted change set = true Lights Out cross: 1.000 on data states and on random unseen patterns.
+  - The identity-transformer WM scores .947 / .980. Its errors produced plans shorter than any real solution.
+- Low level: `gcivl.py` image-goal GCIVL + `subgoal.py` one-event subgoal images (`closed_loop_objects.py --low gcivl`). `gcivl_eval.py` is the matched flat baseline.
+
+**Evidence so far (seed 0, 30 episodes; PRIVILEGED scripted arm = high-level ceiling):**
+- puzzle-4x5 R1c with clean events + identity WM: 43% (old events 27%, oracle labels on old events 13%, pixel baseline 17%).
+- puzzle-4x4 R1c: 60% (HIQL 60%).
+- No fully learned success yet: Delta executor 0/30, spatial BC 1/30. GCIVL is running.
+
+**Decision gates:**
+1. Structured WM: R1c 4x5 should rise above 43%, with first plans near the GF(2) optimum.
+2. GCIVL executor on 4x4: exact presses >= ~.85, and the loop should approach the scripted ceiling.
+3. If both fail, re-assess: grounding + analysis paper, or stop.
 
 ## 1. Pipeline as of 2026-10-09 (one setting for every family)
 

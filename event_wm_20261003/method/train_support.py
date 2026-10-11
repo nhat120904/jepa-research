@@ -26,6 +26,13 @@ def main():
     ap.add_argument('--width', type=int, default=256)
     ap.add_argument('--lr', type=float, default=3e-4)
     ap.add_argument('--quantile', type=float, default=.02)
+    ap.add_argument('--kind', choices=('joint', 'pair'), default='joint',
+                    help='joint: one logit for (state, event) (NCE with corrupted contexts); pair: one logit per other entity '
+                         '(event_support.make_pair_support), the event cost is the summed evidence against compatibility')
+    ap.add_argument('--p-one', type=float, default=.5,
+                    help='share of negatives with ONE other entity swapped from a donor event (the rest: every other entity from the '
+                         'donor). 1.0 = pairwise compatibility only: a whole donor context also teaches context typicality, which '
+                         'gave legal button presses in rarer contexts support ~.1 (scene task 2, 2026-10-11)')
     ap.add_argument('--seed', type=int, default=61006)
     ap.add_argument('--device', default='cuda')
     a = ap.parse_args()
@@ -48,6 +55,8 @@ def main():
     S = torch.as_tensor(M.sc.norm(M.canonical(tr['before'])), dtype=torch.float32, device=a.device)
     E = torch.as_tensor(tr['e'], dtype=torch.long, device=a.device)
     X = torch.as_tensor(M.sc.norm(tr['target']), dtype=torch.float32, device=a.device)
+    if a.kind == 'pair':
+        return train_pair(a, torch, M, ck, tr, va, S, E, X, rng)
     support = make_support(M.K, M.D, a.width).to(a.device)
     opt = torch.optim.AdamW(support.parameters(), lr=a.lr, weight_decay=1e-4)
     row = torch.arange(512, device=a.device)
@@ -58,7 +67,7 @@ def main():
         donor = torch.as_tensor(rng.integers(len(S), size=512), device=a.device)
         neg = S[donor].clone()
         neg[row, ee] = st[row, ee]
-        one = torch.as_tensor(rng.random(512) < .5, device=a.device)
+        one = torch.as_tensor(rng.random(512) < a.p_one, device=a.device)
         other = torch.as_tensor(rng.integers(M.K - 1, size=512), device=a.device)
         other += (other >= ee).long()
         ns = st.clone()
@@ -94,13 +103,79 @@ def main():
     parent_hash = hashlib.sha256(a.model.read_bytes()).hexdigest()
     ck['event_support'] = dict(weights=support.state_dict(), width=a.width, thresholds=thresholds,
                                training_definition='NCE context corruption; not labeled simulator failures',
-                               parent_sha256=parent_hash, steps=a.steps, seed=a.seed, quantile=a.quantile)
+                               parent_sha256=parent_hash, steps=a.steps, seed=a.seed, quantile=a.quantile, p_one=a.p_one)
     a.out.mkdir(parents=True, exist_ok=True)
     torch.save(ck, a.out / 'model_support.pt')
-    save_json(a.out / 'support_report.json', dict(training_events=len(E), validation_events=len(va['e']), steps=a.steps, seed=a.seed,
+    save_json(a.out / 'support_report.json', dict(training_events=len(E), validation_events=len(va['e']), steps=a.steps, seed=a.seed, p_one=a.p_one,
                                                   width=a.width, lr=a.lr, quantile=a.quantile, thresholds=thresholds,
                                                   entities_without_val_events=int(sum(r is None for r in retention)),
                                                   validation_event_retention=retention, parent_sha256=parent_hash, log=log))
+
+
+def train_pair(a, torch, M, ck, tr, va, S, E, X, rng):
+    """PAIRWISE support: per (event, other known entity k) NCE of k's genuine state against k's state in another event."""
+    from event_support import known_entities, make_pair_support, pair_cost, pair_logits
+    F = torch.nn.functional
+    kn_tr = known_entities(M.canonical(tr['before'])) & (tr['before_known'] if 'before_known' in tr else True)
+    KN = torch.as_tensor(kn_tr, device=a.device)
+    support = make_pair_support(M.K, M.D, a.width).to(a.device)
+    opt = torch.optim.AdamW(support.parameters(), lr=a.lr, weight_decay=1e-4)
+    B = 512
+    row = torch.arange(B, device=a.device)
+    log, t0 = [], time.time()
+    for step in range(a.steps):
+        idx = torch.as_tensor(rng.integers(len(S), size=B), device=a.device)
+        donor = torch.as_tensor(rng.integers(len(S), size=B), device=a.device)
+        st, ee, xx, kn = S[idx], E[idx], X[idx], KN[idx]
+        neg = S[donor].clone()
+        neg[row, ee] = st[row, ee]
+        not_e = ~F.one_hot(ee, M.K).bool()
+        vp = kn & not_e
+        vn = KN[donor] & not_e & ((neg - st).abs().amax(-1) > 1e-5)
+        lp, ln = pair_logits(support, torch, st, ee, xx), pair_logits(support, torch, neg, ee, xx)
+        loss = F.softplus(-lp[vp]).mean()
+        if vn.any():
+            loss = loss + F.softplus(ln[vn]).mean()
+        opt.zero_grad(set_to_none=True)
+        loss.backward()
+        opt.step()
+        if step % 1000 == 0 or step == a.steps - 1:
+            item = dict(step=step, loss=float(loss.detach()), minutes=round((time.time() - t0) / 60, 2))
+            log.append(item)
+            print('PAIR SUPPORT', item, flush=True)
+    support.eval()
+
+    def costs(d, swap):
+        Sd = M.canonical(d['before'])
+        kn = known_entities(Sd) & (d['before_known'] if 'before_known' in d else True)
+        s = torch.as_tensor(M.sc.norm(Sd), dtype=torch.float32, device=a.device)
+        e = torch.as_tensor(d['e'], dtype=torch.long, device=a.device)
+        x = torch.as_tensor(M.sc.norm(d['target']), dtype=torch.float32, device=a.device)
+        k_ = torch.as_tensor(kn, device=a.device)
+        if swap:                                                                 # one other entity from a random event
+            g = np.random.default_rng(1)
+            oth = g.integers(0, M.K - 1, len(d['e'])); oth += oth >= d['e']
+            dn = g.integers(0, len(d['e']), len(d['e']))
+            r_ = torch.arange(len(d['e']), device=a.device)
+            o_, n_ = torch.as_tensor(oth, device=a.device), torch.as_tensor(dn, device=a.device)
+            s = s.clone(); s[r_, o_] = s[n_, o_]
+            k_ = k_.clone(); k_[r_, o_] = k_[n_, o_]
+        with torch.no_grad():
+            return np.concatenate([pair_cost(torch, pair_logits(support, torch, s[i:i + 2048], e[i:i + 2048], x[i:i + 2048]), k_[i:i + 2048]).cpu().numpy()
+                                   for i in range(0, len(d['e']), 2048)])
+
+    cg, cs = costs(va, False), costs(va, True)
+    report = dict(kind='pair', training_events=len(E), validation_events=len(va['e']), steps=a.steps, seed=a.seed, width=a.width, lr=a.lr,
+                  val_cost_genuine_q50_90_99=np.round(np.quantile(cg, [.5, .9, .99]), 3).tolist(),
+                  val_cost_one_swapped_q50_90_99=np.round(np.quantile(cs, [.5, .9, .99]), 3).tolist(), log=log)
+    print({k: v for k, v in report.items() if k != 'log'}, flush=True)
+    parent_hash = hashlib.sha256(a.model.read_bytes()).hexdigest()
+    ck['event_support'] = dict(kind='pair', weights=support.state_dict(), width=a.width, thresholds=[0.0] * M.K,
+                               training_definition='pairwise NCE: genuine entity state vs the same entity in another event',
+                               parent_sha256=parent_hash, steps=a.steps, seed=a.seed)
+    a.out.mkdir(parents=True, exist_ok=True)
+    torch.save(ck, a.out / 'model_support.pt')
+    save_json(a.out / 'support_report.json', dict(report, parent_sha256=parent_hash))
 
 
 if __name__ == '__main__':

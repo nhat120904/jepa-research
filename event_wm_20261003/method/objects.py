@@ -293,8 +293,11 @@ def discover(a, src, frames, P, rep):
     for i in ch_idx:
         cand_ch |= unpack(dmasks[i])
     rep["change_instances"] = {"instances": int(len(DR)), "recurring_centroids": int(len(ch_idx)), "pixels": int(cand_ch.sum()),
-                               "pixels_new": int((cand_ch & ~cand).sum())}
-    cand |= cand_ch
+                               "pixels_new": int((cand_ch & ~cand).sum()), "used": bool(a.change_places)}
+    # off by default (2026-10-10): (iii) added 0-7 place pixels on puzzle-3x3 / 4x4 / 4x5 (no measurable gain), but 62 on
+    # scene, where they joined the window place (44 -> 105 px; privileged |corr| .98 -> .92, window acted .94 -> .86)
+    if a.change_places:
+        cand |= cand_ch
     # PLACES (ii): pixels changed in more than half of their free observations (no dominant appearance: a drawer, a window)
     nchg = np.zeros((64, 64)); nfree = np.zeros((64, 64))
     for i in range(nF):
@@ -408,6 +411,63 @@ def discover(a, src, frames, P, rep):
     return movers + places, place_px, w
 
 
+def grow_fragments(src, frames, idents, w, place_px, rep, P):
+    """FRAGMENTS (F1b, 2026-10-11): a location place below half the median place area -- a light under the robot's resting arm
+    that raw frames and views both show only by an edge (puzzle-3x3 top-middle light: 2 px, PRIVILEGED |corr| .10; the light's
+    other pixels are agent-free in 2-50% of frames) -- grows by the pixels within one object width whose colour, in frames
+    where both are agent-free, follows its own (|corr| of their chromaticity along the fragment's main axis of colour change
+    with the fragment's >= the 2-means split of the window's correlations, at least .5; intensity barely changes between a
+    light's states: .12-.42). Its per-pixel weights are recomputed as in discover(). -> place_px."""
+    from utils import two_means_threshold
+    locs = [j for j, d in enumerate(idents) if d["anchor"] == "location"]
+    if len(locs) < 3:
+        return place_px
+    areas = np.array([int(idents[j]["disc"].sum()) for j in locs]); med = float(np.median(areas))
+    small = [j for j, ar in zip(locs, areas) if ar < 0.5 * med]
+    rep["fragments_grown"] = []
+    if not small:
+        return place_px
+    fs = frames[:: max(1, len(frames) // 8000)]
+    X, AG = src.get(fs)
+    # the pixel-level agent (refine_agent, as the tables read it): the dilated token mask left the 3x3 fragment agent-free in
+    # 28 of 8040 frames, the refined one in ~5%
+    AG = np.stack([refine_agent(X[i], AG[i], P)[0] for i in range(len(X))])
+    Xf = X.astype(np.float32)
+    CH = (Xf / (Xf.sum(-1, keepdims=True) + 1.0))[..., :2]                      # chromaticity (r, g): states differ in colour
+    for j in small:
+        d = idents[j]; D_ = d["disc"]; cu, cv = d["centre"]
+        win = (np.hypot(UU - cu, VV - cv) <= w) & ~D_ & ~place_px
+        ok_d = ~AG[:, D_].any(1)
+        if ok_d.sum() < 50:
+            rep["fragments_grown"].append({"identity": int(j), "skipped": "agent-free frames", "n": int(ok_d.sum()), "frames": int(len(fs))})
+            continue
+        cc = CH[:, D_].mean(1)                                                   # (n, 2) the fragment's colour
+        u_ = np.linalg.svd(cc[ok_d] - cc[ok_d].mean(0), full_matrices=False)[2][0]   # its main axis of change
+        core = cc @ u_
+        ys, xs = np.nonzero(win)
+        cs = np.zeros(len(ys))
+        for n_, (y, x) in enumerate(zip(ys, xs)):
+            okp = ok_d & ~AG[:, y, x]
+            sig = CH[okp, y, x] @ u_
+            if okp.sum() >= 50 and core[okp].std() > 0 and sig.std() > 0:
+                cs[n_] = abs(np.corrcoef(core[okp], sig)[0, 1])
+        if not len(cs) or cs.max() < 0.5:
+            rep["fragments_grown"].append({"identity": int(j), "skipped": "no pixel follows it", "max_corr": round(float(cs.max()) if len(cs) else 0.0, 3)})
+            continue
+        thr = max(0.5, two_means_threshold(cs)[0]) if len(cs) >= 2 else 0.5
+        add = np.zeros((64, 64), bool); add[ys[cs >= thr], xs[cs >= thr]] = True
+        new = D_ | add
+        px = X[:, new].astype(np.float64) / 255.0; ok = ~AG[:, new]
+        c = np.maximum(ok.sum(0), 1)[:, None]
+        s1 = (px * ok[..., None]).sum(0); s2 = (px ** 2 * ok[..., None]).sum(0)
+        wv = np.clip(s2 / c - (s1 / c) ** 2, 0, None).sum(-1)
+        rep["fragments_grown"].append({"identity": int(j), "area": [int(D_.sum()), int(new.sum())], "threshold": round(float(thr), 3),
+                                       "centre": [np.round(d["centre"], 1).tolist(), [round(float(UU[new].mean()), 1), round(float(VV[new].mean()), 1)]]})
+        d["disc"], d["centre"], d["w"] = new, np.array([UU[new].mean(), VV[new].mean()], np.float64), (wv if wv.sum() > 0 else np.ones_like(wv))
+        place_px = place_px | new
+    return place_px
+
+
 def place_tokens(idents, tokens):
     """indices of the token entities (memory_entities.py, 16 x 16 grid of 4 px tokens) that overlap each place."""
     out = {}
@@ -461,6 +521,36 @@ def reader_context(idents, P):
             "tch": (P["trgb"] / (P["trgb"].sum(-1, keepdims=True) + 1.0))[..., :2]}
 
 
+def read_partial_movers(x, ag, P, idents, place_px, ctx, lo=0.25):
+    """PARTIAL readings of movers in one frame: the largest component of a mover's colour holds more than lo but at most half
+    of its median rest area (read_frame drops those: less than half visible). Used on the goal image only, where an object
+    under another in a stack shows a side face (cube-triple 3-stack goals: 11-16 px of 29). -> {identity: (u, v)}"""
+    out = {}
+    mov, protos, tch = ctx["mov"], ctx["protos"], ctx["tch"]
+    _, ch = refine_agent(x, ag, P)
+    if not mov or not ch.any():
+        return out
+    lab, n = ndimage.label(ndimage.binary_dilation(ch, EIGHT), structure=EIGHT)
+    lab = np.where(ch, lab, 0)
+    mv = ch & ~np.isin(lab, np.unique(lab[place_px & (lab > 0)]))
+    if not mv.any():
+        return out
+    px = x[mv].astype(np.float32)
+    c = (px / (px.sum(-1, keepdims=True) + 1.0))[:, :2]
+    d = np.linalg.norm(c[:, None] - protos[None], axis=-1)
+    own, ok = d.argmin(1), d.min(1) < np.linalg.norm(c - tch[mv], axis=-1)
+    for a_i, j in enumerate(mov):
+        m = np.zeros((64, 64), bool); m[mv] = ok & (own == a_i)
+        if not m.any():
+            continue
+        l2, _ = ndimage.label(ndimage.binary_dilation(m, EIGHT), structure=EIGHT)
+        l2 = np.where(m, l2, 0)
+        mm = l2 == (np.bincount(l2.ravel())[1:].argmax() + 1)
+        if lo * idents[j]["area"] < mm.sum() and 2 * mm.sum() <= idents[j]["area"]:
+            out[j] = (float(UU[mm].mean()), float(VV[mm].mean()))
+    return out
+
+
 def read_frame(x, ag, P, idents, place_px, ctx, rd=None, dg=None, contact=None):
     """one frame x (64, 64, 3) uint8 and its unobserved pixels ag (the dilated segmenter tokens of the raw frame, or the
     hidden tokens of its view, view.py) -> pos (K, 2), app (K, 3), area (K,) (0 = unobserved), refined agent mask. rd / dg:
@@ -471,12 +561,15 @@ def read_frame(x, ag, P, idents, place_px, ctx, rd=None, dg=None, contact=None):
     pos = np.zeros((K, 2), np.float32); app = np.zeros((K, 3), np.float32); area = np.zeros(K, np.int16)
     mov, protos, tch = ctx["mov"], ctx["protos"], ctx["tch"]
     ag_r, ch = refine_agent(x, ag, P)                                           # objects seen inside the mask count as seen
-    if mov and ch.any():
-        lab, n = ndimage.label(ndimage.binary_dilation(ch, EIGHT), structure=EIGHT)
-        lab = np.where(ch, lab, 0)
-        mv = ch & ~np.isin(lab, np.unique(lab[place_px & (lab > 0)]))           # instances touching a place belong to it
+    # MOVERS are read on the raw frame (agent colours through the transparent arm, as without views): a view exemplar shows
+    # what recurs at a token, and a moving object never recurs exactly (cube-triple with view-read movers: visible .8 -> .6)
+    xm, chm = (contact[0], refine_agent(contact[0], contact[1], P)[1]) if contact is not None else (x, ch)
+    if mov and chm.any():
+        lab, n = ndimage.label(ndimage.binary_dilation(chm, EIGHT), structure=EIGHT)
+        lab = np.where(chm, lab, 0)
+        mv = chm & ~np.isin(lab, np.unique(lab[place_px & (lab > 0)]))          # instances touching a place belong to it
         if mv.any():
-            px = x[mv].astype(np.float32)
+            px = xm[mv].astype(np.float32)
             c = (px / (px.sum(-1, keepdims=True) + 1.0))[:, :2]
             d = np.linalg.norm(c[:, None] - protos[None], axis=-1)
             own = d.argmin(1)
@@ -613,27 +706,80 @@ def main():
     ap.add_argument("--view", type=Path, default=None,
                     help="view.py output (view_table.npz): every rule runs on views (agent removed, view.py) instead of raw frames")
     ap.add_argument("--see", type=Path, default=None, help="dir with see_codes_{split}.npy / see_prob_{split}.npy (default --tokens)")
+    ap.add_argument("--change-places", action="store_true", help="PLACES (iii): change instances join the place candidates (ablation)")
+    ap.add_argument("--keep-fragments", action="store_true",
+                    help="ablation: keep raw places that are fragments of a view place (before 2026-10-11)")
+    ap.add_argument("--view-discovery", action="store_true",
+                    help="with --view: discover every object on the views (before 2026-10-10) instead of raw frames + the views' discrete places")
     a = ap.parse_args()
     t0 = time.time()
     a.out.mkdir(parents=True, exist_ok=True)
     rep = {"run": str(a.run), "cache": str(a.cache), "levels": a.levels, "view": str(a.view) if a.view else None}
     view = (str(a.view / "view_table.npz"), str(a.see or a.tokens)) if a.view else None
-    src = source(a.cache, a.run, "train", view)
+    src = source(a.cache, a.run, "train", view)                                  # reading source (views: places under the agent)
+    # DISCOVERY on raw frames: views read places under the agent and add only the DISCRETE places that raw frames never show
+    # agent-free (2026-10-10: discovery on views split scene objects, 6 identities for 5 with the drawer 88 -> 246 px, and
+    # lowered cube visibility; raw discovery = v1 on cube-triple / scene, the views add the small boards' hidden lights)
+    src_d = source(a.cache, a.run, "train", None) if (view and not a.view_discovery) else src
     st, en = episode_bounds(a.cache, "train", a.discover_episodes)
     frames = np.concatenate([np.arange(s0, e0 + 1, a.stride) for s0, e0 in zip(st, en)])
-    tkey, trgb, seen = typical_colours(src, frames, a.levels)
+    tkey, trgb, seen = typical_colours(src_d, frames, a.levels)
     samp = np.sort(frames[np.random.default_rng(0).permutation(len(frames))[:3000]])
-    xs, ags = src.get(samp)
+    xs, ags = src_d.get(samp)
     d_, c_ = material(xs, quant_key(xs, a.levels), tkey[None], trgb[None])
     sel = d_ & ~ags
     thc, Dc = split2(np.log(c_[sel] + 1e-5), np.log(0.03))
     P = {"L": a.levels, "tkey": tkey, "trgb": trgb, "tau_c": float(np.exp(thc))}
     rep["material"] = {"tau_chroma": P["tau_c"], "chroma_D": Dc, "pixels_seen_free": seen}
     print(json.dumps(rep), flush=True)
-    idents, place_px, w = discover(a, src, frames, P, rep)
+    idents, place_px, w = discover(a, src_d, frames, P, rep)
+    raw_places = [j for j, d in enumerate(idents) if d["anchor"] == "location"]
+    add_idx = []
+    if src_d is not src:                                                          # discrete places seen only through the views
+        rep_v = {}
+        idv, _, _ = discover(a, src, frames, dict(P), rep_v)
+        # a raw place that is a FRAGMENT of a place the views see whole (a view place within w of it with more than twice its
+        # area) takes the view's pixels: a light under the agent's rest pose is seen agent-free only in pieces on raw frames
+        # (2026-10-11 puzzle-4x5 light 3: 2 raw px, one of them background, vs 8 in the view; state contrast .17 vs ~.27 for the
+        # other lights, readings that flickered with the arm, the most timeouts of the learned loop). On the five dev boards
+        # only that place changes.
+        frag = []
+        vloc = [d for d in idv if d["anchor"] == "location"]
+        for j in (raw_places if (vloc and not a.keep_fragments) else []):
+            dd = np.array([np.linalg.norm(d["centre"] - idents[j]["centre"]) for d in vloc]); i = int(dd.argmin())
+            if dd[i] <= w and vloc[i]["disc"].sum() > 2 * idents[j]["disc"].sum():
+                frag.append({"raw": np.round(idents[j]["centre"], 1).tolist(), "raw_area": int(idents[j]["disc"].sum()),
+                             "view": np.round(vloc[i]["centre"], 1).tolist(), "view_area": int(vloc[i]["disc"].sum())})
+                # the whole view place (disc, centre and its per-pixel weights w: replacing only disc and centre left 2
+                # weights for 8 pixels, a crash in see_lookup)
+                idents[j] = {k_: (v_.copy() if isinstance(v_, np.ndarray) else v_) for k_, v_ in vloc[i].items()}
+        if frag:
+            place_px = np.zeros((64, 64), bool)
+            for d in idents:
+                if d["anchor"] == "location":
+                    place_px |= d["disc"]
+        rc = [idents[j]["centre"] for j in raw_places]
+        cand = [d for d in idv if d["anchor"] == "location" and all(np.linalg.norm(d["centre"] - c) > w for c in rc)]
+        st_v = place_states(a, src, frames, P, cand) if cand else {}
+        added = [d for j_, d in enumerate(cand) if st_v.get(j_, {}).get("snapped")]
+        for d in added:
+            d.pop("snap", None)
+            place_px = place_px | d["disc"]
+        add_idx = list(range(len(idents), len(idents) + len(added)))
+        idents = idents + added
+        rep["view_places"] = {"fragments_refined": frag,
+                              "candidates": [np.round(d["centre"], 1).tolist() for d in cand], "added": [np.round(d["centre"], 1).tolist() for d in added],
+                              "view_discovery": {k: rep_v[k] for k in ("places",) if k in rep_v}}
+    if not a.keep_fragments:                                                     # F1b: grow places seen only by an edge
+        place_px = grow_fragments(src_d, frames, idents, w, place_px, rep, P)
     if a.tokens is not None:
         rep["see_lookup_states"] = see_lookup(a, src, frames, P, idents)
-    rep["place_states"] = place_states(a, src, frames, P, idents)
+    # snapping from agent-free raw readings (exact) for raw places, from the views for the places only the views show
+    pst = place_states(a, src_d, frames, P, [idents[j] for j in raw_places])
+    rep["place_states"] = {int(raw_places[k]): v for k, v in pst.items()}
+    if add_idx:
+        pst_v = place_states(a, src, frames, P, [idents[j] for j in add_idx])
+        rep["place_states"].update({int(add_idx[k]): v for k, v in pst_v.items()})
     K = len(idents)
     rep["identities"] = [{"anchor": d["anchor"], "centre": None if d["anchor"] == "mover" else np.round(d["centre"], 2).tolist(),
                           "proto": None if d["anchor"] != "mover" else np.round(d["proto"], 4).tolist()} for d in idents]

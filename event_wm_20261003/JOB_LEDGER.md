@@ -1505,3 +1505,686 @@ All local CPU (no GPU stage yet), dev VAL, PRIVILEGED scoring only where stated;
 - 2026-10-10 07:53-08:16 EFFECTOR v3 WORKS (`method/effector3.py`, offline, PRIVILEGED scoring; `method_pl/effector3`): at true press frames the nearest discovered light is the pressed one 1.0 (3x3, offsets -4 / -2) and 1.0 (4x4, offsets -2 / 0); distance to the pressed light p50 1.7 / 1.4 px, p90 3.1 / 2.0 px. Acted at the event contact moment (presses in one core; effector point at core0, nearest identity among ALL identities): 3x3 .905, 4x4 .969 (core0 + 2: .889 / .992), vs the rule .582 / .688 (restricting to identities not known to stay hurts, .67 / .83: the lagged pressed light reads "unchanged"). Delta-executor L0 (`method_pl/skill_delta`, 4x4, 40k steps, val chunk loss .567, condition sensitivity .35 < target .6) in the oracle-WM loop with grace: 0/30 -- it presses a neighbour of the planned light (planned 9 -> 13, 4 -> 9, 11 -> 6) and takes 32-190 steps per event; training Deltas often lack the lagged pressed light, so the cross is ambiguous. `events_objects.py --effector` now reads effector3 track files; running: effector v3 on 4x5, then events with --effector (identities under the effector unobserved; acted = nearest the effector) for 3x3 / 4x4 / 4x5 + content checks.
 - 2026-10-10 08:16-08:45 effector v3 on dev 4x5: nearest light at true press frames 1.0 (offsets -4 / -2), .996 (0), distance p50 1.5-1.7 px; acted at core0 among all identities .997 (core0 - 2: 1.0). First integration `events_objects.py --effector` (`method_pl/obj_events_eff`; acted among identities not known to stay; effector-clear radius thr_pos / 2): acted .569 / .703 / .837 of presses (3x3 / 4x4 / 4x5), events per episode unchanged (48.9 / 44.1 / 34.4): the lagged pressed light still reads "unchanged" and is excluded. Second integration (`--effector-lag L`): an entity the effector came within one object width of (last-seen position) is unobserved for L frames afterwards (L = p90 of within-event arrival spreads of the first pass), acted = the entity nearest the effector at the contact moment among ALL entities -> `method_pl/obj_events_eff2`, running with content checks.
 - 2026-10-10 09:05 LEARNED ATTRIBUTION (no privileged input; PRIVILEGED scoring only): `events_objects.py --effector method_pl/effector3 --effector-lag L` (L = 23 / 21 / 19 for 4x4 / 4x5 / 3x3, the p90 rule) -> `method_pl/obj_events_eff2`. Acted = pressed (presses in one event core / of all presses): 4x5 .996 / .952 (rule on the same views .883 / .829; bottom row 14 / 15 / 17 / 19 now .99 / 1.0 / 1.0 / .98 from .14 / .41 / .26 / .30), 4x4 .959 / .812 (rule .688 / .556; remaining errors at the corners under the arm base, button 0 .59, 3 .62), 3x3 .859 / .741 (rule .582 / .464; button 1 not discovered = 10% of presses). Events per episode 33.4 / 39.2 / 39.5 (31 presses; was 34.4 / 44.4 / 49.4); privileged recall .995-.998, precision 1.0. Cost: target-known share of presses .63 / .30 / .33 (the pressed light is unobserved for L frames after the visit and the next press often comes first). Running: rung R1c = WM / support / cost-to-go on these learned-label events + scripted (PRIVILEGED) press arm + grace, 4x5 then 4x4.
+- 2026-10-10 10:53 RESULT RUNG R1c, dev puzzle-4x5. High level on LEARNED labels, scripted PRIVILEGED press arm + grace, seed 0, 30 episodes (`obj_loop_scripted_eff2_seed0`).
+  - Pipeline: `method_pl/obj_events_eff2` -> WM `obj_model_eff2` (VAL event-exact .838, side effects .978, after known .979) -> support -> cost-to-go (99 min).
+  - Result: 8/30 = 27% (task 1 6/6, task 2 2/6, tasks 3-5 0/18). R1a (PRIVILEGED press-matched labels on the old events) gave 13%, or 10% with grace. OGBench pixel best is 17%.
+  - All 22 failures time out at 1000 steps after 5-13 replans.
+  - Per event (836 events; PRIVILEGED scoring of 806 consecutive pairs): outcome as predicted .76; acted light changed .98; WM change set = simulator flips .66.
+  - Error (i), perception: light 2 flips not read in 141 events, lights 3 and 7 in 18 each, never a false change.
+  - Error (ii), WM omits neighbours, depending on state:
+    - press 14 -> {13, 14} in 74 of 139 (omits 9 and 19);
+    - press 1 omits 2 in 70 of 115;
+    - press 17 omits 16 / 18 in ~55 of 100.
+  - Cause of (ii) in the TRAIN events:
+    - Lights 14 / 15 / 17 / 19 get 2233-2620 events each, against ~1450 for every other light.
+    - For acted 14, 1003 of 2620 events read 9 and 19 unchanged. Their known change set is empty (559) or only {14} (427), and their length is p50 1 frame (other 14-events: 2).
+    - Light 17 is the same (540 of 2452).
+    - Interpretation: late re-reads after the lag shadow, and changes of entities unknown on one side, become one-frame events, attributed to the light nearest the effector.
+  - Fix candidates:
+    - Drop events with an empty known change set from WM / support / cost-to-go training.
+    - Merge an event whose only change is the late re-read of an entity shadowed in the previous event into that event (this fills its after-state).
+  - Running next: 4x4 R1c (cost-to-go since 10:58), then the fully learned 4x4 loop. The 4x4 learned-label WM is weaker offline than the oracle-label one: event-exact .621 vs .858, side effects .884 vs .961, 1193 vs 1925 VAL events.
+- 2026-10-10 11:30 GENERALITY CHECK queued (user question: are the view / objects rules fitted to the puzzles?).
+  - v1 event attribution (rule, raw frames, outputs of 10-08/09; PRIVILEGED scoring with `scratchpad/ev_eval_cs.py`):
+    - cube-triple: interactions in one event core .728, acted right .875, known .982.
+    - scene: one core .679, acted right .776, known .872; the scene cube is worst (.239 / .541 / .430).
+  - Arms, all scored by `scratchpad/cs_compare.py`:
+    - (B) the current objects.py / events_objects.py on raw frames (`method_pl/objects_raw`, `obj_events_raw`). CPU, running now; it checks that the puzzle-time code changes did not move cube / scene.
+    - (C) partial-label SeeThrough + views + objects --view + events. Same code and settings as the puzzles.
+    - (D) C + effector3 + lag shadow (`obj_events_eff2`).
+  - C and D need the GPU. They start after the fully learned 4x4 chain (`scratchpad/cs_v2_chain.ps1`).
+- 2026-10-10 12:09 RESULT RUNG R1c, puzzle-4x4. LEARNED labels (`obj_events_eff2`) -> WM / support / cost-to-go (h 68 min); scripted PRIVILEGED press arm + grace; seed 0, 30 episodes.
+  - Result: 18/30 = 60% (tasks 5 / 6 / 1 / 4 / 2 of 6). R1a with PRIVILEGED labels on the same seed gave 21/30; OGBench pixel HIQL gives 60%.
+  - The 12 failures are timeouts. Events per episode 9.8; outcome as predicted .58; WM change set = simulator flips .34.
+  - Perception misses (lights flipped but not read): lights 1 (60), 2 (44), 6 (21), 11 (18). These are top-row and centre lights near the arm base.
+- 2026-10-10 12:15 EVENT DATA DEFECT, all boards (TRAIN `obj_events_eff2`, PRIVILEGED scoring on VAL).
+  - Share of events with an EMPTY known change set: 3x3 .160, 4x4 .262, 4x5 .147. They concentrate on a few lights (4x4: 7 / 11 / 13 at .40-.48; 4x5: 14 / 15 / 17 / 19 at .30-.45), and those lights get 1.3-2x the median event count.
+  - Among empty VAL events (PRIVILEGED button states in the core +-2 frames):
+    - 4x5: 55% have no flip at all (spurious); 44% are real presses of the acted light whose changes were read stale.
+    - 4x4: 47% spurious; 52% real presses read stale.
+  - Hypothesis: lights under the arm body read through the views (partial-label SeeThrough accepts the old state while covered) count as KNOWN but stale at event end, and the late read becomes a separate event attributed to the light nearest the effector.
+  - Fix to test, general and with no per-board rule:
+    - (1) Events with an empty known change set do not train WM / support / cost-to-go.
+    - (2) An entity whose reading came through SeeThrough (covered) after the contact is not KNOWN in the after-state until it has been seen agent-free, or until L frames have passed.
+    - (3) A late read becomes the previous event's after-state, not a new event.
+- 2026-10-10 12:19 GENERALITY CONTROL (B): the current objects.py / events_objects.py on raw frames, cube-triple and scene. CPU; PRIVILEGED scoring `scratchpad/cs_compare.py`.
+  - cube-triple: IDENTICAL to the 10-08/09 outputs on every number (3 cubes, 1.5-1.9 cm; events 6.35/ep; one core .728; acted .875; known .982). The puzzle-time code changes do not touch cube.
+  - scene: one silent regression, in the window.
+    - privileged |corr| .981 -> .915; visible .838 -> .771.
+    - window acted .938 -> .855; overall acted .776 -> .759; one core .679 -> .650.
+  - Cause: PLACES (iii) (change instances, added 10-09 for puzzle-3x3, no measurable gain there). On puzzles it adds 0-7 place pixels; on scene it adds 62, which join the window place (44 -> 105 px, centre (59.8, 18.6) -> (58.3, 28.1)).
+  - Change: `objects.py` PLACES (iii) is now OFF by default (`--change-places` keeps it as an ablation; the report records "used").
+    - Scene outputs with (iii) are kept as `method_pl/objects_raw_iii` / `obj_events_raw_iii`; control B is re-running on scene without (iii).
+    - The puzzle `method_pl/objects` (built with (iii): +4 px on 3x3, 0 on 4x4, +7 on 4x5) must be rebuilt with the final code before frozen runs.
+- 2026-10-10 12:26 control B on scene re-run with PLACES (iii) OFF (`method_pl/objects_raw`, `obj_events_raw`): IDENTICAL to the 10-08/09 outputs on every number (window |corr| .981, acted .938; overall acted .776). The current object / event code without (iii) reproduces v1 exactly on cube-triple and scene. Rule from now on: any change to a perception rule is re-checked on all three families (puzzle, cube, scene) before it is kept.
+- 2026-10-10 12:39 RESULT FULLY LEARNED v2 loop, puzzle-4x4. No privileged input; seed 0, 30 episodes, 500 steps, exec 8, grace (`method_pl/obj_loop_learned_seed0`).
+  - Components: WM `obj_model_eff2` + executor `skill_delta_pp` (Delta maps + press-point channel; 40k steps, 27.7 min, val chunk .555, condition sensitivity .37).
+  - Result: 0/30. First plans found 30/30 (6 events); 3.3 events per episode at p50 83 steps per event.
+  - Planned light pressed in 26% of events (PRIVILEGED scoring), another light or several in 53%, nothing in 21%.
+  - The WM's predicted change set (the executor's Delta goal) is wrong in 84 of 99 events.
+    - With a wrong goal: planned light pressed 20 of 84.
+    - With the true cross as goal: 6 of 15.
+  - Diagnosis:
+    - (1) Delta conditioning ties the executor to WM accuracy; the 4x4 eff2 WM is poor (event-exact .62).
+    - (2) The executor is weak even with right goals (n = 15).
+    - The scripted arm uses only the planned light's position and reaches 60% on the same WM.
+  - Next, after the cube / scene check (GPU): the v1 single-frame spatial skill (`skill.py --cond spatial --hist-gap 0`: planned entity + target; it reached .865 exact presses on 4x5 with rule labels), trained on effector-attributed events, in the same loop.
+- 2026-10-10 12:52 EVENTS v3 (`method_pl/obj_events_eff3`). Offline; PRIVILEGED scoring `scratchpad/heldout_event_content2.py` + `ev_stats.py`.
+  - Change: `events_objects.transition(obs=)` times a change only from observed frames (outside the effector shadow).
+  - Old cause: a reading in the shadow is the old state read late, so the pressed light's change was timed where its reading caught up. That made a separate one-frame event; on 4x5 it explained 99.6% of the events with no simulator flip in their core.
+  - Results, eff2 -> eff3:
+
+    | Measure | 4x5 | 4x4 | 3x3 |
+    |---|---|---|---|
+    | VAL events / episode (presses ~30) | 33.4 -> 29.5 | 39.2 -> 33.4 | 39.5 -> 34.8 |
+    | Spurious (no flip in core) | .085 -> .001 | .299 -> .208 | .308 -> .221 |
+    | Presses in exactly one core | .956 -> .995 | .846 -> .853 | .862 -> .860 |
+    | Acted right (of all presses) | .952 -> .990 | .812 -> .814 | .741 -> .742 |
+    | Known changes right | .940 -> .976 | .701 -> .696 | .618 -> .588 |
+    | Target known | .626 -> .654 | .299 -> .235 | .331 -> .363 |
+    | Empty known change set | .145 -> .081 | .255 -> .263 | .148 -> .133 |
+
+  - 4x5: per-light TRAIN event counts are now uniform (1366-1538; before, up to 2620).
+  - Remaining spurious events on the small boards: long change windows of lights covered by the arm BODY (outside the effector shadow; 4x4 lights 7 / 11 / 10, 3x3 identity 1). The contact moment (latest departure) then falls long before the press, and corner presses get the wrong acted label (4x4 buttons 0 / 3: .60 / .43).
+  - Next test: `--contact closest` (contact = the effector's closest approach to the changed entities between the latest departure and the first arrival) -> `obj_events_eff4`, slotted between the cube / scene chain's GPU stages (`scratchpad/effev4_chain.ps1`).
+- 2026-10-10 13:05 HIGH-LEVEL DIAGNOSTIC on the R1c loops (PRIVILEGED scoring only).
+  - Method: minimum number of presses from the simulator start / goal buttons (GF(2) solve, minimal weight over the null space), against the planner's first-plan length.
+  - 4x5, task 1-5:
+    - optimal 4 / 10 / 14 / 16 / 20;
+    - first plan 6 / 7 / 10 / 7 / 7;
+    - events executed 6 / 34 / 32 / 35 / 39;
+    - replans 1 / 10 / 8 / 9 / 12;
+    - success 1.0 / .33 / 0 / 0 / 0.
+  - 4x4:
+    - optimal 4 / 6 / 6 / 6 / 7;
+    - first plan 6 / 4 / 6 / 6 / 5;
+    - success .83 / 1.0 / .17 / .67 / .33.
+  - Reading: on long tasks the eff2 WM's plans are SHORTER than any real solution (4x5 task 5: 7 vs 20). The model has shortcuts (wrong side effects), so execution contradicts it, and the loop replans until the 1000-step budget runs out.
+  - Steps per executed event p50: 30.5 (4x5), 35.7 (4x4). A 20-press task needs about 610 steps even with a perfect plan, so long 4x5 tasks leave room for very few surprises.
+  - Next decisive test: R1c on 4x5 with the WM on `obj_events_eff3` (clean events). The checks are first-plan length ~ optimal and in-loop WM accuracy.
+- 2026-10-10 13:46 GENERALITY CHECK RESULT (C / D arms): the v2 perception developed on puzzles does NOT transfer to cube-triple / scene. Same code and settings as the puzzles; PRIVILEGED scoring `scratchpad/cs_compare.py`. Note: cube / scene `obj_events*` here already include the `transition(obs=)` fix (eff3 code).
+  - cube-triple:
+    - views: cube fit improves 1.5-1.9 -> 1.29-1.32 cm, but visibility drops .75-.88 -> .61-.64; one core .728 -> .625; acted .875 -> .830; known .982 -> .950.
+    - + effector lag: L = 88 frames (the p90 arrival spread is the carry time, not a reading lag); acted .875 -> .522; one core .586.
+  - scene:
+    - views: 10 identities instead of 5 (cube x3, window x3, drawer x2; object width 4.65 vs 5.86); events / ep 51.7 vs 12.5; precision .878; acted .776 -> .220.
+    - + effector (L = 5): acted .593.
+  - Causes:
+    - (1) View exemplars assume exact recurrence. Weighted exemplar purity is scene .845 (13.5% of key mass below .5) against puzzles / cube .974-.978 (1.4-1.8%): sliding window / drawer parts.
+    - (2) The effector3 point carries an environment-dependent offset from the contact (PRIVILEGED):
+      - scene button presses: 6.8 px p50, p90 7.7, never within 4 px;
+      - cube grasps: 14.8 px p50, p90 22; the moved cube is the nearest cube only .76 of the time;
+      - puzzles: 1.4-1.7 px.
+    - (3) Lag L = p90 within-event arrival spread mixes reading lag with interaction duration.
+  - Needed for one general formulation, then a re-check on all three families against v1:
+    - (a) views only where the exemplar recurs exactly (purity >= 1/2, the majority rule used elsewhere), hidden otherwise;
+    - (b) a data-derived contact-offset calibration of the effector point (V2_PLAN 3.3);
+    - (c) L from the reading lag after the effector leaves, not from event durations.
+  - Also, eff5 (`--contact closest`, cores unchanged): 4x4 acted .814 -> .822, 3x3 .742 -> .734. Not adopted.
+  - GPU queue started (`scratchpad/next_gpu_chain.ps1`): spatial single-frame skill on 4x4 `obj_events_eff3` + learned loops (exec 4 / 8), then rung R1c on 4x5 with `obj_events_eff3`.
+- 2026-10-10 14:00 GENERAL FIXES for the v2 perception (code; tests 13/13).
+  - (a) `view.py --min-purity .5` (default): an exemplar is kept only when it is MORE than half of its key's agent-free patches (exact recurrence); otherwise the tokens stay hidden.
+  - (b) New `method/effector_calib.py`. From a first `--effector` events pass:
+    - OFFSET = median(centroid of the changed entities before the event - effector at t_core0);
+    - LAG = ceil(p90) of (arrival - last frame the calibrated effector was within thr_pos of the entity's NEW rest position).
+    - `events_objects.py --effector-offset DU DV` applies the offset; events npz now store `effector_offset`, `effector_lag`, `t_contact`.
+  - First-pass calibration (no privileged input):
+
+    | Board | Offset (du, dv) | L |
+    |---|---|---|
+    | puzzle 3x3 | (-0.1, +1.6) | 18 |
+    | puzzle 4x4 | (+0.4, +1.3) | 20 |
+    | puzzle 4x5 | (+0.4, -0.6) | 11 |
+    | cube-triple | (-0.4, +19.8) | 20 (was 88) |
+    | scene | (-0.4, +4.1) | 29 |
+
+    - Cube: residual p50 6.1 px after the offset; the PRIVILEGED estimate was (+1.0, +16.1).
+    - Scene: distance p50 20 px before and after; its first pass came from the broken ungated views. It will be recalibrated on gated views.
+  - Running `scratchpad/cs_v21_chain.ps1` (CPU) on scene then cube: view_g -> objects_g -> obj_events_g -> obj_events_g_eff1 -> effector_calib_g -> obj_events_g_eff; scored by cs_compare.py.
+- 2026-10-10 14:25 RESULTS.
+  - (1) EXECUTOR v1-style on 4x4: `skill.py --cond spatial --hist-gap 0` on `obj_events_eff3`; 499k train frames; 24 min; train loss .30, val chunk .62 (overfits).
+    - Learned loop with the eff2 WM: exec 4 1/30, exec 8 0/30 (the scripted arm on the same WM: 18/30).
+    - PRIVILEGED scoring: planned light pressed .41 / .40 (scripted .99), another light .35, nothing .24-.27; steps per event p50 47-74 (scripted 33).
+    - Wrong presses land 1-2 cells away (19 of 36), 3-4 cells away (9), or press several lights (8).
+    - Two executor designs (Delta maps, spatial BC) now fail on 4x4. BC from play data is too imprecise here. The low level is an open problem, not a detail.
+  - (2) v2.1 perception on cube / scene (`scratchpad/cs_v21_chain.ps1`, scored by cs_compare.py). Recalibrated: scene offset (+1.8, +14.1) L 23; cube (-0.2, +19.4) L 17.
+    - cube, gated views + rule acted: acted .902 (v1 .875), but one core .654 (v1 .728), visibility .57-.67 (v1 .75-.88).
+    - cube, + calibrated effector + reading lag: acted .675, 3.9 events / ep (merges).
+    - scene, gated views: 6 identities (5 exist; one duplicate window), 28 events / ep (v1 12.5), acted .544 (buttons .03: the rule fails on gated views).
+    - scene, + effector: acted .596. Buttons .85 / .96 (v1 .81 / .65), window .07, drawer .41, cube .50.
+    - Verdict: still below v1 on cube and scene. The effector attribution helps static presses (puzzle lights, scene buttons) and hurts movers and sliding parts.
+  - Running: rung R1c on 4x5 with `obj_events_eff3` (started 14:17; cost-to-go about 100 min).
+- 2026-10-10 14:40 LOW LEVEL L1 (user decision: image-goal GCIVL + one-event subgoal images). New code; smoke-tested end to end on CPU.
+  - `method/gcivl.py`: OGBench GCIVL for pixel tasks ported to PyTorch.
+    - Value: two heads on an Impala-small encoder of concat(s, g); expectile .9; Polyak .005.
+    - Actor: AWR, alpha 10, fixed-std Gaussian.
+    - Goals: value cur / traj-geometric / random = .2 / .5 / .3; actor uniform future.
+    - Random crop p .5; batch 256; 500 TRAIN episodes in RAM.
+  - `method/subgoal.py`: per discrete place and state, the median of TRAIN frames with the place's own disc agent-free; region = window pixels whose state medians differ beyond their 2-means split; `render()` pastes target states.
+    - 4x4: 14 of 16 places (light 2 under the arm base has too few agent-free frames; light 10 not snapped). Panels look right.
+  - `closed_loop_objects.py --low gcivl --gcivl --subgoals`: one subgoal per event, rendered from the event-start frame with every rendered place in the WM's predicted next state; one action per step.
+  - `method/gcivl_eval.py`: flat baseline (actor on the task goal image, closed-loop seeds).
+  - Queued after the 4x5 rung: `scratchpad/gcivl_chain.ps1` on 4x4 (150k steps, flat eval, planner + GCIVL loop with `obj_model_eff2`, comparable with the scripted 60%).
+  - 4x5 eff3 WM offline (own VAL events): event-exact .862 (eff2 .838; oracle-label .918), side effects .986.
+- 2026-10-10 16:06 RESULT RUNG R1c, puzzle-4x5, CLEAN events (`obj_events_eff3`). WM event-exact .862 -> support -> cost-to-go -> scripted PRIVILEGED press arm + grace; seed 0, 30 episodes (`obj_loop_scripted_eff3_seed0`).
+  - Result: 13/30 = 43% (tasks 5 / 6 / 2 / 0 / 0 of 6). eff2 events gave 27%, R1a oracle labels on the old events 13%, the best published pixel baseline is 17%.
+  - Events 682 (eff2: 836); outcome as predicted .75; WM change set = simulator flips .73 (eff2 .65).
+  - WM misses now sit on the lights near the arm base: (7, 12) 36, (8, 7) 34, (7, 2) 21, (1, 2) 17.
+  - First plans are still shorter than the optimum on long tasks (PRIVILEGED GF(2) optimum):
+    - task 3: 10 vs 14; task 4: 9 vs 16; task 5: 8 vs 20.
+    - The WM keeps shortcuts, and tasks 4-5 time out after 9-10 replans.
+  - Reading: clean events lift the high level a lot. The remaining limit is the WM's state-dependent effects, so a structured, relative-position effect model is the next high-level step.
+- 2026-10-10 17:10 USER DECISION: re-scope the claim to combinatorial manipulation with discrete-state objects (puzzle boards of every size + scene buttons / locks); cube and sliding parts become stated limitations. Next high-level step: a structured world model. Recorded in `method/STATUS.md` section 0.
+- 2026-10-10 17:10 STRUCTURED WORLD MODEL: `world_model.py --wm-arch rel` (default stays `entity`).
+  - Per-entity MLP on [own state, acted entity's state, target, offset to the acted entity in place spacings (RBF per axis + raw + distance), is-acted, is-place]. No identity embedding, no attention across entities.
+  - Data-derived constants: places = entities whose 95th-percentile position spread is <= tol_pos; h_sp = median nearest-neighbour place spacing (4x5: 7.25 px).
+  - CPU check on 4x5 `obj_events_eff3`, 8k steps: VAL event-exact .856 (entity .862), side effects .990 (.986), unchanged .991.
+  - PRIVILEGED cross probe (`scratchpad/wm_cross_probe.py`): press every light from 150 data states and 150 random patterns; the predicted change set must equal the true cross.
+
+    | WM | Data states | Random patterns |
+    |---|---|---|
+    | rel (wm stage) | 1.000 | 1.000 |
+    | entity eff3, wm stage | .973 | .990 |
+    | entity eff3, + event support (model in the 43% loop) | .947 | .980 |
+    | entity eff2 (the 27% loop) | .798 | .949 |
+
+  - Queued after the GCIVL chain (`scratchpad/relwm_chain.ps1`): rung R1c with `--wm-arch rel` on 4x5 (`obj_events_eff3`), then 4x4.
+- 2026-10-10 17:30-17:55 USER: keep the GENERAL claim (no narrowing); the method must work on cube and scene. `STATUS.md` section 0 and the memories were reverted to the general claim.
+  - Plan G1-G4 (each change checked on all three families against v1):
+    - G1 views only where they belong:
+      - discovery on raw frames, plus the discrete places that only the views show (snapped, more than w from raw places);
+      - movers read on raw frames (agent colours), places through purity-gated views;
+      - code: `objects.py` (`--view-discovery` restores the old behaviour);
+    - G2 effector only where it belongs: `events_objects.py --shadow-places-only --acted-among not-staying`;
+    - G3 structured WM for movers: offset to the target position, translation invariance;
+    - G4 subgoal rendering for movers and sliding places.
+  - Running (CPU): `scratchpad/cs_g1_chain.ps1` (scene, cube), then `scratchpad/g12_chain.ps1` (all five boards: view_g -> objects_g1 -> effector pass 1 -> effector_calib -> obj_events_g12; scoring).
+- 2026-10-10 17:33 RESULT GCIVL on puzzle-4x4 (`method_pl/gcivl`: 150k steps, 500 episodes in RAM, 82 min).
+  - Flat baseline (actor on the task goal image, `gcivl_flat_seed0`): 11/30 = 37% (tasks 6 / 0 / 2 / 0 / 3 of 6). OGBench pixel GCIVL with more steps and data: 60%.
+  - Planner + GCIVL loop (`obj_loop_gcivl_seed0`, WM eff2): 1/30. Planned light pressed .36 (with a correct WM goal 18/40), other / several lights .37, nothing .27.
+  - PRIVILEGED single-event harness (`scratchpad/exec_probe.py`, 40 task-start states, random light, same reset seed): exact cross .88 with the REAL subgoal (simulator lights set to the target and rendered with the arm in place), .90 with the SYNTHESIZED subgoal (subgoal.py; all places of the cross rendered in 47.5% of them).
+  - Reading: the executor and the subgoal synthesis work. The loop drew EVERY place from the belief state, so the subgoal differed from the frame wherever a reading was stale.
+  - Fix: `closed_loop_objects.py` draws only the entities the event is predicted to change. Re-running the 4x4 loop on CPU (`obj_loop_gcivl2_seed0`).
+- 2026-10-10 17:45 RESULT planner + GCIVL loop on puzzle-4x4 with changed-places-only subgoals (`obj_loop_gcivl2_seed0`, CPU, WM eff2): 2/30.
+  - Planned light pressed .58 (before the fix .36), nothing .17, wrong .25.
+  - Split by WM goal (PRIVILEGED scoring):
+    - WM change set = true cross: planned light pressed 32 of 36 = .89 (single-event harness .88-.90);
+    - WM wrong: 65 of 131 = .50. The eff2 WM is wrong in 78% of loop events.
+  - The executor is no longer the limit on 4x4; the WM is. The structured WM fixes exactly this (cross probe 1.000).
+  - Queued (`scratchpad/learned_chain.ps1`, after the structured-WM rungs):
+    - FULLY LEARNED 4x4 = `obj_model_eff3rel` + GCIVL;
+    - then GCIVL on 4x5 (train, subgoals, flat baseline, learned loop with `obj_model_eff3rel`).
+- 2026-10-10 17:48 RESULT G1 (`objects_g1` = raw discovery + discrete places only the views show; movers read raw; places through the purity-gated views; events with the rule acted `obj_events_g1`; PRIVILEGED scoring cs_compare.py).
+  - cube-triple: IDENTICAL to v1 on every number (3 cubes 1.5-1.9 cm, visible .75-.88, acted .875, known .982).
+  - scene:
+    - 5 identities (v1 parity; ungated views gave 10, gated 6); window / drawer |corr| .975 / .968, visible .861 / .804 (v1 .838 / .777).
+    - But the buttons read through the views lag: |corr| .953 / .951 (v1 1.0 / .997); 17.3 events / ep (v1 12.5); button acted with the rule .04 / .02 (v1 .81 / .65); overall acted .514 (v1 .776).
+    - This is the reading lag that the effector shadow addresses (G2, running in `scratchpad/g12_chain.ps1`).
+  - G3 started: `world_model.py --wm-arch rel2`, translation invariant (no absolute positions). Inputs: offsets of k from the acted entity AND from its target, plus the event displacement x - e.
+    - It is a new arch name, so the in-flight `rel` rungs are untouched.
+    - CPU check on 4x5 running (cross probe must stay 1.000), then cube.
+- 2026-10-10 18:05 RESULT G1 + G2 on cube / scene (`obj_events_g12`).
+  - Setup: objects_g1; first effector pass -> effector_calib (scene offset (0.15, +7.4) L 12, cube (0.70, +16.1) L 25; PRIVILEGED estimates scene buttons +6.8, cube +16.1) -> events with `--effector-offset`, `--effector-lag L`, `--shadow-places-only`, `--acted-among not-staying`.
+  - scene, against v1:
+    - acted .812 (v1 .776): button0 .939 (.81), button1 .711 (.646), window .945 (.938), drawer .856 (.862), cube .486 (.541);
+    - events / ep 12.88 (12.53); one core .662 (.679); known .852 (.872).
+  - cube-triple: acted .843 (v1 .875; cube1 .803 vs .880); events, recall and one core identical to v1; target known .937 (.98).
+  - Scene is above v1; cube is 3 points below on acted. The puzzle boards are still running in `g12_chain.ps1`.
+  - G3 check: `--wm-arch rel2` on 4x5 keeps the cross probe at 1.000 / 1.000 (data / random states). Comparing entity vs rel2 on cube / scene events now (`scratchpad/wm_arch_cs.sh`, CPU).
+- 2026-10-10 18:45 WORLD-MODEL ARCHITECTURE across families (CPU 8k steps). Planner-style eval `scratchpad/wm_plan_eval.py`: Model.step (acted = x, sub-threshold snap) on canonical VAL states; other known entities.
+  - The raw wm_eval "event_exact" counts the acted entity's own prediction, which planning overwrites, so this eval replaces it.
+
+    | Board / WM | Unchanged kept | Side effects within tol | Changed set exact |
+    |---|---|---|---|
+    | 4x5 entity | .999 | .990 | .967 |
+    | 4x5 rel2 | .999 | .994 | .976 (cross probe 1.000) |
+    | scene entity | .966 | .380 | .852 |
+    | scene rel2 | .930 | .046 | .775 |
+    | cube entity | .858 | .037 | .696 |
+    | cube rel2 | .787 | .170 | .618 |
+
+  - Scene side effects are the LOCKS: button1 -> window appearance 177, button0 -> drawer appearance 160. They are pair-specific, and the window's offset to its button varies as it slides, so the identity-free rel2 misses them.
+  - New `--wm-arch pair`: k and the acted entity only (states, target, offsets in place spacings and image units, displacement) + identity embeddings of k and e with dropout .5. No third entity enters, hence no global-state shortcut. Evaluating on 4x5 / cube / scene (`scratchpad/wm_pair_all.sh`).
+- 2026-10-10 18:55 RESULTS.
+  - (1) `--wm-arch pair`, planner-style eval:
+    - 4x5: changed-set exact .972; cross probe .988 data / 1.000 random (light 1 .80 on data states).
+    - scene: .829 (entity .852, rel2 .775); lock side effects still .044.
+    - cube: .629 (entity .696, rel2 .618).
+    - No structured arch matches entity on cube / scene yet. Next: `pairabs` = pair + absolute positions of k, e and the target (the puzzle shortcut came from third-entity states, not absolute positions). Running `scratchpad/wm_pairabs_all.sh`.
+  - (2) G1 + G2 on puzzle-4x5 (`objects_g1` + `obj_events_g12`; calibrated offset (0.11, -0.86), reading lag 9).
+    - 20 / 20 places, no view places needed.
+    - Acted .988 (eff3 .990); presses in one core .993; known changes right .955 (eff3 .976).
+    - TARGET KNOWN .885 (eff3 .654).
+    - 4x4 / 3x3 still running.
+- 2026-10-10 19:15 `--wm-arch pairabs` (pair + absolute positions), planner-style eval: 4x5 .973 (probe .991 / 1.000), cube .555, scene .828. No gain.
+  - The pairwise models' cube weakness is "unchanged kept" (.73-.81 vs entity .86): unaffected cubes drift beyond tol_pos.
+  - New `--wm-arch pairg` = pair + a sparse CHANGE gate. A per-entity change logit, trained with BCE against the data's changed labels (beyond tol_pos / app_unit_id); at inference the residual applies only where the gate is open. Evaluating on 4x5 / cube / scene (`scratchpad/wm_pairg_all.sh`).
+- 2026-10-10 19:38 RESULT G1 + G2 on ALL FIVE boards, one code and setting (`scratchpad/g12_chain.ps1`; PRIVILEGED scoring). Before = eff3 for puzzles, v1 for cube / scene.
+
+  | Board | Places / objects | Acted, before -> after | Target known, before -> after | Other | Calibration |
+  |---|---|---|---|---|---|
+  | puzzle-3x3 | 9 / 9 (was 8 / 9; the views added 2 places raw frames never show) | .742 -> .794 | .363 -> .379 | known changes .588 -> .628 | offset (-0.31, +2.34), L 18 |
+  | puzzle-4x4 | 16 / 16 (views added 1) | .814 -> .800 | .235 -> .327 | known changes .696 -> .732 | offset (0.27, +1.16), L 18 |
+  | puzzle-4x5 | 20 / 20 | .990 -> .988 | .654 -> .885 | | offset (0.11, -0.86), L 9 |
+  | scene | 5 / 5 | .776 -> .812 | | | |
+  | cube-triple | 3 / 3 | .875 -> .843 | | | |
+
+  - The general perception (G1 + G2) is at or above the earlier per-board best except cube (-.03) and 4x4 (-.014).
+- 2026-10-10 19:31 RESULT `--wm-arch pairg` (pair + sparse change gate), planner-style eval:
+  - 4x5: .973; cross probe .989 data / 1.000 random.
+  - cube: .817 (entity .696, pair .629); unchanged kept .992.
+  - scene: .872 (entity .852); unchanged kept .983; lock side effects still .059 within tol.
+  - pairg is the best single architecture across the three families. Adopted for the next rungs: `scratchpad/pairg_chain.ps1` (G1 + G2 events, objects_g1, subgoals_g1; 4x4 rung + fully learned loop, then 4x5 rung + GCIVL + learned loop).
+- 2026-10-10 19:49 RESULT RUNG R1c, puzzle-4x5, STRUCTURED WM (`--wm-arch rel` on `obj_events_eff3`; `obj_model_eff3rel`; scripted PRIVILEGED press arm + grace; seed 0, 30 episodes).
+  - Result: 23/30 = 77% (tasks 6 / 6 / 5 / 4 / 2 of 6). The entity WM on the same events gave 43%; old events 27%; pixel baseline 17%.
+  - Loop events 427; as predicted .88; WM change set = simulator flips .80 (entity .73).
+  - On long tasks, A* within 20k expansions often finds no full plan: first plan None in all 6 task-4 episodes and 4 of 6 task-5. The loop then executes the best partial plan and replans; tasks 4-5 still reach 4 / 6 and 2 / 6.
+  - The remaining high-level limit is search depth / cost-to-go on 16-20-press tasks, not the WM.
+- 2026-10-10 19:50 GPU queue reordered (`scratchpad/final_chain.ps1`). The 4x4 rel rung (WM stage just started) and `learned_chain.ps1` were stopped.
+  - (1) FULLY LEARNED 4x5 = GCIVL (train 150k, subgoals, flat baseline) + loop with `obj_model_eff3rel`.
+  - (2) pairg on 4x5 with G1 + G2 events (rung + learned loop).
+  - (3) the same on 4x4.
+- 2026-10-10 21:37 FIRST COMPLETE FULLY LEARNED RESULT (no privileged input), puzzle-4x5, seed 0, 30 episodes, 1000 steps (`method_pl/obj_loop_gcivl_eff3rel_seed0`).
+  - Components:
+    - perception + events: eff3, objects of 10-10;
+    - structured WM `obj_model_eff3rel` (support + cost-to-go);
+    - executor: GCIVL (`method_pl/gcivl`, 150k steps, 82 min) on one-event subgoal images (`method_pl/subgoals`, 20 places; changed places only).
+  - Result: 11/30 = 37% (tasks 4 / 5 / 1 / 1 / 0 of 6).
+  - Matched flat baseline (same GCIVL actor on the task goal image, same seeds, `gcivl_flat_seed0`): 6/30 = 20% (task 1 6/6). OGBench best pixel 17%.
+  - Ceiling with the scripted PRIVILEGED arm on the same model: 77%.
+  - Loop events, PRIVILEGED scoring:
+    - planned light pressed .85 (scripted .98); WM change set right .80 (same as scripted); planned pressed when the WM is right .85;
+    - timeouts 1.33 / episode (scripted .57), each costing 250 steps; events / episode 11.8 (14.2).
+  - Gap to the ceiling: executor misses (15%) and per-event timeouts. Levers:
+    - a data-derived event timeout (250 is fixed by hand);
+    - more GCIVL training (OGBench uses 500k-1M steps, here 150k; 500 of 1000 episodes in RAM).
+  - Running: pairg rung on 4x5 (h since 21:41), then the pairg learned loop, then 4x4.
+- 2026-10-10 23:00 USER: use the PC's resources in parallel instead of one job at a time. Measured with one job (pairg 4x5 cost-to-go): GPU 20% / 1.6 of 12.2 GB VRAM, CPU 34% of 20 threads, 13.2 of 23.7 GB RAM free.
+  - New `scratchpad/sched.py` (jobs: `scratchpad/jobs.json` from `make_jobs.py`; PowerShell wrappers of `local/run_stage.ps1`, which keep the RAM watchdog).
+    - A job starts when its dependencies are done, VRAM used + ramping reservations + its estimate <= 10 GB, and free RAM - ramping reservations - its estimate >= 3 GB; at most 4 jobs.
+    - Logs: `scratchpad/sched_logs/`.
+  - Started 22:59 next to `final_chain.ps1` (pairg 4x5 rung):
+    - lever1_4x5: fully learned loop rel + GCIVL with `closed_loop_objects.py --timeout -1` (new: p99 of TRAIN event segments, 120 on 4x5, instead of a fixed 250);
+    - model_cube / model_scene: pairg WM + support + cost-to-go on G1 + G2 events.
+  - Waiting on RAM: gcivl_cube, gcivl_scene (150k steps each), gcivl_long_4x5 (500k steps, lever 2), lever12_4x5.
+- 2026-10-10 23:20 G4 (user: approach (a), compositional rendering from data exemplars): `method/subgoal.py` draws every entity kind objects.py tells apart.
+  - Discrete places: state medians, as before.
+  - MOVERS: median crop at rest with no agent within 2 object widths. Mask = the connected part around the centre where the median differs from the typical-colour image beyond half the 2-means split (side faces and shadow included; the top-face split left dark rims). Drawn by erasing at the current position with the typical colours (1-px dilated mask) and pasting at the next position (not if covered next).
+  - CONTINUOUS places: a bank of frames with the agent clear of the place's own disc. Region = std > 2-means split within the sliding window, minus pixels the agent covers in more than half of the frames (a static robot part next to the scene window). Bank frames keep the region agent-free and mover-free (read position or mover colour; one used to copy a cube into the drawer). Drawn from the nearest bank reading (standardised).
+  - Built from `objects_g1`: cube-triple 3 movers (mask 23 / 18 / 26 px); scene 2 buttons + cube (22 px) + window (168 px, bank 821) + drawer (166 px, bank 1482). Panels checked by eye.
+  - `closed_loop_objects.py --low gcivl` now uses `render_state` (changed entities incl. the covered flag). CPU smoke runs pass on cube-triple and scene. Data-derived event timeouts: cube 564, scene 442, 4x5 120.
+  - Second scheduler (`scratchpad/sched.py` on `jobs2.json`, logs `sched_logs2`): flat GCIVL baselines + FULLY LEARNED loops on cube-triple / scene. Each waits for its pairg model and GCIVL from the first scheduler.
+- 2026-10-11 00:05 Results (puzzle 4x5, seed 0, 6 episodes x 5 tasks):
+  - PRIVILEGED scripted arm on the pairg WM (G1 + G2 events, `obj_loop_scripted_g12pairg_seed0`): 29/30 = 97% (tasks 5/6/6/6/6), up from 77% with the rel WM. Events per episode 19.2, as predicted .94, no timeouts.
+  - Lever 1, LEARNED rel + GCIVL with the data-derived timeout (120, `obj_loop_gcivl_eff3rel_to_seed0`): 9/30 = 30%, versus 37% with 250. Timeouts rise to 3.23 per episode (1.33 before). The learned executor needs longer than the TRAIN event p99, so a short timeout does not help; keep 250 for 4x5 until the executor is faster.
+  - LEARNED pairg + GCIVL with G1 subgoal images (`obj_loop_gcivl_g12pairg_seed0`): 2/30 = 7%. Acted .80 (rel learned .82), as predicted .73 (.77), timeouts 1.30 (1.33). 28 of 28 failures reach the 1000-step limit. Steps per acted event match (median 31 versus 30). The 30-point drop is not explained by these averages.
+  - Diagnosis running: the PRIVILEGED single-event harness (`scratchpad/exec_probe.py`, 60 trials) with old versus G1 subgoal images.
+- 2026-10-11 00:40 Diagnosis of the 7% (LEARNED pairg 4x5). PRIVILEGED scoring throughout.
+  - Executor harness with G1 subgoal images (`scratchpad/exec_probe_g1.py`, 60 trials, 150 steps): real goal image .92 exact cross, synthesized .92. The images are not the cause.
+  - Event outcomes in the loop are the same for rel and pairg learned (acted and as predicted .61 vs .58, only others changed .12 vs .15, no change .06 vs .05).
+  - The difference is the number of events. Solved episodes need 18.8 events with pairg (scripted) versus 14.8 with rel. At ~55-70 learned steps per event (timeouts included) that is past the 1000-step budget.
+  - Cause: the PLAN, not the WM.
+    - At the end of the first plan, the belief equals the simulator (0 wrong lights in every checked episode).
+    - In 6 of 19 checked scripted episodes the simulator was one light off the goal: lights 3, 6 and 7, which sit under the arm's start position.
+    - An entity unseen at the start is assumed at its goal. When first seen during an event, its reading silently becomes the event baseline (`start_state[newly]`), so the as-predicted test never flags it. The plan runs to its end one light off, and Lights Out needs ~10 more presses to fix one light.
+  - Fix (general, `closed_loop_objects.py`, default on, ablation `--no-replan-on-surprise`):
+    - an entity first seen during an event whose reading differs from what the WM predicts from the belief the plan assumed (`belief0`) forces a replan at the event end;
+    - events record `unexpected_ids`.
+  - Running (`scratchpad/surprise_4x5.ps1`): LEARNED pairg + GCIVL + G1 subgoals (`obj_loop_gcivl_g12pairg_surp_seed0`), then the scripted ceiling (`obj_loop_scripted_g12pairg_surp_seed0`).
+  - Note: the cube / scene LEARNED loops queued in `sched_logs2` will start with this code.
+- 2026-10-11 01:00 Replan-on-surprise, LEARNED pairg 4x5 (`obj_loop_gcivl_g12pairg_surp_seed0`): 4/30 = 13% (tasks 1/3/0/0/0), versus 7% without. Within noise.
+  - Events per episode drop from 14.2 to 8.6, but timeouts rise from 1.30 to 1.80 per episode.
+  - Timeouts by planned light:
+    - light 3: 21 of 54 (pairg without surprise 11/39, rel 6/31);
+    - lights 15 and 7: 9 and 8.
+- Root causes found (PRIVILEGED inspection, no task rule involved):
+  - F1, perception. On raw frames, G1 discovery found puzzle-4x5 light 3 as a 2-px FRAGMENT: (24,36) background and (25,39) edge. Its centre is (37.5, 24.5) versus (40.1, 24.9) for the light. The view discovery saw it whole (8 px).
+    - Lights 2, 3, 6 and 7 sit under the arm's rest pose (visible 59-80% of frames).
+    - G1 keeps raw places and adds only view places farther than w, so the fragment won.
+    - Effects: state contrast .17 (others ~.27), readings that flip 0.267 <-> 0.433 while the simulator light stays, WM inputs off its training distribution.
+    - Fix (`objects.py`, default on, ablation `--keep-fragments`): a raw place takes the pixels of a view place within w that has more than twice its area. On the five dev boards (`scratchpad/fragment_check.py`) only this place changes; scene, cube, 4x4 and 3x3 are unchanged.
+  - F2, subgoal regions. `subgoal.py` took a discrete place's region from a 2w window around it. The per-pixel median of state-split frames turns any correlation of a neighbour's state, or of the arm's whereabouts, into full contrast. Regions held neighbour pixels: 4x5 G1 9 of 20 lights, 4x4 7 of 15; scene buttons 0.
+    - Drawing one light also redrew a neighbour in a state the event does not reach.
+    - Fix (default on, ablation `--region-window`): region within the place's own disc (objects.py) dilated by 1 px.
+- 2026-10-11 01:00 Scheduling.
+  - Two schedulers would both have seen the RAM freed by gcivl_cube and started ~14 GB at once; run_stage watchdogs kill below 1.2 GB free.
+  - Scheduler 2 was stopped (nothing started). Scheduler 1 keeps only its running gcivl_cube; its pending jobs are no-ops.
+  - Everything pending is in ONE scheduler (`scratchpad/sched.py` on `jobs4.json`, logs `sched_logs4`), in priority order:
+    1. flat_cube, learned_cube;
+    2. g1b_prep: objects_g1b (F1) + effector pass + calibration + obj_events_g12b;
+    3. g1b_4x5_rest: pairg rung with the scripted ceiling, subgoals_g1b (F2), LEARNED loop `obj_loop_gcivl_g12bpairg_seed0`;
+    4. gcivl_scene, flat_scene, learned_scene;
+    5. f2_4x4 and f2_4x5 (F2 alone, `subgoals_g1r`);
+    6. gcivl_long_4x5, then lever12_4x5.
+  - lever12 now isolates lever 2: timeout 250, `--no-replan-on-surprise`, output `obj_loop_gcivl_long_seed0`.
+  - The cube / scene LEARNED loops run with replan-on-surprise (the default).
+- 2026-10-11 00:56 PRIVILEGED scripted ceiling with replan-on-surprise, same pairg model (`obj_loop_scripted_g12pairg_surp_seed0`): 30/30 = 100%, up from 97%.
+  - Events per solved episode 18.8 -> 14.6; steps 588 -> 465; as predicted .94 -> .96.
+  - This confirms the surprise diagnosis.
+  - The learned loop does not show the gain yet (13%): light-3 timeouts dominate; see F1 / F2 above.
+- 2026-10-11 01:20 puzzle 4x4 with pairg on G1 + G2 events (`final_chain.ps1` step 3). The loop code includes replan-on-surprise.
+  - PRIVILEGED scripted ceiling (`obj_loop_scripted_g12pairg_seed0`): 30/30 = 100% (old eff2 entity-WM ceiling: 60%). Events per episode 5.9, steps 247, first plan found 1.0.
+  - Flat GCIVL: 11/30 = 37% (unchanged).
+  - LEARNED pairg + GCIVL + `subgoals_g1` (old 2w-window regions; `obj_loop_gcivl_g12pairg_seed0`): 5/30 = 17%.
+    - Acted .71, as predicted .60.
+    - Events: acted with a different change set .41, acted and set as predicted .30, only others changed .23, no change .06.
+    - Steps per event: median 47 (scripted 31). Timeouts .43 per episode. All 25 failures end at the 500-step limit of 4x4.
+  - Open issue (4x4, general): place 15 (button2, added by the views) has no subgoal exemplar. Only 9 of 23,756 sampled frames are agent-free on raw frames: it sits under the arm's rest pose and is read only through the views. Place 1 (button1) is visible in 7.5% of frames but has 7,725 agent-free samples.
+  - Running: f2_4x4 (F2 subgoal regions, same model), started 01:20 in `sched_logs4`.
+- 2026-10-11 01:45 Results.
+  - 4x4 F2 subgoal regions (`f2_4x4`, `obj_loop_gcivl_g12pairg_f2_seed0`, same model): 6/30 = 20%, versus 17% with the 2w-window regions.
+    - Acted .71 -> .80, as predicted .60 -> .70, only others changed .23 -> .15.
+    - Executor accuracy is better; success is within noise.
+  - cube-triple, first numbers.
+    - GCIVL 150k steps: 106.8 min (shared GPU).
+    - Flat GCIVL: 3/30 = 10% (task 1 3/6).
+    - FULLY LEARNED loop: pairg WM on G1 + G2 events, GCIVL on G4 subgoal images (mover erased and pasted at its next position), data-derived timeout 564, replan-on-surprise (`obj_loop_learned_g4_seed0`): 3/30 = 10% (task 1 3/6).
+    - 0.2 events per episode: the executor almost never completes a planned event.
+    - PRIVILEGED look at the 26 timeouts (`scratchpad/cube_fail.py`): 12 idle (no cube moved > 2 cm), 12 a cube moved without the planned event completing, 2 a cube left in the air.
+    - The objects report has no identity -> cube mapping, so "planned vs other cube" is not separated.
+    - First plan found in 77% of episodes.
+    - The cube low level does not do the events; the high level is not the limit here.
+  - Scheduler 1 stopped (its gcivl_cube was done; only no-ops were left). g1b_prep started 01:40 in `sched_logs4`.
+- 2026-10-11 02:10 USER: build the low level as GCIVL with STATE goals.
+  - `method/gcivl.py --goal state --events <obj_events dir>`. Image mode is unchanged (same nets / keys / RNG use).
+  - Goal: the entity state after the event (K x 6: position, appearance, covered); the WM's predicted next state in the loop. No subgoal image.
+  - Inputs: the current frame (Impala-small, 3 channels) and an MLP on [belief, goal, goal - belief] per entity (positions / 64), joined (1024) before the heads.
+  - States per frame: the closed loop's memory = latest valid reading of the episode (labels_train.npz valid / cov_valid), else the episode's first valid one.
+  - success(s, g): every entity within the event thresholds (tol_pos, thr_app_id + 1e-4, covered bit; a hidden goal entity only needs to be hidden).
+  - Goals: value current .2 / next event .2 / trajectory geometric .3 / random .3; actor next event .5 / uniform future .5.
+  - Random crops shift the state positions with the image.
+  - `closed_loop_objects.py --low gcivl` detects a state-goal checkpoint and feeds goal_vector(belief S, predicted_next). `--subgoals` is not needed.
+  - CPU smoke runs: gcivl state mode on 4x5 / cube / scene; loop on cube (untrained actor: timeouts as expected).
+- Schedule (`scratchpad/state_runner.ps1`, task bapgx9ns0). One GCIVL in RAM at a time: each training waits for >= 13 GB free twice a minute apart. Per family: train (150k steps, 500 episodes, as the image version), then the FULLY LEARNED loop with the same WM / objects / events / seed / timeout as that family's image-goal loop:
+  1. cube-triple: obj_events_g12, obj_model_g12pairg, timeout -1, `obj_loop_gcivl_state_seed0`;
+  2. scene: same settings;
+  3. puzzle-4x5 on the F1 pipeline: obj_events_g12b, obj_model_g12bpairg, objects_g1b, timeout 250, `obj_loop_gcivl_state_g12b_seed0`;
+  4. puzzle-4x4: g12, timeout 250.
+  - Then `state_runner_done.flag`. sched_logs4's image GCIVL slots (gcivl_scene, then gcivl_long_4x5) now wait for that flag and for free RAM.
+- 2026-10-11 02:15 USER: first make sure the HIGH LEVEL is good on every task.
+  - New PRIVILEGED diagnostic low level `method/oracle_low.py` (`closed_loop_objects.py --low oracle`, arm "PRIVILEGED DIAGNOSTIC: OGBench plan-oracle low level"). OGBench's plan oracles (the controllers that generated the play data, noise 0) execute each planned event.
+    - Entity -> object: best_ref of objects_report (scene: cube_y / window / drawer / button0-1), else the block whose projection into 'front_pixels' is nearest the believed position.
+    - Block target: table point under the target pixel, or the top of a block within w/2.
+    - Drawer / window: the slide end (closed / open) whose handle pixel displacement matches the event's.
+    - Camera check (`scratchpad/cam_check.py`): projected block centres match the frame to ~0.5 px.
+    - Episodes record `oracle_events` (mapped / unmapped).
+  - CPU smoke run on cube-triple: oracle executes events; task 3 solved (647 steps). Task 2: no first plan, and every event "not as predicted" with all three cubes predicted changed.
+- 2026-10-11 02:25 HIGH-LEVEL BUG (general, numeric). `world_model.Model.app_tol` = thr_app_id ~2e-6 for exact identities, but the support values are rounded to 4 decimals while a mover's reading keeps its identity colour at full precision (0.42519668 vs 0.4252).
+  - Every cube therefore differed from its own prediction by ~4e-6 and counted as changed.
+  - The loop's as-predicted test and belief fill failed on every cube event.
+  - `scratchpad/wm_changed_check.py`, cube VAL events: exact predicted change set .015 against raw states vs .762 against canonical.
+  - Fix: app_tol floor 1e-4 (rounding error <= 5e-5; state changes > .05). After the fix, raw .762 = canonical .762; scene .537 (unchanged); puzzle 4x5 .797 (unchanged). This simple metric is stricter than the planner-style one.
+- Ceiling runs:
+  - `scratchpad/ceil_runner.ps1` (task bh5aj8uwe): oracle ceiling cube (started 02:13 with the OLD tolerance = a "before fix" point), oracle ceiling scene (fixed code), then the puzzle 3x3 pairg rung (scripted ceiling).
+  - `scratchpad/ceil_runner2.ps1` (task b6mom660p): cube oracle ceiling again with the fix (`obj_loop_oracle_g12pairg_fix_seed0`).
+  - Correction: world_model.py was saved at 02:15:01 and the cube oracle loop started at 02:15:20 (log local20261011021520), so `obj_loop_oracle_g12pairg_seed0` HAS the fix. The rerun (`ceil_runner2.ps1`) was stopped.
+- 2026-10-11 02:20 Scene WM by acted entity (`scratchpad/scene_lock_check.py`, VAL events, exact predicted change set on known entities):
+  - window .94, drawer .96, button0 (drawer lock) .82, button1 (window lock) .67;
+  - cube .33.
+  - Data, for cube-acted events: true change sets {window} 48, {cube} 34, {button1} 31, {drawer} 23 of 187. ATTRIBUTION errors: a carried cube is the entity nearest the effector, so other changes go to it.
+  - WM on cube moves: predicts no change for 96 / 187.
+  - Lock mechanics (scene_env.py): button state 0 = red = locked, and it also turns that drawer / window handle red. So a button press has a visible side effect on the drawer / window appearance.
+  - Tasks 4-5 put the cube INTO the drawer and close it (a hidden goal).
+- 2026-10-11 02:25 cube-triple ORACLE CEILING (first oracle version; `obj_loop_oracle_g12pairg_seed0`): 16/30 = 53% (tasks 6/5/3/2/0). Events per episode 1.7, as predicted .54, first plan .73.
+  - Two failure causes belonged to the DIAGNOSTIC oracle, now fixed in `oracle_low.py`:
+    - The oracle's last pose is random and could leave the arm over the moved cube, so events never ended within 564 steps (task 4: the cube was at its goal, then a timeout). Fix: return to the episode's start effector position after each event.
+    - Identity -> block by projection picked a lower block of a 3-stack (task 3). Fix: the objects report's colour mapping (identity -> cube).
+  - Re-run queued (`scratchpad/ceil_runner3.ps1`, task b0xj24mfl -> `obj_loop_oracle_g12pairg_v2_seed0`).
+  - The scene oracle ceiling (started 02:25:18) already uses the corrected oracle (files saved 02:25:09 / 02:25:11).
+- HIGH-LEVEL gap found: HIDDEN GOAL entities.
+  - cube-triple task 5 = a 3-stack at (0.425, 0.2). Only the top cube is read in the goal image; the others are "hidden there".
+  - The planner proposes no target for a hidden goal entity (candidates = its visible goal + absolute data prototypes), so no plan within 20k expansions in 6/6 (best_h ~ 0).
+  - Same class: scene tasks 4-5 (cube inside the closed drawer).
+  - The cost-to-go itself is fine: on VAL pairs it rises with event distance (cube 1.45 / 2.39 / 2.70 at 1 / 3 / 6 events; puzzle 5.5 / 10.0 / 10.9; scene 6.9 / 8.6 / 14.7).
+- Scene events, PRIVILEGED truth per object (`scratchpad/ev_eval_cs.py`):
+  - one-core / acted-right: button0 .82 / .94, button1 .98 / .71, drawer .74 / .86, window .78 / .95;
+  - cube .26 / .49 (cube visible 57% of frames; its passive moves inside the drawer also count as interactions).
+- cube-triple per object: one-core .82 / .60 / .78; acted right .85 / .80 / .87; all .728 / .843.
+- 2026-10-11 02:40 Scene high level, diagnosed with the oracle loop. The oracle opens the drawer 0 -> -0.16 and the window 0 -> 0.18 in ~50 steps when asked directly (`scratchpad/oracle_slide_test.py`).
+  - DIAGNOSTIC bug: the oracle chose the slide end by the nearest pixel displacement. The read place moves less than the handle (window 5.7 px read vs 15 px handle when open), so it picked "closed" for open requests: scene task 1 0/6 with no events. Fix: the end the asked displacement points to. The corrected v2 ceilings (scene, cube) run in `scratchpad/ceil_runner4.ps1` (task b126n8dbs), then the 3x3 rung.
+  - The loop now logs, per episode, `start_belief`, `goal_read`, `start_rest`, `first_plan_events`; sim_state also records the drawer / window slides; oracle `slides` decisions.
+  - HIGH-LEVEL bug, scene LOCKS (task 2: unlock, close, lock). The belief was right (both buttons red = locked), but the first plan was close drawer, close window, close drawer (depth 3; 6 events needed). The oracle could not move the locked drawer: timeout 442 of 750 steps.
+    - Event support for "close the open drawer while locked" = sigmoid .41 > threshold .27, so the WM predicts the drawer closes.
+    - In general the model knows the locks: TRAIN drawer / window events with the button flipped to locked get median support logits -5.2 / -4.7 and predicted slide motion .01 / .00 (unlocked .76 / .76) (`scratchpad/lock_support_check.py`). This state is an uncertain rare combination.
+    - TRAIN drawer events with a red button before: 151 / 2071, of which only 16 moved the drawer > 1 px (window 5 / 30): label noise, not real locked motion.
+- 2026-10-11 02:55 scene ORACLE CEILING v2 (corrected slide ends, colour mapping, home after events; confirm rest; `obj_loop_oracle_g12pairg_v2_seed0`): 5/30 = 17% (tasks 4/0/1/0/0). As predicted .36, first plan .57.
+  - Task 2: plans close the LOCKED drawer first, timeout 442.
+  - Task 3: oscillates between press button1 / close window.
+  - Tasks 4-5: no first plan (cube inside the closed drawer = hidden goal).
+  - Root cause of task 3 (`--trace-steps` debug option: per-step reading of the planned entity):
+    - With the arm 0.4 px over button1, the place's reading flips to "white" (0.333) while the simulator button is still 0 (red). The reading under the agent comes from the SeeThrough lookup.
+    - The event ends "as predicted" at step 12 before the oracle presses (~25). When the arm leaves, the reading returns to red, so the button is pressed again in the next plan, and so on.
+  - Fixes (loop, general):
+    - FAILURE MEMORY (default on, ablation `--no-failure-memory`): an event that timed out is forbidden as the first event of plans from the same belief key (`world_model.plan(forbid=...)`, `Model.same_target`).
+    - `--confirm clear`: settle / contradict only with the agent > w/2 away (an existing option; to become the default if it also holds on puzzle).
+  - Fixes (PRIVILEGED oracle):
+    - fail-fast: done + home + m + grace idle steps without the event ending counts as a failure;
+    - the gripper opens on the way home (it held the locked handle);
+    - the home latch (the arm drifts around the 2 cm mark);
+    - home = high and back in the arm sampling bounds (the start pose covered the scene buttons).
+  - Single-episode checks (CPU, confirm clear): scene task 3 solved in 305 steps (both slides moved, buttons right).
+- cube-triple STATE-GOAL GCIVL trained (150k steps, 68.3 min, 7.5 GB). Its loop started 03:05. cube oracle v2 started 02:57:45 with all fixes above but confirm rest.
+- 2026-10-11 03:15 Results.
+  - cube-triple ORACLE CEILING v2 (corrected oracle + failure memory, confirm rest; `obj_loop_oracle_g12pairg_v2_seed0`): 22/30 = 73% (tasks 6/5/5/6/0). Task 5 = 3-stack, hidden goal.
+  - cube-triple FULLY LEARNED with the STATE-GOAL GCIVL (`obj_loop_gcivl_state_seed0`): 0/30 (image goals: 3/30).
+    - 0.7 events per episode; timeouts: another cube moved 16, idle 11.
+    - Training log: succ_share .45-.57 of value goals. Unchanged cube states make most relabeled goals already reached: a weak signal (to fix: goals that differ from the current state).
+- 2026-10-11 03:20 g1b_prep had CRASHED at 01:43 (and the job hung with no child until 03:18). F1 replaced only disc and centre; the view place's per-pixel weights `w` stayed those of the 2-px fragment (place_reading broadcast (2,1) vs (8,3) in see_lookup).
+  - Fix: the whole view place dict is copied. Checked with `--discover-only` (3.1 min): light 3 at (40.12, 24.88), 8 px.
+  - Re-run `scratchpad/g1b_prep2.ps1` (task becf42ia1). sched_logs4's g1b_4x5_rest starts when obj_events_g12b exists. gcivl_scene (after the failed g1b_prep) will not start from sched_logs4.
+- 2026-10-11 03:30 More HIGH-LEVEL fixes (scene diagnosis, single CPU episodes):
+  - GOAL OCCLUSION (`closed_loop_objects.py`, ablation `--no-goal-occlusion`): a mover unseen in the goal image is "hidden there" unless the goal image's agent lies within w of its current position (then unknown). Scene task 1 read "hide the cube" with the unmoved cube under the goal arm.
+  - FAILURE MEMORY: no longer keyed on the exact belief; cleared by the next as-predicted event (a locked drawer still moves slightly, so the key changed after every attempt: task 2 tried 7 times).
+  - PRIVILEGED oracle: slide end = the nearer of the place's two read clusters (2-means of its events' after positions; the open one is further along the handle's closed -> open projection). A partly opened window read past its open end, so the displacement rule toggled it open / closed 12 times in task 1.
+- HIDDEN GOALS (`world_model.py`, defaults on; ablations `--no-hidden-protos`, `--cov-known-only`):
+  - The covered-bit loss now includes entities hidden after the event (the WM predicted hiding in 0/205 TRAIN drawer-closings and 0/43 VAL stackings).
+  - `hidden_goal_support`: movers get placement and pre-hiding prototypes (cube-triple 8 -> 16-17 per cube; scene cube 3 -> 12), plus COVER relations (m put covers j: mode of target - j position, >= 5 events and >= 25% within 2 tol_pos). cube-triple: all 6 pairs, offsets (0, -2.4 to -3.0) px; scene: none.
+  - Planner: `hidden_goal_targets(G)` puts a hidden goal entity under the visible goal entity that covers it, through chains (3-stack: middle and bottom candidates). `candidates_batch` adds relative targets (on a visible entity + cover offset) and these.
+  - Re-training cube / scene pairg + support + h (`obj_model_g12pairgh`) and oracle ceilings with confirm clear: `scratchpad/hl_runner.ps1` (task b528p9o07). The v3 ceilings (old model, corrected loop) run first.
+- 2026-10-11 03:45 puzzle 3x3 SCRIPTED CEILING with pairg on G1 + G2 (`heldout_puzzle3x3 ... obj_loop_scripted_g12pairg_seed0`): 3/30 = 10% (tasks 3/0/0/0/0).
+  - Acted .55, as predicted .43.
+  - Place 8 (view-added, top-middle light = button1) was planned 54 times and changed twice.
+  - PRIVILEGED: its reading |corr| .099, full view in 19% of frames, never read through the agent.
+  - Its disc was a 2-px FRAGMENT (27,32),(27,33): light pixels (|corr| .89/.55), but the light's other pixels (corr .8-.94) are agent-free in only 2-50% of frames. The robot's resting column covers it, and both raw and view discovery saw only the edge, so F1 (view replaces raw) could not help.
+  - The other boards: the only places below half the median area are this one and 4x5 light 3 (fixed by F1).
+  - Fix F1b (`objects.py grow_fragments`, off with `--keep-fragments`): a location place below half the median place area grows by the pixels within one object width whose chromaticity, along the fragment's main axis of colour change and in frames where both are agent-free (refine_agent pixel mask), follows its own (|corr| >= the 2-means split, floor .5).
+    - Intensity does not work (.12-.42): the states differ in colour. With the coarse token mask the fragment was agent-free in 28 / 8040 frames.
+    - 3x3 place 8: 2 -> 9 px (rows 27-29, cols 30-33 = the privileged light pixels), centre (32.5, 27.0) -> (31.3, 27.8), snapped (D 3e8).
+  - Re-run: `scratchpad/p3x3_runner.ps1` (task b07xvf72e) -> objects_g1c, obj_events_g12c, rung g12cpairg.
+- 2026-10-11 03:47 4x5 g1b prep done (objects 8.3 min, peak 9.5 GB; effector pass 9.7 min; calib offset (0.139, -0.794) lag 9; events g12b 10 min). sched_logs4 started g1b_4x5_rest at 03:51.
+- 2026-10-11 04:00 ORACLE CEILINGS v3: old pairg models, corrected loop (confirm clear, failure memory, goal occlusion, oracle slide clusters and high-back home).
+  - cube-triple `obj_loop_oracle_g12pairg_v3_seed0`: 21/30 = 70% (tasks 6/5/4/6/0).
+  - scene `obj_loop_oracle_g12pairg_v3_seed0`: 10/30 = 33% (tasks 4/0/6/0/0), up from 17%. Task 3 is 6/6.
+  - Scene task 2 still tried the locked drawer 6 times: each replan chose a slightly different closed target (several prototypes within a few px), so the (e, x) memory did not match. Fix: failure memory per ENTITY (no plan may start with an event on an entity whose event failed), cleared by any ended event that observed a change. A t_ref ordering bug (cleared after the reset, i.e. never) was fixed before any run.
+  - Scene tasks 4-5: no plan or an empty best plan, then the loop idled for hundreds of steps (hidden goal; the gh models are the fix under test).
+- 2026-10-11 05:09 puzzle 3x3 SCRIPTED CEILING with F1b (objects_g1c, obj_events_g12c, pairg; calib offset (-0.379, 2.136) lag 19): 1/30 = 3%.
+  - Place 8 is now |corr| .83 (was .10), visible .31.
+  - Per planned entity (events / acted / as predicted): centre light 2 = 69 / 43 / 0; light 8 = 25 / 4 / 4.
+  - Cause: the PRIVILEGED scripted arm returns to the episode's start pose, which covers the 3x3 top-middle and centre lights. Their presses were never seen, so the planner pressed light 8 again and again (the simulator toggled back and forth).
+  - Fix (diagnostic arm, `--home-start-pose` restores the old one): the scripted arm waits high and back in the arm sampling bounds, as the oracle. Re-run `scratchpad/p3x3_home2.ps1` (task bk5vessp0, LoopTag _home2).
+  - Note: the learned executor has no retreat; perception under the arm stays an open issue for the METHOD.
+- cube gh WM (`obj_model_g12pairgh`; WM 30k steps in 2.2 min; support 0.3 min; cost-to-go running for 80+ min):
+  - wm_eval: event exact .736, acted .978, side effects within tol .035.
+  - VAL stackings predicted to hide the lower cube .209 (old model 0), false hiding on visible staying cubes .006.
+  - Prototypes 17 / 15 / 17, cover relations 6.
+- 2026-10-11 05:20 HIDING in the WM, VAL F1 of "an entity becomes hidden" (`scratchpad/hiding_check.py`; transitions are 2.6% of scored covered bits on cube, 1.3% on scene).
+  - cube, unweighted (gh): P .56 R .21 F1 .31; weight N_still/N_flip (gh2, x20): P .17 R .56 F1 .26 (false hiding .10); weight sqrt (gh3): P .36 R .47 F1 .40 (false hiding .031).
+  - scene, old model: R 0; gh2 (x47): P .07 R .83 F1 .13 (false hiding .12); gh3: P .41 R .53 F1 .46 (false hiding .009).
+  - Default now `--cov-balance-power .5` (ablation `--no-cov-balance`), chosen by VAL F1 on both families.
+  - Note: the scene "gh" WM that hl_runner trains after 05:28 therefore has the gh3 setting.
+  - cube gh3 cost-to-go + oracle ceiling: `scratchpad/gh3_cube.ps1` (task bc4w7vm8o).
+- 2026-10-11 05:30 puzzle 3x3 SCRIPTED CEILINGS (g12c model):
+  - start-pose home 3%; high-back home 0% (it covers the top row; see-through readings stale at that pose);
+  - confirm clear 0% / 7% (timeouts: the event never ended while the pressed light stayed under the arm).
+  - The arm cannot wait clear of the 3x3 board: z <= .25; automatic park pose (below) still covers 27 place px.
+  - Fixes:
+    - (loop, general) with confirm clear, the "acted entity hidden" end condition uses the confirmable flag (conf_) instead of rest. A light read through the arm counts as rest but can never settle.
+    - (PRIVILEGED arms) automatic PARK POSE: five poses at the top of the arm sampling bounds, each reached in a separate env and read by the method's perception; the pose leaving the most place pixels clear (within w/2 of the agent) wins.
+  - After these, 3x3 events end and fills happen, but the 3x3 WM predicts WRONG crosses (centre press -> [1, 2, 7] or [2, 3, 5]; true {1, 2, 3, 5, 8}). wm_eval event exact .51.
+  - Cause in the data: for centre presses the acted light's after state is unknown in 70% of TRAIN events and the top-middle in 40% (under the arm); 12% of events have no known change.
+  - OPEN: after-state reading under the arm in events_objects.py (3x3).
+- 2026-10-11 05:35 State-goal runner stopped (it waited for 13 GB of free RAM since 03:14; user priority is now the high level). Cube state-goal results kept. Its done flag was never written, so sched_logs4's image GCIVL slots stay parked.
+- 2026-10-11 05:45 CONTINUITY in events (`events_objects.py`, default on, ablation `--no-continuity`).
+  - Nothing changes between consecutive events of an episode (an event holds every change). So an entity unknown after event i takes its known state before event i+1, and one unknown before event i+1 takes its state after event i.
+  - Applied after the acted attribution, which is unchanged.
+  - 3x3 test: `scratchpad/p3x3_cont.ps1` (task bxj8wihee): obj_events_g12d (objects_g1c, g1c calibration) -> pairg rung (scripted ceiling, confirm clear + automatic park pose).
+  - Other boards keep their events until this is checked.
+- 2026-10-11 05:38 puzzle 4x5 with F1 (objects_g1b, obj_events_g12b, pairg; `obj_loop_scripted_g12bpairg_seed0`, run with replan-on-surprise, failure memory, confirm rest): PRIVILEGED scripted ceiling 30/30 = 100%. Events per episode 14.7, steps 458, as predicted .94, first plan .67.
+  - sched_logs4 g1b_4x5_rest continues: subgoals_g1b (F2), then the LEARNED loop.
+- 2026-10-11 05:43 3x3 continuity: 0 states filled on TRAIN and VAL. An entity unknown after event i is also unknown before event i+1: the arm stays over it between the events.
+  - WM g12dpairg = g12cpairg (event exact .504 vs .508, side effects .80).
+  - 3x3 stays OPEN. The resting arm covers the top-middle / centre lights in the play data (incomplete labels) and in the loop. Fixing it needs reading those states later than the next event without assuming which events could change them.
+  - The rung's h + scripted loop (confirm clear, park pose) still run for the record.
+- 2026-10-11 06:00 Hidden goals, offline planner probe (`scratchpad/plan_probe.py`: logged start belief / goal of the v3 cube task-5 episodes, gh3 WM + support, cost-to-go borrowed from g12pairg).
+  - Three fixes in `world_model.py`:
+    1. Hidden-goal targets skip coverers that are unknown or unread at (0, 0); relative targets only on read visible entities; placements only from events with a known target.
+    2. `at_goal`: a hidden goal entity with hidden-goal targets must be hidden AND within 2 tol_pos of one of them. "Hidden anywhere" let the planner hide the 3-stack's blocks elsewhere.
+    3. BUG: `hidden_goal_targets` did `ok = np.asarray(known)` then `ok &= ...`, changing the CALLER's `known` in place. Hidden-goal entities (goal position (0, 0)) became "unknown", so the planner ignored them.
+       - It affected every cube / scene loop started after ~03:20, including the v3 ceilings (cube task 5, scene tasks 4-5 understated). Puzzle loops are unaffected (all goal positions non-zero).
+       - Fixed with `np.array` (copy).
+  - After the fixes, task 5 plans found 6/6:
+    - ep 5: block 0 bottom, block 2 middle, block 1 top (the 3-stack; final covered = goal);
+    - ep 2: depth 4, stacked;
+    - ep 0: 2-stack only, because the bottom block was unread in the goal image (under the arm; goal occlusion -> unknown).
+- 2026-10-11 05:58 puzzle 4x5 FULLY LEARNED with every fix so far (`obj_loop_gcivl_g12bpairg_seed0`): 13/30 = 43% (tasks 6/4/1/1/1). Best METHOD number on 4x5 so far.
+  - Setup: objects_g1b (F1), obj_events_g12b, pairg WM, subgoals_g1b (F2 regions), image-goal GCIVL 150k, replan-on-surprise, failure memory, goal occlusion, confirm rest, timeout 250.
+  - Acted .889, as predicted .851, timeouts .8 per episode, events 13.0, steps 784.
+  - Earlier: rel 37%, pairg-G1 7% / 13% (surprise); flat GCIVL 20%; OGBench best pixel 17%; scripted ceiling 100%.
+- 2026-10-11 06:20 GOAL READING, colour rule (`closed_loop_objects.py`; replaces the 03:30 agent-distance rule, ablation `--no-goal-occlusion`).
+  - A mover unseen in the goal image is hidden there unless its own colour still shows in more than half of its footprint at its current place (the arm is transparent). Then its goal is its current state.
+  - Evidence (`goal_occlusion` per episode, oracle, 3 episodes per scene task):
+    - task 1 (cube unmoved under the goal arm): agent .44, colour .80 -> stays;
+    - tasks 4-5 (cube inside the closed drawer): agent .75-1.0 (the arm's shadow), colour .00-.07 -> hidden. The old rule had made them "unknown", so the planner ignored the cube.
+  - With the scene gh3 WM (model_hborrow.pt = gh3 WM + support + cost-to-go from g12pairg), tasks 4-5 now read the cube hidden. First plans put the cube at the in-drawer prototype (21.8, 17.0), press button0, close the drawer, but never OPEN it: the WM / support miss the "drawer open" precondition. Oracle runs time out.
+- 2026-10-11 06:25 The gh / gh3 cube cost-to-go trainings were STOPPED: ~32 candidates per state (old models ~9) made h steps very slow (14k steps in 139 min).
+  - Ceilings now use the cost-to-go borrowed from g12pairg (`obj_model_g12pairgh3/model_hborrow.pt`, cube and scene): `scratchpad/gh3_ceilings.ps1` (cube bj6cbrxu0, scene b7c9r75lz), confirm clear, `obj_loop_oracle_g12pairgh3b_seed0`.
+  - The 3x3 g12d rung continues (h at 96k steps).
+- 2026-10-11 06:15 ORACLE CEILINGS with the gh3 WMs (cost-to-go borrowed from g12pairg; confirm clear; goal colour rule; known-copy fix; failure memory per entity; park pose) = `obj_loop_oracle_g12pairgh3b_seed0`.
+  - scene: 10/30 = 33% (tasks 4/0/6/0/0), the same as v3.
+    - Task 2: unlock with button0 as predicted, then press button0 AGAIN (relock), and close-drawer attempts fail. Repeats.
+    - Tasks 4-5: the cube is put at the in-drawer place while the drawer is closed (no "open first" precondition), so oracle failures.
+  - cube-triple: 17/30 = 57% (tasks 6/5/1/5/0), BELOW v2 73% / v3 70%.
+    - Task 5 is still 0 although offline plans are right. Closed-loop stacks: events alternate as-predicted / not, 1000 steps run out.
+    - Task 3 (unstack a start 3-stack) 4/6 -> 1/6: one block is moved back and forth.
+    - Suspects: (a) the colour goal rule calls a block hidden when the goal arm covers its NEW place (the rule only looks at its current place); (b) the gh3 WM's spurious hide / appear predictions (false hiding .031).
+  - Conclusion for now: the hidden-goal machinery works offline but not yet in closed loop. Best cube ceiling remains v2 / v3 (70-73%).
+- 2026-10-11 06:20 Checks on the gh3b cube failures.
+  - Task 3 goals read all three blocks visible in 5 / 6, so the goal colour rule is not the cause. The regression comes from the gh3 WM: spurious hide / appear while a start 3-stack is taken apart; its lower blocks are unseen at the start and assumed at their goals.
+  - Task 5 goals now read 1-2 blocks hidden (the colour rule finds no block colour at their old places).
+  - Closed-loop stacking disagrees: the WM predicts the lower block hidden while perception still reads its side faces (not as predicted -> replans) until 1000 steps.
+- OPEN high-level items, by family:
+  - scene task 2: a double button press after unlocking. The drawer appearance mixes the handle colour (lock) with the drawer; goal tests on it.
+  - scene tasks 4-5: precondition "drawer open" before putting the cube in.
+  - cube task 5: a stacked block's visibility (side faces) vs the covered bit learned from events.
+  - cube task 3 with gh3: spurious hide / appear.
+  - 3x3: after-states under the resting arm.
+- 2026-10-11 06:22 ABLATION F2 alone on 4x5 (`obj_loop_gcivl_g12pairg_f2_seed0`; old G1 pairg model, light 3 still a fragment; subgoals_g1r = own-disc regions; loop with surprise + failure memory): LEARNED 12/30 = 40% (tasks 5/4/3/0/0).
+  - Acted .815, as predicted .765, timeouts 1.2.
+  - Same model with the 2w-window regions: 13% (with surprise), 7% (without).
+  - F2 is the large step for the learned executor; F1 adds the rest (43%).
+- 2026-10-11 06:19 3x3 g12d rung (continuity no-op, confirm clear, park pose): scripted 0/30 (WM event exact .504). As expected; 3x3 stays open.
+- 2026-10-11 07:30 scene task 2, plan logging (`--log-plans`):
+  - The planner circumvented the "first event only" failure memory with a NO-OP PAIR (press button0 twice: unlock, relock) before the locked drawer.
+  - Fix: failure memory keyed on (state key of the belief at the failure, entity), applied at every search node, kept for the episode. A no-op pair returns to the same key; one press (unlocked) is a new key.
+  - Still 0/2 on task 2: the WM / support believe the locked drawer AND window can close, so the planner tries the window next, then button presses in odd orders. The scene cost-to-go rates this 6-event task at 2.8.
+  - Root cause upstream, in the EVENTS: of 151 drawer-acted TRAIN events with a red (locked) button, 135 did not move the drawer. These are reading flicker attributed to the drawer, which teaches the support model that drawer events happen while locked.
+- 2026-10-11 08:00 Event quality checks (PRIVILEGED, VAL).
+  - `scratchpad/false_events.py`: events whose core misses every true interaction by more than the margin.
+    - Margin +-2 frames: scene .120 (cube-acted .29, button1 .18), cube-triple .014, 4x5 g12b .000, 3x3 g12c .083.
+    - Margin +-10: scene .011; +-30: .001.
+    - So the scene events are REAL, offset from the simulator toggles by the reading lag. The "flicker events" hypothesis is wrong.
+  - `scratchpad/place_reliability.py` (no privileged input): place readings that disagree with clear full-view readings on both sides inside a stable span.
+    - Adjacent-agent full-view readings: wrong .000-.007 (scene, 3x3, 4x5).
+    - See-through readings: wrong .000 (puzzles), .049 (scene window), .125 (scene drawer).
+    - Place readings are reliable; the scene lock problem is not label noise from readings.
+  - Remaining scene lock cause: attribution / support. The support model gives sigmoid .41 > .27 (the 2% VAL quantile) to closing the open drawer while locked.
+- 2026-10-11 08:20 EVENT SUPPORT is the weak link in scene (`scratchpad/support_threshold.py`: VAL genuine events vs context-corrupted copies, the training recipe).
+  - Default support (6k steps, width 256): at its thresholds (2% genuine quantile) it rejects only .21-.43 of corrupted contexts; at the balanced thresholds .35-.51, keeping .79-.94 of genuine.
+  - Longer / wider (60k steps, width 512, 3.5 min; `obj_model_g12pairg_sup2`): close-drawer-while-locked .38 -> .00, unlocked .56 -> .69; close-window-while-locked .31 -> .02.
+  - But the 2% quantile thresholds collapse to ~0 (overconfident), so abstention stops.
+  - NEW (`world_model.py plan`, `closed_loop_objects.py --feas-weight`, default 1): A* priority += feas_weight * sum of -log(event support). Plans avoid implausible events softly; the hard threshold stays.
+  - Testing on scene task 2 (CPU).
+- 2026-10-11 09:40 HIGH-LEVEL fixes and diagnoses (scene task 2 and up).
+  - A* (`world_model.py plan`), two general bugs once plans carry a feasibility cost:
+    - the goal test ran when a goal node was GENERATED, so the first goal found won whatever its cost. Now a goal is returned when it is POPPED (nodes popped before it in a batch are expanded first);
+    - states were deduplicated by plan length, so a cheap long path to a state was pruned by a short expensive one (closing the locked drawer reached "closed" in 1 event and pruned the 3-event unlock / close / lock path). States now keep their cheapest path cost (lam * length + feasibility cost).
+    - Without a feasibility cost (feas_weight 0) the search is unchanged.
+  - PREDICTION TOLERANCE (`Model.set_prediction_tolerance`, loop `--pred-tol-q`, default .75): a WM prediction is compared with a reading (goal test on imagined states, the loop's as-predicted and surprise tests) within the WM's own precision.
+    - Per entity: the .75 quantile of the WM's VAL appearance error on entities changed as a SIDE effect; at least the event threshold, at most half the median appearance change (distinct modes stay apart).
+    - Values: scene window .0039 -> .0160, drawer .0039 -> .0148 (a button press recolours the handle: WM error median .002-.011, VAL after-reading IQR .01-.08); cube, 4x5, 4x4 unchanged; 3x3 lights 2/7/8 1e-4 -> .11-.13 (half their colour gap).
+    - Before: every scene button press was "not as predicted" and the loop pressed again (gh3b task 5: btn1 x8 per episode).
+  - SUPPORT variants on scene (`scratchpad/support_cf.py`, VAL counterfactuals; `t2_support_cmp.py`, the task-2 start beliefs):
+    - every model drops unlocked drawer / window moves ~100x when the button is set red;
+    - but in the task-2 start context the default model lets "drawer -> closed with the locked look" pass (.38 > threshold .27);
+    - the 60k-step models (sup2 mixed negatives, sup3 = new `--p-one 1` single-entity swaps) reject the locked closes (<= .013) but give legal presses .03-.32. sup3 is not better than sup2.
+  - EVENT RECALL is the main scene data problem (`scratchpad/cube_recall.py`, PRIVILEGED: sim cube moves of > 2 cm between rests):
+    - scene VAL: 550 true cube moves, found by an event .33, with the cube as the acted entity .17;
+    - cube-triple VAL, per cube: found .76-.89, acted .53-.75.
+    - Cause: a mover is a rest observation only with no agent pixel within half an object width. The scene agent mask is coarse (~38% of the image with the arm's shadow) and the play arm hovers over the cube between its manipulations. Example: TRAIN episode 0, t 500-836, four cube moves, no event.
+    - Consequence: the cube placed INTO the drawer (scene tasks 4/5) is visible after an event in 8 TRAIN events. The WM cannot learn "cube -> drawer". Before-states of events also jump: the scene cube moves > 6 px between consecutive events in 19.5% of event pairs (cube-triple 5.6-10.3% per cube).
+  - Running (CPU, parallel): oracle ceilings with these fixes, `obj_loop_oracle_c5_seed0` (scene and cube, gh3 WM with the borrowed cost-to-go), and the 4x5 scripted ceiling `obj_loop_scripted_c5_seed0` (regression check, was 100%).
+- 2026-10-11 10:50 Ceilings c5 / c6 and fixes (PRIVILEGED oracle / scripted low levels, seed 0, 6 episodes x 5 tasks).
+  - c5 (A* fixes + prediction tolerance; gh3 WM, default joint support, borrowed cost-to-go):
+    - scene 11/30 = 37% (tasks 5/0/6/0/0);
+    - cube 20/30 = 67% (6/6/1/6/1): first 3-stack success; task 3 is the gh3 regression (1/6);
+    - 4x5 scripted: tasks 1-2 12/12 but task 3 0/5 (no first plan; stopped). REGRESSION.
+  - REGRESSION CAUSE: the feasibility cost (default since 08:20) on EVERY event made weighted A* nearly breadth-first (the cost-to-go ignores it), and the pop-time goal test needs the cheapest goal popped: no plan in 20k expansions.
+  - FIX (`world_model.py`, loop `--feas-margin-q` .9): only the event cost above the .9 quantile of GENUINE VAL event costs of that acted entity enters plans; a goal generated with zero feasibility cost returns at once. Margins: 4x5 .75-.87, cube .82-.88 nats.
+  - FAILURE MEMORY now matches states within the event / prediction tolerances (was the exact state key): handle-colour reading noise gave each belief a new key, so the locked window was retried 4-6 times per episode.
+  - PAIRWISE SUPPORT (new, `train_support.py --kind pair`, `event_support.make_pair_support`): one NCE logit per (event, other entity); event cost = summed evidence against compatibility beyond chance. Displacement features are magnified (the drawer travels 3 px).
+    - scene task-2 contexts: close the locked drawer 4.1-4.2 nats, presses .2-.7;
+    - but closing the locked window toward the goal's LOCKED look stays cheap (.4-.6): a big move with a locked-look target never occurs in the data, positive or negative;
+    - genuine unlocked drawer moves have cost q90 4.5, so a q90 margin erases the lock signal. The failure memory carries the locks.
+  - c6 scene (pairwise support + tolerance memory): 10/30 = 33% (5/0/5/0/0). Task 2 now fails on the HANDLE COLOUR: after a press the WM's predicted drawer / window look misses the reading, so the loop replans; plans then insert no-op press pairs to "fix" the look.
+  - EVENT RECALL FIX (`events_objects.py --mover-rest effector`, new default): a mover is a rest observation when the effector contact point is more than one object width away (was: no agent pixel within half a width).
+    - PRIVILEGED rest-run check (`scratchpad/rest_criteria.py`), true rest intervals with a rest run: scene .19 -> .76; cube-triple .62-.76 -> .92-.97; runs that are mostly carried frames <= .010.
+    - Events g13 (same thresholds as g12), cube moves found: scene .33 -> .83 (acted entity right .17 -> .75); cube-triple .76-.89 -> .97-.98 (acted .53-.75 -> .79-.84).
+    - Cube moves ending raised (stacks): cube-triple .69-.88 -> .97.
+    - g13 pairg WMs (VAL of their own events): scene event_exact .52 -> .65, cube-triple .73 -> .81.
+  - SCENE CUBE IN THE DRAWER is never read. `objects.read_frame` drops changed-pixel components that touch ANY place, and the drawer's place pixels surround its interior.
+    - Allowing continuous places (`scratchpad/mover_rule.py`): the cube in the drawer is read in .85 of frames.
+    - But on table frames the reading jumps (q50 18 px): the red LOCKED handles pass the cube colour test (cube chroma .479/.224 vs lock red .504/.223). Not adopted; scene tasks 4-5 stay blocked on perception.
+  - Running: c7 = g13 WMs + pairwise support + borrowed cost-to-go for scene and cube; 4x5 scripted with the margin fix.
+- 2026-10-11 11:30 c7 results and further fixes.
+  - 4x5 scripted ceiling with the feasibility margin (`obj_loop_scripted_c7_seed0`): 29/29 so far (tasks 1-5). The c5 regression is fixed.
+  - c7 = g13 WMs + pairwise support + borrowed cost-to-go:
+    - scene 10/30 = 33% (5/0/5/0/0);
+    - cube 18/30 = 60% (6/6/3/3/0): task 3 1 -> 3/6, task 4 6 -> 3/6.
+  - Cube task-5 failures are mostly WRONG STACK ORDER: the goal reading sees only the top cube. Either order of the two hidden cubes satisfied the hidden-goal test (cover chains of depth 1 and 2 both allowed).
+    - Yet the goal image shows their side faces: 11-16 px of a 29 px median area (`scratchpad/goal_stack.py`). The reader drops anything less than half visible.
+  - PARTIAL GOAL HINTS (`objects.read_partial_movers`, loop default, ablation `--no-goal-hints`): hidden goal movers with a side face visible in the goal image (more than 1/4, at most 1/2 of their median area) are ranked by image height; a lower face is deeper. `hidden_goal_targets(depth=...)` keeps only cover chains of that depth.
+  - DERIVED APPEARANCES (`Model.set_derived_appearance`, loop `--derived-r2` .5): an appearance predictable from the other entities' states and the entity's own position (kNN R^2 on VAL) is ignored by the goal and prediction tests. Greedy flagging: of two appearances that predict each other, only the more predictable is flagged.
+    - R^2 values: scene drawer .91, window .73 (both flagged), buttons .61-.64 (not flagged once the handles leave the predictors); puzzle lights -.25 to -.02; cube constant appearance.
+  - c8 scene (derived appearances): 9/30 = 30% (5/0/4/0/0). New failure mode: a target that differs only in a derived appearance was "arrived" at once, and the plan replanned every 5 steps (25-41 replans per episode).
+    - Fix 1: derived appearances are no event targets (`candidates_batch`).
+    - Fix 2: an event that ends with NOTHING changed enters the failure memory, like a timeout.
+  - Running: scene c9 with these fixes; cube task 5 with partial goal hints (`obj_loop_oracle_c8t5_seed0`).
+- 2026-10-11 12:30 Scene task 2 solved for the first time; loop / planner fixes.
+  - c9 scene (derived-only targets dropped, no-change events remembered): 11/30 = 37% (5/0/6/0/0). Task 2 plans then inserted no-op pairs (press a button twice, open and close the window): the failure memory still compared the derived handle colour, so a pair changed the predicted colour and re-allowed the locked drawer.
+    - Fix: failure matches and the search state key ignore derived appearances.
+  - c10 scene: 13/30 = 43% (tasks 5/2/6/0/0). First task-2 successes.
+  - Remaining task-2 failure: after a failed event, the plan unlock / close / lock had to pass a recently left state (the avoid list), and no plan was found.
+    - Fix: a failure (timeout or no-change event) clears the avoid list; the failure memory stops the repeat.
+    - Also: event targets of an entity with a derived appearance keep its current look; only the position moves. The support model saw an impossible "locked look while unlocked" target before.
+  - 4x4 scripted ceiling with all loop changes up to c9 (`obj_loop_scripted_c9_seed0`): 28/30 = 93% (task 3 4/6; was 100% on 2026-10-11 01:45).
+  - Cube task 5 with partial goal hints (`obj_loop_oracle_c8t5_seed0`): 1/6. The ranks are read correctly, e.g. depth {2: 1, 1: 2} matches the sim. But:
+    - plans placed the top cube before the middle one: "a cube must be below" is an EXISTENCE precondition, which a pairwise support cannot express;
+    - one episode found no plan.
+    - Now running: cube with the g13 WM and a JOINT support (`obj_model_g13pairg_joint`).
+  - 3x3 label check (PRIVILEGED, VAL): known after-state labels are right .83-.93 per light; stale (true change missed) .06-.10; spurious .01-.06. Press-to-neighbour change rates are far below 1 for lights under the resting arm (centre press: neighbours .45-.66), so the WM's cross for the centre is wrong (event exact .10). Source not yet resolved.
+- 2026-10-11 13:30 Failure relevance and a learned stacking direction; scene c11 / c12; 4x4 without feasibility cost.
+  - c11 scene (avoid list cleared on failure, derived look kept in targets): 10/30 = 33% (4/0/6/0/0).
+  - FAILURE RELEVANCE (`Model.set_failure_relevance`, loop `--failure-relevance` .3 nats): a failed event is remembered against the entities RELEVANT to it only. Relevance of k to events of e = the mean pairwise-support cost added by giving k the state of another event, over genuine VAL events of e.
+    - Learned scene relevances: window <- btn1 4.6, cube .71; drawer <- btn0 3.0, cube .78; btn0 <- drawer 2.2; btn1 <- window 2.0; cube <- drawer 1.45.
+    - Cube-triple: every cube relevant to every other (4.1-5.2).
+    - Motivation: the planner re-allowed a failed event by changing an UNRELATED entity first (move the cube away and back, press the other button; debug log `scratchpad/dbg_t2`).
+  - Partial goal hints are now ranked along the LEARNED cover direction (mean offset of the cover relations), replacing the hand-written "lower in the image = deeper". Same order with this camera.
+  - c12 scene: 10/30 = 33% (4/1/5/0/0). Scene runs c9-c12 range 33-43%, with task 2 at 0-2/6: six episodes per task cannot separate these variants.
+    - Remaining task-2 loop: press btn0 twice, then the locked drawer. The WM's predicted state of the HIDDEN cube changes over the presses, the cube is relevant to the drawer, so the failure no longer matches.
+  - 4x4 scripted without the feasibility cost (`obj_loop_scripted_c12f0_seed0`): 28/30 = 93% (task 5 4/6), the same total as with it (c9: task 3 4/6). Not attributable to the feasibility cost.
+  - STATUS REPORTED TO THE USER (Vietnamese), with an audit of hand-set choices made while looking at failures on the seed-0 evaluation episodes:
+    - derived R^2 threshold lowered .8 -> .5 after seeing the scene window at .73;
+    - pairwise magnification constants 16 / 10;
+    - the effector rest criterion chosen with PRIVILEGED VAL recall;
+    - q75 / q90 / .3 nats.
+    - No per-task code. The reported ceilings are optimistic; the proposed next step is to freeze the configuration and evaluate fresh seeds, held-out families and the end-to-end loop.
